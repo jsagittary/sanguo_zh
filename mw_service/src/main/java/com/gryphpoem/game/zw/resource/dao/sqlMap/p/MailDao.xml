@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="MailDao">
+	<!--
+	ALTER TABLE p_mail ADD COLUMN `mails1` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails2` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails3` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails4` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails5` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails6` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails7` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails8` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails9` mediumblob ;
+	ALTER TABLE p_mail ADD COLUMN `mails10` mediumblob;
+	ALTER TABLE p_mail ADD COLUMN `mails11` mediumblob;
+	ALTER TABLE p_mail ADD COLUMN `mails12` mediumblob;
+	ALTER TABLE p_mail ADD COLUMN `mails13` mediumblob;
+	ALTER TABLE p_mail ADD COLUMN `mails14` mediumblob;
+	ALTER TABLE p_mail ADD COLUMN `mails15` mediumblob;
+	
+	  -->
+	<sql id="mailColumns">
+		lordId,
+		mails,
+		mails1,
+		mails2,
+		mails3,
+		mails4,
+		mails5,
+		mails6,
+		mails7,
+		mails8,
+		mails9,
+		mails10,
+		mails11,
+		mails12,
+		mails13,
+		mails14,
+		mails15,
+		reports
+	</sql>
+	<sql id="mailColumnsVal">
+		#{lordId},
+		#{mails},
+		#{mails1},
+		#{mails2},
+		#{mails3},
+		#{mails4},
+		#{mails5},
+		#{mails6},
+		#{mails7},
+		#{mails8},
+		#{mails9},
+		#{mails10},
+		#{mails11},
+		#{mails12},
+		#{mails13},
+		#{mails14},
+		#{mails15},
+		#{reports}
+	</sql>
+	<sql id="mailColumnsSet">
+		mails=#{mails},
+		mails1=#{mails1},
+		mails2=#{mails2},
+		mails3=#{mails3},
+		mails4=#{mails4},
+		mails5=#{mails5},
+		mails6=#{mails6},
+		mails7=#{mails7},
+		mails8=#{mails8},
+		mails9=#{mails9},
+		mails10=#{mails10},
+		mails11=#{mails11},
+		mails12=#{mails12},
+		mails13=#{mails13},
+		mails14=#{mails14},
+		mails15=#{mails15},
+		reports=#{reports}
+	</sql>
+
+	<select id="selectData" parameterType="Long" resultType="MailData">
+		select
+		<include refid="mailColumns" />
+		from p_mail
+		where lordId=#{lordId}
+	</select>
+
+	<insert id="insertData" parameterType="MailData">
+		insert into
+		p_mail(
+		<include refid="mailColumns" />
+		)
+		values(
+		<include refid="mailColumnsVal" />
+		)
+	</insert>
+
+	<insert id="insertFullData" parameterType="MailData">
+		insert into
+		p_mail(
+		<include refid="mailColumns" />
+		)
+		values(
+		<include refid="mailColumnsVal" />
+		)
+	</insert>
+
+	<update id="updateData" parameterType="MailData">
+		update p_mail set
+		<include refid="mailColumnsSet" />
+		where lordId=#{lordId}
+	</update>
+
+	<update id="updateOptimizeData" parameterType="MailData">
+		update p_mail
+		<set>
+			<if test="mails != null">mails=#{mails},</if>
+			<if test="mails1 != null">mails1=#{mails1},</if>
+			<if test="mails2 != null">mails2=#{mails2},</if>
+			<if test="mails3 != null">mails3=#{mails3},</if>
+			<if test="mails4 != null">mails4=#{mails4},</if>
+			<if test="mails5 != null">mails5=#{mails5},</if>
+			<if test="mails6 != null">mails6=#{mails6},</if>
+			<if test="mails7 != null">mails7=#{mails7},</if>
+			<if test="mails8 != null">mails8=#{mails8},</if>
+			<if test="mails9 != null">mails9=#{mails9},</if>
+			<if test="mails10 != null">mails10=#{mails10},</if>
+			<if test="mails11 != null">mails11=#{mails11},</if>
+			<if test="mails12 != null">mails12=#{mails12},</if>
+			<if test="mails13 != null">mails13=#{mails13},</if>
+			<if test="mails14 != null">mails14=#{mails14},</if>
+			<if test="mails15 != null">mails15=#{mails15},</if>
+			<if test="reports != null">reports=#{reports}</if>
+		</set>
+		where lordId=#{lordId}
+	</update>
+
+	<insert id="replaceMail" parameterType="MailData">
+		replace into p_mail set
+		lordId=#{lordId},
+		<include refid="mailColumnsSet" />
+	</insert>
+
+	<select id="loadData" parameterType="Map" resultType="MailData">
+		select
+		<include refid="mailColumns" />
+		from p_mail
+		where lordId > #{curIndex} order by
+		lordId limit 0,#{count}
+	</select>
+
+</mapper>

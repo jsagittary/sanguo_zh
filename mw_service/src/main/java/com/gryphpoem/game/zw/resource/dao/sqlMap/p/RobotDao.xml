@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RobotDao">
+    <select id="selectRobotMap" resultType="Robot">
+		select
+		roleId,treeId,robotState,guideIndex,posArea,actionType
+		from
+		p_robot where robotState=0
+	</select>
+
+    <insert id="insertRobot" parameterType="Robot">
+		insert into
+		p_robot(roleId,treeId,robotState,posArea,actionType)
+		values(#{roleId},#{treeId},#{robotState},#{posArea},#{actionType})
+	</insert>
+
+    <update id="updateRobot" parameterType="Robot">
+		update p_robot set
+		treeId=#{treeId},robotState=#{robotState},guideIndex=#{guideIndex},posArea=#{posArea},actionType=#{actionType}
+		where roleId=#{roleId}
+	</update>
+
+</mapper>

@@ -1,0 +1,76 @@
+{
+    "masterServerList":[   //合服完之后的服务主服的列表
+        {
+            "composeServer":[  //由哪些服的哪些阵营组成
+                {
+                    "camp":1,   //阵营
+                    "serverId":1//服务器id
+                },
+                {
+                    "camp":2,
+                    "serverId":1
+                },
+                {
+                    "camp":3,
+                    "serverId":1
+                },
+                {
+                    "camp":3,
+                    "serverId":100
+                },
+                {
+                    "camp":1,
+                    "serverId":3
+                },
+                {
+                    "camp":2,
+                    "serverId":3
+                }
+            ],
+            "serverId":1        //主服的id
+        },
+        {
+            "composeServer":[
+                {
+                    "camp":1,
+                    "serverId":100
+                },
+                {
+                    "camp":2,
+                    "serverId":100
+                },
+                {
+                    "camp":3,
+                    "serverId":3
+                }
+            ],
+            "serverId":100
+        }
+    ],
+    "serverDBinfos":[// 需要参与合服的服务器信息列表
+        {
+            "dbIp":"192.168.1.151",
+            "dbName":"honor_1_tmp",
+            "dbPasswd":"jeC02GfP",
+            "dbPort":3306,
+            "dbUser":"root",
+            "serverId":1
+        },
+        {
+            "dbIp":"192.168.1.151",
+            "dbName":"honor_100",
+            "dbPasswd":"jeC02GfP",
+            "dbPort":3306,
+            "dbUser":"root",
+            "serverId":100
+        },
+        {
+            "dbIp":"192.168.1.151",
+            "dbName":"honor_fx_tmp",
+            "dbPasswd":"jeC02GfP",
+            "dbPort":3306,
+            "dbUser":"root",
+            "serverId":3
+        }
+    ]
+}

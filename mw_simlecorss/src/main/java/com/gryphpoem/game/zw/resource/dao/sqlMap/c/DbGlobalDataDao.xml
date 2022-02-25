@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="DbGlobalDataDao">
+	<!-- CREATE TABLE `p_global_data` ( `type` int(10) NOT NULL COMMENT '类型,具体看代码说明', 
+		`data` mediumblob COMMENT '数据', PRIMARY KEY (`type`) USING BTREE ) ENGINE=InnoDB 
+		DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=DYNAMIC COMMENT='公共数据'; -->
+	<select id="selectAll" resultType="DbGlobalData">
+		select type,data from
+		p_global_data
+	</select>
+
+	<select id="selectByType" parameterType="Integer" resultType="DbGlobalData">
+		select type,data from p_global_data where type=#{type}
+	</select>
+
+	<insert id="insert" parameterType="DbGlobalData">
+		insert into
+		p_global_data(type,data) values(#{type},#{data})
+	</insert>
+
+	<update id="update" parameterType="DbGlobalData">
+		update p_global_data set
+		data=#{data} where type=#{type}
+	</update>
+
+	<update id="replace" parameterType="DbGlobalData">
+		replace into p_global_data set
+		data=#{data},type=#{type}
+	</update>
+
+</mapper>

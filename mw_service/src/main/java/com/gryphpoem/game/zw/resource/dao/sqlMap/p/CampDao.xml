@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CampDao">
+    <select id="selectPartyByCamp" parameterType="Integer" resultType="DbParty">
+		select
+		camp,partyLv,partyExp,status,endTime,slogan,author,build,cityBattle,campBattle,cityRank,campRank,buildRank,officials,log,refreshTime,ext,qq,wx
+		from p_party where camp=#{camp}
+	</select>
+
+    <select id="selectParty" resultType="DbParty">
+		select
+		camp,partyLv,partyExp,status,endTime,slogan,author,build,cityBattle,campBattle,cityRank,campRank,buildRank,officials,log,refreshTime,ext,qq,wx
+		from
+		p_party
+	</select>
+
+    <update id="updateParty" parameterType="DbParty">
+		update p_party set
+		partyLv=#{partyLv},partyExp=#{partyExp},status=#{status},endTime=#{endTime},slogan=#{slogan},author=#{author},build=#{build},cityBattle=#{cityBattle},campBattle=#{campBattle},
+		cityRank=#{cityRank},campRank=#{campRank},buildRank=#{buildRank},officials=#{officials},log=#{log},refreshTime=#{refreshTime},ext=#{ext},qq=#{qq},wx=#{wx}
+		where camp=#{camp}
+	</update>
+
+    <insert id="replaceParty" parameterType="DbParty">
+		replace into p_party set
+		camp=#{camp},partyLv=#{partyLv},partyExp=#{partyExp},status=#{status},endTime=#{endTime},slogan=#{slogan},author=#{author},build=#{build},cityBattle=#{cityBattle},campBattle=#{campBattle},
+		cityRank=#{cityRank},campRank=#{campRank},buildRank=#{buildRank},officials=#{officials},log=#{log},refreshTime=#{refreshTime},ext=#{ext},qq=#{qq},wx=#{wx}
+	</insert>
+
+    <insert id="insertParty" parameterType="DbParty">
+		insert into
+		p_party(camp,partyLv,partyExp,status,endTime,slogan,author,build,cityBattle,campBattle,cityRank,campRank,buildRank,officials,log,refreshTime,ext,qq,wx)
+		values(#{camp},#{partyLv},#{partyExp},#{status},#{endTime},#{slogan},#{author},#{build},#{cityBattle},#{campBattle},#{cityRank},#{campRank}
+		,#{buildRank},#{officials},#{log},#{refreshTime},#{ext},#{qq},#{wx})
+	</insert>
+
+</mapper>

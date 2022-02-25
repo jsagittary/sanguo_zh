@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="OFF" monitorInterval="1800"
+	shutdownHook="disable">
+	<!-- <appender name="myFile" class="org.apache.log4j.RollingFileAppender"> 
+		<param name="File" value="logs.log" />设置日志输出文件名 设置是否在重新启动服务时，在原有日志的基础添加新日志 
+		<param name="Append" value="true" /> <param name="MaxBackupIndex" value="10" 
+		/> <layout class="org.apache.log4j.PatternLayout"> <param name="ConversionPattern" 
+		value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5l [%5p] - %m%n" /> </layout> </appender> -->
+
+	<appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+
+		<!-- <File name="Error" append="true" fileName="log/mylog.log" bufferedIO="true" 
+			bufferSize="512"> <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level 
+			%logger{36} - %msg%n" /> </File> -->
+
+		<!-- 服务器启动、关闭信息，游戏中捕捉的异常信息等 -->
+		<RollingFile name="ERROR" fileName="log/error.log"
+			filePattern="log/error.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+		<!-- 消息、任务的处理时间，游戏流量等日志信息 -->
+		<RollingFile name="STATISTICS" fileName="log/statistics.log"
+			filePattern="log/statistics.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+		<!-- 数据库存储记录 -->
+		<RollingFile name="SAVE" fileName="log/save.log"
+			filePattern="log/save.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+		<!-- 服务器与account服、与客户端、与跨服服务器的协议记录 -->
+		<RollingFile name="MESSAGE" fileName="log/message.log"
+			filePattern="log/%d{yyyyMMdd}/message.log.%d{yyyy-MM-dd}_%i">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100MB" />
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="10000" />
+		</RollingFile>
+
+
+		<!-- 来自各个功能中的严重警告信息 -->
+		<RollingFile name="WARN" fileName="log/warn.log"
+			filePattern="log/warn.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+		<!-- 公用日志文件，主要记录各个功能模块的状态改变等信息，以便快速定位问题 -->
+		<RollingFile name="COMMON" fileName="log/common.log"
+			filePattern="log/common.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+		<RollingFile name="CROSS" fileName="log/cross.log"
+			filePattern="log/game_date.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+		<!-- 热更日志文件 -->
+		<RollingFile name="HOTFIX" fileName="log/hotfix.log"
+			filePattern="log/hotfix.log.%d{yyyy-MM-dd}">
+			<PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS}|%msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+		</RollingFile>
+
+	</appenders>
+
+	<loggers>
+
+		<logger name="ERROR" level="trace" additivity="false">
+			<appender-ref ref="ERROR" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="STATISTICS" level="trace" additivity="false">
+			<appender-ref ref="STATISTICS" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="SAVE" level="trace" additivity="false">
+			<appender-ref ref="SAVE" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="MESSAGE" level="info" additivity="false">
+			<appender-ref ref="MESSAGE" />
+			<appender-ref ref="Console" />
+		</logger>
+
+
+		<logger name="WARN" level="trace" additivity="false">
+			<appender-ref ref="WARN" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="COMMON" level="info" additivity="false">
+			<appender-ref ref="COMMON" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="CROSS" level="trace" additivity="false">
+			<appender-ref ref="CROSS" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="HOTFIX" level="trace" additivity="false">
+			<appender-ref ref="HOTFIX" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="org.springframework" level="warn" additivity="false">
+			<appender-ref ref="ERROR" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="com.hundredcent.push" level="debug" additivity="false">
+			<appender-ref ref="COMMON" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<logger name="com.hundredcent.game.ai" level="error"
+			additivity="false">
+			<appender-ref ref="ERROR" />
+			<appender-ref ref="Console" />
+		</logger>
+
+		<root level="error">
+			<!-- <appender-ref ref="Console" /> -->
+			<appender-ref ref="COMMON" />
+		</root>
+	</loggers>
+</configuration>

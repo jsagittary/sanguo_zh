@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CampMemberDao">
+
+    <select id="selectPartyMember" parameterType="Long" resultType="CampMember">
+		select
+		roleId,buildDate,build,cityDate,cityBattle,campDate,campBattle,honorDate,honorGift,jobVote,canvass,taskTime,taskAwardCnt
+		from p_party_member where roleId=#{roleId}
+	</select>
+
+    <update id="updatePartyMember" parameterType="CampMember">
+		update p_party_member
+		set
+		buildDate=#{buildDate},build=#{build},cityDate=#{cityDate},cityBattle=#{cityBattle},campDate=#{campDate},campBattle=#{campBattle},
+		honorDate=#{honorDate},honorGift=#{honorGift},jobVote=#{jobVote},canvass=#{canvass},taskTime=#{taskTime},taskAwardCnt=#{taskAwardCnt}
+		where
+		roleId=#{roleId}
+	</update>
+
+    <insert id="insertPartyMember" parameterType="CampMember">
+		insert into
+		p_party_member(roleId,buildDate,build,cityDate,cityBattle,campDate,campBattle,honorDate,honorGift,jobVote,canvass,taskTime,taskAwardCnt)
+		values(#{roleId},#{buildDate},#{build},#{cityDate},#{cityBattle},#{campDate},#{campBattle},#{honorDate},#{honorGift},#{jobVote},#{canvass},#{taskTime},#{taskAwardCnt})
+	</insert>
+
+    <select id="load" parameterType="Map" resultType="CampMember">
+		select
+		roleId,buildDate,build,cityDate,cityBattle,campDate,campBattle,honorDate,honorGift,jobVote,canvass,taskTime,taskAwardCnt
+		from
+		p_party_member where roleId > #{curIndex} order by roleId limit 0,#{count}
+	</select>
+
+</mapper>

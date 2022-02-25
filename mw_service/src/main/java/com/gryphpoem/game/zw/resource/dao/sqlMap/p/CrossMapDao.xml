@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- CREATE TABLE `p_cross_map` ( `mapId` int(10) NOT NULL, `city` mediumblob 
+	COMMENT '城池情况', `bandit` mediumblob COMMENT '流寇数据', `mine` mediumblob COMMENT 
+	'矿点信息', `battle` mediumblob COMMENT '战斗信息', `playerArmy` mediumblob COMMENT 
+	'玩家在该地图的部队', `mapInfo` mediumblob COMMENT '该地图的信息', `mapExt1` mediumblob 
+	COMMENT '扩展信息1', PRIMARY KEY (`mapId`) USING BTREE ) ENGINE=InnoDB DEFAULT 
+	CHARSET=utf8 COLLATE=utf8_bin COMMENT='本地跨服地图数据保存'; -->
+<mapper namespace="CrossMapDao">
+	<sql id="crossMapColumns">
+		mapId,city,bandit,mine,battle,playerArmy,mapInfo,mapExt1
+	</sql>
+
+	<sql id="crossMapInsertColumns">
+		#{mapId},#{city},#{bandit},#{mine},#{battle},#{playerArmy},#{mapInfo},#{mapExt1}
+	</sql>
+
+	<sql id="crossMapUpdataColumns">
+		mapId=#{mapId},
+		city=#{city},
+		bandit=#{bandit},
+		mine=#{mine},
+		battle=#{battle},
+		playerArmy=#{playerArmy},
+		mapInfo=#{mapInfo},
+		mapExt1=#{mapExt1}
+	</sql>
+
+	<select id="selectAll" resultType="DbCrossMap">
+		select
+		<include refid="crossMapColumns" />
+		from
+		p_cross_map
+	</select>
+
+	<update id="update" parameterType="DbCrossMap">
+		update p_cross_map set
+		<include refid="crossMapUpdataColumns" />
+		where
+		mapId=#{mapId}
+	</update>
+
+	<insert id="replace" parameterType="DbCrossMap">
+		replace into p_cross_map
+		set
+		<include refid="crossMapUpdataColumns" />
+	</insert>
+
+	<insert id="insert" parameterType="DbCrossMap">
+		insert into
+		p_cross_map(
+		<include refid="crossMapColumns" />
+		)
+		values(
+		<include refid="crossMapInsertColumns" />
+		)
+	</insert>
+
+</mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="DataNewDao">
+<!--	<select id="selectData" parameterType="Long" resultType="DataNew">-->
+<!--		select-->
+<!--		lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,-->
+<!--		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem-->
+<!--		from p_data-->
+<!--		where lordId=#{lordId}-->
+<!--	</select>-->
+
+	<insert id="insertData" parameterType="DataNew">
+		insert into
+		p_data(lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
+		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares)
+		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},
+		#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},
+		#{awards},#{supEquips},#{supEquipQue},#{opts},#{wallNpc},#{effects},#{chemical},
+		#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares})
+	</insert>
+
+	<insert id="insertFullData" parameterType="DataNew">
+		insert into
+		p_data(lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
+		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares)
+		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},
+		combats=#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},#{awards},#{supEquips},#{supEquipQue},
+		,#{opts},#{wallNpc},#{effects},#{chemical},#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares})
+	</insert>
+
+<!--	<insert id="insertFullData" parameterType="DataNew">-->
+<!--		insert into-->
+<!--		p_data(lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,-->
+<!--		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem)-->
+<!--		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},-->
+<!--		combats=#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},#{awards},#{supEquips},#{supEquipQue},-->
+<!--		,#{opts},#{wallNpc},#{effects},#{chemical},#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData}-->
+<!--		,#{totem})-->
+<!--	</insert>-->
+
+	<update id="updateData" parameterType="DataNew">
+		update p_data set
+		maxKey=#{maxKey},roleData=#{roleData},heros=#{heros},equips=#{equips},medals=#{medals},props=#{props},buildQue=#{buildQue},tasks=#{tasks},mill=#{mill},
+		gains=#{gains},factory=#{factory},army=#{army},combats=#{combats},equipQue=#{equipQue},typeInfo=#{typeInfo},tech=#{tech},
+		shop=#{shop},combatFb=#{combatFb},acquisition=#{acquisition},awards=#{awards},supEquips=#{supEquips},
+		supEquipQue=#{supEquipQue},opts=#{opts},wallNpc=#{wallNpc},effects=#{effects},chemical=#{chemical},
+		treasure=#{treasure},friends=#{friends},masterApprentice=#{masterApprentice},cabinet=#{cabinet},trophy=#{trophy},playerExt=#{playerExt},day7Act=#{day7Act},activity=#{activity}
+		,signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares}
+		where lordId=#{lordId}
+	</update>
+
+
+	<update id="updateOptimize" parameterType="Map">
+		update p_data
+		<set>
+			<if test="maxKey != null">maxKey=#{maxKey},</if>
+			<if test="roleData != null">roleData=#{roleData},</if>
+			<if test="heros != null">heros=#{heros},</if>
+			<if test="equips != null">equips=#{equips},</if>
+			<if test="medals != null">medals=#{medals},</if>
+			<if test="props != null">props=#{props},</if>
+			<if test="buildQue != null">buildQue=#{buildQue},</if>
+			<if test="tasks != null">tasks=#{tasks},</if>
+			<if test="mill != null">mill=#{mill},</if>
+			<if test="gains != null">gains=#{gains},</if>
+			<if test="factory != null">factory=#{factory},</if>
+			<if test="army != null">army=#{army},</if>
+			<if test="combats != null">combats=#{combats},</if>
+			<if test="equipQue != null"> equipQue=#{equipQue},</if>
+			<if test="typeInfo != null"> typeInfo=#{typeInfo},</if>
+			<if test="tech != null"> tech=#{tech},</if>
+			<if test="shop != null">shop=#{shop},</if>
+			<if test="combatFb != null">combatFb=#{combatFb},</if>
+			<if test="acquisition != null">acquisition=#{acquisition},</if>
+			<if test="awards != null">awards=#{awards},</if>
+			<if test="supEquips != null">supEquips=#{supEquips},</if>
+			<if test="supEquipQue != null">supEquipQue=#{supEquipQue},</if>
+			<if test="opts != null">opts=#{opts},</if>
+			<if test="wallNpc != null">wallNpc=#{wallNpc},</if>
+			<if test="effects != null">effects=#{effects},</if>
+			<if test="chemical != null">chemical=#{chemical},</if>
+			<if test="treasure != null">treasure=#{treasure},</if>
+			<if test="friends != null">friends=#{friends},</if>
+			<if test="masterApprentice != null">masterApprentice=#{masterApprentice},</if>
+			<if test="cabinet != null">cabinet=#{cabinet},</if>
+			<if test="trophy != null">trophy=#{trophy},</if>
+			<if test="playerExt != null">playerExt=#{playerExt},</if>
+			<if test="day7Act != null">day7Act=#{day7Act},</if>
+			<if test="activity != null">activity=#{activity},</if>
+			<if test="signin != null">signin=#{signin},</if>
+			<if test="signInExt != null">signInExt=#{signInExt},</if>
+			<if test="crossData != null">crossData=#{crossData},</if>
+			<if test="totem != null">totem=#{totem},</if>
+			<if test="treasureWares != null">treasureWares=#{treasureWares}</if>
+		</set>
+		where lordId=#{lordId}
+	</update>
+
+	<insert id="replaceData" parameterType="DataNew">
+		replace into p_data set
+		lordId=#{lordId},maxKey=#{maxKey},roleData=#{roleData},heros=#{heros},equips=#{equips},medals=#{medals},props=#{props},buildQue=#{buildQue},tasks=#{tasks},mill=#{mill},
+		gains=#{gains},factory=#{factory},army=#{army},combats=#{combats},equipQue=#{equipQue},typeInfo=#{typeInfo},tech=#{tech},
+		shop=#{shop},combatFb=#{combatFb},acquisition=#{acquisition},awards=#{awards},supEquips=#{supEquips},
+		supEquipQue=#{supEquipQue},opts=#{opts},wallNpc=#{wallNpc},effects=#{effects},chemical=#{chemical},
+		treasure=#{treasure},friends=#{friends},masterApprentice=#{masterApprentice},cabinet=#{cabinet},trophy=#{trophy},playerExt=#{playerExt},day7Act=#{day7Act},activity=#{activity},
+		signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares}
+	</insert>
+
+	<select id="loadData" parameterType="Map" resultType="DataNew">
+		select
+		lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,mails,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
+		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,
+		crossData,totem,treasureWares
+		from p_data
+		where lordId > #{curIndex} order by lordId limit 0,#{count}
+	</select>
+
+</mapper>

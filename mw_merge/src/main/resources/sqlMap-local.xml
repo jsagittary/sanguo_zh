@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+	<bean id="masterDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl" value="#{serverConfig.jdbcUrl}" />
+		<property name="user" value="#{serverConfig.user}" />
+		<property name="password" value="#{serverConfig.password}" />
+		<property name="initialPoolSize" value="25" />
+		<property name="minPoolSize" value="25" />
+		<property name="maxPoolSize" value="250" />
+		<property name="maxIdleTime" value="14400" />
+		<property name="acquireIncrement" value="5" />
+		<property name="acquireRetryAttempts" value="30" />
+		<property name="acquireRetryDelay" value="500" />
+		<!-- <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection" 
+			value="100" /> -->
+		<property name="numHelperThreads" value="5" />
+		<property name="idleConnectionTestPeriod" value="600" />
+		<property name="testConnectionOnCheckout" value="false" />
+		<property name="testConnectionOnCheckin" value="false" />
+		<property name="preferredTestQuery" value="select 'x'" />
+	</bean>
+
+
+	<bean id="dynamicDataSource" class="com.gryphpoem.game.zw.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="master" value-ref="masterDataSource"></entry>
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="masterDataSource" />
+	</bean>
+
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"
+		p:configLocation="classpath:com/gryphpoem/game/zw/resource/dao/config/mybatisConfig.xml"
+		p:mapperLocations="classpath*:com/gryphpoem/game/zw/resource/dao/sqlMap/p/*Dao.xml"
+		p:dataSource-ref="dynamicDataSource" />
+
+
+	<!-- 事物的配置 -->
+	<bean name="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dynamicDataSource" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean id="pBaseDao" class="com.gryphpoem.game.zw.resource.dao.BaseDao"
+		abstract="true" p:sqlSessionFactory-ref="sqlSessionFactory" />
+
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.StaticParamDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.LordDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.ResourceDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PayDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.DataNewDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.SmallIdDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.GlobalDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CommonDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CampDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CampMemberDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.ActivityDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.RobotDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.MailDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.MergeDao"
+		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CrossMapDao"
+		parent="pBaseDao" />
+</beans>

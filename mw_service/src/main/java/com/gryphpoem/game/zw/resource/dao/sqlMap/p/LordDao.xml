@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="LordDao">
+	<select id="selectLordById" parameterType="Long" resultType="Lord">
+		select
+		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
+		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
+		treasureWareGolden,treasureWareDust,treasureWareEssence
+		from p_lord where lordId=#{lordId}
+	</select>
+
+	<select id="selectLordNotSmallIds" resultType="Long">
+		SELECT DISTINCT
+		l.`lordId` FROM p_lord l INNER JOIN p_smallId s ON
+		l.`lordId` !=
+		s.`lordId`
+	</select>
+
+	<select id="selectLordByRank" parameterType="Integer"
+		resultType="Lord">
+		select
+		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
+		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
+		treasureWareGolden,treasureWareDust,treasureWareEssence
+		from p_lord a WHERE a.nick is not NULL ORDER BY level DESC LIMIT
+		#{rank}
+	</select>
+
+	<select id="getLordListInId" resultType="Lord">
+		select
+		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
+		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
+		treasureWareGolden,treasureWareDust,treasureWareEssence
+		from p_lord where lordId in
+		<foreach item="lordIds" index="index" collection="list" open="("
+			separator="," close=")">
+			#{lordIds}
+		</foreach>
+	</select>
+
+	<select id="selectLordByNick" parameterType="String" resultType="Lord">
+		select
+		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
+		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
+		treasureWareGolden,treasureWareDust,treasureWareEssence
+		from p_lord where nick=#{nick}
+	</select>
+
+	<select id="sameNameCount" parameterType="String" resultType="Integer">
+		select count(lordId) from p_lord where nick=#{nick}
+	</select>
+
+	<update id="updateNickPortrait" parameterType="Lord">
+		update p_lord set
+		nick=#{nick},portrait=#{portrait} where lordId=#{lordId}
+	</update>
+
+	<update id="updateGold" parameterType="Lord">
+		update p_lord set
+		gold=#{gold},goldCost=#{goldCost},goldGive=#{goldGive} where
+		lordId=#{lordId}
+	</update>
+
+	<update id="updateVip" parameterType="Lord">
+		update p_lord set
+		vip=#{vip} where lordId=#{lordId}
+	</update>
+
+	<update id="updateLv" parameterType="Lord">
+		update p_lord set
+		exp=#{exp},level=#{level} where lordId=#{lordId}
+	</update>
+
+	<update id="updateLord" parameterType="Lord">
+		update p_lord set
+		nick=#{nick},portrait=#{portrait},sex=#{sex},camp=#{camp},level=#{level},exp=#{exp},vip=#{vip},vipExp=#{vipExp},topup=#{topup},area=#{area},pos=#{pos},gold=#{gold},goldCost=#{goldCost},goldGive=#{goldGive},power=#{power},
+		ranks=#{ranks},exploit=#{exploit},job=#{job},fight=#{fight},newState=#{newState},newerGift=#{newerGift},onTime=#{onTime},olTime=#{olTime},offTime=#{offTime},ctTime=#{ctTime},olAward=#{olAward},olMonth=#{olMonth},silence=#{silence},
+		combatId=#{combatId},heroToken=#{heroToken},mouthCardDay=#{mouthCardDay},mouthCLastTime=#{mouthCLastTime},
+		credit=#{credit},refreshTime=#{refreshTime},signature=#{signature},honor=#{honor},goldBar=#{goldBar},
+		treasureWareGolden=#{treasureWareGolden},treasureWareDust=#{treasureWareDust},treasureWareEssence=#{treasureWareEssence}
+		where
+		lordId=#{lordId}
+	</update>
+
+	<insert id="replaceLord" parameterType="Lord">
+		replace into p_lord set
+		lordId=#{lordId},nick=#{nick},portrait=#{portrait},sex=#{sex},camp=#{camp},level=#{level},exp=#{exp},vip=#{vip},vipExp=#{vipExp},topup=#{topup},area=#{area},pos=#{pos},gold=#{gold},goldCost=#{goldCost},goldGive=#{goldGive},power=#{power},
+		ranks=#{ranks},exploit=#{exploit},job=#{job},fight=#{fight},newState=#{newState},newerGift=#{newerGift},onTime=#{onTime},olTime=#{olTime},offTime=#{offTime},ctTime=#{ctTime},olAward=#{olAward},olMonth=#{olMonth},silence=#{silence},
+		combatId=#{combatId},heroToken=#{heroToken},mouthCardDay=#{mouthCardDay},mouthCLastTime=#{mouthCLastTime},
+		credit=#{credit},refreshTime=#{refreshTime},signature=#{signature},honor=#{honor},goldBar=#{goldBar},
+		treasureWareGolden=#{treasureWareGolden},treasureWareDust=#{treasureWareDust},treasureWareEssence=#{treasureWareEssence}
+	</insert>
+
+	<update id="updateFight" parameterType="Lord">
+		update p_lord set
+		fight=#{fight} where lordId=#{lordId}
+	</update>
+
+	<update id="updateNewState" parameterType="Lord">
+		update p_lord set
+		newState=#{newState} where lordId=#{lordId}
+	</update>
+
+	<insert id="insertLord" parameterType="Lord" useGeneratedKeys="true"
+		keyProperty="lordId">
+		insert into
+		p_lord(lordId,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,
+		newerGift,onTime,olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
+		treasureWareGolden,treasureWareDust,treasureWareEssence)
+		values(#{lordId},#{camp},#{level},#{exp},#{vip},#{vipExp},#{topup},#{area},#{pos},#{gold},#{goldCost},#{goldGive},#{power},#{ranks},#{exploit},#{job},#{fight},#{newState},#{newerGift},
+		#{onTime},#{olTime},#{offTime},#{ctTime},#{olAward},#{olMonth},#{silence},#{combatId},#{heroToken},#{mouthCardDay},#{mouthCLastTime},#{credit},#{refreshTime},#{signature},#{honor},#{goldBar},
+		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence})
+	</insert>
+
+	<insert id="insertFullLord" parameterType="Lord"
+		useGeneratedKeys="true" keyProperty="lordId">
+		insert into
+		p_lord(lordId,nick,portrait,sex,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,
+		onTime,olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
+		treasureWareGolden,treasureWareDust,treasureWareEssence)
+		values(#{lordId},#{nick},#{portrait},#{sex},#{level},#{exp},#{vip},#{vipExp},#{topup},#{area},#{pos},#{gold},#{goldCost},#{goldGive},#{power},#{ranks},#{exploit},#{job},#{fight},#{newState},#{newerGift},
+		#{onTime},#{olTime},#{offTime},#{ctTime},#{olAward},#{olMonth},#{silence},#{combatId},#{heroToken},#{mouthCardDay},#{mouthCLastTime},#{credit},#{refreshTime},#{signature},#{honor},#{goldBar},
+		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence})
+	</insert>
+
+	<select id="load" parameterType="Map" resultType="Lord">
+		SELECT
+		p_lord.lordId,
+		p_lord.nick,
+		p_lord.portrait,
+		p_lord.sex,
+		p_lord.camp,
+		p_lord.level,
+		p_lord.exp,
+		p_lord.vip,
+		p_lord.vipExp,
+		p_lord.topup,
+		p_lord.area,
+		p_lord.pos,
+		p_lord.gold,
+		p_lord.goldCost,
+		p_lord.goldGive,
+		p_lord.power,
+		p_lord.ranks,
+		p_lord.exploit,
+		p_lord.job,
+		p_lord.fight,
+		p_lord.newState,
+		p_lord.newerGift,
+		p_lord.onTime,
+		p_lord.olTime,
+		p_lord.offTime,
+		p_lord.ctTime,
+		p_lord.olAward,
+		p_lord.olMonth,
+		p_lord.silence,
+		p_lord.combatId,
+		p_lord.heroToken,
+		p_lord.mouthCardDay,
+		p_lord.mouthCLastTime,
+		p_lord.credit,
+		p_lord.refreshTime,
+		p_lord.signature,
+		p_lord.honor,
+		p_lord.goldBar,
+		p_lord.treasureWareGolden,
+		p_lord.treasureWareDust,
+		p_lord.treasureWareEssence
+		FROM
+		p_lord
+		INNER JOIN p_account ON p_lord.lordId = p_account.lordId
+		where p_lord.lordId > #{curIndex} order by p_lord.lordId limit
+		0,#{count}
+	</select>
+
+	<select id="selectLordCount" resultType="Integer">
+		SELECT COUNT(lordId)
+		FROM p_lord
+	</select>
+
+	<!-- 合服使用 加载数据 -->
+	<select id="mergeLoad" parameterType="Map" resultType="Lord">
+		SELECT
+		pl.*
+		FROM
+		p_lord AS pl
+		RIGHT JOIN p_account AS pa ON pa.lordId =
+		pl.lordId
+		LEFT JOIN p_smallid AS ps ON pl.lordId = ps.lordId
+		WHERE
+		ps.lordId IS NULL
+		AND pl.nick IS NOT NULL
+		AND pa.created = 1
+		AND
+		camp=#{camp}
+	</select>
+
+
+	<select id="mergeLoadByCamps" parameterType="Map" resultType="Lord">
+		SELECT
+		pl.*
+		FROM
+		p_lord AS pl
+		RIGHT JOIN p_account AS pa ON pa.lordId =
+		pl.lordId
+		LEFT JOIN p_smallid AS ps ON pl.lordId = ps.lordId
+		WHERE
+		ps.lordId IS NULL
+		AND pl.nick IS NOT NULL
+		AND pa.created = 1
+		<choose>
+			<when test="null != camps and camps.size > 0">
+				<foreach collection="camps" item="camp" open="AND ("
+					separator="or" close=")">
+					camp=#{camp}
+				</foreach>
+			</when>
+			<otherwise>
+				AND camp=-1
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

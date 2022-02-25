@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ResourceDao">
+	<!-- ALTER TABLE p_resource ADD COLUMN  `uranium` bigint(20) NOT NULL DEFAULT '0' COMMENT '铀' -->
+	<sql id="selectColumns">lordId,food,elec,oil,ore,arm1,arm2,arm3,foodOut,elecOut,oilOut,oreOut,foodOutF,elecOutF,oilOutF,oreOutF,
+		foodMax,elecMax,oilMax,oreMax,storeF,tFood,tElec,tOil,tOre,storeTime,human,humanTime,uranium
+	</sql>
+	<sql id="updataColumns">
+		food=#{food},elec=#{elec},oil=#{oil},ore=#{ore},arm1=#{arm1},arm2=#{arm2},arm3=#{arm3},
+		foodOut=#{foodOut},elecOut=#{elecOut},oilOut=#{oilOut},oreOut=#{oreOut},
+		foodOutF=#{foodOutF},elecOutF=#{elecOutF},oilOutF=#{oilOutF},oreOutF=#{oreOutF},
+		foodMax=#{foodMax},elecMax=#{elecMax},oilMax=#{oilMax},oreMax=#{oreMax},storeF=#{storeF},
+		tFood=#{tFood},tElec=#{tElec},tOil=#{tOil},tOre=#{tOre},storeTime=#{storeTime},human=#{human},humanTime=#{humanTime},uranium=#{uranium}
+	</sql>
+	<sql id="insertColumns">
+		#{lordId},#{food},#{elec},#{oil},#{ore},#{arm1},#{arm2},#{arm3},#{foodOut},#{elecOut},#{oilOut},#{oreOut},#{foodOutF},#{elecOutF},#{oilOutF},#{oreOutF},
+		#{foodMax},#{elecMax},#{oilMax},#{oreMax},#{storeF},#{tFood},#{tElec},#{tOil},#{tOre},#{storeTime},#{human},#{humanTime},#{uranium}
+	</sql>
+	
+	<select id="selectResource" parameterType="Long" resultType="Resource">
+		select
+		<include refid="selectColumns"></include>
+		from p_resource where lordId=#{lordId}
+	</select>
+
+	<update id="updateResource" parameterType="Resource">
+		update p_resource set
+		<include refid="updataColumns" />
+		where lordId=#{lordId}
+	</update>
+
+	<insert id="replaceResource" parameterType="Resource">
+		replace into
+		p_resource set
+		lordId=#{lordId},
+		<include refid="updataColumns" />
+	</insert>
+
+	<update id="updateOut" parameterType="Resource">
+		update p_resource set
+		foodOut=#{foodOut},elecOut=#{elecOut},oilOut=#{oilOut},oreOut=#{oreOut}
+		where lordId=#{lordId}
+	</update>
+
+	<update id="updateMax" parameterType="Resource">
+		update p_resource set
+		foodMax=#{foodMax},elecMax=#{elecMax},oilMax=#{oilMax},oreMax=#{oreMax}
+		where lordId=#{lordId}
+	</update>
+
+	<update id="updateTime" parameterType="Resource">
+		update p_resource set
+		storeTime=#{storeTime} where lordId=#{lordId}
+	</update>
+
+	<update id="updateMaxAndOut" parameterType="Resource">
+		update p_resource set
+		foodOut=#{foodOut},elecOut=#{elecOut},oilOut=#{oilOut},oreOut=#{oreOut},
+		foodMax=#{foodMax},elecMax=#{elecMax},oilMax=#{oilMax},oreMax=#{oreMax}
+		where lordId=#{lordId}
+	</update>
+
+	<insert id="insertResource" parameterType="Resource">
+		insert into
+		p_resource(<include refid="selectColumns"/>)
+		values(<include refid="insertColumns"/>)
+	</insert>
+
+
+	<select id="load" parameterType="Map" resultType="Resource">
+		select
+		<include refid="selectColumns" />
+		from p_resource where lordId > #{curIndex} order by lordId limit
+		0,#{count}
+	</select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="StaticParamDao">
+	<select id="selectStaticParams" resultType="StaticParam">
+		select
+		paramId,title,paramName,paramValue,descs from s_server_setting
+	</select>
+
+	<insert id="insertStaticParam" parameterType="StaticParam">
+		insert into
+		s_server_setting(paramId,title,paramName,paramValue,descs)
+		values(#{paramId},#{title},#{paramName},#{paramValue},#{descs})
+	</insert>
+
+</mapper>

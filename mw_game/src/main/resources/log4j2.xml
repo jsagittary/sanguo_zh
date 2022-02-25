@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="OFF" monitorInterval="1800"
+               shutdownHook="disable">
+
+    <Properties>
+        <!-- 配置日志文件输出目录 ${sys:user.home} -->
+        <!--共有8个级别，按照从低到高为：All < Trace < Debug < Info < Warn < Error < Fatal < OFF.
+            All:最低等级的，用于打开所有日志记录.
+            Trace:是追踪，就是程序推进以下，你就可以写个trace输出，所以trace应该会特别多，不过没关系，我们可以设置最低日志级别不让他输出.
+            Debug:指出细粒度信息事件对调试应用程序是非常有帮助的.
+            Info:消息在粗粒度级别上突出强调应用程序的运行过程.
+            Warn:输出警告及warn以下级别的日志.
+            Error:输出错误信息日志.
+            Fatal:输出每个严重的错误事件将会导致应用程序的退出的日志.
+            OFF:最高等级的，用于关闭所有日志记录-->
+        <Property name="LOG_HOME">log</Property>
+        <property name="MESSAGE_LOG_FILE_NAME">${LOG_HOME}/message</property>
+        <property name="COMMON_LOG_FILE_NAME">${LOG_HOME}/common</property>
+        <property name="CALC_LOG_FILE_NAME">${LOG_HOME}/calculate</property>
+        <property name="DUBBO_LOG_FILE_NAME">${LOG_HOME}/dubbo</property>
+    </Properties>
+
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <!-- <File name="Error" append="true" fileName="log/mylog.log" bufferedIO="true"
+            bufferSize="512"> <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level
+            %logger{36} - %msg%n" /> </File> -->
+
+        <!-- 服务器启动、关闭信息，游戏中捕捉的异常信息等 -->
+        <RollingFile name="ERROR" fileName="${LOG_HOME}/error.log" filePattern="${LOG_HOME}/error.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"
+                                           modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 消息、任务的处理时间，游戏流量等日志信息 -->
+        <RollingFile name="STATISTICS" fileName="${LOG_HOME}/statistics.log"
+                     filePattern="${LOG_HOME}/statistics.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 玩家的行为日志，包括金币、物品、装备、将领等等的相关操作日志 -->
+        <RollingFile name="GAME" fileName="${LOG_HOME}/game.log" filePattern="${LOG_HOME}/game.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss}|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 数数未上报的日志落地 -->
+        <RollingFile name="THINKINGDATA" fileName="log/thinkingdata.log"
+                     filePattern="log/thinkingdata.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss}|%msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+
+        <!-- 玩家的埋点日志,包括点击,活动等等的相关操作日志 -->
+        <RollingFile name="POINT" fileName="${LOG_HOME}/point.log" filePattern="${LOG_HOME}/point.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss}|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 数据库存储记录 -->
+        <RollingFile name="SAVE" fileName="${LOG_HOME}/save.log" filePattern="${LOG_HOME}/save.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 服务器与account服、与客户端、与跨服服务器的协议记录 -->
+        <RollingFile name="MESSAGE" fileName="${LOG_HOME}/message.log"
+                     filePattern="${MESSAGE_LOG_FILE_NAME}/%d{yyyyMMdd}/message.log.%d{yyyy-MM-dd}_%i.gz">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="256MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10000">
+                <Delete basePath="${MESSAGE_LOG_FILE_NAME}" maxDepth="2">
+                    <IfFileName glob="*/message.log.*"/>
+                    <IfLastModified age="15d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <!-- 玩家在游戏中参加的活动的相关记录 -->
+        <RollingFile name="ACTIVITY" fileName="${LOG_HOME}/activity.log"
+                     filePattern="${LOG_HOME}/activity.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 聊天日志 -->
+        <RollingFile name="CHAT" fileName="${LOG_HOME}/chat.log" filePattern="${LOG_HOME}/chat.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss}|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 玩家充值记录 -->
+        <RollingFile name="PAY" fileName="${LOG_HOME}/pay.log" filePattern="${LOG_HOME}/pay.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 来自各个功能中的严重警告信息 -->
+        <RollingFile name="WARN" fileName="${LOG_HOME}/warn.log" filePattern="${LOG_HOME}/warn.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 公用日志文件，主要记录各个功能模块的状态改变等信息，以便快速定位问题 -->
+        <RollingFile name="COMMON" fileName="${LOG_HOME}/common.log"
+                     filePattern="${COMMON_LOG_FILE_NAME}/%d{yyyyMMdd}/common.log.%d{yyyy-MM-dd}_%i.gz">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="256MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10000">
+                <Delete basePath="${COMMON_LOG_FILE_NAME}" maxDepth="2">
+                    <IfFileName glob="*/common.log.*"/>
+                    <IfLastModified age="15d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="CROSS" fileName="${LOG_HOME}/cross.log"
+                     filePattern="${LOG_HOME}/game_date.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 热更日志文件 -->
+        <RollingFile name="HOTFIX" fileName="${LOG_HOME}/hotfix.log"
+                     filePattern="${LOG_HOME}/hotfix.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS}|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+
+        <!-- 机器人日志文件 -->
+        <RollingFile name="ROBOT" fileName="${LOG_HOME}/robot.log" filePattern="${LOG_HOME}/robot.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS}|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 世界矿点流寇日志文件 -->
+        <RollingFile name="WORLD" fileName="${LOG_HOME}/world.log" filePattern="${LOG_HOME}/world.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 战斗日志 -->
+        <RollingFile name="BATTLE" fileName="${LOG_HOME}/battle.log"
+                     filePattern="${LOG_HOME}/battle.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss}|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 记录英雄属性计算打印日志 -->
+        <RollingFile name="CALCULATE" fileName="${LOG_HOME}/calculate.log"
+                     filePattern="${CALC_LOG_FILE_NAME}/%d{yyyyMMdd}/calculate.log.%d{yyyy-MM-dd}_%i.gz">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="500MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10000">
+                <Delete basePath="${CALC_LOG_FILE_NAME}" maxDepth="2">
+                    <IfFileName glob="*/calculate.log.*"/>
+                    <IfLastModified age="7d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <!-- DUBBO 日志 -->
+        <RollingFile name="DUBBO" fileName="${LOG_HOME}/dubbo.log"
+                     filePattern="${DUBBO_LOG_FILE_NAME}/%d{yyyyMMdd}/dubbo.log.%d{yyyy-MM-dd}_%i.gz">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="150MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10000">
+                <Delete basePath="${DUBBO_LOG_FILE_NAME}" maxDepth="2">
+                    <IfFileName glob="*/dubbo.log.*"/>
+                    <IfLastModified age="7d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+    </appenders>
+
+    <loggers>
+        <logger name="dubbo.accesslog" additivity="false" level="info" >
+            <appender-ref ref="Console" />
+            <appender-ref ref="DUBBO"/>
+        </logger>
+
+        <logger name="org.apache.dubbo" additivity="false" level="WARN" >
+            <appender-ref ref="Console"/>
+            <appender-ref ref="DUBBO"/>
+        </logger>
+
+        <logger name="GAME" level="trace" additivity="false">
+            <appender-ref ref="GAME"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="POINT" level="trace" additivity="false">
+            <appender-ref ref="POINT"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="ERROR" level="trace" additivity="false">
+            <appender-ref ref="ERROR"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="STATISTICS" level="trace" additivity="false">
+            <appender-ref ref="STATISTICS"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="SAVE" level="trace" additivity="false">
+            <appender-ref ref="SAVE"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="MESSAGE" level="info" additivity="false">
+            <appender-ref ref="MESSAGE"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="CHAT" level="trace" additivity="false">
+            <appender-ref ref="CHAT"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="ACTIVITY" level="trace" additivity="false">
+            <appender-ref ref="ACTIVITY"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="PAY" level="trace" additivity="false">
+            <appender-ref ref="PAY"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="WARN" level="trace" additivity="false">
+            <appender-ref ref="WARN"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="COMMON" level="info" additivity="false">
+            <appender-ref ref="COMMON"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="CALCULATE" level="debug" additivity="false">
+            <appender-ref ref="CALCULATE" />
+        </logger>
+
+        <logger name="BATTLE" level="trace" additivity="false">
+            <appender-ref ref="BATTLE"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="CROSS" level="trace" additivity="false">
+            <appender-ref ref="CROSS"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="HOTFIX" level="trace" additivity="false">
+            <appender-ref ref="HOTFIX"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="ROBOT" level="trace" additivity="false">
+            <appender-ref ref="ROBOT"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="WORLD" level="trace" additivity="false">
+            <appender-ref ref="WORLD"/>
+            <!-- <appender-ref ref="Console" /> -->
+        </logger>
+
+        <logger name="org.springframework" level="warn" additivity="false">
+            <appender-ref ref="ERROR"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="com.hundredcent.push" level="debug" additivity="false">
+            <appender-ref ref="COMMON"/>
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <logger name="com.hundredcent.game.ai" level="error"
+                additivity="false">
+            <appender-ref ref="ERROR"/>
+            <appender-ref ref="Console"/>
+        </logger>
+        
+        <logger name="THINKINGDATA" level="trace" additivity="false">
+            <appender-ref ref="THINKINGDATA" />
+            <appender-ref ref="Console" />
+        </logger>
+
+        <root level="error">
+            <!-- <appender-ref ref="Console" /> -->
+            <appender-ref ref="COMMON"/>
+        </root>
+    </loggers>
+</configuration>
