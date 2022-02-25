@@ -82,7 +82,7 @@
 									<include>com.gryphpoem.game.zw:mw_service</include>
 									<include>com.gryphpoem.game.zw:hai-api</include>
 									<include>com.gryphpoem.push:cpush-sdk</include>
-									<include>com.gryphpoem:civilization-proto</include>
+									<include>com.gryphpoem:sanguo-proto</include>
 									<include>com.gryphpoem:civilization-cross-api</include>
 								</includes>
 							</artifactSet>
