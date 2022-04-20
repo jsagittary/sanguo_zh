@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * @time: 2021/3/4 11:38
  */
 @Service
-public class DressUpService implements LoginService {
+public class DressUpService implements LoginService, GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -272,5 +272,21 @@ public class DressUpService implements LoginService {
     }
 
 
+    public void reloadTable() {
+        playerDataManager.getAllPlayer().values().forEach(player -> {
+            StaticCastleSkin staticCastleSkin = StaticLordDataMgr.getCastleSkinMapById(player.getCurCastleSkin());
+            if (!CheckNull.isNull(staticCastleSkin))
+                return;
+            player.setCurCastleSkin(StaticCastleSkin.DEFAULT_SKIN_ID);
+        });
+    }
 
+    @GmCmd("dressUp")
+    @Override
+    public void handleGmCmd(Player player, String... params) throws Exception {
+        String cmd = params[0];
+        if ("reload".equalsIgnoreCase(cmd)) {
+            reloadTable();
+        }
+    }
 }
