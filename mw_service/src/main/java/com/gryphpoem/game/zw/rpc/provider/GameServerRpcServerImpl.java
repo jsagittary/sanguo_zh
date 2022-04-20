@@ -203,6 +203,11 @@ public class GameServerRpcServerImpl implements GameServerRpcService {
     }
 
     @Override
+    public CompletableFuture<String> executeProtoCmd(long roleId, String protoCmd) {
+        return null;
+    }
+
+    @Override
     public void shutdownGameServer(String msg) {
         try {
             LogUtil.error("开始关闭游戏服务器: " + msg);

@@ -281,7 +281,7 @@ public class DressUpService implements LoginService, GmCmdService {
         });
     }
 
-    @GmCmd("dressUp")
+    @GmCmd("dressUpService")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
         String cmd = params[0];
