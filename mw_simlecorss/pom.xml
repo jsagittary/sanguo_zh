@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.gryphpoem.game.zw</groupId>
-		<artifactId>sanguo</artifactId>
+		<artifactId>civilization</artifactId>
 		<version>1.0.1</version>
 	</parent>
 	<artifactId>mw_simlecorss</artifactId>
@@ -35,7 +35,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>sanguo_simplecross</finalName>
+		<finalName>civilization_simplecross</finalName>
 		<plugins>
 			<!-- 项目依赖插件 -->
 			<plugin>
@@ -63,7 +63,7 @@
 								<includes>
 									<include>com.gryphpoem.game.zw:mw_core</include>
 									<include>com.gryphpoem.game.zw:mw_service</include>
-									<include>com.gryphpoem:sanguo-proto</include>
+									<include>com.gryphpoem:civilization-proto</include>
 								</includes>
 							</artifactSet>
 							<transformers>

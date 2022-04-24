@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.gryphpoem.game.zw</groupId>
-		<artifactId>sanguo</artifactId>
+		<artifactId>civilization</artifactId>
 		<version>1.0.1</version>
 	</parent>
 	<artifactId>mw_game</artifactId>
@@ -36,7 +36,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>sanguo_game</finalName>
+		<finalName>civilization_game</finalName>
 		<plugins>
 			<!-- 项目依赖插件 -->
 			<plugin>
@@ -82,8 +82,8 @@
 									<include>com.gryphpoem.game.zw:mw_service</include>
 									<include>com.gryphpoem.game.zw:hai-api</include>
 									<include>com.gryphpoem.push:cpush-sdk</include>
-									<include>com.gryphpoem:sanguo-proto</include>
-									<include>com.gryphpoem:sanguo-cross-api</include>
+									<include>com.gryphpoem:civilization-proto</include>
+									<include>com.gryphpoem:civilization-cross-api</include>
 								</includes>
 							</artifactSet>
 							<transformers>
