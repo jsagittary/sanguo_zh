@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.gryphpoem.game.zw</groupId>
-		<artifactId>civilization</artifactId>
+		<artifactId>sanguo</artifactId>
 		<version>1.0.1</version>
 	</parent>
 	<artifactId>mw_core</artifactId>
@@ -13,7 +13,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gryphpoem</groupId>
-			<artifactId>civilization-proto</artifactId>
+			<artifactId>sanguo-proto</artifactId>
 			<version>1.0.25</version>
 		</dependency>
 	</dependencies>
