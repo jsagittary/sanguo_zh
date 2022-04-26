@@ -2,6 +2,7 @@
 
  import com.gryphpoem.game.zw.core.common.DataResource;
  import com.gryphpoem.game.zw.core.util.LogUtil;
+ import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
  import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
  import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
  import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
@@ -9,10 +10,7 @@
  import com.gryphpoem.game.zw.manager.PlayerDataManager;
  import com.gryphpoem.game.zw.resource.constant.*;
  import com.gryphpoem.game.zw.resource.domain.Player;
- import com.gryphpoem.game.zw.resource.domain.s.StaticMedalSpecialSkill;
- import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
- import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSkill;
- import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalent;
+ import com.gryphpoem.game.zw.resource.domain.s.*;
  import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
  import com.gryphpoem.game.zw.resource.util.CheckNull;
  import com.gryphpoem.game.zw.resource.util.RandomHelper;
@@ -116,7 +114,7 @@ public class FightCalc {
                 if (!CheckNull.isNull(forcePlayer)) {
                     double seasonTalentRestrain = (DataResource.getBean(SeasonTalentService.class).
                             getSeasonTalentEffectValue(forcePlayer, SeasonConst.TALENT_EFFECT_602) / Constant.TEN_THROUSAND);
-                    LogUtil.debug("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
+                    LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
                             "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "赛季天赋-以长攻短-加成比例: ", seasonTalentRestrain);
                     restrain += seasonTalentRestrain;
                 }
@@ -339,7 +337,7 @@ public class FightCalc {
         //进攻方类型
         String atkstr = getRoleTypeStr(force.roleType);
         String tarstr = getRoleTypeStr(target.roleType);
-        LogUtil.debug("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ",战斗回合===》战斗类型: ", battleType, strType,
+        LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ",战斗回合===》战斗类型: ", battleType, strType,
                 ",进攻方类型/将领id/将领类型/强化等级: ", atkstr, "/", force.id, "/", force.armType, "/", force.intensifyLv,
                 ",进攻方基础攻击/计算后的攻击:", force.calcAttack(), "/", atk, ",防守方类型/将领id/将领类型/强化等级: ", tarstr, "/", target.id,
                 "/", target.armType, "/", target.intensifyLv, ",防守方基础防御/计算后的防御: ", target.calcDefend(), "/", def,
@@ -353,6 +351,29 @@ public class FightCalc {
                 hurt);
         return (int) hurt;
     }
+
+     /**
+      * 计算保底伤害
+      *
+      * @param attacker
+      * @param defender
+      * @return
+      */
+     public static int calRoundGuaranteedDamage(Force attacker, Force defender, int hurt, int battleType) {
+         if (!FightLogic.checkPvp(attacker, defender) || battleType == Integer.MIN_VALUE)
+             return hurt;
+         StaticBattlePvp staticData = StaticBattleDataMgr.getBattlePvp(attacker.intensifyLv - defender.intensifyLv);
+         if (CheckNull.isNull(staticData))
+             return hurt;
+
+         // 保底伤害=(最终伤害增幅(双方兵阶之差)+己方英雄面板攻击*最终伤害增幅系数(双方兵阶之差)/10000)*(K3*单排当前兵力/单排兵力上限+1-K3)*[0.9,1.2])
+         float hurt1Random = RandomUtils.nextFloat(0.9f, 1.2f);
+         int guaranteedDamage = (int) (staticData.getDamage() + attacker.attrData.attack +
+                 (staticData.getDamageParam() / Constant.TEN_THROUSAND) * (WorldConstant.K3 * attacker.count / attacker.lead + 1 - WorldConstant.K3) * hurt1Random);
+         LogUtil.fight("进攻方角色id: ", attacker.ownerId, ",防守方角色id: ", defender.ownerId, ", " +
+                 "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "保底伤害计算: ", guaranteedDamage, ", 当前最终伤害:", hurt, ", 比对后最终伤害: ", Math.max(guaranteedDamage, hurt));
+         return Math.max(guaranteedDamage, hurt);
+     }
 
      /**
       * 攻击方对 特定兵种增益伤害
@@ -468,7 +489,7 @@ public class FightCalc {
         int randomInt = RandomHelper.randomInArea(1, 11);
         float randomFloat = RandomUtils.nextFloat(0.9f, 1.1f);
         double finalHurt = hurt <= 0.0 ? randomInt : hurt * randomFloat;
-        LogUtil.debug("战机最终伤害值:", finalHurt, ", 技能伤害:", hurt, ", [1-10]的随机整数值:", randomInt, ", [0.9f, 1.1f]随机数:",
+        LogUtil.fight("战机最终伤害值:", finalHurt, ", 技能伤害:", hurt, ", [1-10]的随机整数值:", randomInt, ", [0.9f, 1.1f]随机数:",
                 randomFloat);
         return (int) Math.ceil(finalHurt);
     }

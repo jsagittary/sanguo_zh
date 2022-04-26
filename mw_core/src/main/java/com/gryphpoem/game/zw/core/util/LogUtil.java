@@ -75,6 +75,17 @@ public class LogUtil {
         CALCULATE_LOGGER.debug(getClassPath() + ExceptionMessage.spliceMessage(message));
     }
 
+    /**
+     * 异步打印战斗日志
+     *
+     * @param message
+     */
+    public static void fight(Object... message) {
+        if (canPrint(Level.DEBUG)) {
+            logThread.addCommand(() -> COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message)));
+        }
+    }
+
     public static void debug(Object... message) {
         if (canPrint(Level.DEBUG)) {
             COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message));

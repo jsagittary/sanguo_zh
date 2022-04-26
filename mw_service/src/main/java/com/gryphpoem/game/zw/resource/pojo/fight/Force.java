@@ -51,7 +51,6 @@ public class Force {
     public Map<Integer, FightBuff> fightBuff = new HashMap<>(); // key: buffType, val: 战斗buff
     //战斗技能列表
     public List<FightSkillAction> fightSkills = new ArrayList<>();
-
     public Force() {
     }
 
@@ -96,7 +95,7 @@ public class Force {
         if (this.count == 0) {
             this.count = lead;
         }
-        LogUtil.debug("Force=" + toString());
+        LogUtil.fight("Force=" + toString());
     }
 
     /**
@@ -129,7 +128,7 @@ public class Force {
         if (this.count == 0) {
             this.count = sLead;
         }
-        LogUtil.debug(
+        LogUtil.fight(
                 "Force : 当前兵力=" + totalCount + ",一排多少兵=" + sLead + ",总共多少排=" + maxLine + ",sCount=" + sCount + ",sLine="
                         + sLine);
     }
@@ -165,6 +164,9 @@ public class Force {
         //天赋优化 战斗buff
         //攻击方的伤害加成与防守方伤害减免
         hurt = FightLogic.seasonTalentBuff(force, this, hurt, battleType);
+        // 计算保底伤害
+        if (battleType != Integer.MIN_VALUE)
+            hurt = FightCalc.calRoundGuaranteedDamage(force, this, hurt, battleType);
 
         if (count <= hurt) {
             lost = count;
@@ -183,7 +185,7 @@ public class Force {
     public boolean subHp(Force force) {
         boolean deadLine = false;
 
-        LogUtil.debug("进攻方角色id:", force == null ? 0 : force.ownerId, ", 防守方角色id: ", this.ownerId, ", <<<<<<战斗最终伤害>>>>>>:", lost);
+        LogUtil.fight("进攻方角色id:", force == null ? 0 : force.ownerId, ", 防守方角色id: ", this.ownerId, ", <<<<<<战斗最终伤害>>>>>>:", lost);
 
         if (count <= lost) {
             curLine++;

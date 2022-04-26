@@ -164,4 +164,8 @@ public class StaticIniDao extends BaseDao {
     public Map<Integer, StaticCrossGamePlayPlan> selectStaticCrossGamePlanMap(Set<Integer> list) {
         return getMapper(StaticIniMapper.class).selectStaticCrossGamePlanMap(list);
     }
+
+    public Map<Integer, StaticBattlePvp> selectStaticBattlePvpMap() {
+        return getMapper(StaticIniMapper.class).selectStaticBattlePvpMap();
+    }
 }

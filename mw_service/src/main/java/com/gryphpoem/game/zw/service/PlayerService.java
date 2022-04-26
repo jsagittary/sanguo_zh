@@ -45,6 +45,7 @@ import com.gryphpoem.game.zw.service.activity.AnniversaryEggService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -128,6 +129,8 @@ public class PlayerService implements GmCmdService {
     private TreasureCombatService treasureCombatService;
     @Autowired
     private TitleService titleService;
+    @Value("${initName}")
+    private String initName;
 
     /**
      * 账号服务器的验证返回处理
@@ -1989,6 +1992,10 @@ public class PlayerService implements GmCmdService {
                 MsgDataManager.getIns().add(new Msg(p.ctx, msg, p.roleId));
             }
         });
+    }
+
+    public String getInitName() {
+        return initName;
     }
 
     @GmCmd("player")
