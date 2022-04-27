@@ -188,7 +188,7 @@ public class Force {
     public boolean subHp(Force force) {
         boolean deadLine = false;
 
-        LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, <<<<<<战斗最终伤害>>>>>>: ",
+        LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, <<<<<<战斗最终伤害>>>>>>: %d",
                 force == null ? 0 : force.ownerId, this.ownerId, count, lost));
 
         if (count <= lost) {
