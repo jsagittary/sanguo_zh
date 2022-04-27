@@ -493,10 +493,10 @@ public class FightLogic {
         //天赋优化 战斗增益
         //攻击方的伤害加成与防守方伤害减免
         hurt = seasonTalentBuff(force, target, hurt, battleType);
-
+        // 保底伤害计算
+        hurt = FightCalc.calRoundGuaranteedDamage(force, target, hurt, battleType);
         hurt = defCntBuff(target, hurt);  //  免伤buff
         hurt = defHurtBuff(target, hurt); //  抵消伤害buff
-        hurt = FightCalc.calRoundGuaranteedDamage(force, target, hurt, battleType);// 计算保底伤害
         hurt = notDeadBuff(target, hurt); //  免死buff
         return target.hurt(hurt, null, Integer.MIN_VALUE);
     }
