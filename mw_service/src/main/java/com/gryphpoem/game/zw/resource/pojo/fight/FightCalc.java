@@ -368,7 +368,7 @@ public class FightCalc {
 
          // 保底伤害=(最终伤害增幅(双方兵阶之差)+己方英雄面板攻击*最终伤害增幅系数(双方兵阶之差)/10000)*(K3*单排当前兵力/单排兵力上限+1-K3)*[0.9,1.2])
          float hurt1Random = RandomUtils.nextFloat(0.9f, 1.2f);
-         int guaranteedDamage = (int) (staticData.getDamage() + attacker.attrData.attack +
+         int guaranteedDamage = (int) (staticData.getDamage() + attacker.attrData.attack *
                  (staticData.getDamageParam() / Constant.TEN_THROUSAND) * (WorldConstant.K3 * attacker.count / attacker.lead + 1 - WorldConstant.K3) * hurt1Random);
          LogUtil.fight("进攻方角色id: ", attacker.ownerId, ",防守方角色id: ", defender.ownerId, ", " +
                  "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "保底伤害计算: ", guaranteedDamage, ", 当前最终伤害:", hurt, ", 比对后最终伤害: ", Math.max(guaranteedDamage, hurt));
