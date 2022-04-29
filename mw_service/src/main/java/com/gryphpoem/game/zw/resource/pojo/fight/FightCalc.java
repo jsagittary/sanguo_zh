@@ -1,27 +1,27 @@
- package com.gryphpoem.game.zw.resource.pojo.fight;
+package com.gryphpoem.game.zw.resource.pojo.fight;
 
- import com.gryphpoem.game.zw.core.common.DataResource;
- import com.gryphpoem.game.zw.core.util.LogUtil;
- import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
- import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
- import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
- import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
- import com.gryphpoem.game.zw.manager.MedalDataManager;
- import com.gryphpoem.game.zw.manager.PlayerDataManager;
- import com.gryphpoem.game.zw.resource.constant.*;
- import com.gryphpoem.game.zw.resource.domain.Player;
- import com.gryphpoem.game.zw.resource.domain.s.*;
- import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
- import com.gryphpoem.game.zw.resource.util.CheckNull;
- import com.gryphpoem.game.zw.resource.util.RandomHelper;
- import com.gryphpoem.game.zw.service.session.SeasonService;
- import com.gryphpoem.game.zw.service.session.SeasonTalentService;
- import org.apache.commons.lang3.RandomUtils;
+import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.manager.MedalDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.RandomHelper;
+import com.gryphpoem.game.zw.service.session.SeasonService;
+import com.gryphpoem.game.zw.service.session.SeasonTalentService;
+import org.apache.commons.lang3.RandomUtils;
 
- import java.util.Map;
- import java.util.Objects;
+import java.util.Map;
+import java.util.Objects;
 
- /**
+/**
  * @author TanDonghai
  * @ClassName FightCalc.java
  * @Description 战斗数值计算
@@ -76,6 +76,7 @@ public class FightCalc {
 
     /**
      * 兵种克制关系系数
+     *
      * @param force
      * @param target
      * @return
@@ -124,13 +125,13 @@ public class FightCalc {
         }
 
 
-
         return restrain;
     }
 
     /**
      * 兵种之间是否存在克制关系
      * 步克弓，弓克骑，骑克步
+     *
      * @param atkArm
      * @param defArm
      * @return
@@ -225,6 +226,7 @@ public class FightCalc {
 
     /**
      * 是否计算攻坚和据守
+     *
      * @param battleType
      * @param specialSkill
      * @return
@@ -345,42 +347,43 @@ public class FightCalc {
                 MedalConst.getAuraSkillNum(force, target, MedalConst.INCREASE_HURT_AURA) / Constant.TEN_THROUSAND,
                 ",防守方光环减伤: ",
                 MedalConst.getAuraSkillNum(target, force, MedalConst.REDUCE_HURT_AURA) / Constant.TEN_THROUSAND,
-                ",伤害类型1: ", hurt1, ", 伤害类型1随机数: ", hurt1Random,  "伤害类型2赛季天赋攻心扼吭加成前:", debugHurt2, "赛季天赋攻心扼吭加成:", hurt2 - debugHurt2,
+                ",伤害类型1: ", hurt1, ", 伤害类型1随机数: ", hurt1Random, "伤害类型2赛季天赋攻心扼吭加成前:", debugHurt2, "赛季天赋攻心扼吭加成:", hurt2 - debugHurt2,
                 ", 类型2总伤害(赛季天赋攻心扼吭加成后): ", hurt2, ", 伤害类型2随机数: ", hurt2Random,
                 ",计算光环之前: ", beforeHurt, ", 计算光环之后的伤害值: ", beforeRestrain, ",兵种克制关系系数: ", finalRestrain, ", 对防守方当前兵种伤害加成: ", finalDamageToArms, ",最终伤害结果: ",
                 hurt);
         return (int) hurt;
     }
 
-     /**
-      * 计算保底伤害
-      *
-      * @param attacker
-      * @param defender
-      * @return
-      */
-     public static int calRoundGuaranteedDamage(Force attacker, Force defender, int hurt, int battleType) {
-         if (!FightLogic.checkPvp(attacker, defender) || battleType == Integer.MIN_VALUE)
-             return hurt;
-         StaticBattlePvp staticData = StaticBattleDataMgr.getBattlePvp(attacker.intensifyLv - defender.intensifyLv);
-         if (CheckNull.isNull(staticData))
-             return hurt;
+    /**
+     * 计算保底伤害
+     *
+     * @param attacker
+     * @param defender
+     * @return
+     */
+    public static int calRoundGuaranteedDamage(Force attacker, Force defender, int hurt, int battleType) {
+        if (!FightLogic.checkPvp(attacker, defender) || battleType == Integer.MIN_VALUE)
+            return hurt;
+        StaticBattlePvp staticData = StaticBattleDataMgr.getBattlePvp(attacker.intensifyLv - defender.intensifyLv);
+        if (CheckNull.isNull(staticData))
+            return hurt;
 
-         // 保底伤害=(最终伤害增幅(双方兵阶之差)+己方英雄面板攻击*最终伤害增幅系数(双方兵阶之差)/10000)*(K3*单排当前兵力/单排兵力上限+1-K3)*[0.9,1.2])
-         float hurt1Random = RandomUtils.nextFloat(0.9f, 1.2f);
-         int guaranteedDamage = (int) (staticData.getDamage() + attacker.attrData.attack *
-                 (staticData.getDamageParam() / Constant.TEN_THROUSAND) * (WorldConstant.K3 * attacker.count / attacker.lead + 1 - WorldConstant.K3) * hurt1Random);
-         LogUtil.fight("进攻方角色id: ", attacker.ownerId, ",防守方角色id: ", defender.ownerId, ", " +
-                 "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "保底伤害计算: ", guaranteedDamage, ", 当前最终伤害:", hurt, ", 比对后最终伤害: ", Math.max(guaranteedDamage, hurt));
-         return Math.max(guaranteedDamage, hurt);
-     }
+        // 保底伤害=(最终伤害增幅(双方兵阶之差)+己方英雄面板攻击*最终伤害增幅系数(双方兵阶之差)/10000)*(K3*单排当前兵力/单排兵力上限+1-K3)*[0.9,1.2])
+        float hurt1Random = RandomUtils.nextFloat(0.9f, 1.2f);
+        int guaranteedDamage = (int) (staticData.getDamage() + attacker.attrData.attack *
+                (staticData.getDamageParam() / Constant.TEN_THROUSAND) * (WorldConstant.K3 * attacker.count / attacker.lead + 1 - WorldConstant.K3) * hurt1Random);
+        LogUtil.fight("进攻方角色id: ", attacker.ownerId, ",防守方角色id: ", defender.ownerId, ", " +
+                "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "保底伤害随机数: ", hurt1Random, "保底伤害计算: ", guaranteedDamage, ", 当前最终伤害:", hurt, ", 比对后最终伤害: ", Math.max(guaranteedDamage, hurt));
+        return Math.max(guaranteedDamage, hurt);
+    }
 
-     /**
-      * 攻击方对 特定兵种增益伤害
-      * @param force
-      * @param target
-      * @return
-      */
+    /**
+     * 攻击方对 特定兵种增益伤害
+     *
+     * @param force
+     * @param target
+     * @return
+     */
     private static double buffDamageToArms(Force force, Force target) {
         if (CheckNull.isNull(force) || CheckNull.isNull(target))
             return 0d;
