@@ -314,7 +314,7 @@ public class FightLogic {
         StaticSkill skill = StaticHeroDataMgr.getSkillMapById(skillId);
         int val = skill == null || skill.getVal() <= 0 ? 1 : skill.getVal();
         int hurt = (int) Math.ceil(force.maxHp * 1.0 / val);// 技能计算公式
-        hurt = target.hurt(hurt, force, battleType);
+        hurt = target.hurt(hurt, force, battleType, 1f);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数
@@ -407,7 +407,7 @@ public class FightLogic {
         int skillId = info.getSkillId();
         StaticPlaneSkill planeSkill = StaticWarPlaneDataMgr.getPlaneSkillById(skillId);
         int hurt = FightCalc.calcPlaneSkillHurt(force, target, planeSkill, battleType);
-        hurt = target.hurt(hurt, force, battleType);
+        hurt = target.hurt(hurt, force, battleType, 1f);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数
@@ -468,7 +468,7 @@ public class FightLogic {
         float crit = isCrit(force, target, actionData);
         int hurt = FightCalc.calcHurt2(force, target, crit, battleType);
         // 预扣血，并返回真实伤害，真实扣血逻辑在回合结束是执行
-        hurt = hurt(target, force, hurt);
+        hurt = hurt(target, force, hurt, crit);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数
@@ -487,18 +487,18 @@ public class FightLogic {
      * @param hurt
      * @return
      */
-    public int hurt(Force target, Force force, int hurt) {
+    public int hurt(Force target, Force force, int hurt, float crit) {
         hurt = upHurtBuff(target, hurt);  //  提升伤害Buff
 
         //天赋优化 战斗增益
         //攻击方的伤害加成与防守方伤害减免
         hurt = seasonTalentBuff(force, target, hurt, battleType);
         // 保底伤害计算
-        hurt = FightCalc.calRoundGuaranteedDamage(force, target, hurt, battleType);
+        hurt = FightCalc.calRoundGuaranteedDamage(force, target, hurt, battleType, crit);
         hurt = defCntBuff(target, hurt);  //  免伤buff
         hurt = defHurtBuff(target, hurt); //  抵消伤害buff
         hurt = notDeadBuff(target, hurt); //  免死buff
-        return target.hurt(hurt, null, Integer.MIN_VALUE);
+        return target.hurt(hurt, null, Integer.MIN_VALUE, crit);
     }
 
     public static boolean checkPvp(Force force, Force targetForce) {

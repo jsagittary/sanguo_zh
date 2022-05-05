@@ -79,7 +79,7 @@ public final class FightSkillUtils {
         }
 
         //处理buff计算最终损兵
-        totalHurt = dto.getFightLogic().hurt(target, source, totalHurt);
+        totalHurt = dto.getFightLogic().hurt(target, source, totalHurt, 1f);
         target.fighter.lost += totalHurt;// 记录总伤兵数
         source.killed += totalHurt;// 记录攻击方击杀数
         source.fighter.hurt += totalHurt;// 记录总击杀数

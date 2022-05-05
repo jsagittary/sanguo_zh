@@ -163,13 +163,13 @@ public class Force {
      * @return
      * @see FightLogic#(Force, int) 如果需要考虑FightBuff
      */
-    public int hurt(int hurt, Force force, int battleType) {
+    public int hurt(int hurt, Force force, int battleType, float crit) {
         //天赋优化 战斗buff
         //攻击方的伤害加成与防守方伤害减免
         hurt = FightLogic.seasonTalentBuff(force, this, hurt, battleType);
         // 计算保底伤害
         if (battleType != Integer.MIN_VALUE)
-            hurt = FightCalc.calRoundGuaranteedDamage(force, this, hurt, battleType);
+            hurt = FightCalc.calRoundGuaranteedDamage(force, this, hurt, battleType, crit);
 
         if (count <= hurt) {
             lost = count;

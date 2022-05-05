@@ -298,13 +298,16 @@ public class FightCalc {
         hurt2 = hurt2 < 0 ? 0 : hurt2;
 
         double hurt;
+        double debugHurt;
         // ( 类型1伤害结果 + 类型2伤害结果 ) > 10
         if (hurt1 + hurt2 > 10) {
+            debugHurt = hurt1 + hurt2;
             // ( 类型1伤害结果 + 类型2伤害结果 ) * 暴击倍伤 ( 暴击时 )  向上取整
             hurt = (hurt1 + hurt2) * crit;
         } else {
             // 1 ~ 10随机整数 * 暴击倍伤 ( 暴击时 )
             hurt2Random = RandomHelper.randomInSize(10);
+            debugHurt = hurt2Random + 1;
             hurt = (hurt2Random + 1) * crit;
         }
 
@@ -348,8 +351,8 @@ public class FightCalc {
                 ",防守方光环减伤: ",
                 MedalConst.getAuraSkillNum(target, force, MedalConst.REDUCE_HURT_AURA) / Constant.TEN_THROUSAND,
                 ",伤害类型1: ", hurt1, ", 伤害类型1随机数: ", hurt1Random, "伤害类型2赛季天赋攻心扼吭加成前:", debugHurt2, "赛季天赋攻心扼吭加成:", hurt2 - debugHurt2,
-                ", 类型2总伤害(赛季天赋攻心扼吭加成后): ", hurt2, ", 伤害类型2随机数: ", hurt2Random,
-                ",计算光环之前: ", beforeHurt, ", 计算光环之后的伤害值: ", beforeRestrain, ",兵种克制关系系数: ", finalRestrain, ", 对防守方当前兵种伤害加成: ", finalDamageToArms, ",最终伤害结果: ",
+                ", 类型2总伤害(赛季天赋攻心扼吭加成后): ", hurt2, ", 伤害类型2随机数: ", hurt2Random, ", 计算暴击之前: ", debugHurt,
+                ",计算光环之前(计算暴击之后): ", beforeHurt, ", 计算光环之后的伤害值: ", beforeRestrain, ",兵种克制关系系数: ", finalRestrain, ", 对防守方当前兵种伤害加成: ", finalDamageToArms, ",最终伤害结果: ",
                 hurt);
         return (int) hurt;
     }
@@ -361,7 +364,7 @@ public class FightCalc {
      * @param defender
      * @return
      */
-    public static int calRoundGuaranteedDamage(Force attacker, Force defender, int hurt, int battleType) {
+    public static int calRoundGuaranteedDamage(Force attacker, Force defender, int hurt, int battleType, float crit) {
         if (!FightLogic.checkPvp(attacker, defender) || battleType == Integer.MIN_VALUE)
             return hurt;
         StaticBattlePvp staticData = StaticBattleDataMgr.getBattlePvp(attacker.intensifyLv - defender.intensifyLv);
@@ -370,10 +373,10 @@ public class FightCalc {
 
         // 保底伤害=(最终伤害增幅(双方兵阶之差)+己方英雄面板攻击*最终伤害增幅系数(双方兵阶之差)/10000)*(K3*单排当前兵力/单排兵力上限+1-K3)*[0.9,1.2])
         float hurt1Random = RandomUtils.nextFloat(0.9f, 1.2f);
-        int guaranteedDamage = (int) (staticData.getDamage() + attacker.attrData.attack *
-                (staticData.getDamageParam() / Constant.TEN_THROUSAND) * (WorldConstant.K3 * attacker.count / attacker.lead + 1 - WorldConstant.K3) * hurt1Random);
+        int guaranteedDamage = (int) ((staticData.getDamage() + attacker.attrData.attack *
+                (staticData.getDamageParam() / Constant.TEN_THROUSAND) * (WorldConstant.K3 * attacker.count / attacker.lead + 1 - WorldConstant.K3) * hurt1Random) * crit);
         LogUtil.fight("进攻方角色id: ", attacker.ownerId, ",防守方角色id: ", defender.ownerId, ", " +
-                "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "保底伤害随机数: ", hurt1Random, "保底伤害计算: ", guaranteedDamage, ", 当前最终伤害:", hurt, ", 比对后最终伤害: ", Math.max(guaranteedDamage, hurt));
+                "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "保底伤害随机数: ", hurt1Random, "保底伤害计算: ", guaranteedDamage, ", 暴击倍数: ", crit, "当前最终伤害:", hurt, ", 比对后最终伤害: ", Math.max(guaranteedDamage, hurt));
         return Math.max(guaranteedDamage, hurt);
     }
 
