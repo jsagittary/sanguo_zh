@@ -116,6 +116,9 @@ public class EventDataUp {
         common.put("role_level", level);
         common.put("vip_level", vip);
         common.put("power", fight);
+        try {
+            common.put("?channel_name", PLAT_NAME.convertTo(account.getPlatNo()));
+        } catch (IllegalArgumentException e) {}
         return common;
     }
 
@@ -710,5 +713,28 @@ public class EventDataUp {
      */
     private static boolean functionUnlock(Account account) {
         return !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo()) || !"release".equalsIgnoreCase(DataResource.environment);
+    }
+
+    private enum PLAT_NAME {
+        af_bwtx(101),
+        ky_bwtx(104),
+        kw_bwtx(105),
+        sm_gzzb(115),
+        dw_bwtx(130),;
+
+        private int platNo;
+
+        PLAT_NAME(int platNo) {
+            this.platNo = platNo;
+        }
+
+        public static PLAT_NAME convertTo(int platNo) throws IllegalArgumentException {
+            for (PLAT_NAME plat_name : values()) {
+                if (plat_name.platNo == platNo)
+                    return plat_name;
+            }
+
+            throw new IllegalArgumentException();
+        }
     }
 }
