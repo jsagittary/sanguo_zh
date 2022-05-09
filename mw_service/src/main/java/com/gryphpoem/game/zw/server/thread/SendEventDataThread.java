@@ -18,8 +18,8 @@ public class SendEventDataThread extends SendThread {
 //    private HashMap<Integer, String> event_map = new HashMap<Integer, String>();
 
     static final String SA_SERVER_URL = "https://dotlog.dian5.com/api/event/report";
-    static final int PROJECT_ID = 89;
-    static final String PROJECT_KEY = "e8ce20b811fbb7b2694472d223684df2";
+    static final int PROJECT_ID = 142;
+    static final String PROJECT_KEY = "ff5f41c2eccda80b0cf93caf6ae5122b";
     public static Logger THINKINGDATA_LOGGER = Logger.getLogger("THINKINGDATA");
 
 

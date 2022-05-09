@@ -173,7 +173,7 @@ public class AttackPlayerBattle extends AbsCommonBattle {
                 LogUtil.error(e);
             }
             // 执行勋章-维和部队 特技逻辑
-            medalDataManager.peacekeepingForces(defender);
+            medalDataManager.peacekeepingForces(defender, defPlayer);
             // 固定给胜利方玩家角色加10点经验
             dropList.add(Award.newBuilder().setType(AwardType.MONEY).setId(AwardType.Money.EXP).setCount(10).build());
             // 发送奖励给发起攻击的玩家

@@ -4,10 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticBerlinWarDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -1507,8 +1504,11 @@ public class BerlinWarService {
             info.addChangeType(AwardType.HERO_ARM, hero.getHeroId());
             rewardDataManager.syncRoleResChanged(player, info); // 同步兵力
 
-            LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost,
-                    Constant.ACTION_SUB);
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+            if (Objects.nonNull(staticHero)) {
+                LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                        Constant.ACTION_SUB);
+            }
         }
         if (force.killed > 0) {
             // 大杀四方

@@ -20,6 +20,7 @@ public class StaticNpc {
 	private int armType;// 兵种类型
 	private int armLv;// 兵种品质、等级
 	private Map<Integer, Integer> attr;// 属性，格式：[[attrId,value]...]
+	private String desc;
 
 	private int totalArm = -1;
 
@@ -87,7 +88,15 @@ public class StaticNpc {
 		this.attr = attr;
 	}
 
-    public int getTotalArm() {
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public int getTotalArm() {
 		if (totalArm < 0) {
 			Integer count = getAttr().get(Constant.AttrId.LEAD);
 //			totalArm = null == count ? 0 : count * getLine();

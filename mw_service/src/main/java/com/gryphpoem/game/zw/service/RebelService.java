@@ -887,6 +887,9 @@ public class RebelService extends BaseAwkwardDataManager {
                             cntMap.put(armyType, cnt + addArm);
                             LogUtil.debug("匪军叛乱回复兵力 roleId:", defPlayer.roleId, ", heroId:", hero.getHeroId(),
                                     ", recArm:", addArm);
+                            //记录玩家兵力变化信息
+                            LogLordHelper.filterHeroArm(AwardFrom.REBEL_BUFF_ACTION, defPlayer.account, defPlayer.lord, hero.getHeroId(), hero.getCount(), addArm,
+                                    Constant.ACTION_ADD, armyType, hero.getQuality());
                         }
                     }
                 }

@@ -390,6 +390,7 @@ public class RewardDataManager {
 
     /**
      * 邮件领取物品，添加参数
+     *
      * @param player
      * @param type
      * @param id
@@ -500,9 +501,9 @@ public class RewardDataManager {
                 //添加宝具
                 addTreasureWareInMail(player, id, count, keyId, from, param);
                 break;
-                //添加称号
+            //添加称号
             case AwardType.TITLE:
-                addTitle(player,id,count,convert,from,param);
+                addTitle(player, id, count, convert, from, param);
                 break;
             default:
                 break;
@@ -635,10 +636,10 @@ public class RewardDataManager {
                 }
                 break;
             case AwardType.TOTEM:
-                addTotem(player,id,count,from,param);
+                addTotem(player, id, count, from, param);
                 break;
             case AwardType.TITLE:
-                addTitle(player,id,count,convert,from,param);
+                addTitle(player, id, count, convert, from, param);
                 break;
 //            case AwardType.TOTEM_CHIP://获得图腾碎片
 //                addTotemChip(player,id,count,from, param);
@@ -654,7 +655,7 @@ public class RewardDataManager {
         return award.build();
     }
 
-    private void addTitle(Player player, int id, int count,List<Award> convert , AwardFrom from, Object[] param) {
+    private void addTitle(Player player, int id, int count, List<Award> convert, AwardFrom from, Object[] param) {
         if (id <= 0) {
             LogUtil.error("称号id非法, roleId:", player.roleId, ", id:", id, ", from:", from.getCode());
             return;
@@ -672,8 +673,9 @@ public class RewardDataManager {
 
     @Autowired
     private TotemService totemService;
-    private void addTotem(Player player,int id,int count,AwardFrom awardFrom,Object...params){
-        totemService.addTotemsAndSync(player,ListUtils.createItems(0,id,count),awardFrom);
+
+    private void addTotem(Player player, int id, int count, AwardFrom awardFrom, Object... params) {
+        totemService.addTotemsAndSync(player, ListUtils.createItems(0, id, count), awardFrom);
     }
 
 //    private void addTotemChip(Player player,int totemChipId,int count,AwardFrom awardFrom,Object...params){
@@ -693,6 +695,7 @@ public class RewardDataManager {
 
     /**
      * 批量添加宝具(宝具宝箱等未拆开，宝具实例未生成)
+     *
      * @param player
      * @param treasureWareId
      * @param count
@@ -713,6 +716,7 @@ public class RewardDataManager {
 
     /**
      * 邮件宝具添加(已到邮件，宝具实例已生成)
+     *
      * @param player
      * @param treasureWareId
      * @param from
@@ -1143,7 +1147,7 @@ public class RewardDataManager {
                 case AwardType.Special.ACT_MUSIC_FESTIVAL_CREATIVE_SCORE:
                     musicFestivalCreativeService.updateCreativeScore(player, count, from);
                     break;
-				case AwardType.Special.SHENG_WU:
+                case AwardType.Special.SHENG_WU:
                     player.addMilitaryExpenditure(count);
                     LogLordHelper.commonLog("expenditure", from, player.account, player.lord, player.getMilitaryExpenditure(), count);
                     break;
@@ -1522,8 +1526,13 @@ public class RewardDataManager {
         player.setMixtureData(PlayerConstant.CROSS_WAR_FIRE_PRICE, have + add);
         LogLordHelper.warFireCoin(from, player.account, player.lord, have, add, param);
         //上报数数
-        EventDataUp.currency(from, player.account, player.lord, AwardType.Money.CROSS_WAR_FIRE_COIN,
-                add, player.getMixtureDataById(PlayerConstant.CROSS_WAR_FIRE_PRICE));
+        if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.CROSS_WAR_FIRE_COIN,
+                    add, player.getMixtureDataById(PlayerConstant.CROSS_WAR_FIRE_PRICE), Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+        } else {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.CROSS_WAR_FIRE_COIN,
+                    add, player.getMixtureDataById(PlayerConstant.CROSS_WAR_FIRE_PRICE), Arrays.toString(param), "");
+        }
     }
 
     /**
@@ -1811,10 +1820,10 @@ public class RewardDataManager {
             //貂蝉任务-领主等级
             ActivityDiaoChanService.completeTask(player, ETask.PLAYER_LV);
             TaskService.processTask(player, ETask.PLAYER_LV);
-            if(null!=player.master){
+            if (null != player.master) {
                 Player masterPlayer = playerDataManager.getPlayer(master.getLordId());
                 //玩家达到等级，向玩家的师父发送任务完成验证（在线）
-                if(masterPlayer.isLogin){
+                if (masterPlayer.isLogin) {
                     //称号-x个徒弟等级达到y级
                     titleService.processTask(masterPlayer, ETask.APPRENTICE_LEVEL_MAKE_IT);
                 }
@@ -2172,9 +2181,9 @@ public class RewardDataManager {
         } else {
             stone.addStoneCntAndGet(count);
         }
-         if (from != AwardFrom.MOUNTING_STONE) {
-             activityTriggerService.stoneUpLv(player, sStone.getLv());
-         }
+        if (from != AwardFrom.MOUNTING_STONE) {
+            activityTriggerService.stoneUpLv(player, sStone.getLv());
+        }
         // 记录玩家获得道具
         LogLordHelper.stone(from, player.account, player.lord, id, stone.getCnt(), count, Constant.ACTION_ADD, param);
 
@@ -2423,8 +2432,7 @@ public class RewardDataManager {
         switch (id) {
             case AwardType.Resource.ELE:
                 resource.setElec(resource.getElec() + add);
-                if (add > 0 && from != AwardFrom.RECRUIT_CANCEL)
-                {
+                if (add > 0 && from != AwardFrom.RECRUIT_CANCEL) {
                     //喜悦金秋-日出而作- 获得资源 2(木材)
                     TaskService.processTask(player, ETask.GOLDEN_AUTUMN_GET_RESOURCE, 2, Long.valueOf(add).intValue());
                 }
@@ -2443,8 +2451,7 @@ public class RewardDataManager {
                 break;
             case AwardType.Resource.OIL:
                 resource.setOil(resource.getOil() + add);
-                if (add > 0 && from != AwardFrom.RECRUIT_CANCEL)
-                {
+                if (add > 0 && from != AwardFrom.RECRUIT_CANCEL) {
                     //喜悦金秋-日出而作- 获得资源 1(黄金)
                     TaskService.processTask(player, ETask.GOLDEN_AUTUMN_GET_RESOURCE, 1, Long.valueOf(add).intValue());
                 }
@@ -2764,7 +2771,7 @@ public class RewardDataManager {
                 addTreasureWareEssence(player, count, from, false, param);
                 break;
             case AwardType.Money.CROSS_WAR_FIRE_COIN:
-                addCrossWarFireCoin(player, (int) count, from, true, param);
+                addCrossWarFireCoin(player, (int) count, from, false, param);
                 break;
             default:
                 break;
@@ -2780,7 +2787,13 @@ public class RewardDataManager {
 
         LogLordHelper.commonLog("treasureWareDust", from, player, player.lord.getTreasureWareDust(), add ? sub : -sub, StringHelper.mergeToKey(param));
         //上报数数
-        EventDataUp.currency(from,player.account,player.lord,AwardType.Money.TREASURE_WARE_GOLDEN,add ? sub : -sub,player.lord.getTreasureWareDust());
+        if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
+                    Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+        } else {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
+                    Arrays.toString(param), "");
+        }
     }
 
     private void addTreasureWareEssence(Player player, long sub, AwardFrom from, boolean add, Object... param) {
@@ -2792,7 +2805,13 @@ public class RewardDataManager {
 
         LogLordHelper.commonLog("treasureWareEssence", from, player, player.lord.getTreasureWareEssence(), add ? sub : -sub, StringHelper.mergeToKey(param));
         //上报数数
-        EventDataUp.currency(from,player.account,player.lord,AwardType.Money.TREASURE_WARE_DUST,add ? sub : -sub,player.lord.getTreasureWareEssence());
+        if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
+                    Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+        } else {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
+                    Arrays.toString(param), "");
+        }
     }
 
     private void addTreasureWareGolden(Player player, long sub, AwardFrom from, boolean add, Object... param) {
@@ -2802,10 +2821,15 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareGolden(cur);
 
-
         LogLordHelper.commonLog("treasureWareGolden", from, player, player.lord.getTreasureWareGolden(), add ? sub : -sub, StringHelper.mergeToKey(param));
         //上报数数
-        EventDataUp.currency(from,player.account,player.lord,AwardType.Money.TREASURE_WARE_ESSENCE,add ? sub : -sub,player.lord.getTreasureWareGolden());
+        if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub,
+                    player.lord.getTreasureWareGolden(), Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+        } else {
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub, player.lord.getTreasureWareGolden(), Arrays.toString(param), "");
+        }
+
     }
 
     private void subFishScore(Player player, int sub, AwardFrom from) {
@@ -3069,7 +3093,7 @@ public class RewardDataManager {
      * @throws MwException
      */
     public List<CommonPb.ChangeInfo> subPlayerResHasCheckedAndNoSync(Player player, List<List<Integer>> subList, int num, AwardFrom from,
-                                       Object... param) throws MwException {
+                                                                     Object... param) throws MwException {
         if (null == player || CheckNull.isEmpty(subList)) {
             return null;
         }
@@ -4212,6 +4236,8 @@ public class RewardDataManager {
                     hasCnt, ",cnt=", cnt, ", needCnt:", needCnt);
         }
     }
+
+    private static final AwardFrom[] HAS_INFO2_AWARD_FROM = new AwardFrom[]{AwardFrom.TREASURE_ON_HOOK_AWARD};
 
     /*-----------------------------------------工具相关end-------------------------------------------*/
 }

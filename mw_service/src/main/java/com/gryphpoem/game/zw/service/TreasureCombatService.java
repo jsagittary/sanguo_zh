@@ -129,7 +129,10 @@ public class TreasureCombatService implements GmCmdService {
             }
             builder.setCost(player.lord.getGold());
             treasureCombat.setDailyWipeCnt(dailyWipeCnt + 1);
-            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(sCombat, Constant.TREASURE_COMBAT_WIPE_AWARD), null, AwardFrom.TREASURE_COMBAT_WIPE_AWARD));
+            int startTime = treasureCombat.getOnHook().getStartTime();
+            int now = TimeHelper.getCurrentSecond();
+            int interval = now - startTime;
+            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(sCombat, Constant.TREASURE_COMBAT_WIPE_AWARD), null, AwardFrom.TREASURE_COMBAT_WIPE_AWARD, interval, treasureCombat.getCurCombatId()));
             //  扫荡埋点
             LogLordHelper.commonLog("treasureCombatWipe", AwardFrom.TREASURE_COMBAT_WIPE_AWARD, player);
         } else if (wipe == 0) {
@@ -343,7 +346,7 @@ public class TreasureCombatService implements GmCmdService {
         int count = interval / Constant.TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
         GamePb4.TreasureOnHookAwardRs.Builder builder = GamePb4.TreasureOnHookAwardRs.newBuilder();
         if (count > 0) {
-            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(sCombat, count), null, AwardFrom.TREASURE_ON_HOOK_AWARD));
+            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(sCombat, count), null, AwardFrom.TREASURE_ON_HOOK_AWARD, interval, treasureCombat.getCurCombatId()));
             onHook.setStartTime(TimeHelper.getCurrentSecond());
         }
 
@@ -382,7 +385,7 @@ public class TreasureCombatService implements GmCmdService {
         GamePb4.TreasureSectionAwardRs.Builder builder = GamePb4.TreasureSectionAwardRs.newBuilder();
         builder.setCombatId(combatId);
         builder.setStatus(2);
-        builder.addAllAward(rewardDataManager.addAwardDelaySync(player, sectionAward, null, AwardFrom.TREASURE_ON_HOOK_AWARD));
+        builder.addAllAward(rewardDataManager.addAwardDelaySync(player, sectionAward, null, AwardFrom.TREASURE_COMBAT_PROMOTE_AWARD, "treasureCombatSection"));
         return builder.build();
     }
 

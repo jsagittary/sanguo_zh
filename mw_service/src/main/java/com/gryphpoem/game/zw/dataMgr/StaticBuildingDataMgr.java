@@ -48,6 +48,7 @@ public class StaticBuildingDataMgr {
     // 城墙
     private static Map<Integer, StaticWallHero> wallHeroMap;
     private static Map<String, StaticWallHeroLv> wallHeroLvMap;
+    private static Map<Integer, StaticWallHeroLv> wallIdHeroLvMap;
 
     // 战争工厂(内阁 )
     // key:id
@@ -160,6 +161,7 @@ public class StaticBuildingDataMgr {
             wallHeroLvMapTmp.put(obj.getHeroId() + "_" + obj.getLv(), obj);
         }
         StaticBuildingDataMgr.wallHeroLvMap = wallHeroLvMapTmp;
+        StaticBuildingDataMgr.wallIdHeroLvMap = wallHeroLvMap;
 
         // 内阁相关配置加载
         StaticBuildingDataMgr.cabinetPlanMap = staticDataDao.selectCabinetPlanMap();
@@ -315,6 +317,10 @@ public class StaticBuildingDataMgr {
     
     public static Map<Integer,StaticUptBuild> getUptBuildMap() {
     	return uptBuildMap;
+    }
+
+    public static StaticWallHeroLv getStaticWallHeroLv(int id) {
+        return wallIdHeroLvMap.get(id);
     }
     
     /**

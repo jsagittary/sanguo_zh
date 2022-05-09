@@ -1251,6 +1251,10 @@ public class CalculateUtil {
                 change.addChangeType(AwardType.ARMY, staticHero.getType());
                 // 向客户端同步玩家资源数据
                 rewardDataManager.syncRoleResChanged(player, change);
+
+                //记录玩家兵力变化信息
+                LogLordHelper.filterHeroArm(AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy,
+                        Constant.ACTION_SUB, staticHero.getType(), hero.getQuality());
             }
         }
     }

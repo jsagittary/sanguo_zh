@@ -812,6 +812,11 @@ public class SeasonTalentService {
                         recovery = Math.min(recovery, max - hero.getCount());
                         hero.addArm(recovery);//返还兵力
                         awards.add(PbHelper.createAwardPb(AwardType.ARMY, staticHero.getType(), recovery));
+
+                        //记录玩家兵力变化信息
+                        LogLordHelper.filterHeroArm(AwardFrom.SEASON_TALENT_ACTION, player.account, player.lord,
+                                hero.getHeroId(), hero.getCount(), recovery,
+                                Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
                     }
                 }
             }

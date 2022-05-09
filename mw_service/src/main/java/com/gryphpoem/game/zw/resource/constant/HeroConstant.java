@@ -208,4 +208,7 @@ public class HeroConstant {
     public static final int AWAKEN_PART_MIN = 1;
     public static final int AWAKEN_PART_MAX = 5;
 
+    /** 橙将*/
+    public static final int QUALITY_ORANGE_HERO = 5;
+
 }

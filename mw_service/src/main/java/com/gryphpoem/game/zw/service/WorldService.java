@@ -4260,9 +4260,10 @@ public class WorldService {
                 }
 
                 lost = hero.subArm(force.totalLost);
-
-                LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost,
-                        Constant.ACTION_SUB);
+                StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                if (Objects.nonNull(staticHero))
+                    LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                            Constant.ACTION_SUB);
 
                 info = changeMap.get(force.ownerId);
                 if (null == info) {

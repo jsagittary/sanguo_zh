@@ -659,7 +659,7 @@ public class ActivityDiaoChanService {
         activityDataManager.updRankActivity(player, activity.getActivityType(), addScore);
         activityDataManager.updateDayRank(player, activity.getActivityType(), day, addScore);
 
-        LogLordHelper.activityScore("diaochanScore",AwardFrom.ACTIVITY_DIAOCHAN_GET_SCORE,player,getTotalScore(activity),addScore,activity.getActivityType());
+        LogLordHelper.activityScore("diaochanScore", AwardFrom.ACTIVITY_DIAOCHAN_GET_SCORE, player, getTotalScore(activity), addScore, activity);
     }
 
     public int getDayScore(Activity activity, int day) {
@@ -708,11 +708,11 @@ public class ActivityDiaoChanService {
 
     public void updateBiyueScore(Player player, int count,AwardFrom awardFrom,Object... param) {
         Activity activity = activityDataManager.getActivityInfo(player, ActivityConst.ACT_DIAOCHAN);
-        if(activity != null){
+        if (activity != null) {
             int old = getBiyueScore(activity);
-            activity.getSaveMap().put(BIYUE_SCORE,old + count);
+            activity.getSaveMap().put(BIYUE_SCORE, old + count);
 
-            LogLordHelper.activityScore("biyueScore",awardFrom,player,getBiyueScore(activity),count,ActivityConst.ACT_DIAOCHAN);
+            LogLordHelper.activityScore("biyueScore", awardFrom, player, getBiyueScore(activity), count, activity);
         }
     }
 

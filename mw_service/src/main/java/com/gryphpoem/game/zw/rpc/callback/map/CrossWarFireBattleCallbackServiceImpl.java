@@ -9,6 +9,7 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.crosssimple.util.PbCrossUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticScoutDataMgr;
 import com.gryphpoem.game.zw.gameplay.cross.util.CrossEntity2Dto;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
@@ -23,6 +24,7 @@ import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.ListUtils;
@@ -158,11 +160,20 @@ public class CrossWarFireBattleCallbackServiceImpl extends CrossErrorCallback im
                             }
 
                             hero.subArm(heroFightSummary.getLost());
+                            //记录玩家兵力变化信息
+                            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                            if (Objects.nonNull(staticHero)) {
+                                LogLordHelper.filterHeroArm(AwardFrom.CROSS_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), -heroFightSummary.getLost(),
+                                        Constant.ACTION_SUB, staticHero.getType(), hero.getQuality());
+                            }
                             DataResource.getBean(WarService.class).addCrossBattleHeroExp(heroFightSummary, player, AwardFrom.CROSS_BATTLE_AWARD);
                             int heroArmyCapacity = hero.getAttr()[HeroConstant.ATTR_LEAD];
                             int addArm = heroFightSummary.getRecover() + hero.getCount() >= heroArmyCapacity
                                     ? heroArmyCapacity - hero.getCount() : heroFightSummary.getRecover();
                             hero.addArm(addArm);//返还兵力
+                            //记录玩家兵力变化信息
+                            LogLordHelper.filterHeroArm(AwardFrom.CROSS_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
+                                    Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
                             break;
                         case Constant.Role.WALL:
                             int pos = heroFightSummary.getPos();

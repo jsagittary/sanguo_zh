@@ -329,10 +329,12 @@ public class HeroService implements GmCmdService {
             // 士兵回营
             int sub = battleHero.getCount();
             battleHero.setCount(0);
-            LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, hero.getCount(), -sub,
-                    Constant.ACTION_ADD);
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+            if (Objects.nonNull(staticHero)) {
+                LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, hero.getCount(), -sub, staticHero.getType(),
+                        Constant.ACTION_ADD);
+            }
 
-            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
             rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
             // 重新计算并更新将领属性

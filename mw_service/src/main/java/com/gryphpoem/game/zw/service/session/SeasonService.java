@@ -993,9 +993,9 @@ public class SeasonService {
      * @param awardFrom
      * @param param
      */
-    public void updateSeasonScore(Player player,int count,AwardFrom awardFrom,Object...param){
+    public void updateSeasonScore(Player player, int count, AwardFrom awardFrom, Object... param) {
         int state = this.getSeasonState();
-        if(state != SeasonConst.STATE_OPEN && state != SeasonConst.STATE_DISPLAY){
+        if (state != SeasonConst.STATE_OPEN && state != SeasonConst.STATE_DISPLAY) {
             return;
         }
         PlayerSeasonData playerSeasonData = player.getPlayerSeasonData();
@@ -1003,11 +1003,11 @@ public class SeasonService {
         int now = TimeHelper.getCurrentSecond();
         playerSeasonData.setSeasonScoreTime(now);
 
-        this.updatePlayerRank(player,now);
+        this.updatePlayerRank(player, now);
 
         //更新所属阵营积分
-        this.updateCampRank(player,count);
-        LogLordHelper.activityScore("seasonScore",awardFrom,player,playerSeasonData.getSeasonScore(),count,0);
+        this.updateCampRank(player, count);
+        LogLordHelper.activityScore("seasonScore", awardFrom, player, playerSeasonData.getSeasonScore(), count, null);
     }
 
     private void updateCampRank(Player player,int count){

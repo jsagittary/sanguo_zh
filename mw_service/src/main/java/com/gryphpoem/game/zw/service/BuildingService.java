@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -1286,6 +1287,7 @@ public class BuildingService {
         pushBuildFinish(player.account, buildingLv, newType == 0 ? buildQue.getBuildingType() : newType,
                 buildQue.getPos());
         LogLordHelper.build(AwardFrom.BUILD_UP_FINISH, player.account, player.lord, buildingId, buildingLv);
+        EventDataUp.buildingSuccess(player, buildingId, 0, buildingLv);
         return pros;
     }
 

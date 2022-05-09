@@ -69,22 +69,23 @@ public class SummerCastleService extends AbsActivityService {
         return resp.build();
     }
 
-    public void updateScore(Player player,int n,AwardFrom awardFrom){
+    public void updateScore(Player player, int n, AwardFrom awardFrom) {
         try {
             for (int type : getActivityType()) {
-                ActivityBase activityBase = checkAndGetActivityBase(player,type);
-                if(activityBase.getStep0() != ActivityConst.OPEN_STEP){
+                ActivityBase activityBase = checkAndGetActivityBase(player, type);
+                if (activityBase.getStep0() != ActivityConst.OPEN_STEP) {
                     continue;
                 }
+                Activity activity = checkAndGetActivity(player, type);
                 GlobalActivityData globalActivityData = checkAndGetGlobalActivity(player, type);
                 globalActivityData.setGoal(globalActivityData.getGoal() + n);
 
-                syncScoreToAll(activityBase,globalActivityData);
+                syncScoreToAll(activityBase, globalActivityData);
 
-                LogLordHelper.activityScore("SummerCastle",awardFrom,player,globalActivityData.getGoal(),n,type);
+                LogLordHelper.activityScore("SummerCastle", awardFrom, player, globalActivityData.getGoal(), n, activity);
             }
-        }catch (Exception e) {
-            LogUtil.error(e,"更新夏日城堡积分错误,roleId=" + player.roleId);
+        } catch (Exception e) {
+            LogUtil.error(e, "更新夏日城堡积分错误,roleId=" + player.roleId);
         }
     }
 

@@ -5,12 +5,9 @@ import com.gryphpoem.cross.gameplay.battle.c2g.dto.HeroFightSummary;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -794,7 +791,7 @@ public class WarService {
                 // 生成重建资源
 
                 // 执行勋章-维和部队 特技逻辑
-                medalDataManager.peacekeepingForces(defender);
+                medalDataManager.peacekeepingForces(defender, battle.getDefencer());
 
                 // 固定给胜利方玩家角色加10点经验
                 dropList.add(
@@ -2466,8 +2463,10 @@ public class WarService {
                         continue;
                     }
                     lost = hero.subArm(force.totalLost);
-                    LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost,
-                            Constant.ACTION_SUB);
+                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                    if (Objects.nonNull(staticHero))
+                        LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                                Constant.ACTION_SUB);
 
                     info = changeMap.get(force.ownerId);
                     if (null == info) {
