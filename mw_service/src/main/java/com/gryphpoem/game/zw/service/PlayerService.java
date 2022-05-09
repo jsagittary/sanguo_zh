@@ -47,6 +47,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.time.*;
@@ -1995,6 +1996,8 @@ public class PlayerService implements GmCmdService {
     }
 
     public String getInitName() {
+        if (StringUtils.isEmpty(initName))
+            return "主公@";
         return initName;
     }
 
