@@ -3138,7 +3138,7 @@ public class GmService{
                 globalDataManager.init();
                 LogUtil.start("加载完成：global数据");
                 // 加载世界地图相关数据
-                worldDataManager.init();
+                worldDataManager.init(false);
                 // 重新刷新飞艇、矿点、流寇, 因为上面刷新的有可能重复
                 worldDataManager.refreshAllBandit(WorldConstant.REFRESH_TYPE_BANDIT_3);
                 worldDataManager.gmClearAllMine();
