@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
@@ -29,7 +30,7 @@ import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +46,7 @@ public class EventDataUp {
     //    static final String PROJECT_KEY = "e8ce20b811fbb7b2694472d223684df2";
     public static Logger GAME_LOGGER = Logger.getLogger("GAME");
 
-    public static List<Map<String, Object>> eventList = new CopyOnWriteArrayList<>();
+    public static Queue<Map<String, Object>> eventList = new LinkedBlockingQueue<>(51);
 
     /**
      *
@@ -58,10 +59,12 @@ public class EventDataUp {
      * @param parameter
      */
     public static void request(int type, Map<String, Object> parameter) {
-        eventList.add(parameter);
-        if (eventList.size() >= 50) {
-            sendData();
-        }
+        DataResource.logicServer.addCommandByType(() -> {
+            eventList.add(parameter);
+            if (eventList.size() >= 50) {
+                sendData();
+            }
+        }, DealType.BACKGROUND);
     }
 
 
