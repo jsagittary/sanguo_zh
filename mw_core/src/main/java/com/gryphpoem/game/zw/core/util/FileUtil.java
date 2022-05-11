@@ -85,14 +85,17 @@ public class FileUtil {
             }
         } else {
             try {
-                int classNameIdx = curFile.getName().indexOf(fileNameSuffix);
-                if (classNameIdx >= 0) {
-                    String className = curFile.getName().substring(0, classNameIdx);
-                    String clsFullName = parent != null ? parent + "." + className : className;
-                    fileTimeMap.put(clsFullName, curFile.lastModified());
-                }
                 if (bDelete && curFile.delete()) {
                     LogUtil.hotfix("delete class file :" + curFile.getName());
+                    return;
+                }
+                if (!bDelete) {
+                    int classNameIdx = curFile.getName().indexOf(fileNameSuffix);
+                    if (classNameIdx >= 0) {
+                        String className = curFile.getName().substring(0, classNameIdx);
+                        String clsFullName = parent != null ? parent + "." + className : className;
+                        fileTimeMap.put(clsFullName, curFile.lastModified());
+                    }
                 }
 
             } catch (Exception e) {
@@ -117,14 +120,17 @@ public class FileUtil {
             }
         } else {
             try {
-                int classNameIdx = curFile.getName().indexOf(fileNameSuffix);
-                if (classNameIdx >= 0) {
-                    String className = curFile.getName().substring(0, classNameIdx);
-                    String clsFullName = parent != null ? parent + "." + className : className;
-                    fileTimeMap.put(clsFullName, curFile);
-                }
                 if (bDelete && curFile.delete()) {
                     LogUtil.hotfix("delete class file :" + curFile.getName());
+                    return;
+                }
+                if (!bDelete) {
+                    int classNameIdx = curFile.getName().indexOf(fileNameSuffix);
+                    if (classNameIdx >= 0) {
+                        String className = curFile.getName().substring(0, classNameIdx);
+                        String clsFullName = parent != null ? parent + "." + className : className;
+                        fileTimeMap.put(clsFullName, curFile);
+                    }
                 }
 
             } catch (Exception e) {

@@ -31,8 +31,7 @@ public class HotfixService {
         try {
             //清空热更class文件
             File hotfixDir = new FileSystemResource("hotfix/").getFile();
-            FileUtil.readHotfixDir(null, hotfixDir, hotfixMap, true, fileNameSuffix);
-            hotfixMap.clear();
+            FileUtil.readHotfixDir(null, hotfixDir, null, true, fileNameSuffix);
         } catch (Exception e) {
             LogUtil.error("", e);
         }

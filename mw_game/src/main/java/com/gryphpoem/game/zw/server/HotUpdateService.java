@@ -22,15 +22,14 @@ import java.util.Map;
 @Component
 public class HotUpdateService {
     //KEY:热更类全名,VALUE:文件最后修改时间
-    private Map<String, Long> hotfixMap = new HashMap<>();
+    private Map<String, Long> hotUpdateMap = new HashMap<>();
     private static final String fileNameSuffix = ".java";
 
     public void init() {
         try {
             //清空热更class文件
             File hotfixDir = new FileSystemResource("hotUpdate/").getFile();
-            FileUtil.readHotfixDir(null, hotfixDir, hotfixMap, true, fileNameSuffix);
-            hotfixMap.clear();
+            FileUtil.readHotUpdateDir(null, hotfixDir, null, true, fileNameSuffix);
         } catch (Exception e) {
             LogUtil.error("", e);
         }
@@ -45,10 +44,10 @@ public class HotUpdateService {
             Date now = new Date();
             int nowSec = TimeHelper.getCurrentSecond();
             for (Map.Entry<String, File> entry : hotfixTimeMap.entrySet()) {
-                Long modifyTime = hotfixMap.get(entry.getKey());
+                Long modifyTime = hotUpdateMap.get(entry.getKey());
                 if (modifyTime == null || modifyTime.longValue() != entry.getValue().lastModified()) {
                     HotfixInStaticClass.runJavaFile(String.valueOf(nowSec), entry.getValue(), now, fileNameSuffix);
-                    hotfixMap.put(entry.getKey(), entry.getValue().lastModified());
+                    hotUpdateMap.put(entry.getKey(), entry.getValue().lastModified());
                 }
             }
         } catch (Exception e) {
