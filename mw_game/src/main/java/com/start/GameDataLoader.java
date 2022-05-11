@@ -1,6 +1,7 @@
 package com.start;
 
 import com.gryphpoem.game.zw.server.AppGameServer;
+import com.gryphpoem.game.zw.server.HotUpdateService;
 import com.hotfix.GameAgent;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -110,6 +111,7 @@ public class GameDataLoader {
             LogUtil.start("加载完成：机器人数据");
 
             AppGameServer.ac.getBean(HotfixService.class).init();
+            AppGameServer.ac.getBean(HotUpdateService.class).init();
             LogUtil.start("服务器热更已启动");
             
             // 本地跨服数据加载
