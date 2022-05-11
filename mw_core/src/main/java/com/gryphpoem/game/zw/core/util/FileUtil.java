@@ -102,6 +102,38 @@ public class FileUtil {
         }
     }
 
+    public static void readHotUpdateDir(String parent, File curFile, Map<String, File> fileTimeMap, boolean bDelete, String fileNameSuffix) {
+        if (curFile.isDirectory()) {
+            File[] files = curFile.listFiles();
+            if (files != null && files.length > 0) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        String packageName = parent != null ? parent + "." + file.getName() : file.getName();
+                        readHotUpdateDir(packageName, file, fileTimeMap, bDelete, fileNameSuffix);
+                    } else {
+                        readHotUpdateDir(parent, file, fileTimeMap, bDelete, fileNameSuffix);
+                    }
+                }
+            }
+        } else {
+            try {
+                int classNameIdx = curFile.getName().indexOf(fileNameSuffix);
+                if (classNameIdx >= 0) {
+                    String className = curFile.getName().substring(0, classNameIdx);
+                    String clsFullName = parent != null ? parent + "." + className : className;
+                    fileTimeMap.put(clsFullName, curFile);
+                }
+                if (bDelete && curFile.delete()) {
+                    LogUtil.hotfix("delete class file :" + curFile.getName());
+                }
+
+            } catch (Exception e) {
+                LogUtil.hotfix(String.format("parent :%s, file :%s", parent, curFile.getName()), e);
+            }
+
+        }
+    }
+
     public static void wirteFile(String path, String content) {
         Path fpath = Paths.get(path);
         // 创建文件

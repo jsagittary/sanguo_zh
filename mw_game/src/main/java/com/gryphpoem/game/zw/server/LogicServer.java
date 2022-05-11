@@ -117,7 +117,8 @@ public class LogicServer extends AbsLogicServer {
 
         // 服务器热更程序
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new HotfixTimer());
-
+        // 服务器热更程序(无视方法签名等修正)
+        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new HotUpdateTimer());
         // 定时移除过期的盖世太保
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new GestapoTimer());
 

@@ -1,5 +1,7 @@
 package com.hotfix;
 
+import com.gryphpoem.game.zw.core.util.FileUtil;
+import com.gryphpoem.game.zw.core.util.JavaHotUpdateUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.resource.common.ServerHotfix;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -7,6 +9,7 @@ import com.mchange.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.instrument.ClassDefinition;
@@ -58,6 +61,23 @@ public class HotfixInStaticClass {
             } catch (Exception e) {
                 LogUtil.hotfix("", e);
             }
+        }
+        return true;
+    }
+
+    public static boolean runJavaFile(String hotfixId, File javaFile, Date now, String fileNameSuffix) {
+        //记录热更的类
+        ServerHotfix hotfix = new ServerHotfix(hotfixId, javaFile.getName(), now);
+        try {
+            LogUtil.hotfix("Hotfix Java : " + javaFile.getName());
+            JavaHotUpdateUtil.hotUpdate(FileUtil.readFile(javaFile));
+            hotfix.setResult(1);
+        } catch (Exception e) {
+            LogUtil.hotfix("", e);
+            hotfix.setResult(3);
+            hotfix.setResultInfo(printStackTraceToString(e));
+        } finally {
+            LogUtil.hotfix(String.format("hotfixId :%s, hotfix :%s, finish", hotfix.getHotfixId(), hotfix.getClassName()));
         }
         return true;
     }

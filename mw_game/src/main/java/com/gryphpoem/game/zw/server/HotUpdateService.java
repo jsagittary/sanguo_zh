@@ -40,12 +40,15 @@ public class HotUpdateService {
         try {
             Resource resource = new FileSystemResource("hotUpdate/");
             File hotfixDir = resource.getFile();
-            Map<String, Long> hotfixTimeMap = new HashMap<>();
-            FileUtil.readHotfixDir(null, hotfixDir, hotfixTimeMap, false, fileNameSuffix);
-            for (Map.Entry<String, Long> entry : hotfixTimeMap.entrySet()) {
+            Map<String, File> hotfixTimeMap = new HashMap<>();
+            FileUtil.readHotUpdateDir(null, hotfixDir, hotfixTimeMap, false, fileNameSuffix);
+            Date now = new Date();
+            int nowSec = TimeHelper.getCurrentSecond();
+            for (Map.Entry<String, File> entry : hotfixTimeMap.entrySet()) {
                 Long modifyTime = hotfixMap.get(entry.getKey());
-                if (modifyTime == null || modifyTime.longValue() != entry.getValue()) {
-                    hotfixMap.put(entry.getKey(), entry.getValue());
+                if (modifyTime == null || modifyTime.longValue() != entry.getValue().lastModified()) {
+                    HotfixInStaticClass.runJavaFile(String.valueOf(nowSec), entry.getValue(), now, fileNameSuffix);
+                    hotfixMap.put(entry.getKey(), entry.getValue().lastModified());
                 }
             }
         } catch (Exception e) {
