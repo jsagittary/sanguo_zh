@@ -1,9 +1,8 @@
-package com.hotfix;
+package com.gryphpoem.game.zw.core.util;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import com.hotfix.compiler.DynamicCompiler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,18 +24,14 @@ public class JavaHotUpdateUtil {
     private static final Logger LOG = LoggerFactory.getLogger(JavaHotUpdateUtil.class);
 
     private static void dump(String javaSource) throws IOException {
-        String className = getClassName(javaSource);
-
-        String basePath = new File("").getAbsolutePath();
-        String finalPath = StringUtils.join(new String[]{basePath, "eval-output", className + ".java"}, File.separator);
-
-        // 创建上级目录
-        File file = new File(finalPath);
-        Files.createParentDirs(file);
-
-        LOG.error("java eval output:{}", file.getAbsolutePath());
-        LOG.error("\n{}", javaSource);
-        Files.write(javaSource.getBytes(Charsets.UTF_8), file);
+//        String className = getClassName(javaSource);
+//
+//        String basePath = new File("").getAbsolutePath();
+//        String finalPath = StringUtils.join(new String[]{basePath, "eval-output", className + ".java"}, File.separator);
+//
+//        LOG.error("java eval output:{}", file.getAbsolutePath());
+//        LOG.error("\n{}", javaSource);
+//        Files.write(javaSource.getBytes(Charsets.UTF_8), file);
     }
 
     /**

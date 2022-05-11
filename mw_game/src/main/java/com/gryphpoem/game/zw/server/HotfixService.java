@@ -24,12 +24,14 @@ public class HotfixService {
     //KEY:热更类全名,VALUE:文件最后修改时间
     private Map<String, Long> hotfixMap = new HashMap<>();
 
+    private static final String fileNameSuffix = ".class";
+
     //    @PostConstruct
     public void init() {
         try {
             //清空热更class文件
             File hotfixDir = new FileSystemResource("hotfix/").getFile();
-            FileUtil.readHotfixDir(null, hotfixDir, hotfixMap, true);
+            FileUtil.readHotfixDir(null, hotfixDir, hotfixMap, true, fileNameSuffix);
             hotfixMap.clear();
         } catch (Exception e) {
             LogUtil.error("", e);
@@ -41,7 +43,7 @@ public class HotfixService {
             Resource resource = new FileSystemResource("hotfix/");
             File hotfixDir = resource.getFile();
             Map<String, Long> hotfixTimeMap = new HashMap<>();
-            FileUtil.readHotfixDir(null, hotfixDir, hotfixTimeMap, false);
+            FileUtil.readHotfixDir(null, hotfixDir, hotfixTimeMap, false, fileNameSuffix);
             Date now = new Date();
             int nowSec = TimeHelper.getCurrentSecond();
             for (Map.Entry<String, Long> entry : hotfixTimeMap.entrySet()) {
@@ -72,7 +74,7 @@ public class HotfixService {
             File hotfixDir = resource.getFile();
             // KEY:类全名 VALUE:文件最后修改时间
             Map<String, Long> hotfixTimeMap = new HashMap<>();
-            FileUtil.readHotfixDir(null, hotfixDir, hotfixTimeMap, false);
+            FileUtil.readHotfixDir(null, hotfixDir, hotfixTimeMap, false, fileNameSuffix);
             //遍历包里所有类 比较最后修改时间 修改时间不一样则执行静态类方法重新定义
             for (Map.Entry<String, Long> entry : hotfixTimeMap.entrySet()) {
                 Long modifyTime = hotfixMap.get(entry.getKey());

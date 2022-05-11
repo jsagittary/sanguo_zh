@@ -7,7 +7,9 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.DealType;
+import com.gryphpoem.game.zw.core.util.FileUtil;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
+import com.gryphpoem.game.zw.core.util.JavaHotUpdateUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
 import com.gryphpoem.game.zw.gameplay.cross.serivce.CrossGamePlayService;
@@ -72,6 +74,8 @@ import com.gryphpoem.game.zw.service.session.SeasonService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -1614,6 +1618,14 @@ public class GmService{
                 players.forEach(p -> {
                     p.summon = null;
                 });
+            }
+        } else if (str.equalsIgnoreCase("hotUpdate")) {
+            if (StringUtils.isBlank(str))
+                return;
+            try {
+                JavaHotUpdateUtil.hotUpdate(FileUtil.readFile(count));
+            } catch (Exception e) {
+                LogUtil.error("", e);
             }
         }
     }

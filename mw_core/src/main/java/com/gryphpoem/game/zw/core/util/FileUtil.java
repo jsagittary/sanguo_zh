@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.core.util;
 
+import com.hundredcent.game.ai.util.CheckNull;
 import org.apache.curator.shaded.com.google.common.io.CharStreams;
 import org.apache.log4j.Logger;
 
@@ -21,18 +22,36 @@ public class FileUtil {
      */
     public static String readFile(String path) {
         File file = new File(path);
-        Long filelength = file.length(); // 获取文件长度
-        byte[] filecontent = new byte[filelength.intValue()];
+        Long fileLength = file.length(); // 获取文件长度
+        byte[] fileContent = new byte[fileLength.intValue()];
         try {
             FileInputStream in = new FileInputStream(file);
-            in.read(filecontent);
+            in.read(fileContent);
             in.close();
         } catch (Exception e) {
             logger.error(e);
             return null;
         }
 
-        return new String(filecontent);// 返回文件内容,默认编码
+        return new String(fileContent);// 返回文件内容,默认编码
+    }
+
+    public static String readFile(File file) {
+        if (CheckNull.isNull(file))
+            return null;
+
+        Long fileLength = file.length(); // 获取文件长度
+        byte[] fileContent = new byte[fileLength.intValue()];
+        try {
+            FileInputStream in = new FileInputStream(file);
+            in.read(fileContent);
+            in.close();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+
+        return new String(fileContent);// 返回文件内容,默认编码
     }
 
     public static String readClassPathFileStr(String resourceLocation) {
@@ -51,22 +70,22 @@ public class FileUtil {
      * @param fileTimeMap
      * @param bDelete
      */
-    public static void readHotfixDir(String parent, File curFile, Map<String, Long> fileTimeMap, boolean bDelete) {
+    public static void readHotfixDir(String parent, File curFile, Map<String, Long> fileTimeMap, boolean bDelete, String fileNameSuffix) {
         if (curFile.isDirectory()) {
             File[] files = curFile.listFiles();
             if (files != null && files.length > 0) {
                 for (File file : files) {
                     if (file.isDirectory()) {
                         String packageName = parent != null ? parent + "." + file.getName() : file.getName();
-                        readHotfixDir(packageName, file, fileTimeMap, bDelete);
+                        readHotfixDir(packageName, file, fileTimeMap, bDelete, fileNameSuffix);
                     } else {
-                        readHotfixDir(parent, file, fileTimeMap, bDelete);
+                        readHotfixDir(parent, file, fileTimeMap, bDelete, fileNameSuffix);
                     }
                 }
             }
         } else {
             try {
-                int classNameIdx = curFile.getName().indexOf(".class");
+                int classNameIdx = curFile.getName().indexOf(fileNameSuffix);
                 if (classNameIdx >= 0) {
                     String className = curFile.getName().substring(0, classNameIdx);
                     String clsFullName = parent != null ? parent + "." + className : className;

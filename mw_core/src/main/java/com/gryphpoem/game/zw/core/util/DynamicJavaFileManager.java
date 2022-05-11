@@ -1,4 +1,4 @@
-package com.hotfix.compiler;
+package com.gryphpoem.game.zw.core.util;
 
 import javax.tools.*;
 import java.io.IOException;
