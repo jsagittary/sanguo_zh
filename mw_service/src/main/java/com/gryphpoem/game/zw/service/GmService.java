@@ -3150,6 +3150,8 @@ public class GmService{
                 // LogUtil.start("加载完成：玩家聊天数据");
                 // 初始化世界进程
                 worldScheduleService.init();
+                // 初始化战斗map
+                warDataManager.initBattle();
                 // 初始化沙盘演武
                 ScheduleManager.getInstance().initSandTableContest();
                 LogUtil.start("加载完成：世界进程数据");
