@@ -1390,7 +1390,7 @@ public final class Constant {
         int BANDIT = 2;// 流寇NPC(s_npc)
         int CITY = 3;// 城池守将NPC(s_npc)
         int WALL = 4;// 城墙NPC(s_wall_hero_lv)
-        int GESTAPO = 5;// 城墙NPC(s_wall_hero_lv)
+        int GESTAPO = 5;// 盖世太保NPC(s_npc)
     }
 
     /**
