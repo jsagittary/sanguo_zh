@@ -425,24 +425,31 @@ public class EventDataUp {
                         break;
                     case Constant.Role.BANDIT:
                     case Constant.Role.CITY:
+                    case Constant.Role.GESTAPO:
                         StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(force.id);
                         if (CheckNull.isNull(npc)) {
                             break;
                         }
-                        forceStr.append("{").append(npc.getDesc()).append(",").append(i + 1).append(",").
+                        forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
                                 append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
                                 append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
                         break;
                     case Constant.Role.WALL:
-                    case Constant.Role.GESTAPO:
                         StaticWallHeroLv wallNpc = StaticBuildingDataMgr.getStaticWallHeroLv(force.id);
                         if (CheckNull.isNull(wallNpc))
                             break;
-                        forceStr.append("{").append("WALL").append(",").append(i + 1).append(",").
+                        forceStr.append("{").append(wallNpc.getId()).append(",").append(i + 1).append(",").
                                 append(force.id).append(",").append(0).append(",").append(wallNpc.getType()).append(",").
                                 append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
                         break;
                     default:
+                        npc = StaticNpcDataMgr.getNpcMap().get(force.id);
+                        if (CheckNull.isNull(npc)) {
+                            break;
+                        }
+                        forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
+                                append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
+                                append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
                         break;
                 }
                 if (forceStr.length() > 0) {
