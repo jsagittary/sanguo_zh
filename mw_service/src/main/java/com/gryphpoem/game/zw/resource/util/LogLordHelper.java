@@ -1262,7 +1262,7 @@ public class LogLordHelper {
     }
 
     /**
-     * 记录玩家战斗力
+     * 记录玩家战斗力 @link(CalculateUtil.reCalcFight)
      *
      * @param type
      * @param player
@@ -1276,7 +1276,25 @@ public class LogLordHelper {
             return;
         }
         LogUtil.getLogThread().addCommand(() -> {
-            StackTraceElement service = Arrays.stream(stackTraceElements).filter(ele -> ele.getFileName().contains("Service")).findFirst().orElse(null);
+            int runFunctionIndex = 0;
+            for (int i = 0; i < stackTraceElements.length; i++) {
+                if (CheckNull.isNull(stackTraceElements[i]))
+                    continue;
+                if ("reCalcFight".equalsIgnoreCase(stackTraceElements[i].getMethodName())) {
+                    runFunctionIndex = i;
+                    break;
+                }
+            }
+
+            byte i = 2;
+            if (runFunctionIndex + i >= stackTraceElements.length) {
+                return;
+            }
+            StackTraceElement service = stackTraceElements[runFunctionIndex + i];
+            while (Objects.nonNull(service) && service.getFileName().contains("CalculateUtil") &&
+                    runFunctionIndex + i < stackTraceElements.length) {
+                service = stackTraceElements[runFunctionIndex + i++];
+            }
             if (CheckNull.isNull(service))
                 return;
             StringBuffer message = getCommonParams(type, null, player.account, player.lord);

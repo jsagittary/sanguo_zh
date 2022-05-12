@@ -730,7 +730,8 @@ public class EventDataUp {
         ky_bwtx(104),
         kw_bwtx(105),
         sm_gzzb(115),
-        dw_bwtx(130),;
+        dw_bwtx(130),
+        ;
 
         private int platNo;
 
