@@ -188,6 +188,7 @@ public class HeroService implements GmCmdService {
 
     /**
      * 驻防英雄添加赛季天赋驻防属性加成，不参与战斗力加成
+     *
      * @param hero
      * @param player
      */
@@ -229,6 +230,7 @@ public class HeroService implements GmCmdService {
 
     /**
      * 宝具加成禁卫军
+     *
      * @param player
      * @param hero
      * @param result
@@ -1241,6 +1243,7 @@ public class HeroService implements GmCmdService {
             }
         }
         // 加经验
+        int preQuality = hero.getQuality();
         if (up || hero.getBreakExp() + heroBreak.getStep() >= heroBreak.getExp()) {
             int oldHeroId = hero.getHeroId();
             hero.setQuality(heroBreak.getToQuality());
@@ -1250,7 +1253,7 @@ public class HeroService implements GmCmdService {
             hero.setHeroId(newHero.getHeroId());
 
             //处理采集鱼饵队列
-            fishingService.updateBaitTeamHeroId(player,heroId,hero.getHeroId());
+            fishingService.updateBaitTeamHeroId(player, heroId, hero.getHeroId());
 
             // 替换上阵的旧数据
             if (hero.getPos() > 0) {
@@ -1342,9 +1345,13 @@ public class HeroService implements GmCmdService {
         } else {
             hero.setBreakExp(hero.getBreakExp() + heroBreak.getStep());
         }
+
+        StaticHeroBreak newHeroBreak = StaticHeroDataMgr.getHeroBreak(newHero.getQuality());
+        LogLordHelper.gameLog(LogParamConstant.HERO_BREAK, player, AwardFrom.HERO_BREAK, preQuality == hero.getQuality() ? LogParamConstant.HERO_BREAK_IN_SAME_QUALITY
+                : LogParamConstant.HERO_BREAK_IN_DIFFERENT_QUALITY, hero.getBreakExp(), CheckNull.isNull(newHeroBreak) ? newHero.getQuality() : newHeroBreak.getToQuality(), CheckNull.isNull(newHeroBreak) ? 0 : newHeroBreak.getExp());
+
         builder.setHero(PbHelper.createHeroPb(hero, player));
         builder.setHeroToken(player.lord.getHeroToken());
-
         if (hero.isOnBattle() || hero.isOnWall()) {
             List<Long> rolesId = new ArrayList<>();
             EventBus.getDefault().post(
@@ -1527,6 +1534,11 @@ public class HeroService implements GmCmdService {
         } else if (countType == HeroConstant.COUNT_TYPE_TEN) {// 寻访10次
             count = 10;
         }
+
+        int costCount = 0;
+        if (costType == HeroConstant.SEARCH_COST_PROP) costCount = count;
+        if (costType == HeroConstant.SEARCH_COST_GOLD) costCount = gold;
+
         // gold *= count; 已经算好了
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
 
@@ -1572,7 +1584,7 @@ public class HeroService implements GmCmdService {
 
         SearchHeroRs.Builder builder = SearchHeroRs.newBuilder();
         for (int i = 0; i < count; i++) {// 执行将领寻访逻辑
-            SearchHero sh = doHeroSearch(player, searchType);
+            SearchHero sh = doHeroSearch(player, searchType, costCount);
             if (null != sh) {
                 builder.addHero(sh);
             }
@@ -1587,6 +1599,7 @@ public class HeroService implements GmCmdService {
         } else if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
             builder.setCount(showSuperSearchCnt(common.getSuperHero()));
         }
+
         builder.setSuperFreeNum(common.getSuperFreeNum());
         builder.setSuperOpenNum(common.getSuperOpenNum());
         return builder.build();
@@ -1633,7 +1646,7 @@ public class HeroService implements GmCmdService {
      * @return
      * @throws MwException
      */
-    public SearchHero doHeroSearch(Player player, int searchType) throws MwException {
+    public SearchHero doHeroSearch(Player player, int searchType, int costCount) throws MwException {
         int specialNum = 0;// 需要特殊处理的次数，如良将寻访达到10次必出良将
         int searchCount = 0;// 记录已寻访次数
         StaticHeroSearch shs = null;// 记录随机到的奖励信息
@@ -1693,6 +1706,7 @@ public class HeroService implements GmCmdService {
                     specialNum, ", searchCount:", searchCount, ", shs:", shs);
         }
         SearchHero.Builder builder = SearchHero.newBuilder();
+        int heroTokenCount = 0;
         if (null != shs) {
             builder.setSearchId(shs.getAutoId());
             if (shs.getRewardType() == HeroConstant.SEARCH_RESULT_HERO) {
@@ -1715,10 +1729,13 @@ public class HeroService implements GmCmdService {
                         if (searchType == HeroConstant.SEARCH_TYPE_NORMAL) {
                             rewardDataManager.sendRewardSignle(player, AwardType.MONEY, AwardType.Money.HERO_TOKEN,
                                     HeroConstant.NORMAL_HERO_TOKEN, AwardFrom.HERO_NORMAL_SEARCH);
+                            heroTokenCount += HeroConstant.NORMAL_HERO_TOKEN;
                         } else if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
                             rewardDataManager.sendRewardSignle(player, AwardType.MONEY, AwardType.Money.HERO_TOKEN,
                                     HeroConstant.SUPER_HERO_TOKEN, AwardFrom.HERO_SUPER_SEARCH);
+                            heroTokenCount += HeroConstant.SUPER_HERO_TOKEN;
                         }
+
                         LogUtil.debug("寻访获得将领，转化为将令=" + staticHero.getHeroId());
                     } else {// 发送奖励
                         if (searchType == HeroConstant.SEARCH_TYPE_NORMAL) {
@@ -1742,9 +1759,15 @@ public class HeroService implements GmCmdService {
                 } else if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
                     rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_SUPER_SEARCH);
                 }
+                if (CheckNull.nonEmpty(shs.getRewardList())) {
+                    heroTokenCount = shs.getRewardList().stream().filter(reward -> Objects.nonNull(reward) && reward.get(0) == AwardType.MONEY && reward.get(1) ==
+                            AwardType.Money.HERO_TOKEN).mapToInt(reward -> reward.get(3)).sum();
+                }
             }
         }
 
+        LogLordHelper.gameLog(LogParamConstant.HERO_SEARCH_METHOD, player, AwardFrom.LOG_HERO_SEARCH, searchType, CheckNull.isNull(builder.getHero()) ? 0 :
+                builder.getHero().getHeroId(), heroTokenCount, costCount, searchType == HeroConstant.SEARCH_TYPE_NORMAL ? common.getNormalHero() : common.getSuperHero());
         return builder.build();
     }
 
@@ -2192,7 +2215,7 @@ public class HeroService implements GmCmdService {
             case "manji2jue":
                 int heroId = Integer.parseInt(params[1]);
                 Hero hero = player.heros.get(heroId);
-                if(Objects.nonNull(hero)){
+                if (Objects.nonNull(hero)) {
                     //满级
                     addHeroExp(hero, Integer.MAX_VALUE, player.lord.getLevel(), player);
                     //觉醒

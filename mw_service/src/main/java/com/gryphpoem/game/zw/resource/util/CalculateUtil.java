@@ -326,6 +326,7 @@ public class CalculateUtil {
             //貂蝉任务-玩家战力
             ActivityDiaoChanService.completeTask(player, ETask.PLAYER_POWER);
             TaskService.processTask(player, ETask.PLAYER_POWER);
+            LogLordHelper.recodePower(LogParamConstant.FIGHTING_CHANGE, player, preFight, fight, fight - preFight);
 
             DubboRpcService dubboRpcService = DataResource.ac.getBean(DubboRpcService.class);
             dubboRpcService.updatePlayerLord2CrossPlayerServer(player);

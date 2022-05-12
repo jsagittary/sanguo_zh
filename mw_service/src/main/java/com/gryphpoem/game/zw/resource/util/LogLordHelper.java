@@ -1,8 +1,10 @@
 package com.gryphpoem.game.zw.resource.util;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -14,7 +16,10 @@ import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
+import com.gryphpoem.game.zw.service.LoginService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
@@ -33,12 +38,13 @@ public class LogLordHelper {
         long lordId = lord.getLordId();
         int vip = lord.getVip();
         int level = lord.getLevel();
-        int topup = lord.getTopup();
+        int topUp = lord.getTopup();
         String nick = lord.getNick();
+        int fromCode = CheckNull.isNull(from) ? 0 : from.getCode();
         StringBuffer sb = new StringBuffer();
-        sb.append(type).append("|").append(from.getCode()).append("|").append(serverId).append("|").append(lordId)
+        sb.append(type).append("|").append(fromCode).append("|").append(serverId).append("|").append(lordId)
                 .append("|").append(nick).append("|").append(vip).append("|").append(level).append("|")
-                .append(lord.getGold()).append("|").append(topup);
+                .append(lord.getGold()).append("|").append(topUp).append("|").append(DataResource.ac.getBean(ServerSetting.class).getServerID());
         return sb;
     }
 
@@ -259,6 +265,13 @@ public class LogLordHelper {
                 .append(count).append("|").append(add).append("|").append(action);
         GAME_LOGGER.info(message);
         EventDataUp.heroArmy(account, lord, from, armyType, add, count);
+    }
+
+    private static void contactParamsOneByOne(StringBuffer message, Object... params) {
+        if (params != null && params.length > 0) {
+            message.append("|");
+            message.append(StringUtils.join(params, "|"));
+        }
     }
 
     /*---------------------------------------RewardDataManager里的埋点日志start ---------------------------------------*/
@@ -1033,7 +1046,7 @@ public class LogLordHelper {
     /**
      * 记录玩家基础信息
      */
-    static public void logPlord(Player player) {
+    static public void logLord(Player player) {
         Lord lord = player.lord;
         long accountKey = 0;
         int serverId = 0; //原始区服
@@ -1087,21 +1100,24 @@ public class LogLordHelper {
         if (player == null || actionType <= 0) {
             return;
         }
-        StringBuffer sb = new StringBuffer();
-        sb.append("point|").append(actionType).append("|").append(player.account.getServerId()).append("|")
-                .append(player.lord.getCamp()).append("|").append(player.lord.getArea()).append("|")
-                .append(player.lord.getLordId()).append("|").append(player.lord.getNick()).append("|")
-                .append(player.lord.getLevel()).append("|").append(player.lord.getVip()).append("|")
-                .append(player.lord.getGold()).append("|").append(player.lord.getTopup()).append("|")
-                .append(player.account.getPlatNo()).append("|").append(player.account.getPlatId());
-        if (param != null && param.length > 0) {
-            for (String par : param) {
-                if (par != "") {
-                    sb.append('_').append(par);
+
+        LogUtil.getLogThread().addCommand(() -> {
+            StringBuffer sb = new StringBuffer();
+            sb.append("point|").append(actionType).append("|").append(player.account.getServerId()).append("|")
+                    .append(player.lord.getCamp()).append("|").append(player.lord.getArea()).append("|")
+                    .append(player.lord.getLordId()).append("|").append(player.lord.getNick()).append("|")
+                    .append(player.lord.getLevel()).append("|").append(player.lord.getVip()).append("|")
+                    .append(player.lord.getGold()).append("|").append(player.lord.getTopup()).append("|")
+                    .append(player.account.getPlatNo()).append("|").append(player.account.getPlatId());
+            if (param != null && param.length > 0) {
+                for (String par : param) {
+                    if (par != "") {
+                        sb.append('_').append(par);
+                    }
                 }
             }
-        }
-        GAME_LOGGER.info(sb);
+            GAME_LOGGER.info(sb);
+        });
     }
 
     static public void logRegister(Account account) {
@@ -1207,5 +1223,67 @@ public class LogLordHelper {
                 .append("|").append(oldLv).append("|").append(newLv).append("|").append(keyId).append("|").append(cnfId);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
+    }
+
+    /**
+     * 打印普通gameLog拼接埋点日志
+     *
+     * @param type
+     * @param player
+     * @param from
+     * @param params
+     */
+    public static void gameLog(String type, Player player, AwardFrom from, Object... params) {
+        if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(player.lord))
+            return;
+        StringBuffer message = getCommonParams(type, from, player.account, player.lord);
+        contactParamsOneByOne(message, params);
+        GAME_LOGGER.info(message);
+    }
+
+    /**
+     * 客户端点击事件
+     *
+     * @param type
+     * @param roleId
+     * @param params
+     */
+    public static void pointLog(String type, Long roleId, int cmdId, Object... params) {
+        if (CheckNull.isNull(roleId) || cmdId == GamePb1.BeginGameRq.EXT_FIELD_NUMBER)
+            return;
+        LogUtil.getLogThread().addCommand(() -> {
+            Player player = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
+            if (CheckNull.isNull(player) || CheckNull.isNull(player.lord) || CheckNull.isNull(player.account))
+                return;
+            StringBuffer message = getCommonParams(type, null, player.account, player.lord);
+            contactParamsOneByOne(message, params);
+            POINT_LOGGER.info(message);
+        });
+    }
+
+    /**
+     * 记录玩家战斗力
+     *
+     * @param type
+     * @param player
+     * @param params
+     */
+    public static void recodePower(String type, Player player, Object... params) {
+        if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(player.lord))
+            return;
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        if (ObjectUtils.isEmpty(stackTraceElements)) {
+            return;
+        }
+        LogUtil.getLogThread().addCommand(() -> {
+            StackTraceElement service = Arrays.stream(stackTraceElements).filter(ele -> ele.getFileName().contains("Service")).findFirst().orElse(null);
+            if (CheckNull.isNull(service))
+                return;
+            StringBuffer message = getCommonParams(type, null, player.account, player.lord);
+            contactParamsOneByOne(message, params);
+            String function = service.getFileName().replace("java", "") + service.getMethodName() + "(): " + service.getLineNumber();
+            message.append("|").append(function);
+            GAME_LOGGER.info(message);
+        });
     }
 }

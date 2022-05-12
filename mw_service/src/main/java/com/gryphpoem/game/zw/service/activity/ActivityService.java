@@ -2344,6 +2344,7 @@ public class ActivityService {
 
         boolean initWinCnt = false;
 
+        String logCost = "";
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         if (ActivityConst.LUCKY_TURNPLATE_FREE == costType) {// 免费抽奖
             if (turnplat.getRefreshCount() <= 0) {
@@ -2356,6 +2357,7 @@ public class ActivityService {
             if(activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR){
                 initWinCnt = true;
             }
+            logCost = "0";
         } else if (ActivityConst.LUCKY_TURNPLATE_GOLD == costType) {// 金币抽奖
             rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, turnplateConf.getPrice(),
                     activityType == ActivityConst.ACT_LUCKY_TURNPLATE ? "幸运转盘抽奖" : "名将转盘抽奖");
@@ -2363,15 +2365,18 @@ public class ActivityService {
                     activityType == ActivityConst.ACT_LUCKY_TURNPLATE ? AwardFrom.LUCKY_TURNPLATE_GOLD
                             : AwardFrom.FAMOUS_GENERAL_TURNPLATE_GOLD, turnplat.getActivityId(), turnplat.getActivityType());
             change.addChangeType(AwardType.MONEY, AwardType.Money.GOLD);
-//            if (turnplat.getGoldCnt() == 0) {
-//                doSearchWinCnt(turnplat, turnplateConf);
-//            }
             initWinCnt = true;
+            logCost = AwardType.MONEY + "," + AwardType.Money.GOLD + "," + turnplateConf.getPrice();
         } else if (ActivityConst.LUCKY_TURNPLATE_PROP == costType) {// 道具抽奖
             rewardDataManager.checkAndSubPlayerRes(player, turnplateConf.getSubstitute(), activityType == ActivityConst.ACT_LUCKY_TURNPLATE ? AwardFrom.LUCKY_TURNPLATE_PROP
                     : AwardFrom.FAMOUS_GENERAL_TURNPLATE_PROP, turnplat.getActivityId(), turnplat.getActivityType());
-            if(activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR){
+            if (activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {
                 initWinCnt = true;
+            }
+            List<String> logCostList = CheckNull.isEmpty(turnplateConf.getSubstitute()) ? turnplateConf.getSubstitute().stream().filter(consume -> CheckNull.nonEmpty(consume)).
+                    map(consume -> consume.get(0) + "," + consume.get(1) + "," + consume.get(2)).collect(Collectors.toList()) : null;
+            if (CheckNull.nonEmpty(logCostList)) {
+                logCost = ListUtils.toString(logCostList);
             }
         }
 
@@ -2446,6 +2451,17 @@ public class ActivityService {
 
         LogUtil.debug("特殊道具的次数节点, roleId:", roleId, ", winCntPoint:", LogUtil.getSetValStr(turnplat.getWinCnt()),
                 ", goldCnt:", turnplat.getGoldCnt(), ", 拥有的碎片数量:", turnplat.currentSpecialCnt());
+
+        String resultLog = "";
+        if (CheckNull.nonEmpty(awards)) {
+            List<String> resultLogList = awards.stream().filter(list -> CheckNull.nonEmpty(list) && list.size() >= 3).
+                    map(list -> list.get(0) + "," + list.get(1) + "," + list.get(2)).collect(Collectors.toList());
+            if (CheckNull.nonEmpty(resultLogList)) {
+                resultLog = ListUtils.toString(resultLogList);
+            }
+        }
+        LogLordHelper.gameLog(LogParamConstant.TURNTABLE_ACT, player, AwardFrom.LOG_TURNTABLE_ACT, activityType, activityBase.getActivityId(),
+                turnplateConf.getLogCountType(), logCost, resultLog);
 
         // 检测碎片是否足够,并兑换道具
         if (activityType == ActivityConst.ACT_LUCKY_TURNPLATE) {// 幸运转盘
@@ -3284,6 +3300,7 @@ public class ActivityService {
         Award awardRes = rewardDataManager.addAwardSignle(player, hitActPayTurnplate.getAward(),
                 AwardFrom.PAY_TURNPLATE);
         LogLordHelper.commonLog("payTurnplate", AwardFrom.PAY_TURNPLATE, player, curCnt, gainId);
+        LogLordHelper.gameLog(LogParamConstant.TURNTABLE_ACT, player, AwardFrom.LOG_TURNTABLE_ACT, ActivityConst.ACT_PAY_TURNPLATE, activityId, 1, 1, awardRes);
 
         PlayPayTurnplateRs.Builder builder = PlayPayTurnplateRs.newBuilder();
         builder.addAward(awardRes);

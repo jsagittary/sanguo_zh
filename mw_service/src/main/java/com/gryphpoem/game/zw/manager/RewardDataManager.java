@@ -1688,7 +1688,7 @@ public class RewardDataManager {
         // StaticLordDataMgr.addExp(player.lord, count);
 
         if (count > 0) {
-            addExp(player, count);
+            addExp(player, count, from);
             // 记录经验变更
             LogLordHelper.exp(from, player.account, player.lord, count, param);
         }
@@ -1705,10 +1705,11 @@ public class RewardDataManager {
         }
     }
 
-    private boolean addExp(Player player, long add) {
+    private boolean addExp(Player player, long add, AwardFrom from) {
         Lord lord = player.lord;
         int startLv = lord.getLevel();
-        int lv = lord.getLevel();
+        int lv, preLv;
+        lv = preLv = lord.getLevel();
 
         boolean up = false;
         long exp = lord.getExp() + add;
@@ -1753,31 +1754,6 @@ public class RewardDataManager {
         }
 
         if (up) {
-
-            //好友开放后，系统主动给每个玩家推送2个好友请求（在推荐好友列表中选取）
-            /*if (StaticFunctionDataMgr.funcitonIsOneOpen(player, FunctionConstant.FUNC_ID_FRIEND) && player.friends.size()==0
-                    && player.lord.getArea()!=-1){
-                // 优先推荐本区域玩家
-                int area = player.lord.getArea();
-                long roleId = player.roleId;
-                List<Player> tmpPlayers = playerDataManager.getPlayerByArea(area).values().stream()
-                        .filter(p -> p.roleId != roleId && !player.friends.containsKey(p.roleId)).collect(Collectors.toList());
-                // 没有本区域没找到去其他区域
-                if (tmpPlayers.size() < Constant.RECOMMEND_PLAYER_CNT) {
-                    tmpPlayers = playerDataManager.getPlayers().values().stream()
-                            .filter(p -> p.roleId != roleId && !player.friends.containsKey(p.roleId))
-                            .collect(Collectors.toList());
-                }
-                if (tmpPlayers.size()>2){//选取2名玩家
-                    tmpPlayers = RandomUtil.getListRandom(tmpPlayers,2);
-                }
-                for (Player p:tmpPlayers){
-                    int now = TimeHelper.getCurrentSecond();
-                    DbFriend fFriend = new DbFriend(p.roleId, now, DbFriend.STATE_WAIT_SELF_APPROVAL);
-                    player.friends.put(p.roleId, fFriend);
-                }
-            }*/
-
             rankDataManager.setRoleLv(lord);
             // 发送升级奖励
             // sendReward(player, staticLordLv.getRewards(), AwardFrom.LV_UP_REWARD, "升级奖励");
@@ -1828,7 +1804,8 @@ public class RewardDataManager {
                     titleService.processTask(masterPlayer, ETask.APPRENTICE_LEVEL_MAKE_IT);
                 }
             }
-
+            //三国新增埋点, 记录玩家升级日志
+            LogLordHelper.gameLog(LogParamConstant.LEVEL_UP, player, from, preLv, lv);
         }
         // 向客户端同步等级
         playerDataManager.syncRoleInfo(player);

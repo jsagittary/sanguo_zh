@@ -553,7 +553,7 @@ public class PlayerService implements GmCmdService {
         //打印玩家登录日志
         LogLordHelper.logLogin(player);
         //打印玩家基本信息日志
-        LogLordHelper.logPlord(player);
+        LogLordHelper.logLord(player);
         LogLordHelper.commonLog("fightingChange", AwardFrom.COMMON, player, player.lord.getFight());
         map.put("roleLoginRs", builder.build());
         return map;

@@ -60,7 +60,7 @@ public class RobotHeroService {
                 common.setHeroCdTime(now + HeroConstant.NORMAL_SEARCH_CD);
 
                 try {
-                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_NORMAL);
+                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_NORMAL, 0);
                 } catch (MwException e) {
                     LogUtil.robot(e, "机器人良将寻访出错, common:", common.heroSearchToString());
                 }
@@ -70,7 +70,7 @@ public class RobotHeroService {
             if (common.getSuperProcess() >= Constant.INT_HUNDRED) {
                 common.setSuperFreeNum(1);
                 try {
-                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_SUPER);
+                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_SUPER, 0);
                 } catch (MwException e) {
                     LogUtil.robot(e, "机器人神将寻访出错, common:", common.heroSearchToString());
                 }
