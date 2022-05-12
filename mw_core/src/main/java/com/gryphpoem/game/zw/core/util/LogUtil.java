@@ -72,9 +72,9 @@ public class LogUtil {
     }
 
     public static void calculate(Object... message) {
-//        logThread.addCommand(() -> {
-//            CALCULATE_LOGGER.debug(getClassPath() + ExceptionMessage.spliceMessage(message));
-//        });
+        logThread.addCommand(() -> {
+            CALCULATE_LOGGER.debug(getClassPath() + ExceptionMessage.spliceMessage(message));
+        });
     }
 
     /**
