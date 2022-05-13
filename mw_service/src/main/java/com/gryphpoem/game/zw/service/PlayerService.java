@@ -168,6 +168,7 @@ public class PlayerService implements GmCmdService {
             account.setLoginDays(1);
             account.setCreateDate(new Date());
             account.setLoginDate(new Date());
+            account.setPublisher(StringUtils.isEmpty(req.getPublisher()) ? "" : req.getPublisher());
             campTurple = playerDataManager.getRecommendCamp(); // 设置推荐阵营奖励
             LogUtil.debug("=====推荐的阵营===== camp:", campTurple.getA(), ", 奖励的 keyId:", campTurple.getB());
             account.setRecommendCamp(campTurple.getA());// 设置推荐阵营

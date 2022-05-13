@@ -5,25 +5,25 @@
 <mapper namespace="AccountDao">
 	<select id="selectAccount" parameterType="Map" resultType="Account">
 		select 
-		keyId,accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
+		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where accountKey=#{accountKey} and serverId=#{serverId}
 	</select>
 
 	<select id="selectAccountByLordId" parameterType="Long" resultType="Account">
 		select 
-		keyId,accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
+		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where lordId=#{lordId}
 	</select>
 
 	<select id="selectAccountByKeyId" parameterType="int" resultType="Account">
 		select 
-		keyId,accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
+		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where keyId=#{keyId}
 	</select>
 
 	<select id="selectAccountMapByLords" resultType="Account">
 		select 
-		keyId,accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
+		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where lordId in
 		<foreach item="lordIds" index="index" collection="list" open="(" separator="," close=")">
 			#{lordIds}
@@ -32,14 +32,14 @@
 
 	<insert id="insertAccount" parameterType="Account" useGeneratedKeys="true" keyProperty="keyId">
 		insert into
-		p_account(accountKey,serverId,platNo,platId,childNo,lordId,deviceNo,createDate,loginDays,loginDate)
-		values(#{accountKey},#{serverId},#{platNo},#{platId},#{childNo},#{lordId},#{deviceNo},#{createDate},#{loginDays},#{loginDate})
+		p_account(accountKey,serverId,platNo,platId,childNo,lordId,deviceNo,createDate,loginDays,loginDate,publisher)
+		values(#{accountKey},#{serverId},#{platNo},#{platId},#{childNo},#{lordId},#{deviceNo},#{createDate},#{loginDays},#{loginDate},#{publisher})
 	</insert>
 	
 	<insert id="insertFullAccount" parameterType="Account" useGeneratedKeys="true" keyProperty="keyId">
 		insert into
-		p_account(accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider)
-		values(#{accountKey},#{serverId},#{platNo},#{platId},#{childNo},#{forbid},#{whiteName},#{lordId},#{created},#{deviceNo},#{createDate},#{loginDays},#{loginDate},#{isGm},#{isGuider})
+		p_account(accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider,publisher)
+		values(#{accountKey},#{serverId},#{platNo},#{platId},#{childNo},#{forbid},#{whiteName},#{lordId},#{created},#{deviceNo},#{createDate},#{loginDays},#{loginDate},#{isGm},#{isGuider},#{publisher})
 	</insert>
 
 	<update id="updateAccountGm" parameterType="Account">
@@ -65,7 +65,7 @@
 
 	<select id="load" parameterType="Map" resultType="Account">
 		select 
-		keyId,accountKey,serverId,platNo,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
+		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where keyId > #{curIndex} order by keyId limit 0,#{count}
 	</select>
 	
