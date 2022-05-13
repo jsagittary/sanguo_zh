@@ -68,7 +68,6 @@ public class SendEventDataThread extends SendThread {
                         String query = "project_id=" + PROJECT_ID + "&time=" + time + "&lib=custom&sign=" + sign;
                         String url = SA_SERVER_URL + "?" + query;
                         String result = HttpUtils.sendPost(url, body, 2);
-                        LogUtil.common(String.format("send event data url:%s, info:%s", url, body));
                         boolean lostLog = false;
                         if (result == null || result.equals("")) {
                             lostLog = true;
