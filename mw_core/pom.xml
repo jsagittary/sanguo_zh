@@ -12,11 +12,6 @@
 	<name>mw_core</name>
 	<description>《现代战争》项目服务端核心架构、接口定义</description>
 	<dependencies>
-		<dependency>
-			<groupId>com.gryphpoem</groupId>
-			<artifactId>sanguo-proto</artifactId>
-			<version>1.0.25</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
