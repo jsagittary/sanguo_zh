@@ -7,6 +7,7 @@
 		<artifactId>sanguo</artifactId>
 		<version>1.0.1</version>
 	</parent>
+	<version>3.0.1</version>
 	<artifactId>mw_core</artifactId>
 	<name>mw_core</name>
 	<description>《现代战争》项目服务端核心架构、接口定义</description>
