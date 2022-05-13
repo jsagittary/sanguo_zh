@@ -208,14 +208,20 @@ public class CombatService {
         }
         if (staticCombat.getCost() > 0) {
             try {
-                rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.ACT,
-                        staticCombat.getCost(), AwardFrom.COMBAT_FIGHT, false);
+                if (staticCombat.getType() == CombatType.type_1) {
+                    rewardDataManager.checkPlayerResIsEnough(player, AwardType.MONEY, AwardType.Money.ACT,
+                            staticCombat.getCost());
+                } else {
+                    rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.ACT,
+                            staticCombat.getCost(), AwardFrom.COMBAT_FIGHT, false);
+                }
             } catch (MwException mwException) {
                 // 攻打副本行动力不足
                 activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_ACT, player);
                 throw mwException;
             }
         }
+
         if (staticCombat.getType() == CombatType.type_1) {
             return doNormalCombat(player, staticCombat, heroIds);
         } else if (staticCombat.getType() == CombatType.type_2) {
@@ -312,10 +318,19 @@ public class CombatService {
         builder.setResult(fightLogic.getWinState());
         boolean firstPass = false;
         if (fightLogic.getWinState() == 1) {
+            if (staticCombat.getType() == CombatType.type_1 && staticCombat.getCost() > 0) {
+                try {
+                    rewardDataManager.subPower(player, staticCombat.getCost(), AwardFrom.COMBAT_FIGHT);
+                } catch (MwException mwException) {
+                    // 攻打副本行动力不足
+                    activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_ACT, player);
+                    throw mwException;
+                }
+            }
+
             if (combat == null || combat.getStar() == 0) {
                 firstPass = true;
             }
-
             if (combatId > player.lord.combatId) {
                 player.lord.combatId = combatId;
                 rankDataManager.setStars(player.lord);
@@ -395,7 +410,7 @@ public class CombatService {
             activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_FAIL, player);
             builder.setResult(-1);
             builder.setStar(0);
-            if (staticCombat.getCost() > 0) {
+            if (staticCombat.getType() != CombatType.type_1 && staticCombat.getCost() > 0) {
                 int count = staticCombat.getCost() - FAIL_COST_ACT;
                 builder.addAward(rewardDataManager.addAwardSignle(player, AwardType.MONEY, AwardType.Money.ACT, count,
                         AwardFrom.COMBAT_FIGHT));
