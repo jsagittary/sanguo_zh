@@ -64,10 +64,11 @@ public class SendEventDataThread extends SendThread {
                 }else {
                     try {
                         String res = PROJECT_ID + "" + ' ' + time + ' ' + body + ' ' + PROJECT_KEY;
-                        String sign = MD5.md5Digest(res);
+                        String sign = MD5.md5Digest(res).toLowerCase();
                         String query = "project_id=" + PROJECT_ID + "&time=" + time + "&lib=custom&sign=" + sign;
                         String url = SA_SERVER_URL + "?" + query;
                         String result = HttpUtils.sendPost(url, body, 2);
+                        LogUtil.common(String.format("send event data url:%s, info:%s", url, body));
                         boolean lostLog = false;
                         if (result == null || result.equals("")) {
                             lostLog = true;

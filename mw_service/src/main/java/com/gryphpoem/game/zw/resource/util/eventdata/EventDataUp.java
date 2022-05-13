@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.handler.DealType;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
@@ -724,6 +725,10 @@ public class EventDataUp {
      * @return true: lock , false: unlock
      */
     private static boolean functionUnlock(Account account) {
-        return !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo()) || !"release".equalsIgnoreCase(DataResource.environment);
+        boolean b = !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo()) || !"release".equalsIgnoreCase(DataResource.environment);
+        if (!b) {
+            LogUtil.common(String.format("send event data false, platNo:%d, DataResource.environment:%s", account.getPlatNo(), DataResource.environment));
+        }
+        return b;
     }
 }
