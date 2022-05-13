@@ -166,12 +166,14 @@ public class FightSettleLogic {
                     continue;
                 }
                 // 普通副本只有赢了才加将领经验
-                if (staticCombat.getType() == Constant.CombatType.type_1 && !win) {
+                if ((staticCombat.getType() == Constant.CombatType.type_1 ||
+                        staticCombat.getType() == Constant.CombatType.type_3) && !win) {
                     continue;
                 }
 
                 // 活动翻倍
-                if (staticCombat.getType() == Constant.CombatType.type_1) {
+                if (staticCombat.getType() == Constant.CombatType.type_1 ||
+                        staticCombat.getType() == Constant.CombatType.type_3) {
                     if (wipe) {// 扫荡并胜利：将领经验 = 关卡NPC兵力 / 将领个数
                         addExp = staticCombat.getExp(); // / forces.size()
                     } else {// 将领经验 = （杀敌数+损兵数）/2

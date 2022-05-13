@@ -208,7 +208,7 @@ public class CombatService {
         }
         if (staticCombat.getCost() > 0) {
             try {
-                if (staticCombat.getType() == CombatType.type_1) {
+                if (staticCombat.getType() == CombatType.type_1 || staticCombat.getType() == CombatType.type_3) {
                     rewardDataManager.checkPlayerResIsEnough(player, AwardType.MONEY, AwardType.Money.ACT,
                             staticCombat.getCost());
                 } else {
@@ -430,7 +430,8 @@ public class CombatService {
         // 防守方hero信息
         builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
-        addPlaneExp(player, staticCombat, 1, builder, heroIds);
+        if (staticCombat.getType() != CombatType.type_1 || fightLogic.getWinState() == 1)
+            addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
         CommonPb.Record record = fightLogic.generateRecord();
         builder.setRecord(record);
@@ -755,6 +756,16 @@ public class CombatService {
         DoCombatRs.Builder builder = DoCombatRs.newBuilder();
         builder.setResult(fightLogic.getWinState());
         if (fightLogic.getWinState() == 1) {
+            if (staticCombat.getType() == CombatType.type_3 && staticCombat.getCost() > 0) {
+                try {
+                    rewardDataManager.subPower(player, staticCombat.getCost(), AwardFrom.COMBAT_FIGHT);
+                } catch (MwException mwException) {
+                    // 攻打副本行动力不足
+                    activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_ACT, player);
+                    throw mwException;
+                }
+            }
+
             int count = 1;
             if (pro > RandomUtils.nextInt(0, 100)) {
                 combatFb.setCnt(combatFb.getCnt() - 1);
@@ -808,7 +819,7 @@ public class CombatService {
             activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_FAIL, player);
             builder.setResult(-1);
             builder.setStar(0);
-            if (staticCombat.getCost() > 0) {
+            if (staticCombat.getType() != CombatType.type_3 && staticCombat.getCost() > 0) {
                 int count = staticCombat.getCost() - FAIL_COST_ACT;
                 builder.addAward(rewardDataManager.addAwardSignle(player, AwardType.MONEY, AwardType.Money.ACT, count,
                         AwardFrom.COMBAT_FIGHT));
@@ -826,7 +837,8 @@ public class CombatService {
         // 防守方hero信息
         builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
-        addPlaneExp(player, staticCombat, 1, builder, heroIds);
+        if (staticCombat.getType() != CombatType.type_3 || fightLogic.getWinState() == 1)
+            addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
         builder.addCombatFB(PbHelper.createCombatFBPb(combatFb));
 
