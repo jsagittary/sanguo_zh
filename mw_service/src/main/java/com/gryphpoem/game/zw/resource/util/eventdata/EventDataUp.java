@@ -693,6 +693,6 @@ public class EventDataUp {
      * @return true: lock , false: unlock
      */
     private static boolean functionUnlock(Account account) {
-        return !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo()) || !"release".equalsIgnoreCase(DataResource.environment);
+        return !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo());// || !"release".equalsIgnoreCase(DataResource.environment);
     }
 }
