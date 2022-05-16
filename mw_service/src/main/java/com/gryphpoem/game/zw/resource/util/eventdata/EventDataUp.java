@@ -122,9 +122,7 @@ public class EventDataUp {
         common.put("role_level", level);
         common.put("vip_level", vip);
         common.put("power", fight);
-        try {
-            common.put("?channel_name", StringUtils.isEmpty(account.getPublisher()) ? "" : account.getPublisher());
-        } catch (IllegalArgumentException e) {}
+        common.put("?channel_name", StringUtils.isEmpty(account.getPublisher()) ? "" : account.getPublisher());
         return common;
     }
 
