@@ -1761,7 +1761,7 @@ public class HeroService implements GmCmdService {
                 }
                 if (CheckNull.nonEmpty(shs.getRewardList())) {
                     heroTokenCount = shs.getRewardList().stream().filter(reward -> Objects.nonNull(reward) && reward.get(0) == AwardType.MONEY && reward.get(1) ==
-                            AwardType.Money.HERO_TOKEN).mapToInt(reward -> reward.get(3)).sum();
+                            AwardType.Money.HERO_TOKEN).mapToInt(reward -> reward.get(2)).sum();
                 }
             }
         }
