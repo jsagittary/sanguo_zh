@@ -28,14 +28,11 @@ import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.*;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mail;
 import com.gryphpoem.game.zw.pb.GamePb1.DoSomeRq;
-import com.gryphpoem.game.zw.pb.GamePb2;
-import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
-import com.gryphpoem.game.zw.pb.HttpPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -415,6 +412,12 @@ public class GmService{
                 gmDressUp(player, type, id, count, lv);
             }else if("auction".equalsIgnoreCase(cmd)) {
                 DataResource.getBean(ActivityAuctionService.class).checkTimer();
+            } else if ("sendChat".equalsIgnoreCase(cmd)) {
+                GamePb3.SendChatRq.Builder builder = GamePb3.SendChatRq.newBuilder();
+                builder.setChannel(Integer.parseInt(type));
+                String[] cArr = new String[]{count};
+                builder.addAllContent(Arrays.asList(cArr));
+                DataResource.ac.getBean(ChatService.class).sendChat(roleId, builder.build());
             } else {
                 gmServiceExt.doSome(words, roleId);
                 /////////////////新加的GM命令使用下面的方式实现
