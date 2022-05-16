@@ -33,7 +33,7 @@ public class SendEventDataThread extends SendThread {
         stop = false;
         done = false;
         while (!stop || event_queue.size() > 0) {
-            if(Thread.currentThread().isInterrupted()){
+            if (Thread.currentThread().isInterrupted()) {
                 break;
             }
             long time = TimeHelper.getCurrentSecond();
@@ -59,9 +59,9 @@ public class SendEventDataThread extends SendThread {
                     event_queue.clear();
                 }
                 //停服不上报，直接落日志
-                if(logFlag == true){
+                if (logFlag == true) {
                     printLostLog(body);
-                }else {
+                } else {
                     try {
                         String res = PROJECT_ID + "" + ' ' + time + ' ' + body + ' ' + PROJECT_KEY;
                         String sign = MD5.md5Digest(res).toLowerCase();
@@ -116,5 +116,4 @@ public class SendEventDataThread extends SendThread {
             LogUtil.error(threadName + " Notify Exception:" + e.getMessage(), e);
         }
     }
-
 }

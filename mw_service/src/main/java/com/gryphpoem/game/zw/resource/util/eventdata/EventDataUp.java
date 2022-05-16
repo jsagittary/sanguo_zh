@@ -128,6 +128,15 @@ public class EventDataUp {
         return common;
     }
 
+    private static Map<String, Object> getPropertyParams(Account account, Lord lord, Map<String, Object> common, String eventName) {
+        Map<String, Object> property = new HashMap<>(); //固定格式，只改name
+        property.put("name", eventName);
+        property.put("time", TimeHelper.getCurrentSecond());
+        property.put("account_id", lord.getLordId());
+        property.put("data", common);
+        return property;
+    }
+
     /**
      * 金币、钻石，增减
      *
@@ -154,13 +163,10 @@ public class EventDataUp {
         common.put("money_reason", CheckNull.isNull(from) ? "" : from.getCode());
         common.put("money_info", info);
 
-        Map<String, Object> propert = new HashMap<>(); //固定格式，只改name
-        propert.put("name", "money");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "money");
         Map<String, Object> properties = new HashMap<>(); //固定格式
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(1, properties);
     }
 
@@ -197,13 +203,10 @@ public class EventDataUp {
         common.put("other_currency_info", info);
         common.put("other_cuurrency_info2", info2);
 
-        Map<String, Object> propert = new HashMap<>(); //固定格式，只改name
-        propert.put("name", "other_currency"); //
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "other_currency");
         Map<String, Object> properties = new HashMap<>(); //固定格式
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(1, properties);
     }
 
@@ -239,13 +242,10 @@ public class EventDataUp {
         common.put("props_info", info);
         common.put("props_reason", CheckNull.isNull(from) ? "" : from.getCode());
 
-        Map<String, Object> propert = new HashMap<>();
-        propert.put("name", "props");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "props");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(2, properties);
     }
 
@@ -281,13 +281,10 @@ public class EventDataUp {
         common.put("*after_ore", resource.getOre()); //矿石
         common.put("resources_reason", from.getCode());
 
-        Map<String, Object> propert = new HashMap<>();
-        propert.put("name", "resources");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "resources");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(3, properties);
 
     }
@@ -310,13 +307,10 @@ public class EventDataUp {
         common.put("order_sn", serialId);
         common.put("amount", amount);
         common.put("goods_id", payId);
-        Map<String, Object> propert = new HashMap<>();
-        propert.put("name", "order_create");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "order_create");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(5, properties);
     }
 
@@ -344,13 +338,10 @@ public class EventDataUp {
             isGm = true;
         }
         common.put("is_gm", isGm);
-        Map<String, Object> propert = new HashMap<>();
-        propert.put("name", "order_success");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "order_success");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(6, properties);
 
     }
@@ -466,13 +457,10 @@ public class EventDataUp {
         else
             common.put("defender_troops", forceArray);
 
-        Map<String, Object> propert = new HashMap<>();
-        propert.put("name", "battle");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "battle");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(7, properties);
     }
 
@@ -515,13 +503,10 @@ public class EventDataUp {
         }).collect(Collectors.toCollection(JSONArray::new));
         common.put("troop_result", result);
 
-        Map<String, Object> property = new HashMap<>();
-        property.put("name", "troop");
-        property.put("time", TimeHelper.getCurrentSecond());
-        property.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "troop");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", property);
+        properties.put("data", propertyMap);
         request(0, properties);
     }
 
@@ -552,13 +537,10 @@ public class EventDataUp {
         common.put("building_keyid", buildingKeyId);
         common.put("building_level", lv);
 
-        Map<String, Object> property = new HashMap<>();
-        property.put("name", "building_success");
-        property.put("time", TimeHelper.getCurrentSecond());
-        property.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "building_success");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", property);
+        properties.put("data", propertyMap);
         request(0, properties);
     }
 
@@ -589,13 +571,10 @@ public class EventDataUp {
         common.put("technology_id", techId);
         common.put("technology_level", lv);
 
-        Map<String, Object> property = new HashMap<>();
-        property.put("name", "technology_success");
-        property.put("time", TimeHelper.getCurrentSecond());
-        property.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "technology_success");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", property);
+        properties.put("data", propertyMap);
         request(0, properties);
     }
 
@@ -629,13 +608,10 @@ public class EventDataUp {
         common.put("army_after_nums", current);
         common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
 
-        Map<String, Object> property = new HashMap<>();
-        property.put("name", "army");
-        property.put("time", TimeHelper.getCurrentSecond());
-        property.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", property);
+        properties.put("data", propertyMap);
         request(0, properties);
     }
 
@@ -669,13 +645,10 @@ public class EventDataUp {
         common.put("activity_type", actType);
         common.put("activity_id", actId);
 
-        Map<String, Object> property = new HashMap<>();
-        property.put("name", "activity_credits");
-        property.put("time", TimeHelper.getCurrentSecond());
-        property.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "activity_credits");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", property);
+        properties.put("data", propertyMap);
         request(0, properties);
     }
 
@@ -707,13 +680,10 @@ public class EventDataUp {
         common.put("credits_type", opType);
         common.put("credits_reason", from.getCode());
 
-        Map<String, Object> propert = new HashMap<>();
-        propert.put("name", "credits");
-        propert.put("time", TimeHelper.getCurrentSecond());
-        propert.put("data", common);
+        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "credits");
         Map<String, Object> properties = new HashMap<>();
         properties.put("type", "track");
-        properties.put("data", propert);
+        properties.put("data", propertyMap);
         request(8, properties);
     }
 
