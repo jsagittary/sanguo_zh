@@ -82,6 +82,8 @@ public class SendEventDataThread extends SendThread {
                                 lostLog = true;
                             }
                         }
+
+                        LogUtil.common(String.format("url:%s, send event data -> %s", url, body));
                         if (lostLog) {
                             printLostLog(body);
                         }
