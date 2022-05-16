@@ -1760,8 +1760,8 @@ public class HeroService implements GmCmdService {
                     rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_SUPER_SEARCH);
                 }
                 if (CheckNull.nonEmpty(shs.getRewardList())) {
-                    heroTokenCount = shs.getRewardList().stream().filter(reward -> Objects.nonNull(reward) && reward.get(0) == AwardType.MONEY && reward.get(1) ==
-                            AwardType.Money.HERO_TOKEN).mapToInt(reward -> reward.get(2)).sum();
+                    heroTokenCount = shs.getRewardList().stream().filter(reward -> CheckNull.nonEmpty(reward) && reward.size() >= 3
+                            && reward.get(0) == AwardType.MONEY && reward.get(1) == AwardType.Money.HERO_TOKEN).mapToInt(reward -> reward.get(2)).sum();
                 }
             }
         }
