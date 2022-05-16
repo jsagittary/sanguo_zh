@@ -418,6 +418,13 @@ public class GmService{
                 String[] cArr = new String[]{count};
                 builder.addAllContent(Arrays.asList(cArr));
                 DataResource.ac.getBean(ChatService.class).sendChat(roleId, builder.build());
+            } else if ("sendPriChat".equalsIgnoreCase(cmd)) {
+                GamePb3.SendChatRq.Builder builder = GamePb3.SendChatRq.newBuilder();
+                builder.setChannel(Integer.parseInt(type));
+                String[] cArr = new String[]{count};
+                builder.addAllContent(Arrays.asList(cArr));
+                builder.setTarget(Long.parseLong(id));
+                DataResource.ac.getBean(ChatService.class).sendChat(roleId, builder.build());
             } else {
                 gmServiceExt.doSome(words, roleId);
                 /////////////////新加的GM命令使用下面的方式实现

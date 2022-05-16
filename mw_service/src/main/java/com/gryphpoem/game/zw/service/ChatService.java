@@ -266,11 +266,11 @@ public class ChatService {
             // 服务器聊天等级限制
             if (channel == ChatConst.CHANNEL_PRIVATE) {
                 if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_CHAT_IN_PRIVATE)) {
-                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d", player.roleId, channel));
+                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d, level:%d", player.roleId, channel, player.lord.getLevel()));
                 }
             } else {
                 if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_CHAT_IN_PUBLIC)) {
-                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d", player.roleId, channel));
+                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d, level:%d", player.roleId, channel, player.lord.getLevel()));
                 }
             }
             // 服务器id
