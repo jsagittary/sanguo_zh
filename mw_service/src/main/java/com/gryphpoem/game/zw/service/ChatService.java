@@ -5,6 +5,7 @@ import com.gryphpoem.cross.chat.dto.CrossRoleChat;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
@@ -12,10 +13,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.battle.BaseMapBattle;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.WFCityMapEntity;
 import com.gryphpoem.game.zw.crosssimple.util.PbCrossUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFishMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticMailDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -264,6 +261,16 @@ public class ChatService {
                             TimeHelper.getCurrentSecond() + ChatConst.CHAT_SILENCE_TIME * TimeHelper.MINUTE_S);
                     player.lastChats.clear();
                     silence = true;
+                }
+            }
+            // 服务器聊天等级限制
+            if (channel == ChatConst.CHANNEL_PRIVATE) {
+                if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_CHAT_IN_PRIVATE)) {
+                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d", player.roleId, channel));
+                }
+            } else {
+                if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_CHAT_IN_PUBLIC)) {
+                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d", player.roleId, channel));
                 }
             }
             // 服务器id

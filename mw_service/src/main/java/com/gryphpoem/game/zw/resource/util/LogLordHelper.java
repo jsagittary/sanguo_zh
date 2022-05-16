@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.util;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -1271,37 +1272,39 @@ public class LogLordHelper {
     public static void recodePower(String type, Player player, Object... params) {
         if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(player.lord))
             return;
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        if (ObjectUtils.isEmpty(stackTraceElements)) {
-            return;
-        }
-        LogUtil.getLogThread().addCommand(() -> {
-            int runFunctionIndex = 0;
-            for (int i = 0; i < stackTraceElements.length; i++) {
-                if (CheckNull.isNull(stackTraceElements[i]))
-                    continue;
-                if ("reCalcFight".equalsIgnoreCase(stackTraceElements[i].getMethodName())) {
-                    runFunctionIndex = i;
-                    break;
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            if (ObjectUtils.isEmpty(stackTraceElements)) {
+                return;
+            }
+            LogUtil.getLogThread().addCommand(() -> {
+                int runFunctionIndex = 0;
+                for (int i = 0; i < stackTraceElements.length; i++) {
+                    if (CheckNull.isNull(stackTraceElements[i]))
+                        continue;
+                    if ("reCalcFight".equalsIgnoreCase(stackTraceElements[i].getMethodName())) {
+                        runFunctionIndex = i;
+                        break;
+                    }
                 }
-            }
 
-            byte i = 2;
-            if (runFunctionIndex + i >= stackTraceElements.length) {
-                return;
-            }
-            StackTraceElement service = stackTraceElements[runFunctionIndex + i];
-            while (Objects.nonNull(service) && service.getFileName().contains("CalculateUtil") &&
-                    runFunctionIndex + i < stackTraceElements.length) {
-                service = stackTraceElements[runFunctionIndex + i++];
-            }
-            if (CheckNull.isNull(service))
-                return;
-            StringBuffer message = getCommonParams(type, null, player.account, player.lord);
-            contactParamsOneByOne(message, params);
-            String function = service.getFileName().replace("java", "") + service.getMethodName() + "(): " + service.getLineNumber();
-            message.append("|").append(function);
-            GAME_LOGGER.info(message);
+                byte i = 2;
+                if (runFunctionIndex + i >= stackTraceElements.length) {
+                    return;
+                }
+                StackTraceElement service = stackTraceElements[runFunctionIndex + i];
+                while (Objects.nonNull(service) && service.getFileName().contains("CalculateUtil") &&
+                        runFunctionIndex + i < stackTraceElements.length) {
+                    service = stackTraceElements[runFunctionIndex + i++];
+                }
+                if (CheckNull.isNull(service))
+                    return;
+                StringBuffer message = getCommonParams(type, null, player.account, player.lord);
+                contactParamsOneByOne(message, params);
+                String function = service.getFileName().replace("java", "") + service.getMethodName() + "(): " + service.getLineNumber();
+                message.append("|").append(function);
+                GAME_LOGGER.info(message);
+            });
         });
     }
 }

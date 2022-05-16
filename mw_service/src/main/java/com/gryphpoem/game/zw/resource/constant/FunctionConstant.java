@@ -110,6 +110,14 @@ public class FunctionConstant {
      */
     public static final int FUNC_ID_FRIEND = 1030;
     /**
+     * 功能解锁类型: 私聊频道聊天
+     */
+    public static final int FUNC_CHAT_IN_PRIVATE = 1037;
+    /**
+     * 功能解锁类型: 公共频道聊天
+     */
+    public static final int FUNC_CHAT_IN_PUBLIC = 1040;
+    /**
      * 功能:进入跨服
      */
     public static final int FUNC_ID_ENTER_CROSS_WAR = 1044;
