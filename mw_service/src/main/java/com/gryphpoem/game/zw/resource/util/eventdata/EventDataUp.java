@@ -404,7 +404,7 @@ public class EventDataUp {
                 switch (force.roleType) {
                     case Constant.Role.PLAYER:
                         Player player = playerDataManager.getPlayer(force.ownerId);
-                        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(force.ownerId);
+                        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(force.id);
                         if (CheckNull.isNull(staticHero))
                             break;
                         if (CheckNull.isNull(player) || CheckNull.isNull(player.heros.get(force.id)))
