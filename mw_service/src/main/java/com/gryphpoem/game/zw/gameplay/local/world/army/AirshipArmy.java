@@ -244,7 +244,7 @@ public class AirshipArmy extends BaseArmy {
                 }
             }
         });
-        marchService.logAirShipBattle(areaId, battleRoles, atkSuccess, airShipId, airShipPos,attacker,firstAttackPlayer);
+        marchService.logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer);
     }
 
 }

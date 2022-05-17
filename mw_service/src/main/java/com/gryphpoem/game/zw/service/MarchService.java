@@ -1721,7 +1721,7 @@ public class MarchService {
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
         }
 
-        logAirShipBattle(areaId, battleRoles, atkSuccess, airShipId, airShipPos,attacker,firstAttackPlayer);
+        logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer);
     }
 
     /**
@@ -1730,10 +1730,10 @@ public class MarchService {
      * @param areaId
      * @param battleRoles
      * @param atkSuccess
-     * @param airShipId
+     * @param airShipKeyIdAndId
      * @param airShipPos
      */
-    public void logAirShipBattle(int areaId, List<CommonPb.BattleRole> battleRoles, boolean atkSuccess, int airShipId,
+    public void logAirShipBattle(int areaId, List<CommonPb.BattleRole> battleRoles, boolean atkSuccess, String airShipKeyIdAndId,
                                  int airShipPos,Fighter attacker,Player firstAttackPlayer) {
         String win;
         if(atkSuccess){
@@ -1744,9 +1744,9 @@ public class MarchService {
         battleRoles.stream().map(rb -> rb.getRoleId()).distinct().map(rId -> playerDataManager.getPlayer(rId))
                 .filter(p -> p != null)
                 .forEach(player -> {LogLordHelper.otherLog("airShipBattle", player.account.getServerId(), player.roleId,
-                        "atk", areaId, airShipId, atkSuccess, airShipPos, player.lord.getCamp());
+                        "atk", areaId, airShipKeyIdAndId, atkSuccess, airShipPos, player.lord.getCamp());
                         //上报数数
-                        EventDataUp.battle(player.account, player.lord,attacker,"atk", String.valueOf(airShipId),
+                    EventDataUp.battle(player.account, player.lord,attacker,"atk", airShipKeyIdAndId,
                             String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP),win,firstAttackPlayer.roleId);
                 });
     }

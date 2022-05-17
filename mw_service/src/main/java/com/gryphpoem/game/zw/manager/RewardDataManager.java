@@ -1596,6 +1596,7 @@ public class RewardDataManager {
         if (add > 0) {
             player.lord.setHonor(player.lord.getHonor() + add);
             LogLordHelper.honor(from, player.account, player.lord, player.lord.getHonor(), add, param);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.HONOR, add, player.lord.getHonor(), Arrays.toString(param), "");
         }
     }
 
@@ -1610,6 +1611,7 @@ public class RewardDataManager {
         if (add > 0) {
             player.lord.setCredit(player.lord.getCredit() + add);
             LogLordHelper.credit(from, player.account, player.lord, player.lord.getCredit(), add, param);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.CREDIT, add, player.lord.getCredit(), Arrays.toString(param), "");
         }
     }
 
@@ -1624,6 +1626,7 @@ public class RewardDataManager {
         if (add > 0) {
             player.lord.setHeroToken(player.lord.getHeroToken() + add);
             LogLordHelper.heroToken(from, player.account, player.lord, player.lord.getHeroToken(), add, param);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.HERO_TOKEN, add, player.lord.getHeroToken(), Arrays.toString(param), "");
         }
     }
 
@@ -1638,6 +1641,7 @@ public class RewardDataManager {
         if (add > 0) {
             player.lord.setPower(player.lord.getPower() + add);
             LogLordHelper.power(from, player.account, player.lord, player.lord.getPower(), add);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.ACT, add, player.lord.getPower(), Arrays.toString(param), "");
         }
     }
 
@@ -1655,6 +1659,7 @@ public class RewardDataManager {
             rankDataManager.setExploit(player.lord);
             battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_EXPLOIT_CNT, add);
             royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_EXPLOIT_CNT, add);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.EXPLOIT, add, player.lord.getExploit(), Arrays.toString(param), "");
         }
     }
 
@@ -1702,6 +1707,7 @@ public class RewardDataManager {
             vipDataManager.processVip(player);
             // 记录经验变更
             LogLordHelper.vipExp(from, player.account, player.lord, count, param);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.VIP_EXP, count, player.lord.getVipExp(), Arrays.toString(param), "");
         }
     }
 
@@ -2891,6 +2897,7 @@ public class RewardDataManager {
         if (sub > 0) {
             player.lord.setHonor(player.lord.getHonor() - sub);
             LogLordHelper.honor(from, player.account, player.lord, player.lord.getHonor(), -sub);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.HONOR, -sub, player.lord.getHonor(), "[]", "");
         }
     }
 
@@ -2905,11 +2912,12 @@ public class RewardDataManager {
         if (sub > 0) {
             player.lord.setCredit(player.lord.getCredit() - sub);
             LogLordHelper.credit(from, player.account, player.lord, player.lord.getCredit(), -sub);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.CREDIT, -sub, player.lord.getCredit(), "[]", "");
         }
     }
 
     /**
-     * 扣将令
+     * 扣将令q
      *
      * @param player
      * @param sub
@@ -2920,6 +2928,7 @@ public class RewardDataManager {
             player.lord.setHeroToken(player.lord.getHeroToken() - sub);
             LogLordHelper.heroToken(from, player.account, player.lord, player.lord.getHeroToken(), -sub);
             rankDataManager.setExploit(player.lord);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.HERO_TOKEN, -sub, player.lord.getHeroToken(), "[]", "");
         }
     }
 
@@ -2941,6 +2950,7 @@ public class RewardDataManager {
             }
             player.lord.setPower(player.lord.getPower() - sub);
             LogLordHelper.power(from, player.account, player.lord, player.lord.getPower(), -sub);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.ACT, -sub, player.lord.getPower(), "[]", "");
         }
     }
 
@@ -2956,6 +2966,7 @@ public class RewardDataManager {
             player.lord.setExploit(player.lord.getExploit() - sub);
             LogLordHelper.exploit(from, player.account, player.lord, player.lord.getExploit(), -sub);
             rankDataManager.setExploit(player.lord);
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.EXPLOIT, -sub, player.lord.getExploit(), "[]", "");
         }
     }
 

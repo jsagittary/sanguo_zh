@@ -693,10 +693,6 @@ public class EventDataUp {
      * @return true: lock , false: unlock
      */
     private static boolean functionUnlock(Account account) {
-        boolean b = !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo()) || !"release".equalsIgnoreCase(DataResource.environment);
-        if (b) {
-            LogUtil.error(String.format("platNo:%d, environment:%s", account.getPlatNo(), DataResource.environment));
-        }
-        return b;
+        return !Constant.THINKING_DATA_PLAT.contains(account.getPlatNo()) || !"release".equalsIgnoreCase(DataResource.environment);
     }
 }

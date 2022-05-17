@@ -3760,10 +3760,10 @@ public class WorldService {
         CommonPb.Report.Builder report = createAtkPlayerReport(rpt.build(), now);
 
         //上报数数(攻击方)
-        EventDataUp.battle(atkplayer.account, atkplayer.lord,attacker,"atk", "fightMineGuard", String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
+        EventDataUp.battle(atkplayer.account, atkplayer.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
                 String.valueOf(fightLogic.getWinState()),atkplayer.roleId);
         //上报数数(防守方)
-        EventDataUp.battle(defPlayer.account, defPlayer.lord,defender,"def", "fightMineGuard", String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
+        EventDataUp.battle(defPlayer.account, defPlayer.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
                 String.valueOf(fightLogic.getWinState()),atkplayer.roleId);
 
         //进攻方胜利或者防守方兵力为0，防守方结束采集
