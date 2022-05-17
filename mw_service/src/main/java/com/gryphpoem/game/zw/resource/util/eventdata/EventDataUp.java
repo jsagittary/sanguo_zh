@@ -372,7 +372,7 @@ public class EventDataUp {
      * @param win       1 成功，2失败
      * @param sponsorId 发起者id
      */
-    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId) {
+    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId, List<CommonPb.RptHero> rptHeroList) {
         if (account == null || lord == null) {
             return;
         }
@@ -381,7 +381,7 @@ public class EventDataUp {
             return;
         }
 
-        Java8Utils.invokeNoExceptionICommand(() -> {
+        DataResource.logicServer.addCommandByType(() -> {
             String tmpWin = win;
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
@@ -408,6 +408,14 @@ public class EventDataUp {
             }
             common.put("is_attacker", isAttacker);
             common.put("battle_result", tmpWin);  //结果
+            Map<String, Map<Integer, Integer>> exploitMap = new HashMap<>();
+            if (CheckNull.nonEmpty(rptHeroList)) {
+                for (CommonPb.RptHero rptHero : rptHeroList) {
+                    if (CheckNull.isNull(rptHero) || rptHero.getType() != Constant.Role.PLAYER)
+                        continue;
+                    exploitMap.computeIfAbsent(rptHero.getOwner(), map -> new HashMap<>()).put(rptHero.getHeroId(), rptHero.getAward());
+                }
+            }
 
             int heroCount = fighter.getForces().size();
             JSONArray forceJsonArray = new JSONArray(heroCount);
@@ -427,7 +435,7 @@ public class EventDataUp {
                             if (CheckNull.isNull(player) || CheckNull.isNull(player.heros.get(force.id)))
                                 break;
                             Hero hero = player.heros.get(force.id);
-                            forceObject.put("roleId", force.ownerId);
+                            forceObject.put("roleId", String.valueOf(force.ownerId));
                             forceObject.put("index", i + 1);
                             forceObject.put("heroId", force.id);
                             forceObject.put("power", hero.getFightVal());
@@ -435,7 +443,12 @@ public class EventDataUp {
                             forceObject.put("remainCount", force.hp);
                             forceObject.put("killed", force.killed);
                             forceObject.put("totalLost", force.totalLost);
-                            forceObject.put("exploit", 0);
+                            Map<Integer, Integer> exploitMap_ = exploitMap.get(player.lord.getNick());
+                            if (CheckNull.nonEmpty(exploitMap_) && !StringUtils.isEmpty(player.lord.getNick())) {
+                                forceObject.put("exploit", exploitMap_.getOrDefault(force.id, 0));
+                            } else {
+                                forceObject.put("exploit", 0);
+                            }
                             break;
                         case Constant.Role.BANDIT:
                         case Constant.Role.CITY:
@@ -497,7 +510,8 @@ public class EventDataUp {
             properties.put("type", "track");
             properties.put("data", propertyMap);
             request(7, properties);
-        });
+        }, DealType.BACKGROUND);
+
     }
 
     /**

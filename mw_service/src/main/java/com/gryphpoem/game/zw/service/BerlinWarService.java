@@ -1895,12 +1895,12 @@ public class BerlinWarService {
             checkForceDead(berlinCityInfo);
             //上报数数(攻击方)
             EventDataUp.battle(atkPlayer.account, atkPlayer.lord, attacker, "atk", "berlin",
-                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getAtkHeroList());
             //上报数数(防守方)
             if (!defIsNpc) {
                 defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
                 EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "def", "berlin",
-                        String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                        String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getDefHeroList());
             }
             // 柏林战斗日志
             LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "fight", atkPlayer.roleId, defIsNpc ? 0 : defPlayer.roleId, atkSuccess, berlinCityInfo.getCityId(), berlinCityInfo.getPos(), attacker.hurt, attacker.lost, attacker.total, atk.id, defender.hurt, defender.lost, defender.total, defIsNpc ? cityDef.id : def.id);
@@ -2227,12 +2227,12 @@ public class BerlinWarService {
 
         //上报数数(攻击方)
         EventDataUp.battle(atkPlayer.account, atkPlayer.lord, attacker, "atk", "berlin",
-                String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getAtkHeroList());
         //上报数数(防守方)
         if (!defIsNpc) {
             defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
             EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "def", "berlin",
-                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getDefHeroList());
         }
         // 柏林战斗日志
         LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "fight", atkPlayer.roleId, defIsNpc ? 0 : defPlayer.roleId, atkSuccess, berlinCityInfo.getCityId(), berlinCityInfo.getPos(), attacker.hurt, attacker.lost, attacker.total, atk.id, defender.hurt, defender.lost, defender.total, defIsNpc ? cityDef.id : def.id);

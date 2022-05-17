@@ -3761,10 +3761,10 @@ public class WorldService {
 
         //上报数数(攻击方)
         EventDataUp.battle(atkplayer.account, atkplayer.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
-                String.valueOf(fightLogic.getWinState()),atkplayer.roleId);
+                String.valueOf(fightLogic.getWinState()),atkplayer.roleId, rpt.getAtkHeroList());
         //上报数数(防守方)
         EventDataUp.battle(defPlayer.account, defPlayer.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
-                String.valueOf(fightLogic.getWinState()),atkplayer.roleId);
+                String.valueOf(fightLogic.getWinState()),atkplayer.roleId, rpt.getDefHeroList());
 
         //进攻方胜利或者防守方兵力为0，防守方结束采集
         boolean collectEnd = false;

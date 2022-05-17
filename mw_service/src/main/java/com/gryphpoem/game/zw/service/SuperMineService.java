@@ -981,11 +981,11 @@ public class SuperMineService {
 
                 //上报数数(攻击方)
                 EventDataUp.battle(player.account, player.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
-                        String.valueOf(fightLogic.getWinState()),player.roleId);
+                        String.valueOf(fightLogic.getWinState()),player.roleId, rpt.getAtkHeroList());
                 //上报数数(防守方)
                 defPlayers.forEach(p -> {
                     EventDataUp.battle(p.account, p.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
-                            String.valueOf(fightLogic.getWinState()),player.roleId);
+                            String.valueOf(fightLogic.getWinState()),player.roleId, rpt.getDefHeroList());
                 });
             } finally {
                 //取消被攻击人报警
