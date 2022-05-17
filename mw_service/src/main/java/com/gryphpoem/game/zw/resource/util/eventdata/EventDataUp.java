@@ -87,9 +87,9 @@ public class EventDataUp {
             StringBuilder body = new StringBuilder();
             for (Map<String, Object> map : eventList) {
                 if (body.toString().equals("")) {
-                    body = new StringBuilder(JSON.toJSONString(map));
+                    body = new StringBuilder(JSONObject.toJSON(map).toString());
                 } else {
-                    body.append("\n").append(JSON.toJSONString(map));
+                    body.append("\n").append(JSONObject.toJSON(map).toString());
                 }
             }
             SendEventDataServer.getIns().sendData(body.toString());
