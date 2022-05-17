@@ -410,14 +410,14 @@ public class EventDataUp {
             common.put("battle_result", tmpWin);  //结果
 
             int heroCount = fighter.getForces().size();
-            String[] forceArray = new String[heroCount];
+            JSONArray forceJsonArray = new JSONArray(heroCount);
             PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
             if (heroCount > 0) {
-                StringBuilder forceStr = new StringBuilder();
                 for (int i = 0; i < heroCount; i++) {
                     Force force = fighter.getForces().get(i);
                     if (CheckNull.isNull(force))
                         continue;
+                    JSONObject forceObject = new JSONObject();
                     switch (force.roleType) {
                         case Constant.Role.PLAYER:
                             Player player = playerDataManager.getPlayer(force.ownerId);
@@ -427,9 +427,15 @@ public class EventDataUp {
                             if (CheckNull.isNull(player) || CheckNull.isNull(player.heros.get(force.id)))
                                 break;
                             Hero hero = player.heros.get(force.id);
-                            forceStr.append("{").append(force.ownerId).append(",").append(i + 1).append(",").
-                                    append(force.id).append(",").append(hero.getFightVal()).append(",").append(staticHero.getType()).append(",").
-                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            forceObject.put("roleId", force.ownerId);
+                            forceObject.put("index", i + 1);
+                            forceObject.put("heroId", force.id);
+                            forceObject.put("power", hero.getFightVal());
+                            forceObject.put("armyType", staticHero.getType());
+                            forceObject.put("remainCount", force.hp);
+                            forceObject.put("killed", force.killed);
+                            forceObject.put("totalLost", force.totalLost);
+                            forceObject.put("exploit", 0);
                             break;
                         case Constant.Role.BANDIT:
                         case Constant.Role.CITY:
@@ -438,38 +444,53 @@ public class EventDataUp {
                             if (CheckNull.isNull(npc)) {
                                 break;
                             }
-                            forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
-                                    append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
-                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            forceObject.put("npcId", npc.getNpcId());
+                            forceObject.put("index", i + 1);
+                            forceObject.put("heroId", force.id);
+                            forceObject.put("power", 0);
+                            forceObject.put("armyType", npc.getArmType());
+                            forceObject.put("remainCount", force.hp);
+                            forceObject.put("killed", force.killed);
+                            forceObject.put("totalLost", force.totalLost);
+                            forceObject.put("exploit", 0);
                             break;
                         case Constant.Role.WALL:
                             StaticWallHeroLv wallNpc = StaticBuildingDataMgr.getStaticWallHeroLv(force.id);
                             if (CheckNull.isNull(wallNpc))
                                 break;
-                            forceStr.append("{").append(wallNpc.getId()).append(",").append(i + 1).append(",").
-                                    append(force.id).append(",").append(0).append(",").append(wallNpc.getType()).append(",").
-                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            forceObject.put("wallNpcId", wallNpc.getId());
+                            forceObject.put("index", i + 1);
+                            forceObject.put("heroId", force.id);
+                            forceObject.put("power", 0);
+                            forceObject.put("armyType", wallNpc.getType());
+                            forceObject.put("remainCount", force.hp);
+                            forceObject.put("killed", force.killed);
+                            forceObject.put("totalLost", force.totalLost);
+                            forceObject.put("exploit", 0);
                             break;
                         default:
                             npc = StaticNpcDataMgr.getNpcMap().get(force.id);
                             if (CheckNull.isNull(npc)) {
                                 break;
                             }
-                            forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
-                                    append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
-                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            forceObject.put("npcId", npc.getNpcId());
+                            forceObject.put("index", i + 1);
+                            forceObject.put("heroId", force.id);
+                            forceObject.put("power", 0);
+                            forceObject.put("armyType", npc.getArmType());
+                            forceObject.put("remainCount", force.hp);
+                            forceObject.put("killed", force.killed);
+                            forceObject.put("totalLost", force.totalLost);
+                            forceObject.put("exploit", 0);
                             break;
                     }
-                    if (forceStr.length() > 0) {
-                        forceArray[i] = forceStr.toString();
-                        forceStr = new StringBuilder();
-                    }
+                    forceJsonArray.add(forceObject);
                 }
             }
             if (isAttacker)
-                common.put("attacker_troops", forceArray);
+                common.put("attacker_troops", forceJsonArray);
             else
-                common.put("defender_troops", forceArray);
+                common.put("defender_troops", forceJsonArray);
 
             Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "battle");
             Map<String, Object> properties = new HashMap<>();
