@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.handler.DealType;
-import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
@@ -151,21 +151,23 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord); //通用属性，后面塞特殊属性
-        int opType = gold > 0 ? 1 : 2;
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("*money_total", lord.getGold());
-        common.put("money_num", Math.abs(gold));
-        common.put("money_change_type", opType);
-        common.put("money_reason", CheckNull.isNull(from) ? "" : from.getCode());
-        common.put("money_info", info);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord); //通用属性，后面塞特殊属性
+            int opType = gold > 0 ? 1 : 2;
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("*money_total", lord.getGold());
+            common.put("money_num", Math.abs(gold));
+            common.put("money_change_type", opType);
+            common.put("money_reason", CheckNull.isNull(from) ? "" : from.getCode());
+            common.put("money_info", info);
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "money");
-        Map<String, Object> properties = new HashMap<>(); //固定格式
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(1, properties);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "money");
+            Map<String, Object> properties = new HashMap<>(); //固定格式
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(1, properties);
+        });
     }
 
     /**
@@ -186,26 +188,28 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord); //通用属性，后面塞特殊属性
-        common.put("main_group_id", serverSetting.getServerID());
-        common.remove("vip_level");
-        common.put("*vip_level", lord.getVip());
-        common.put("knighthood", lord.getRanks());
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord); //通用属性，后面塞特殊属性
+            common.put("main_group_id", serverSetting.getServerID());
+            common.remove("vip_level");
+            common.put("*vip_level", lord.getVip());
+            common.put("knighthood", lord.getRanks());
 
-        common.put("other_currency_type", type); //货币类型
-        common.put("other_currency_nums", change); //变更数量
-        int opType = change > 0 ? 1 : 2;
-        common.put("other_currency_change_type", opType);  //变更类型：1增加，2减少
-        common.put("other_currency_change_reason", from.getCode()); //变更原因
-        common.put("other_currency_total", total);  //变更后的货币存量
-        common.put("other_currency_info", info);
-        common.put("other_cuurrency_info2", info2);
+            common.put("other_currency_type", type); //货币类型
+            common.put("other_currency_nums", change); //变更数量
+            int opType = change > 0 ? 1 : 2;
+            common.put("other_currency_change_type", opType);  //变更类型：1增加，2减少
+            common.put("other_currency_change_reason", from.getCode()); //变更原因
+            common.put("other_currency_total", total);  //变更后的货币存量
+            common.put("other_currency_info", info);
+            common.put("other_cuurrency_info2", info2);
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "other_currency");
-        Map<String, Object> properties = new HashMap<>(); //固定格式
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(1, properties);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "other_currency");
+            Map<String, Object> properties = new HashMap<>(); //固定格式
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(1, properties);
+        });
     }
 
     /**
@@ -227,24 +231,27 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("props_id", String.valueOf(propId));
-        common.put("props_type", String.valueOf(propType));
-        int opType = action > 0 ? 1 : 2;
-        common.put("props_change_type", opType); //变动类型，1增2减
-        common.put("props_num", count); //变动数量
-        common.put("props_keyid", keyId);
-        common.put("props_info", info);
-        common.put("props_reason", CheckNull.isNull(from) ? "" : from.getCode());
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "props");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(2, properties);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("props_id", String.valueOf(propId));
+            common.put("props_type", String.valueOf(propType));
+            int opType = action > 0 ? 1 : 2;
+            common.put("props_change_type", opType); //变动类型，1增2减
+            common.put("props_num", count); //变动数量
+            common.put("props_keyid", keyId);
+            common.put("props_info", info);
+            common.put("props_reason", CheckNull.isNull(from) ? "" : from.getCode());
+
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "props");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(2, properties);
+        });
     }
 
     /**
@@ -265,26 +272,28 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("resource_type", id);
-        common.put("resource_change_num", add); //变动数量
-        int opType = add > 0 ? 1 : 2;
-        common.put("resources_change_type", opType); //变动类型，1增2减
-        common.put("*after_gold", resource.getOil()); //黄金
-        common.put("*after_wood", resource.getElec()); //木材
-        common.put("*after_food", resource.getFood()); //粮食
-        common.put("*after_ore", resource.getOre()); //矿石
-        common.put("resources_reason", from.getCode());
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "resources");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(3, properties);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("resource_type", id);
+            common.put("resource_change_num", add); //变动数量
+            int opType = add > 0 ? 1 : 2;
+            common.put("resources_change_type", opType); //变动类型，1增2减
+            common.put("*after_gold", resource.getOil()); //黄金
+            common.put("*after_wood", resource.getElec()); //木材
+            common.put("*after_food", resource.getFood()); //粮食
+            common.put("*after_ore", resource.getOre()); //矿石
+            common.put("resources_reason", from.getCode());
 
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "resources");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(3, properties);
+        });
     }
 
     /**
@@ -298,18 +307,21 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("order_sn", serialId);
-        common.put("amount", amount);
-        common.put("goods_id", payId);
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "order_create");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(5, properties);
+
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("order_sn", serialId);
+            common.put("amount", amount);
+            common.put("goods_id", payId);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "order_create");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(5, properties);
+        });
     }
 
     /**
@@ -323,25 +335,27 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("order_sn", serialId);
-        common.put("+amount", amount);
-        common.put("goods_id", payId);
-        common.put("is_first_pay", lord.getTopup() - amount <= 0);
-        boolean isGm = false;
-        if (amount == 0) { //GM充值
-            isGm = true;
-        }
-        common.put("is_gm", isGm);
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "order_success");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(6, properties);
 
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("order_sn", serialId);
+            common.put("+amount", amount);
+            common.put("goods_id", payId);
+            common.put("is_first_pay", lord.getTopup() - amount <= 0);
+            boolean isGm = false;
+            if (amount == 0) { //GM充值
+                isGm = true;
+            }
+            common.put("is_gm", isGm);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "order_success");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(6, properties);
+        });
     }
 
     public static Logger THINKINGDATA_LOGGER = Logger.getLogger("THINKINGDATA");
@@ -358,7 +372,7 @@ public class EventDataUp {
      * @param win       1 成功，2失败
      * @param sponsorId 发起者id
      */
-    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, String win, long sponsorId) {
+    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId) {
         if (account == null || lord == null) {
             return;
         }
@@ -366,99 +380,103 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("battle_area", String.valueOf(lord.getArea()));
-        common.put("curr_faction", lord.getCamp());
-        common.put("battle_id", battleId); //战役唯一标识
-        common.put("battle_type", type); //战役类型
-        boolean isOrg = false;   //是否发起
-        if (sponsorId == lord.getLordId()) {
-            isOrg = true;
-        }
-        common.put("is_org", isOrg);
-        boolean isAttacker = false; //是否进攻方
-        if (atk.equals("atk")) {
-            isAttacker = true;
-        } else {
-            if (win.equals("1")) {
-                win = "2";
+
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            String tmpWin = win;
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("battle_area", String.valueOf(lord.getArea()));
+            common.put("curr_faction", lord.getCamp());
+            common.put("battle_id", battleId); //战役唯一标识
+            common.put("battle_type", type); //战役类型
+            boolean isOrg = false;   //是否发起
+            if (sponsorId == lord.getLordId()) {
+                isOrg = true;
+            }
+            common.put("is_org", isOrg);
+            boolean isAttacker = false; //是否进攻方
+            if (atk.equals("atk")) {
+                isAttacker = true;
             } else {
-                win = "1";
-            }
-        }
-        common.put("is_attacker", isAttacker);
-        common.put("battle_result", win);  //结果
-
-        int heroCount = fighter.getForces().size();
-        String[] forceArray = new String[heroCount];
-        PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
-        if (heroCount > 0) {
-            StringBuilder forceStr = new StringBuilder();
-            for (int i = 0; i < heroCount; i++) {
-                Force force = fighter.getForces().get(i);
-                if (CheckNull.isNull(force))
-                    continue;
-                switch (force.roleType) {
-                    case Constant.Role.PLAYER:
-                        Player player = playerDataManager.getPlayer(force.ownerId);
-                        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(force.id);
-                        if (CheckNull.isNull(staticHero))
-                            break;
-                        if (CheckNull.isNull(player) || CheckNull.isNull(player.heros.get(force.id)))
-                            break;
-                        Hero hero = player.heros.get(force.id);
-                        forceStr.append("{").append(force.ownerId).append(",").append(i + 1).append(",").
-                                append(force.id).append(",").append(hero.getFightVal()).append(",").append(staticHero.getType()).append(",").
-                                append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
-                        break;
-                    case Constant.Role.BANDIT:
-                    case Constant.Role.CITY:
-                    case Constant.Role.GESTAPO:
-                        StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(force.id);
-                        if (CheckNull.isNull(npc)) {
-                            break;
-                        }
-                        forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
-                                append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
-                                append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
-                        break;
-                    case Constant.Role.WALL:
-                        StaticWallHeroLv wallNpc = StaticBuildingDataMgr.getStaticWallHeroLv(force.id);
-                        if (CheckNull.isNull(wallNpc))
-                            break;
-                        forceStr.append("{").append(wallNpc.getId()).append(",").append(i + 1).append(",").
-                                append(force.id).append(",").append(0).append(",").append(wallNpc.getType()).append(",").
-                                append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
-                        break;
-                    default:
-                        npc = StaticNpcDataMgr.getNpcMap().get(force.id);
-                        if (CheckNull.isNull(npc)) {
-                            break;
-                        }
-                        forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
-                                append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
-                                append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
-                        break;
-                }
-                if (forceStr.length() > 0) {
-                    forceArray[i] = forceStr.toString();
-                    forceStr = new StringBuilder();
+                if (win.equals("1")) {
+                    tmpWin = "2";
+                } else {
+                    tmpWin = "1";
                 }
             }
-        }
-        if (isAttacker)
-            common.put("attacker_troops", forceArray);
-        else
-            common.put("defender_troops", forceArray);
+            common.put("is_attacker", isAttacker);
+            common.put("battle_result", tmpWin);  //结果
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "battle");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(7, properties);
+            int heroCount = fighter.getForces().size();
+            String[] forceArray = new String[heroCount];
+            PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
+            if (heroCount > 0) {
+                StringBuilder forceStr = new StringBuilder();
+                for (int i = 0; i < heroCount; i++) {
+                    Force force = fighter.getForces().get(i);
+                    if (CheckNull.isNull(force))
+                        continue;
+                    switch (force.roleType) {
+                        case Constant.Role.PLAYER:
+                            Player player = playerDataManager.getPlayer(force.ownerId);
+                            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(force.id);
+                            if (CheckNull.isNull(staticHero))
+                                break;
+                            if (CheckNull.isNull(player) || CheckNull.isNull(player.heros.get(force.id)))
+                                break;
+                            Hero hero = player.heros.get(force.id);
+                            forceStr.append("{").append(force.ownerId).append(",").append(i + 1).append(",").
+                                    append(force.id).append(",").append(hero.getFightVal()).append(",").append(staticHero.getType()).append(",").
+                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            break;
+                        case Constant.Role.BANDIT:
+                        case Constant.Role.CITY:
+                        case Constant.Role.GESTAPO:
+                            StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(force.id);
+                            if (CheckNull.isNull(npc)) {
+                                break;
+                            }
+                            forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
+                                    append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
+                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            break;
+                        case Constant.Role.WALL:
+                            StaticWallHeroLv wallNpc = StaticBuildingDataMgr.getStaticWallHeroLv(force.id);
+                            if (CheckNull.isNull(wallNpc))
+                                break;
+                            forceStr.append("{").append(wallNpc.getId()).append(",").append(i + 1).append(",").
+                                    append(force.id).append(",").append(0).append(",").append(wallNpc.getType()).append(",").
+                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            break;
+                        default:
+                            npc = StaticNpcDataMgr.getNpcMap().get(force.id);
+                            if (CheckNull.isNull(npc)) {
+                                break;
+                            }
+                            forceStr.append("{").append(npc.getNpcId()).append(",").append(i + 1).append(",").
+                                    append(force.id).append(",").append(0).append(",").append(npc.getArmType()).append(",").
+                                    append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
+                            break;
+                    }
+                    if (forceStr.length() > 0) {
+                        forceArray[i] = forceStr.toString();
+                        forceStr = new StringBuilder();
+                    }
+                }
+            }
+            if (isAttacker)
+                common.put("attacker_troops", forceArray);
+            else
+                common.put("defender_troops", forceArray);
+
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "battle");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(7, properties);
+        });
     }
 
     /**
@@ -481,30 +499,33 @@ public class EventDataUp {
             return;
         }
         Lord lord = player.lord;
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("curr_faction", lord.getCamp());
-        common.put("troop_area", lord.getArea());
-        common.put("troop_type", troopType);
-        common.put("target_type", mineType);
-        common.put("target_level", lv);
-        common.put("troop_time", time);
-        JSONArray result = grab.stream().map(award -> {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("type", award.getType());
-            jsonObject.put("id", award.getId());
-            jsonObject.put("count", award.getCount());
-            return jsonObject;
-        }).collect(Collectors.toCollection(JSONArray::new));
-        common.put("troop_result", result);
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "troop");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(0, properties);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("curr_faction", lord.getCamp());
+            common.put("troop_area", lord.getArea());
+            common.put("troop_type", troopType);
+            common.put("target_type", mineType);
+            common.put("target_level", lv);
+            common.put("troop_time", time);
+            JSONArray result = grab.stream().map(award -> {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", award.getType());
+                jsonObject.put("id", award.getId());
+                jsonObject.put("count", award.getCount());
+                return jsonObject;
+            }).collect(Collectors.toCollection(JSONArray::new));
+            common.put("troop_result", result);
+
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "troop");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
     }
 
     /**
@@ -525,20 +546,23 @@ public class EventDataUp {
             return;
         }
         Lord lord = player.lord;
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("faction", lord.getCamp());
-        common.put("building_id", buildingId);
-        common.put("building_keyid", buildingKeyId);
-        common.put("building_level", lv);
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "building_success");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(0, properties);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("faction", lord.getCamp());
+            common.put("building_id", buildingId);
+            common.put("building_keyid", buildingKeyId);
+            common.put("building_level", lv);
+
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "building_success");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
     }
 
     /**
@@ -559,20 +583,22 @@ public class EventDataUp {
             return;
         }
         Lord lord = player.lord;
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("faction", lord.getCamp());
-        common.put("technology_type", techType);
-        common.put("technology_id", techId);
-        common.put("technology_level", lv);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("faction", lord.getCamp());
+            common.put("technology_type", techType);
+            common.put("technology_id", techId);
+            common.put("technology_level", lv);
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "technology_success");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(0, properties);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "technology_success");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
     }
 
     /**
@@ -593,23 +619,25 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("money", lord.getGold());
-        common.put("faction", lord.getCamp());
-        common.put("army_type", armyType);
-        int changeType = add > 0 ? 1 : 2;
-        common.put("army_change_type", changeType);
-        common.put("army_nums", add);
-        common.put("army_after_nums", current);
-        common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("money", lord.getGold());
+            common.put("faction", lord.getCamp());
+            common.put("army_type", armyType);
+            int changeType = add > 0 ? 1 : 2;
+            common.put("army_change_type", changeType);
+            common.put("army_nums", add);
+            common.put("army_after_nums", current);
+            common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(0, properties);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
     }
 
     /**
@@ -631,22 +659,24 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("activity_credits_total", current);
-        int changeType = add > 0 ? 1 : 2;
-        common.put("activity_credits_change_type", changeType);
-        common.put("activity_credits_num", add);
-        common.put("activity_credits_reason", CheckNull.isNull(from) ? "" : from.getCode());
-        common.put("activity_type", actType);
-        common.put("activity_id", actId);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("activity_credits_total", current);
+            int changeType = add > 0 ? 1 : 2;
+            common.put("activity_credits_change_type", changeType);
+            common.put("activity_credits_num", add);
+            common.put("activity_credits_reason", CheckNull.isNull(from) ? "" : from.getCode());
+            common.put("activity_type", actType);
+            common.put("activity_id", actId);
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "activity_credits");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(0, properties);
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "activity_credits");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
     }
 
     /**
@@ -667,21 +697,24 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
-        Map<String, Object> common = getCommonParams(account, lord);
-        common.put("@public_data", "");
-        common.put("main_group_id", serverSetting.getServerID());
-        common.put("credits_total", creditsTotal); //变更后的货币存量
-        common.put("credits_num", amount);
-        int changeType = amount > 0 ? 1 : 2;
-        common.put("credits_change_type", changeType); //变动类型，1增2减
-        common.put("credits_type", opType);
-        common.put("credits_reason", from.getCode());
 
-        Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "credits");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("type", "track");
-        properties.put("data", propertyMap);
-        request(8, properties);
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", serverSetting.getServerID());
+            common.put("credits_total", creditsTotal); //变更后的货币存量
+            common.put("credits_num", amount);
+            int changeType = amount > 0 ? 1 : 2;
+            common.put("credits_change_type", changeType); //变动类型，1增2减
+            common.put("credits_type", opType);
+            common.put("credits_reason", from.getCode());
+
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "credits");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(8, properties);
+        });
     }
 
 
