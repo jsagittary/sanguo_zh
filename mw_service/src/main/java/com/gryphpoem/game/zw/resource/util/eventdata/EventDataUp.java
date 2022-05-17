@@ -410,7 +410,6 @@ public class EventDataUp {
                         if (CheckNull.isNull(player) || CheckNull.isNull(player.heros.get(force.id)))
                             break;
                         Hero hero = player.heros.get(force.id);
-                        CalculateUtil.processHeroAttr(player, hero);
                         forceStr.append("{").append(force.ownerId).append(",").append(i + 1).append(",").
                                 append(force.id).append(",").append(hero.getFightVal()).append(",").append(staticHero.getType()).append(",").
                                 append(force.hp).append(",").append(force.killed).append(",").append(force.totalLost).append(",").append(0).append("}");
