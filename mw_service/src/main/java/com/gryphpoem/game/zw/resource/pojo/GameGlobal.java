@@ -106,6 +106,8 @@ public class GameGlobal {
     public static boolean needInitMineData = false;
     //开启或关闭战报处理
     public static boolean closeExpiredReport = false;
+    //开启或关闭数数上报打印
+    public static boolean openEventDebug = false;
 
     //标识当前的跨天定时器是否执行过
     public volatile int dayJobRun;

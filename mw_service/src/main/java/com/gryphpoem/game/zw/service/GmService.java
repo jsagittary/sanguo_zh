@@ -59,6 +59,7 @@ import com.gryphpoem.game.zw.resource.pojo.sandtable.SandTableContest;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.server.thread.SendEventDataThread;
 import com.gryphpoem.game.zw.service.activity.ActivityAuctionService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -2646,6 +2647,9 @@ public class GmService{
             int currentSecond = TimeHelper.getCurrentSecond();
             req.setOpenTime(currentSecond + TimeHelper.DAY_S);
             gmModifyServerInfo(req.build());
+        } else if ("openEventDebug".equalsIgnoreCase(str)) {
+            GameGlobal.openEventDebug = !GameGlobal.openEventDebug;
+            SendEventDataThread.THINKINGDATA_LOGGER.info(String.format("current debug status:%s", GameGlobal.openEventDebug));
         }
     }
 

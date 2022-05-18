@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.thread.SendThread;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.MD5;
+import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.apache.log4j.Logger;
 
@@ -83,7 +84,8 @@ public class SendEventDataThread extends SendThread {
                             }
                         }
 
-                        LogUtil.common(String.format("url:%s, send event data -> %s", url, body));
+                        if (GameGlobal.openEventDebug)
+                            LogUtil.common(String.format("url:%s, send event data -> %s", url, body));
                         if (lostLog) {
                             printLostLog(body);
                         }
