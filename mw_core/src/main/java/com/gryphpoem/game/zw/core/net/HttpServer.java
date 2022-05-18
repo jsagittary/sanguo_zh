@@ -17,8 +17,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 public abstract class HttpServer extends Server {
 	private EventLoopGroup bossGroup;
@@ -67,6 +69,8 @@ public abstract class HttpServer extends Server {
 							ch.pipeline().addLast(new HttpResponseEncoder());
 							// server端接收到的是httpRequest，所以要使用HttpRequestDecoder进行解码
 							ch.pipeline().addLast(new HttpRequestDecoder());
+							ch.pipeline().addLast(new HttpObjectAggregator(65535));
+							ch.pipeline().addLast(new ChunkedWriteHandler());
 							ch.pipeline().addLast(initHandler());
 						}
 					}).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE,
