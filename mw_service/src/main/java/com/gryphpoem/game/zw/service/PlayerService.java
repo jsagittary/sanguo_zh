@@ -1450,6 +1450,9 @@ public class PlayerService implements GmCmdService {
     public ChangeSignatureRs changeSignature(long roleId, String signature) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
+        if (!StaticFunctionDataMgr.funcitonIsOpen(player, 9010)) {
+            throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("个性签名等级不足, roleId:%d, lv:%d", player.roleId, player.lord.getLevel()));
+        }
         if (CheckNull.isNullTrim(signature) || signature.length() > 150 || EmojiHelper.containsEmoji(signature)) {
             throw new MwException(GameError.SIGNATURE_ERR.getCode(), "个性签名格式错误");
         }
