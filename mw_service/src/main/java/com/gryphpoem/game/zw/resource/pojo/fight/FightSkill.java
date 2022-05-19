@@ -54,7 +54,7 @@ public abstract class FightSkill {
      */
     public CommonPb.FightSkill.Builder createFightSkillPb(Force force, Force target, CommonPb.Action.Builder actionData,
             int hurt, FightLogic logic) {
-        hurt = logic.hurt(target, null, hurt);
+        hurt = logic.hurt(target, null, hurt, 1f);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数

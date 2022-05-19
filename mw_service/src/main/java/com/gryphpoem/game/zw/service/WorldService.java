@@ -3760,11 +3760,11 @@ public class WorldService {
         CommonPb.Report.Builder report = createAtkPlayerReport(rpt.build(), now);
 
         //上报数数(攻击方)
-        EventDataUp.battle(atkplayer.account, atkplayer.lord,attacker,"atk", "fightMineGuard", String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
-                String.valueOf(fightLogic.getWinState()),atkplayer.roleId);
+        EventDataUp.battle(atkplayer.account, atkplayer.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
+                String.valueOf(fightLogic.getWinState()),atkplayer.roleId, rpt.getAtkHeroList());
         //上报数数(防守方)
-        EventDataUp.battle(defPlayer.account, defPlayer.lord,defender,"def", "fightMineGuard", String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
-                String.valueOf(fightLogic.getWinState()),atkplayer.roleId);
+        EventDataUp.battle(defPlayer.account, defPlayer.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
+                String.valueOf(fightLogic.getWinState()),atkplayer.roleId, rpt.getDefHeroList());
 
         //进攻方胜利或者防守方兵力为0，防守方结束采集
         boolean collectEnd = false;
@@ -4260,9 +4260,10 @@ public class WorldService {
                 }
 
                 lost = hero.subArm(force.totalLost);
-
-                LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost,
-                        Constant.ACTION_SUB);
+                StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                if (Objects.nonNull(staticHero))
+                    LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                            Constant.ACTION_SUB);
 
                 info = changeMap.get(force.ownerId);
                 if (null == info) {

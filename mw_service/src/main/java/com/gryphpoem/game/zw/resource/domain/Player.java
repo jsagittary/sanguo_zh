@@ -70,6 +70,7 @@ import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipPersonData;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.BattlePassPersonInfo;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.service.PlayerService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.util.ObjectUtils;
 
@@ -3310,13 +3311,14 @@ public class Player {
      */
     public String getName() {
         long lordId = lord.getLordId();
+        String initName = DataResource.ac.getBean(PlayerService.class).getInitName();
         if (lordId != 0) {
             String sLordId = String.valueOf(lordId);
             // 区服和id
             String subStr = sLordId.substring(sLordId.length() - 8);
             // 这里不要用#拼接. 会变成emoji
             // 这里也不要用&拼接. 会变成下划线
-            return "领主@" + Integer.toHexString(Integer.parseInt(subStr));
+            return initName + Integer.toHexString(Integer.parseInt(subStr));
         }
         return null;
     }
@@ -3327,7 +3329,8 @@ public class Player {
      * @return 不会重复的名称
      */
     public String getName(int now) {
-        return "Lord@" + Integer.toHexString(now);
+        String initName = DataResource.ac.getBean(PlayerService.class).getInitName();
+        return initName + Integer.toHexString(now);
     }
 
     public Map<Integer, Integer> getOwnCastleSkinStar() {

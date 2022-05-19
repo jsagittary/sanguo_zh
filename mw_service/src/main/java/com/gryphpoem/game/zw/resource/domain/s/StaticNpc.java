@@ -87,7 +87,7 @@ public class StaticNpc {
 		this.attr = attr;
 	}
 
-    public int getTotalArm() {
+	public int getTotalArm() {
 		if (totalArm < 0) {
 			Integer count = getAttr().get(Constant.AttrId.LEAD);
 //			totalArm = null == count ? 0 : count * getLine();

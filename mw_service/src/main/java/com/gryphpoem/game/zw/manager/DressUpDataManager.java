@@ -413,7 +413,7 @@ public class DressUpDataManager implements DelayInvokeEnvironment {
             }
             // 重新计算战力
             CalculateUtil.reCalcAllHeroAttr(player);
-            EventDataUp.prop(from, player.account, player.lord, id, type, 1, Constant.ACTION_SUB,id);
+            EventDataUp.prop(from, player.account, player.lord, id, type, 1, Constant.ACTION_SUB,id, Arrays.toString(param));
             DubboRpcService dubboRpcService = DataResource.ac.getBean(DubboRpcService.class);
             dubboRpcService.updatePlayerLord2CrossPlayerServer(player);
         }

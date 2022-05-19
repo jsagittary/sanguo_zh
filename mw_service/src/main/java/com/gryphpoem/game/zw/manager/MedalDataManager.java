@@ -6,6 +6,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.service.CrossWorldMapService;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncBuffRs;
@@ -522,6 +523,9 @@ public class MedalDataManager {
                             cntMap.put(armyType, cnt + recovery);
                             LogUtil.debug("勋章特技-白衣天使触发 角色id:", player.roleId, ", 将领id:", force.id, ", 恢复的兵力:",
                                     recovery);
+                            //记录玩家兵力变化信息
+                            LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
+                                    Constant.ACTION_ADD, armyType, hero.getQuality());
                         }
                     }
                 }
@@ -600,6 +604,9 @@ public class MedalDataManager {
                             cntMap.put(armyType, cnt + recovery);
                             LogUtil.debug("勋章特技-以战养战触发 角色id:", player.roleId, ", 将领id:", force.id, ", 恢复的兵力:", recovery,
                                     ", 总损兵:", force.totalLost);
+                            //记录玩家兵力变化信息
+                            LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
+                                    Constant.ACTION_ADD, armyType, hero.getQuality());
                         }
                     }
                 }
@@ -620,7 +627,7 @@ public class MedalDataManager {
      * @Title: peacekeepingForces
      * @Description: 勋章特技效果  【维和部队】   战斗结束后,防守方玩家被击飞,且生成重建资源后执行
      */
-    public void peacekeepingForces(Fighter defender) {
+    public void peacekeepingForces(Fighter defender, Player defPlayer) {
         //判断是否是玩家
         if (defender.roleType != Constant.Role.PLAYER) {
             return;
@@ -632,9 +639,13 @@ public class MedalDataManager {
             if (player == null) {
                 continue;
             }
-
-            if (player.getPeacekeepingForcesNum() > 0) {//当天已触发
-                return;
+            if (CrossWorldMapService.isOnCrossMap(player)) {
+                continue;
+            }
+            if (defPlayer.lord.getLordId() != player.lord.getLordId() ||
+                    player.getPeacekeepingForcesNum() > 0) {//当天已触发
+                LogUtil.common(String.format("defPlayer: %d, player: %d, player.getPeacekeepingForcesNum(): %d", defPlayer.lord.getLordId(), player.lord.getLordId(), player.getPeacekeepingForcesNum()));
+                continue;
             }
 
             //根据将领id  查询是否有特技

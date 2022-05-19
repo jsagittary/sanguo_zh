@@ -28,14 +28,11 @@ import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.*;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mail;
 import com.gryphpoem.game.zw.pb.GamePb1.DoSomeRq;
-import com.gryphpoem.game.zw.pb.GamePb2;
-import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
-import com.gryphpoem.game.zw.pb.HttpPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -62,6 +59,7 @@ import com.gryphpoem.game.zw.resource.pojo.sandtable.SandTableContest;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.server.thread.SendEventDataThread;
 import com.gryphpoem.game.zw.service.activity.ActivityAuctionService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -415,6 +413,19 @@ public class GmService{
                 gmDressUp(player, type, id, count, lv);
             }else if("auction".equalsIgnoreCase(cmd)) {
                 DataResource.getBean(ActivityAuctionService.class).checkTimer();
+            } else if ("sendChat".equalsIgnoreCase(cmd)) {
+                GamePb3.SendChatRq.Builder builder = GamePb3.SendChatRq.newBuilder();
+                builder.setChannel(Integer.parseInt(type));
+                String[] cArr = new String[]{count};
+                builder.addAllContent(Arrays.asList(cArr));
+                DataResource.ac.getBean(ChatService.class).sendChat(roleId, builder.build());
+            } else if ("sendPriChat".equalsIgnoreCase(cmd)) {
+                GamePb3.SendChatRq.Builder builder = GamePb3.SendChatRq.newBuilder();
+                builder.setChannel(Integer.parseInt(type));
+                String[] cArr = new String[]{count};
+                builder.addAllContent(Arrays.asList(cArr));
+                builder.setTarget(Long.parseLong(id));
+                DataResource.ac.getBean(ChatService.class).sendChat(roleId, builder.build());
             } else {
                 gmServiceExt.doSome(words, roleId);
                 /////////////////新加的GM命令使用下面的方式实现
@@ -2638,6 +2649,9 @@ public class GmService{
             int currentSecond = TimeHelper.getCurrentSecond();
             req.setOpenTime(currentSecond + TimeHelper.DAY_S);
             gmModifyServerInfo(req.build());
+        } else if ("openEventDebug".equalsIgnoreCase(str)) {
+            GameGlobal.openEventDebug = !GameGlobal.openEventDebug;
+            SendEventDataThread.THINKINGDATA_LOGGER.info(String.format("current debug status:%s", GameGlobal.openEventDebug));
         }
     }
 
@@ -3140,7 +3154,7 @@ public class GmService{
                 globalDataManager.init();
                 LogUtil.start("加载完成：global数据");
                 // 加载世界地图相关数据
-                worldDataManager.init();
+                worldDataManager.init(false);
                 // 重新刷新飞艇、矿点、流寇, 因为上面刷新的有可能重复
                 worldDataManager.refreshAllBandit(WorldConstant.REFRESH_TYPE_BANDIT_3);
                 worldDataManager.gmClearAllMine();
@@ -3152,6 +3166,8 @@ public class GmService{
                 // LogUtil.start("加载完成：玩家聊天数据");
                 // 初始化世界进程
                 worldScheduleService.init();
+                // 初始化战斗map
+                warDataManager.initBattle();
                 // 初始化沙盘演武
                 ScheduleManager.getInstance().initSandTableContest();
                 LogUtil.start("加载完成：世界进程数据");

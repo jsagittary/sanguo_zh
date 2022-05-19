@@ -966,7 +966,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         }
 
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender);
+        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 部队返回
         warService.retreatBattleArmy(battle, sendMailTime);
     }
@@ -1074,7 +1074,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         LogLordHelper.commonLog("counterAtkBattle", AwardFrom.COUNTER_BOSS_ATK, defPlayer, defSuc);
 
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender);
+        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 部队返回
         warService.retreatBattleArmy(battle, sendMailTime);
     }

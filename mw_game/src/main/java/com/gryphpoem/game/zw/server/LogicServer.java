@@ -128,9 +128,8 @@ public class LogicServer extends AbsLogicServer {
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new LightningWarTimer());
         // 新地图的定时器
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new CrossMapTimer());
-
-        //定时数据上报
-        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new SendEventDataTimer());
+        //定时数据上报 修改数数上报使用的线程
+        threadPool.get(DealType.BACKGROUND.getCode()).addTimerEvent(new SendEventDataTimer());
         // 服务端检查
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new CheckTimer());
         // 延时执行定时器

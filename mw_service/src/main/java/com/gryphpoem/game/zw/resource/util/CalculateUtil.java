@@ -326,6 +326,7 @@ public class CalculateUtil {
             //貂蝉任务-玩家战力
             ActivityDiaoChanService.completeTask(player, ETask.PLAYER_POWER);
             TaskService.processTask(player, ETask.PLAYER_POWER);
+            LogLordHelper.recodePower(LogParamConstant.FIGHTING_CHANGE, player, preFight, fight, fight - preFight);
 
             DubboRpcService dubboRpcService = DataResource.ac.getBean(DubboRpcService.class);
             dubboRpcService.updatePlayerLord2CrossPlayerServer(player);
@@ -1251,6 +1252,10 @@ public class CalculateUtil {
                 change.addChangeType(AwardType.ARMY, staticHero.getType());
                 // 向客户端同步玩家资源数据
                 rewardDataManager.syncRoleResChanged(player, change);
+
+                //记录玩家兵力变化信息
+                LogLordHelper.filterHeroArm(AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy,
+                        Constant.ACTION_SUB, staticHero.getType(), hero.getQuality());
             }
         }
     }

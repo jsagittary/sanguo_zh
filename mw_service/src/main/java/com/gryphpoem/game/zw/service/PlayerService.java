@@ -45,7 +45,9 @@ import com.gryphpoem.game.zw.service.activity.AnniversaryEggService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.time.*;
@@ -128,6 +130,8 @@ public class PlayerService implements GmCmdService {
     private TreasureCombatService treasureCombatService;
     @Autowired
     private TitleService titleService;
+    @Value("${initName}")
+    private String initName;
 
     /**
      * 账号服务器的验证返回处理
@@ -164,6 +168,7 @@ public class PlayerService implements GmCmdService {
             account.setLoginDays(1);
             account.setCreateDate(new Date());
             account.setLoginDate(new Date());
+            account.setPublisher(StringUtils.isEmpty(req.getPublisher()) ? "" : req.getPublisher());
             campTurple = playerDataManager.getRecommendCamp(); // 设置推荐阵营奖励
             LogUtil.debug("=====推荐的阵营===== camp:", campTurple.getA(), ", 奖励的 keyId:", campTurple.getB());
             account.setRecommendCamp(campTurple.getA());// 设置推荐阵营
@@ -549,7 +554,7 @@ public class PlayerService implements GmCmdService {
         //打印玩家登录日志
         LogLordHelper.logLogin(player);
         //打印玩家基本信息日志
-        LogLordHelper.logPlord(player);
+        LogLordHelper.logLord(player);
         LogLordHelper.commonLog("fightingChange", AwardFrom.COMMON, player, player.lord.getFight());
         map.put("roleLoginRs", builder.build());
         return map;
@@ -1445,6 +1450,9 @@ public class PlayerService implements GmCmdService {
     public ChangeSignatureRs changeSignature(long roleId, String signature) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
+        if (!StaticFunctionDataMgr.funcitonIsOpen(player, 9010)) {
+            throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("个性签名等级不足, roleId:%d, lv:%d", player.roleId, player.lord.getLevel()));
+        }
         if (CheckNull.isNullTrim(signature) || signature.length() > 150 || EmojiHelper.containsEmoji(signature)) {
             throw new MwException(GameError.SIGNATURE_ERR.getCode(), "个性签名格式错误");
         }
@@ -1989,6 +1997,12 @@ public class PlayerService implements GmCmdService {
                 MsgDataManager.getIns().add(new Msg(p.ctx, msg, p.roleId));
             }
         });
+    }
+
+    public String getInitName() {
+        if (StringUtils.isEmpty(initName))
+            return "主公@";
+        return initName;
     }
 
     @GmCmd("player")

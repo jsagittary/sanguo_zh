@@ -210,6 +210,10 @@ public class WallService {
                             AwardFrom.WALL_NPC_AUTO_ARMY);// , "城墙自动补兵"
                     hero.setCount(hero.getCount() + add);
                     change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
+
+                    //记录玩家兵力变化信息
+                    LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
+                            Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
                 } else {
                     // 粮不够,能补多少扣多少
                     add = (int) (resource.getFood() / radio);
@@ -219,6 +223,10 @@ public class WallService {
                                 AwardFrom.WALL_NPC_AUTO_ARMY);// , "城墙自动补兵"
                         hero.setCount(hero.getCount() + add);
                         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
+
+                        //记录玩家兵力变化信息
+                        LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
+                                Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
                     }
                 }
                 hero.setWallArmyTime(now);
@@ -497,6 +505,10 @@ public class WallService {
         downHero.setCount(0);
         rewardDataManager
                 .addAward(player, AwardType.RESOURCE, AwardType.Resource.FOOD, sub * radio, AwardFrom.HERO_DOWN);
+        //记录玩家兵力变化信息
+        LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
+                Constant.ACTION_SUB, staticHero.getType(), downHero.getQuality());
+
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
         rewardDataManager.syncRoleResChanged(player, change);

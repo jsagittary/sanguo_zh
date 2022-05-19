@@ -78,7 +78,7 @@ public class GameDataLoader {
             LogUtil.start("加载完成：global数据");
 
             // 加载世界地图相关数据
-            AppGameServer.ac.getBean(WorldDataManager.class).init();
+            AppGameServer.ac.getBean(WorldDataManager.class).init(true);
             LogUtil.start("加载完成：世界地图数据");
 
             // 加载玩家角色数据

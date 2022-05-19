@@ -13,10 +13,7 @@ import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
-import com.gryphpoem.game.zw.resource.domain.p.Effect;
-import com.gryphpoem.game.zw.resource.domain.p.Lord;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerOnHook;
+import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
@@ -679,20 +676,22 @@ public class MarchService {
                 playerOnHook.setAskLastAnnihilateNumber(playerOnHook.getAskLastAnnihilateNumber() - 1);
             }
             // 发送战报
-            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt.build(), now),
+            CommonPb.RptAtkBandit rpt_ = rpt.build();
+            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt_, now),
                     MailConstant.MOLD_ATK_BANDIT_SUCC, dropList, now, tParam, cParam, recoverArmyAward);
         } else {
             if (!bandit_task_999) {
                 // 荣耀日报 打匪军失败更新
                 honorDailyService.addAndCheckHonorReport2s(player, HonorDailyConstant.COND_ID_9);
             }
-            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt.build(), now),
+            CommonPb.RptAtkBandit rpt_ = rpt.build();
+            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt_, now),
                     MailConstant.MOLD_ATK_BANDIT_FAIL, null, now, tParam, cParam, recoverArmyAward);
         }
         LogLordHelper.commonLog("attckBandit", AwardFrom.COMMON, player, staticBandit.getBanditId(), isSuccess);
         //上报数数
         EventDataUp.battle(player.account, player.lord,attacker,"atk", String.valueOf(banditId), String.valueOf(WorldConstant.BATTLE_TYPE_BANDIT),
-                String.valueOf(fightLogic.getWinState()),lord.getLordId());
+                String.valueOf(fightLogic.getWinState()),lord.getLordId(), rpt.getAtkHeroList());
 
         // 判断当前任务列表中是否有流寇任务
         if (worldService.checkCurTaskHasBandit(staticBandit.getLv(), historyLv) || bandit_task_999) {
@@ -1721,7 +1720,7 @@ public class MarchService {
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
         }
 
-        logAirShipBattle(areaId, battleRoles, atkSuccess, airShipId, airShipPos,attacker,firstAttackPlayer);
+        logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer, rpt.getAtkHeroList());
     }
 
     /**
@@ -1730,11 +1729,11 @@ public class MarchService {
      * @param areaId
      * @param battleRoles
      * @param atkSuccess
-     * @param airShipId
+     * @param airShipKeyIdAndId
      * @param airShipPos
      */
-    public void logAirShipBattle(int areaId, List<CommonPb.BattleRole> battleRoles, boolean atkSuccess, int airShipId,
-                                 int airShipPos,Fighter attacker,Player firstAttackPlayer) {
+    public void logAirShipBattle(int areaId, List<CommonPb.BattleRole> battleRoles, boolean atkSuccess, String airShipKeyIdAndId,
+                                 int airShipPos, Fighter attacker, Player firstAttackPlayer, List<CommonPb.RptHero> atkHero) {
         String win;
         if(atkSuccess){
             win = String.valueOf(ArmyConstant.FIGHT_RESULT_SUCCESS);
@@ -1744,10 +1743,10 @@ public class MarchService {
         battleRoles.stream().map(rb -> rb.getRoleId()).distinct().map(rId -> playerDataManager.getPlayer(rId))
                 .filter(p -> p != null)
                 .forEach(player -> {LogLordHelper.otherLog("airShipBattle", player.account.getServerId(), player.roleId,
-                        "atk", areaId, airShipId, atkSuccess, airShipPos, player.lord.getCamp());
+                        "atk", areaId, airShipKeyIdAndId, atkSuccess, airShipPos, player.lord.getCamp());
                         //上报数数
-                        EventDataUp.battle(player.account, player.lord,attacker,"atk", String.valueOf(airShipId),
-                            String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP),win,firstAttackPlayer.roleId);
+                    EventDataUp.battle(player.account, player.lord,attacker,"atk", airShipKeyIdAndId,
+                            String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP),win,firstAttackPlayer.roleId, atkHero);
                 });
     }
 

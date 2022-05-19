@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -106,9 +107,10 @@ import java.util.stream.Collectors;
                 int sub = downHero.getCount();
 
                 downHero.setCount(0);
-                LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, downHero.getCount(), -sub, Constant.ACTION_ADD);
-
                 StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
+                if (Objects.nonNull(staticHero))
+                    LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, downHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+
                 rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
                 change.addChangeType(AwardType.ARMY, staticHero.getType());
@@ -167,9 +169,10 @@ import java.util.stream.Collectors;
                 // 士兵回营
                 int sub = downHero.getCount();
                 downHero.setCount(0);
-                LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, downHero.getCount(), -sub, Constant.ACTION_ADD);
-
                 StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
+                if (Objects.nonNull(staticHero))
+                    LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, downHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+
                 rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
                 change.addChangeType(AwardType.ARMY, staticHero.getType());
@@ -345,6 +348,10 @@ import java.util.stream.Collectors;
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
         downHero.setCount(0);
         rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
+        //记录玩家兵力变化信息
+        LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
+                Constant.ACTION_SUB, staticHero.getType(), downHero.getQuality());
+
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.ARMY, staticHero.getType());
         change.addChangeType(AwardType.HERO_ARM, downHero.getHeroId());

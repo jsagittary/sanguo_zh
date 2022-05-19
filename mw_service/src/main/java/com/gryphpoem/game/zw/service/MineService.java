@@ -19,6 +19,7 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -231,6 +232,7 @@ public class MineService {
                 add));
         army.setGrab(grab);
         LogUtil.common("计算矿点采集, grab:", grab.get(0));
+        EventDataUp.troop(player, 1, staticMine.getMineType(), staticMine.getLv(), now - startTime, grab);
         return resource;
     }
 

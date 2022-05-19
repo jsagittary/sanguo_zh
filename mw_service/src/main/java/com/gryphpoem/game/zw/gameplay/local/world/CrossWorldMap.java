@@ -20,10 +20,7 @@ import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.MapChgEventPb;
 import com.gryphpoem.game.zw.pb.GamePb5.SyncCrossMapChgRs;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.DbCrossMap;
@@ -33,10 +30,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuff;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -582,6 +576,9 @@ public class CrossWorldMap extends WatcherWorldMap {
                                                     List<CommonPb.Award> awards = recoverArmyAwardMap.computeIfAbsent(roleId, (k) -> new ArrayList<>());
                                                     awards.add(PbHelper.createAwardPb(AwardType.ARMY, armyType, addArm));
                                                     LogUtil.debug("战火燎原回复兵力 roleId:", roleId, ", heroId:", hero.getHeroId(), ", recArm:", addArm);
+                                                    //记录玩家兵力变化信息
+                                                    LogLordHelper.filterHeroArm(AwardFrom.WAR_FIRE_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
+                                                            Constant.ACTION_ADD, armyType, hero.getQuality());
                                                 }
                                             }
                                         }

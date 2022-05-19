@@ -5,12 +5,9 @@ import com.gryphpoem.cross.gameplay.battle.c2g.dto.HeroFightSummary;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -376,7 +373,7 @@ public class WarService {
         // 通知客户端玩家资源变化
         sendRoleResChange(changeMap);
         // 战斗打日志
-        logBattle(battle, fightLogic.getWinState(), attacker, defender);
+        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
 
     /**
@@ -557,7 +554,7 @@ public class WarService {
         // 通知客户端玩家资源变化
         sendRoleResChange(changeMap);
         // 战斗打日志
-        logBattle(battle, fightLogic.getWinState(), attacker, defender);
+        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         LogUtil.war(">>>>>>>>>>>>>>决战逻辑执行完毕>>>>>>>>>>>>>>");
     }
 
@@ -794,7 +791,7 @@ public class WarService {
                 // 生成重建资源
 
                 // 执行勋章-维和部队 特技逻辑
-                medalDataManager.peacekeepingForces(defender);
+                medalDataManager.peacekeepingForces(defender, battle.getDefencer());
 
                 // 固定给胜利方玩家角色加10点经验
                 dropList.add(
@@ -1150,7 +1147,7 @@ public class WarService {
         // 通知客户端玩家资源变化
         sendRoleResChange(changeMap);
         // 战斗打日志
-        logBattle(battle, fightLogic.getWinState(), attacker, defender);
+        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
 
     /**
@@ -1311,7 +1308,7 @@ public class WarService {
      * @param battle
      * @param winState 胜利的状态
      */
-    public void logBattle(Battle battle, int winState, Fighter attacker, Fighter defender) {
+    public void logBattle(Battle battle, int winState, Fighter attacker, Fighter defender, List<RptHero> atkHeroList, List<RptHero> defHeroList) {
         String battleId = battle.getBattleId() + "_" + battle.getBattleTime();
         String type = String.valueOf(battle.getType());
         String win = String.valueOf(winState);
@@ -1327,7 +1324,7 @@ public class WarService {
                     LogLordHelper.otherLog("battle", player.account.getServerId(), player.roleId, "atk", battleId, type,
                             win, pos, sponsorId, defencerId, atkCamp);
                     //上报数数
-                    EventDataUp.battle(player.account, player.lord, attacker, "atk", battleId, type, win, Long.parseLong(sponsorId));
+                    EventDataUp.battle(player.account, player.lord, attacker, "atk", battleId, type, win, Long.parseLong(sponsorId), atkHeroList);
                 });
 
         // 防守方玩家打日志
@@ -1337,7 +1334,7 @@ public class WarService {
                             win, pos, sponsorId, defencerId, atkCamp);
                     //上报数数
                     if (defender != null) {
-                        EventDataUp.battle(player.account, player.lord, defender, "def", battleId, type, win, Long.parseLong(sponsorId));
+                        EventDataUp.battle(player.account, player.lord, defender, "def", battleId, type, win, Long.parseLong(sponsorId), defHeroList);
                     }
                 });
 
@@ -2466,8 +2463,10 @@ public class WarService {
                         continue;
                     }
                     lost = hero.subArm(force.totalLost);
-                    LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost,
-                            Constant.ACTION_SUB);
+                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                    if (Objects.nonNull(staticHero))
+                        LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                                Constant.ACTION_SUB);
 
                     info = changeMap.get(force.ownerId);
                     if (null == info) {

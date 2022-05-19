@@ -279,4 +279,8 @@ public interface StaticIniMapper {
                     "</script>"})
     @MapKey("keyId")
     Map<Integer, StaticCrossGamePlayPlan> selectStaticCrossGamePlanMap(@Param("list") Set<Integer> list);
+
+    @MapKey("diff")
+    @Select("select * from s_pvp_battle")
+    Map<Integer, StaticBattlePvp> selectStaticBattlePvpMap();
 }

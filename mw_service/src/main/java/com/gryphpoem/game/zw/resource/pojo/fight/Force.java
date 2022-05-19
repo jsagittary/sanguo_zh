@@ -96,7 +96,7 @@ public class Force {
         if (this.count == 0) {
             this.count = lead;
         }
-        LogUtil.debug("Force=" + toString());
+        LogUtil.fight("Force=" + toString());
     }
 
     /**
@@ -129,7 +129,7 @@ public class Force {
         if (this.count == 0) {
             this.count = sLead;
         }
-        LogUtil.debug(
+        LogUtil.fight(
                 "Force : 当前兵力=" + totalCount + ",一排多少兵=" + sLead + ",总共多少排=" + maxLine + ",sCount=" + sCount + ",sLine="
                         + sLine);
     }
@@ -149,6 +149,7 @@ public class Force {
 
     /**
      * 兵力大于0
+     *
      * @return 是否存活
      */
     public boolean alive() {
@@ -157,14 +158,18 @@ public class Force {
 
     /**
      * 计算伤害能造成的最大真是损兵量，当伤害高于当前排兵力时，只会扣完本排兵力，不会影响后排兵力
-     * @see FightLogic#(Force, int) 如果需要考虑FightBuff
+     *
      * @param hurt
      * @return
+     * @see FightLogic#(Force, int) 如果需要考虑FightBuff
      */
-    public int hurt(int hurt, Force force, int battleType) {
+    public int hurt(int hurt, Force force, int battleType, float crit) {
         //天赋优化 战斗buff
         //攻击方的伤害加成与防守方伤害减免
         hurt = FightLogic.seasonTalentBuff(force, this, hurt, battleType);
+        // 计算保底伤害
+        if (battleType != Integer.MIN_VALUE)
+            hurt = FightCalc.calRoundGuaranteedDamage(force, this, hurt, battleType, crit);
 
         if (count <= hurt) {
             lost = count;
@@ -183,7 +188,8 @@ public class Force {
     public boolean subHp(Force force) {
         boolean deadLine = false;
 
-        LogUtil.debug("进攻方角色id:", force == null ? 0 : force.ownerId, ", 防守方角色id: ", this.ownerId, ", <<<<<<战斗最终伤害>>>>>>:", lost);
+        LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, <<<<<<战斗最终伤害>>>>>>: %d",
+                force == null ? 0 : force.ownerId, this.ownerId, count, lost));
 
         if (count <= lost) {
             curLine++;
@@ -269,14 +275,14 @@ public class Force {
             List<FightSkill> skills = this.fightSkill.get(planePos);
             if (!CheckNull.isEmpty(skills)) {
                 skill = skills.stream().filter(s -> s.notRollSkill() || s.notReleaseSkill() || s
-                        .notEndSkillEffect()) // 还未Roll技能, 或者技能还未释放, 或者技能还未释放完
+                                .notEndSkillEffect()) // 还未Roll技能, 或者技能还未释放, 或者技能还未释放完
                         .sorted(Comparator.comparing(FightSkill::getOrder)).findFirst().orElse(null);
             }
         }
         return skill;
     }
 
-    public FightSkill getCurrentSkill0(){
+    public FightSkill getCurrentSkill0() {
         //1.BUFF判断(禁锢,沉默,眩晕...)
         return fightSkills.stream()
                 .filter(SkillTriggerUtils::doTriggerCond)
@@ -397,7 +403,8 @@ public class Force {
         return treasureWare.getEquipId() + "--" + (CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId());
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "Force{" + "id=" + id + ", hp=" + hp + ", maxHp=" + maxHp + ", armType=" + armType + ", lead=" + lead
                 + ", curLine=" + curLine + ", maxLine=" + maxLine + ", count=" + count + ", killed=" + killed
                 + ", lost=" + lost + ", totalLost=" + totalLost + ", attrData=" + attrData + ", fighter=" + fighter

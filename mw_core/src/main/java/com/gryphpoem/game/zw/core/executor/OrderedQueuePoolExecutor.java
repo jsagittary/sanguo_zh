@@ -40,7 +40,7 @@ public class OrderedQueuePoolExecutor extends ThreadPoolExecutor {
 	 * 增加执行任务
 	 * 
 	 * @param key
-	 * @param value
+	 * @param task
 	 * @return
 	 */
 	public boolean addTask(Long key, AbstractWork task) {

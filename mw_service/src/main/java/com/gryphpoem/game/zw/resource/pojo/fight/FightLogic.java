@@ -2,12 +2,14 @@ package com.gryphpoem.game.zw.resource.pojo.fight;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePvp;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSkill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSkill;
@@ -17,6 +19,7 @@ import com.gryphpoem.game.zw.resource.pojo.fight.skill.FightSkillUtils;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.zookeeper.Op;
 import org.springframework.util.ObjectUtils;
 
@@ -47,7 +50,9 @@ public class FightLogic {
     private boolean careDodge = true;// 是否考虑闪避 默认考虑
     private boolean careCrit = true;// 是否考虑暴击
 
-    /** 根据战斗结果判断是否可以改变属性 （世界争霸城池专用） 1 不满足条件，2 满足条件 */
+    /**
+     * 根据战斗结果判断是否可以改变属性 （世界争霸城池专用） 1 不满足条件，2 满足条件
+     */
     private int AttrChangeState = 0;
 
     public FightLogic() {
@@ -100,7 +105,7 @@ public class FightLogic {
         }
     }
 
-    private CommonPb.Form createFormPb(Force force){
+    private CommonPb.Form createFormPb(Force force) {
         CommonPb.Form.Builder formPb = CommonPb.Form.newBuilder();
         formPb.setId(force.id);
         formPb.setCount(force.hp);
@@ -122,7 +127,8 @@ public class FightLogic {
             }
         }
     }
-    private CommonPb.Aura createAuraPb(long roleId, AuraInfo auraInfo){
+
+    private CommonPb.Aura createAuraPb(long roleId, AuraInfo auraInfo) {
         CommonPb.Aura.Builder auraPb = CommonPb.Aura.newBuilder();
         auraPb.setRoleId(roleId);
         auraPb.setHeroId(auraInfo.getHeroId());
@@ -141,14 +147,13 @@ public class FightLogic {
         if (Objects.nonNull(recordData)) {
             int size = recordData.build().toByteArray().length;
             if (size >= 1024 * 1024 || recordData.getRoundCount() > 1000) {//大于1M的战报,或者回合数超过1000的战报
-                LogUtil.debug(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, recordData.getRoundCount()));
+                LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, recordData.getRoundCount()));
             }
         }
     }
 
     /**
      * 打印当前战斗双方阵容信息
-     *
      */
     private void logForm() {
         Optional.ofNullable(attacker).ifPresent(atk -> {
@@ -157,7 +162,7 @@ public class FightLogic {
                     if (CheckNull.isNull(force)) {
                         return;
                     }
-                    LogUtil.debug("attacker force: ", force.toBattleString());
+                    LogUtil.fight("attacker force: ", force.toBattleString());
                 });
             });
         });
@@ -167,23 +172,25 @@ public class FightLogic {
                     if (CheckNull.isNull(force)) {
                         return;
                     }
-                    LogUtil.debug("defender force: ", force.toBattleString());
+                    LogUtil.fight("defender force: ", force.toBattleString());
                 });
             });
         });
     }
 
-    /** 检测所有的npc是否死亡(进攻npc一方损兵不为0的指挥官小于10人) */
-    private void checkAllNpcIsDied(){
-        if(this.battleType == WorldConstant.BATTLE_TYPE_CAMP && this.getAttrChangeState() == ArmyConstant.ATTR_CHANGE_STATE_NO_DO){
+    /**
+     * 检测所有的npc是否死亡(进攻npc一方损兵不为0的指挥官小于10人)
+     */
+    private void checkAllNpcIsDied() {
+        if (this.battleType == WorldConstant.BATTLE_TYPE_CAMP && this.getAttrChangeState() == ArmyConstant.ATTR_CHANGE_STATE_NO_DO) {
             if (this.defender.forces.stream()
                     .filter(f -> f.roleType == Constant.Role.CITY)
                     .filter(f -> f.alive()).count() == 0
-            ){
-                if(this.attacker.forces.stream().filter(f -> f.totalLost > 0)
-                        .map(f -> f.ownerId).distinct().count() < ArmyConstant.ATTR_CHANGE_STATE_LORD_COUNT){
+            ) {
+                if (this.attacker.forces.stream().filter(f -> f.totalLost > 0)
+                        .map(f -> f.ownerId).distinct().count() < ArmyConstant.ATTR_CHANGE_STATE_LORD_COUNT) {
                     this.setAttrChangeState(ArmyConstant.ATTR_CHANGE_STATE_YES);
-                }else{
+                } else {
                     this.setAttrChangeState(ArmyConstant.ATTR_CHANGE_STATE_NO);
                 }
             }
@@ -206,13 +213,13 @@ public class FightLogic {
             //无论什么英雄，进攻方先手放技能
             if (force.planeHasSkill() || force.hasSkill()) {//进攻方非赛季英雄技能
                 skillAction(force, target, true);
-            } else if (!CheckNull.isNull(forceSkill) ) {//进攻方赛季英雄技能
+            } else if (!CheckNull.isNull(forceSkill)) {//进攻方赛季英雄技能
                 FightActionDto dto = new FightActionDto(this, force, target, FightActionDto.Direction.ACTION_ATK);
                 FightSkillUtils.releaseSkill((FightSkillAction) forceSkill, dto);
 //                forceSkill.releaseSkill(force, target, this, true);
-            }else if (target.planeHasSkill() || target.hasSkill()) {//防守方非赛季英雄技能
+            } else if (target.planeHasSkill() || target.hasSkill()) {//防守方非赛季英雄技能
                 skillAction(target, force, false);
-            }  else if (!CheckNull.isNull(targetSkill)) {  // 防守方赛季英雄技能
+            } else if (!CheckNull.isNull(targetSkill)) {  // 防守方赛季英雄技能
                 FightActionDto dto = new FightActionDto(this, target, force, FightActionDto.Direction.ACTION_DEF);
                 FightSkillUtils.releaseSkill((FightSkillAction) targetSkill, dto);
 //                targetSkill.releaseSkill(target, force, this, false);
@@ -307,7 +314,7 @@ public class FightLogic {
         StaticSkill skill = StaticHeroDataMgr.getSkillMapById(skillId);
         int val = skill == null || skill.getVal() <= 0 ? 1 : skill.getVal();
         int hurt = (int) Math.ceil(force.maxHp * 1.0 / val);// 技能计算公式
-        hurt = target.hurt(hurt, force, battleType);
+        hurt = target.hurt(hurt, force, battleType, 1f);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数
@@ -322,8 +329,8 @@ public class FightLogic {
     /**
      * 单次技能攻击的行动 【技能攻击1--用于区分程序走向】
      *
-     * @param force     本次技能释放的攻击方
-     * @param target    本次技能释放的防守方
+     * @param force      本次技能释放的攻击方
+     * @param target     本次技能释放的防守方
      * @param isAttacker 本次攻击方是否是本场战斗的进攻方
      */
     private void skillAction(Force force, Force target, boolean isAttacker) {
@@ -400,7 +407,7 @@ public class FightLogic {
         int skillId = info.getSkillId();
         StaticPlaneSkill planeSkill = StaticWarPlaneDataMgr.getPlaneSkillById(skillId);
         int hurt = FightCalc.calcPlaneSkillHurt(force, target, planeSkill, battleType);
-        hurt = target.hurt(hurt, force, battleType);
+        hurt = target.hurt(hurt, force, battleType, 1f);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数
@@ -443,8 +450,8 @@ public class FightLogic {
     /**
      * 单次攻击计算  【战斗3--用于区分程序走向】
      *
-     * @param force     攻击方
-     * @param target    防御方
+     * @param force      攻击方
+     * @param target     防御方
      * @param isAttacker 本次攻击计算的攻击方是否为战斗的进攻方
      */
     private void attack(Force force, Force target, boolean isAttacker) {
@@ -461,7 +468,7 @@ public class FightLogic {
         float crit = isCrit(force, target, actionData);
         int hurt = FightCalc.calcHurt2(force, target, crit, battleType);
         // 预扣血，并返回真实伤害，真实扣血逻辑在回合结束是执行
-        hurt = hurt(target, force, hurt);
+        hurt = hurt(target, force, hurt, crit);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
         target.fighter.lost += hurt;// 记录总伤兵数
@@ -475,21 +482,23 @@ public class FightLogic {
 
     /**
      * 预扣血，并返回真实伤害，真实扣血逻辑在回合结束是执行
+     *
      * @param force
      * @param hurt
      * @return
      */
-    public int hurt(Force target, Force force, int hurt) {
+    public int hurt(Force target, Force force, int hurt, float crit) {
         hurt = upHurtBuff(target, hurt);  //  提升伤害Buff
 
         //天赋优化 战斗增益
         //攻击方的伤害加成与防守方伤害减免
         hurt = seasonTalentBuff(force, target, hurt, battleType);
-
+        // 保底伤害计算
+        hurt = FightCalc.calRoundGuaranteedDamage(force, target, hurt, battleType, crit);
         hurt = defCntBuff(target, hurt);  //  免伤buff
         hurt = defHurtBuff(target, hurt); //  抵消伤害buff
         hurt = notDeadBuff(target, hurt); //  免死buff
-        return target.hurt(hurt, null, Integer.MIN_VALUE);
+        return target.hurt(hurt, null, Integer.MIN_VALUE, crit);
     }
 
     public static boolean checkPvp(Force force, Force targetForce) {
@@ -502,7 +511,8 @@ public class FightLogic {
 
     /**
      * //天赋优化 战斗增益
-     * @param force 攻击方
+     *
+     * @param force  攻击方
      * @param target 防守方
      * @param hurt
      */
@@ -523,7 +533,7 @@ public class FightLogic {
                 debugHurt = hurt;
                 hurt_ *= (1 + (DataResource.getBean(SeasonTalentService.class).
                         getSeasonTalentEffectValue(forcePlayer, SeasonConst.TALENT_EFFECT_607) / Constant.TEN_THROUSAND));
-                LogUtil.debug("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
+                LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
                         "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "赛季天赋-攻其不备: ", hurt_ - debugHurt, ", 伤害结果:", hurt_);
             }
             if (!CheckNull.isNull(targetPlayer)) {
@@ -531,7 +541,7 @@ public class FightLogic {
                 debugHurt = hurt_;
                 hurt_ *= (1 - (DataResource.getBean(SeasonTalentService.class).
                         getSeasonTalentEffectValue(targetPlayer, SeasonConst.TALENT_EFFECT_611) / Constant.TEN_THROUSAND));
-                LogUtil.debug("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
+                LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
                         "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "赛季天赋-随形卸力: ", hurt_ - debugHurt, ", 伤害结果:", hurt_);
             }
         }
@@ -541,6 +551,7 @@ public class FightLogic {
 
     /**
      * 免死buff
+     *
      * @param force
      * @param hurt
      * @return
@@ -555,7 +566,7 @@ public class FightLogic {
                 builder.setCurrentLine(force.curLine);
                 buffs.add(builder.build());
 
-                LogUtil.debug("防守方角色id: ", force.ownerId, "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "免死buff, 原伤害: ", debugHurt,
+                LogUtil.fight("防守方角色id: ", force.ownerId, "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "免死buff, 原伤害: ", debugHurt,
                         " 伤害结果:", hurt);
             }
         }
@@ -568,6 +579,7 @@ public class FightLogic {
 
     /**
      * 抵消伤害buff
+     *
      * @param force
      * @param hurt
      * @return
@@ -589,7 +601,7 @@ public class FightLogic {
                 builder.setCurrentLine(force.curLine);
                 buffs.add(builder.build());
 
-                LogUtil.debug("防守方角色id: ", force.ownerId, "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "抵消伤害buff: ", buffVal,
+                LogUtil.fight("防守方角色id: ", force.ownerId, "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "抵消伤害buff: ", buffVal,
                         " 伤害结果:", hurt);
             }
         }
@@ -598,6 +610,7 @@ public class FightLogic {
 
     /**
      * 免伤buff
+     *
      * @param force
      * @param hurt
      * @return
@@ -611,7 +624,7 @@ public class FightLogic {
                 builder.setCurrentLine(force.curLine);
                 buffs.add(builder.build());
 
-                LogUtil.debug("防守方角色id: ", force.ownerId, "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "免伤buff, ", " 伤害结果:", hurt);
+                LogUtil.fight("防守方角色id: ", force.ownerId, "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "免伤buff, ", " 伤害结果:", hurt);
             }
         }
         return hurt;
@@ -619,8 +632,9 @@ public class FightLogic {
 
     /**
      * 取防守方的身上的提升伤害DeBuff,
-     * @param force     本次的防守方
-     * @param hurt      伤害
+     *
+     * @param force 本次的防守方
+     * @param hurt  伤害
      * @return
      */
     private int upHurtBuff(Force force, int hurt) {

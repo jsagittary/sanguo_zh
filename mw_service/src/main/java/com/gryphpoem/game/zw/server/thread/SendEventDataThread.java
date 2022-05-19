@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.thread.SendThread;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.MD5;
+import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.apache.log4j.Logger;
 
@@ -18,8 +19,8 @@ public class SendEventDataThread extends SendThread {
 //    private HashMap<Integer, String> event_map = new HashMap<Integer, String>();
 
     static final String SA_SERVER_URL = "https://dotlog.dian5.com/api/event/report";
-    static final int PROJECT_ID = 89;
-    static final String PROJECT_KEY = "e8ce20b811fbb7b2694472d223684df2";
+    static final int PROJECT_ID = 142;
+    static final String PROJECT_KEY = "ff5f41c2eccda80b0cf93caf6ae5122b";
     public static Logger THINKINGDATA_LOGGER = Logger.getLogger("THINKINGDATA");
 
 
@@ -33,7 +34,7 @@ public class SendEventDataThread extends SendThread {
         stop = false;
         done = false;
         while (!stop || event_queue.size() > 0) {
-            if(Thread.currentThread().isInterrupted()){
+            if (Thread.currentThread().isInterrupted()) {
                 break;
             }
             long time = TimeHelper.getCurrentSecond();
@@ -59,12 +60,12 @@ public class SendEventDataThread extends SendThread {
                     event_queue.clear();
                 }
                 //停服不上报，直接落日志
-                if(logFlag == true){
+                if (logFlag == true) {
                     printLostLog(body);
-                }else {
+                } else {
                     try {
                         String res = PROJECT_ID + "" + ' ' + time + ' ' + body + ' ' + PROJECT_KEY;
-                        String sign = MD5.md5Digest(res);
+                        String sign = MD5.md5Digest(res).toLowerCase();
                         String query = "project_id=" + PROJECT_ID + "&time=" + time + "&lib=custom&sign=" + sign;
                         String url = SA_SERVER_URL + "?" + query;
                         String result = HttpUtils.sendPost(url, body, 2);
@@ -82,6 +83,9 @@ public class SendEventDataThread extends SendThread {
                                 lostLog = true;
                             }
                         }
+
+                        if (GameGlobal.openEventDebug)
+                            LogUtil.common(String.format("url:%s, send event data -> %s", url, body));
                         if (lostLog) {
                             printLostLog(body);
                         }
@@ -116,5 +120,4 @@ public class SendEventDataThread extends SendThread {
             LogUtil.error(threadName + " Notify Exception:" + e.getMessage(), e);
         }
     }
-
 }

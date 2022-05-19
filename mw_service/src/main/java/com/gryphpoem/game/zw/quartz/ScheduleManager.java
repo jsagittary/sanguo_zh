@@ -38,6 +38,7 @@ import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.quartz.*;
 import org.quartz.DateBuilder.IntervalUnit;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -142,9 +143,12 @@ public class ScheduleManager {
             sandTableContest.setOpenBeginCron(Constant.SAND_TABLE_OPEN_END.get(0));
             sandTableContest.setOpenEndCron(Constant.SAND_TABLE_OPEN_END.get(1));
 
-            addJob(sched, SandTableJob.name_preview, SandTableJob.groupName, SandTablePreviewJob.class, Constant.SAND_TABLE_PREVIEW);
-            addJob(sched, SandTableJob.name_open, SandTableJob.groupName, SandTableOpenEndRoundJob.class, Constant.SAND_TABLE_OPEN_END.get(0));
-            addJob(sched, SandTableJob.name_end, SandTableJob.groupName, SandTableOpenEndRoundJob.class, Constant.SAND_TABLE_OPEN_END.get(1));
+            if (!StringUtils.isEmpty(Constant.SAND_TABLE_PREVIEW))
+                addJob(sched, SandTableJob.name_preview, SandTableJob.groupName, SandTablePreviewJob.class, Constant.SAND_TABLE_PREVIEW);
+            if (!StringUtils.isEmpty(Constant.SAND_TABLE_OPEN_END) && !StringUtils.isEmpty(Constant.SAND_TABLE_OPEN_END.get(0)))
+                addJob(sched, SandTableJob.name_open, SandTableJob.groupName, SandTableOpenEndRoundJob.class, Constant.SAND_TABLE_OPEN_END.get(0));
+            if (!StringUtils.isEmpty(Constant.SAND_TABLE_OPEN_END) && !StringUtils.isEmpty(Constant.SAND_TABLE_OPEN_END.get(1)))
+                addJob(sched, SandTableJob.name_end, SandTableJob.groupName, SandTableOpenEndRoundJob.class, Constant.SAND_TABLE_OPEN_END.get(1));
 
 //            DataResource.ac.getBean(SandTableContestService.class).addJob(sandTableContest);
             int now = TimeHelper.getCurrentSecond();

@@ -358,7 +358,7 @@ public class AttackCityBattle extends AbsCommonBattle {
         // 通知客户端玩家资源变化
         warService.sendRoleResChange(changeMap);
         // 战斗打日志
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender);
+        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
 
     /**

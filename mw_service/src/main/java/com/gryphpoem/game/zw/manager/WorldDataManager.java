@@ -147,12 +147,14 @@ public class WorldDataManager {
     // 每个阵营玩家在皇城采集的时间, key:阵营 , val 采集的时间
     private Map<Integer, Long> campCollectTime = new ConcurrentHashMap<>();
 
-    public void init() {
+    public void init(boolean load) {
         // 注册EventBus
         EventBus.getDefault().register(this);
 
-        for (int i = 1; i <= 2500; i++) {
-            blockMap.put(i, new HashMap<Integer, Player>());
+        if (load) {
+            for (int i = 1; i <= 2500; i++) {
+                blockMap.put(i, new HashMap<Integer, Player>());
+            }
         }
         this.mineBlockMap.clear();
         this.banditBlockMap.clear();

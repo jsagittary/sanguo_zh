@@ -242,7 +242,7 @@
 
 		<dependency>
 			<groupId>com.gryphpoem</groupId>
-			<artifactId>civilization-cross-api</artifactId>
+			<artifactId>sanguo-cross-api</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
 

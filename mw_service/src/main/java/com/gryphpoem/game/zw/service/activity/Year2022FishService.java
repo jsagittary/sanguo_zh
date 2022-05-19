@@ -227,10 +227,10 @@ public class Year2022FishService extends AbsActivityService implements GmCmdServ
         return resp.build();
     }
 
-    private void addScore(Activity activity,Player player,int add,AwardFrom awardFrom){
-        if(add > 0){
-            int val = activity.getSaveMap().merge(SAVEMAP_SCORE,add,Integer::sum);
-            LogLordHelper.activityScore("yearFishScore",awardFrom,player,val,add,activity.getActivityType(), DataResource.serverId,player.getCamp());
+    private void addScore(Activity activity, Player player, int add, AwardFrom awardFrom) {
+        if (add > 0) {
+            int val = activity.getSaveMap().merge(SAVEMAP_SCORE, add, Integer::sum);
+            LogLordHelper.activityScore("yearFishScore", awardFrom, player, val, add, activity, DataResource.serverId, player.getCamp());
         }
     }
 
@@ -241,30 +241,30 @@ public class Year2022FishService extends AbsActivityService implements GmCmdServ
         activity.getStatusCnt().remove(SAVEMAP_ROUND_KEY);
     }
 
-    public GamePb5.YearFishShopExchangeRs shopExchange(long roleId,int actType,int keyId) throws MwException {
+    public GamePb5.YearFishShopExchangeRs shopExchange(long roleId, int actType, int keyId) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        Activity activity = super.checkAndGetActivity(player,actType);
-        ActivityBase activityBase = super.checkAndGetActivityBase(player,actType);
+        Activity activity = super.checkAndGetActivity(player, actType);
+        ActivityBase activityBase = super.checkAndGetActivityBase(player, actType);
         StaticActExchange staticActExchange = StaticActivityDataMgr.getActExchangeListByKeyId(keyId);
-        if(Objects.isNull(staticActExchange)){
-            throw new MwException(GameError.NO_CONFIG.getCode(),GameError.err(roleId,"年年有鱼商店兑换找不到配置",keyId));
+        if (Objects.isNull(staticActExchange)) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), GameError.err(roleId, "年年有鱼商店兑换找不到配置", keyId));
         }
-        if(staticActExchange.getActivityId() != activity.getActivityId()){
-            throw new MwException(GameError.PARAM_ERROR.getCode(),GameError.err(roleId,"年年有鱼商店兑换错误 活动id不匹配",keyId,activity.getActivityId()));
+        if (staticActExchange.getActivityId() != activity.getActivityId()) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId, "年年有鱼商店兑换错误 活动id不匹配", keyId, activity.getActivityId()));
         }
-        int num = activity.getStatusMap().getOrDefault(keyId,0);
-        if(num >= staticActExchange.getNumberLimit()){
-            throw new MwException(GameError.YEARFISH_EXCHANGE_LIMIT.getCode(),GameError.err(roleId,"年年有鱼兑换达到上限"));
+        int num = activity.getStatusMap().getOrDefault(keyId, 0);
+        if (num >= staticActExchange.getNumberLimit()) {
+            throw new MwException(GameError.YEARFISH_EXCHANGE_LIMIT.getCode(), GameError.err(roleId, "年年有鱼兑换达到上限"));
         }
-        int score = activity.getSaveMap().getOrDefault(SAVEMAP_SCORE,0);
-        if(score < staticActExchange.getNeedPoint()){
-            throw new MwException(GameError.YEARFISH_EXCHANGE_SCORE_NO.getCode(),GameError.err(roleId,"年年有鱼兑换积分不够"));
+        int score = activity.getSaveMap().getOrDefault(SAVEMAP_SCORE, 0);
+        if (score < staticActExchange.getNeedPoint()) {
+            throw new MwException(GameError.YEARFISH_EXCHANGE_SCORE_NO.getCode(), GameError.err(roleId, "年年有鱼兑换积分不够"));
         }
-        score = score-staticActExchange.getNeedPoint();
-        activity.getSaveMap().put(SAVEMAP_SCORE,score);
-        LogLordHelper.activityScore("yearFishScore",AwardFrom.YEAR_FISH_EXCHANGE,player,score,-staticActExchange.getNeedPoint(),activity.getActivityType());
-        activity.getStatusMap().merge(keyId,1,Integer::sum);
-        List<CommonPb.Award> awardList = rewardDataManager.sendReward(player,staticActExchange.getAwardList(), AwardFrom.YEAR_FISH_EXCHANGE);
+        score = score - staticActExchange.getNeedPoint();
+        activity.getSaveMap().put(SAVEMAP_SCORE, score);
+        LogLordHelper.activityScore("yearFishScore", AwardFrom.YEAR_FISH_EXCHANGE, player, score, -staticActExchange.getNeedPoint(), activity);
+        activity.getStatusMap().merge(keyId, 1, Integer::sum);
+        List<CommonPb.Award> awardList = rewardDataManager.sendReward(player, staticActExchange.getAwardList(), AwardFrom.YEAR_FISH_EXCHANGE);
         GamePb5.YearFishShopExchangeRs.Builder resp = GamePb5.YearFishShopExchangeRs.newBuilder();
         resp.setShopInfo(buildYearFishShopInfo(activity));
         resp.addAllAwards(awardList);

@@ -8,6 +8,7 @@ public class Account {
     private int serverId;
     private int platNo;
     private String platId;
+    private String publisher;
     private int childNo;
     private int forbid;
     private int whiteName;
@@ -156,7 +157,14 @@ public class Account {
     public void setRecommendCamp(int recommendCamp) {
         this.recommendCamp = recommendCamp;
     }
-    
+
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
 
     @Override
     public String toString() {

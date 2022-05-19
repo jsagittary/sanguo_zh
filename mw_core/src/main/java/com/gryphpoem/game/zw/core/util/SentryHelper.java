@@ -36,9 +36,9 @@ public class SentryHelper {
             if (null != sentryClient) {
                 Sentry.setStoredClient(sentryClient);
                 sentryClient.setServerName(DataResource.serverName);
-                sentryClient.addTag("game", "civilization");
-                sentryClient.addTag("game_desc", "文明国内");
-                sentryClient.addTag("server", String.format("civilization_%d", DataResource.serverId));
+                sentryClient.addTag("game", "sanguo");
+                sentryClient.addTag("game_desc", "三国");
+                sentryClient.addTag("server", String.format("sanguo_%d", DataResource.serverId));
                 sentryClient.addTag("environment", DataResource.environment);
                 initialized = true;
             }

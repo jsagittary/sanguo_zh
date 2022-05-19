@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.util;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
 
 import java.util.Calendar;
@@ -667,6 +668,8 @@ public class TimeHelper {
 	}
 
     public static int getNextTimeStampByCron(String cron){
+        if (StringUtils.isBlank(cron))
+            return -1;
         try {
             CronExpression cronExpression = new CronExpression(cron);
             return (int) (cronExpression.getNextValidTimeAfter(new Date()).getTime()/SECOND_MS);

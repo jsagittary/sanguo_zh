@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -433,6 +434,8 @@ public class TechService {
         }
         LogUtil.debug(roleId + ",type=" + techLv.getId() + ",techLV=" + techLv.getLv() + ",step=" + techLv.getStep());
         LogLordHelper.commonLog("techUp", AwardFrom.UP_TECH, player, techLv.getId(), techLv.getLv(), techLv.getStep());
+        StaticTechLv nextStaticTechLv = StaticBuildingDataMgr.getTechLvMap(techLv.getId(), techLv.getLv());
+        EventDataUp.technologySuccess(player, techLv.getId(), CheckNull.isNull(nextStaticTechLv) ? 0 : nextStaticTechLv.getId(), techLv.getLv());
         // 重置科技升级完成消息推送状态
         // player.removePushRecord(PushConstant.ID_UP_TECH_FINISH);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_TECH);
@@ -631,7 +634,8 @@ public class TechService {
             }
             LogUtil.robot(player.roleId + ", type=" + techLv.getId() + ", techLv=" + techLv.getLv() + ", step="
                     + techLv.getStep());
-
+            StaticTechLv nextStaticTechLv = StaticBuildingDataMgr.getTechLvMap(techLv.getId(), techLv.getLv());
+            EventDataUp.technologySuccess(player, techLv.getId(), CheckNull.isNull(nextStaticTechLv) ? 0 : nextStaticTechLv.getId(), techLv.getLv());
             player.tech.setQue(null);
         }
 

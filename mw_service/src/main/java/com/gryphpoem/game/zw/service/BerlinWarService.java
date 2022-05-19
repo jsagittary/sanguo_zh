@@ -4,10 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticBerlinWarDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -1507,8 +1504,11 @@ public class BerlinWarService {
             info.addChangeType(AwardType.HERO_ARM, hero.getHeroId());
             rewardDataManager.syncRoleResChanged(player, info); // 同步兵力
 
-            LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost,
-                    Constant.ACTION_SUB);
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+            if (Objects.nonNull(staticHero)) {
+                LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                        Constant.ACTION_SUB);
+            }
         }
         if (force.killed > 0) {
             // 大杀四方
@@ -1895,12 +1895,12 @@ public class BerlinWarService {
             checkForceDead(berlinCityInfo);
             //上报数数(攻击方)
             EventDataUp.battle(atkPlayer.account, atkPlayer.lord, attacker, "atk", "berlin",
-                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getAtkHeroList());
             //上报数数(防守方)
             if (!defIsNpc) {
                 defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
                 EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "def", "berlin",
-                        String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                        String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getDefHeroList());
             }
             // 柏林战斗日志
             LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "fight", atkPlayer.roleId, defIsNpc ? 0 : defPlayer.roleId, atkSuccess, berlinCityInfo.getCityId(), berlinCityInfo.getPos(), attacker.hurt, attacker.lost, attacker.total, atk.id, defender.hurt, defender.lost, defender.total, defIsNpc ? cityDef.id : def.id);
@@ -2227,12 +2227,12 @@ public class BerlinWarService {
 
         //上报数数(攻击方)
         EventDataUp.battle(atkPlayer.account, atkPlayer.lord, attacker, "atk", "berlin",
-                String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getAtkHeroList());
         //上报数数(防守方)
         if (!defIsNpc) {
             defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
             EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "def", "berlin",
-                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId());
+                    String.valueOf(WorldConstant.BATTLE_TYPE_BERLIN_WAR), String.valueOf(fightLogic.getWinState()), atkLord.getLordId(), rpt.getDefHeroList());
         }
         // 柏林战斗日志
         LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "fight", atkPlayer.roleId, defIsNpc ? 0 : defPlayer.roleId, atkSuccess, berlinCityInfo.getCityId(), berlinCityInfo.getPos(), attacker.hurt, attacker.lost, attacker.total, atk.id, defender.hurt, defender.lost, defender.total, defIsNpc ? cityDef.id : def.id);

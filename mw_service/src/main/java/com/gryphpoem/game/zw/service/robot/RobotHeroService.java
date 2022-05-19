@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @Description AI机器人将领相关服务类
@@ -59,7 +60,7 @@ public class RobotHeroService {
                 common.setHeroCdTime(now + HeroConstant.NORMAL_SEARCH_CD);
 
                 try {
-                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_NORMAL);
+                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_NORMAL, 0);
                 } catch (MwException e) {
                     LogUtil.robot(e, "机器人良将寻访出错, common:", common.heroSearchToString());
                 }
@@ -69,7 +70,7 @@ public class RobotHeroService {
             if (common.getSuperProcess() >= Constant.INT_HUNDRED) {
                 common.setSuperFreeNum(1);
                 try {
-                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_SUPER);
+                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_SUPER, 0);
                 } catch (MwException e) {
                     LogUtil.robot(e, "机器人神将寻访出错, common:", common.heroSearchToString());
                 }
@@ -105,9 +106,10 @@ public class RobotHeroService {
                     // 士兵回营
                     int sub = battleHero.getCount();
                     battleHero.setCount(0);
-                    LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
-                            battleHero.getCount(), -sub, Constant.ACTION_ADD);
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
+                    if (Objects.nonNull(staticHero))
+                        LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
+                                battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
                     rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
                     // 重新计算并更新将领属性

@@ -405,7 +405,7 @@ public class MusicFestivalCreativeService extends AbsSimpleActivityService imple
                 if (Objects.nonNull(base)) {
                     activity.getSaveMap().merge(SAVE_IDX_SCORE, updateScore, Integer::sum);
                     int total = activity.getSaveMap().get(SAVE_IDX_SCORE);
-                    LogLordHelper.activityScore("activityMusicCrtScore", from, player, total, updateScore, actType);
+                    LogLordHelper.activityScore("activityMusicCrtScore", from, player, total, updateScore, activity);
                     GlobalActivityCreativeOfficeData globalActivity = (GlobalActivityCreativeOfficeData) activityDataManager.getGlobalActivity(actType);
                     if (Objects.nonNull(globalActivity)) {
                         int camp = player.getCamp();

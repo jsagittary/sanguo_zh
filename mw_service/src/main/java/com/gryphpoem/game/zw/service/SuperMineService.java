@@ -980,12 +980,12 @@ public class SuperMineService {
                         .post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
 
                 //上报数数(攻击方)
-                EventDataUp.battle(player.account, player.lord,attacker,"atk", "fightSuperMine", String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
-                        String.valueOf(fightLogic.getWinState()),player.roleId);
+                EventDataUp.battle(player.account, player.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
+                        String.valueOf(fightLogic.getWinState()),player.roleId, rpt.getAtkHeroList());
                 //上报数数(防守方)
                 defPlayers.forEach(p -> {
-                    EventDataUp.battle(p.account, p.lord,defender,"def", "fightSuperMine", String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
-                            String.valueOf(fightLogic.getWinState()),player.roleId);
+                    EventDataUp.battle(p.account, p.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
+                            String.valueOf(fightLogic.getWinState()),player.roleId, rpt.getDefHeroList());
                 });
             } finally {
                 //取消被攻击人报警

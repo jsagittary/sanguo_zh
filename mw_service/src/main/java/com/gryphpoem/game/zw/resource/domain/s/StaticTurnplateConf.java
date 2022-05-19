@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.resource.constant.LogParamConstant;
+
 import java.util.List;
 
 /**
@@ -236,5 +238,12 @@ public class StaticTurnplateConf {
 
     public void setProbList(List<List<Integer>> probList) {
         this.probList = probList;
+    }
+
+    public byte getLogCountType() {
+        if (this.count == 1) {
+            return LogParamConstant.TURNTABLE_ONE_COUNT_TYPE;
+        }
+        return LogParamConstant.TURNTABLE_TEN_COUNT_TYPE;
     }
 }

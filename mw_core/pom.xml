@@ -4,17 +4,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.gryphpoem.game.zw</groupId>
-		<artifactId>civilization</artifactId>
+		<artifactId>sanguo</artifactId>
 		<version>1.0.1</version>
 	</parent>
 	<artifactId>mw_core</artifactId>
+	<version>3.0.1</version>
 	<name>mw_core</name>
 	<description>《现代战争》项目服务端核心架构、接口定义</description>
 	<dependencies>
 		<dependency>
 			<groupId>com.gryphpoem</groupId>
 			<artifactId>sanguo-proto</artifactId>
-			<version>1.0.25</version>
+			<version>1.0.26</version>
 		</dependency>
 	</dependencies>
 	<build>
