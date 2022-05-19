@@ -373,7 +373,7 @@ public class WarService {
         // 通知客户端玩家资源变化
         sendRoleResChange(changeMap);
         // 战斗打日志
-        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList(), String.valueOf(staticGestapoPlan.getType()));
     }
 
     /**
@@ -849,6 +849,7 @@ public class WarService {
         Turple<Integer, Integer> defPos = MapHelper.reducePos(battle.getPos());
         CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
 
+        String firstBloodCity = LogParamConstant.NO_FIRST_KILL_CITY;
         LinkedList<Battle> list = warDataManager.getBattlePosMap().get(battle.getPos());
         if (battle.isCityBattle()) {
             if (atkSuccess) {
@@ -972,7 +973,7 @@ public class WarService {
                             city.getFirstKillReward().clear();
                         }
                         // 首杀奖励
-                        checkUpdAreafirstKill(staticCity, city, battle.getAtkLordId(), joinRoles);
+                        firstBloodCity = checkUpdAreafirstKill(staticCity, city, battle.getAtkLordId(), joinRoles) ? LogParamConstant.IS_FIRST_KILL_CITY : LogParamConstant.IS_NOT_FIRST_KILL_CITY;
                         // 打城 荣耀日报更新
                         honorDailyService.addAndCheckHonorReport2s(battle.getSponsor(), HonorDailyConstant.COND_ID_2);
                     }
@@ -1147,7 +1148,7 @@ public class WarService {
         // 通知客户端玩家资源变化
         sendRoleResChange(changeMap);
         // 战斗打日志
-        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList(), String.valueOf(cityId), firstBloodCity);
     }
 
     /**
@@ -1225,12 +1226,12 @@ public class WarService {
      * @param sponsorId
      * @param joinRoles
      */
-    public void checkUpdAreafirstKill(StaticCity staticCity, City city, long sponsorId, List<Long> joinRoles)
+    public boolean checkUpdAreafirstKill(StaticCity staticCity, City city, long sponsorId, List<Long> joinRoles)
             throws MwException {
         List<Long> atkList = joinRoles.stream().filter(roleId -> !roleId.equals(sponsorId))
                 .collect(Collectors.toList());
         if (sponsorId == 0L) {
-            return;
+            return false;
         }
         Player sponsor = playerDataManager.checkPlayerIsExist(sponsorId);
         ArrayList<Long> sponsorList = new ArrayList<>();
@@ -1248,7 +1249,7 @@ public class WarService {
             List<List<Integer>> confAwd = Constant.CITY_TYPE_KILL_REWARD.get(cityType);
             if (CheckNull.isEmpty(confAwd)) {
                 LogUtil.error("城池首杀奖励未配置: cityType" + cityType);
-                return;
+                return false;
             }
 
             List<Award> awards = new ArrayList<>(PbHelper.createAwardsPb(confAwd));
@@ -1299,7 +1300,11 @@ public class WarService {
                 //称号-城池首杀
                 titleService.processTask(player,ETask.CITY_FIRSTKILLED);
             });
+
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -1308,7 +1313,7 @@ public class WarService {
      * @param battle
      * @param winState 胜利的状态
      */
-    public void logBattle(Battle battle, int winState, Fighter attacker, Fighter defender, List<RptHero> atkHeroList, List<RptHero> defHeroList) {
+    public void logBattle(Battle battle, int winState, Fighter attacker, Fighter defender, List<RptHero> atkHeroList, List<RptHero> defHeroList, Object... param) {
         String battleId = battle.getBattleId() + "_" + battle.getBattleTime();
         String type = String.valueOf(battle.getType());
         String win = String.valueOf(winState);
@@ -1324,7 +1329,7 @@ public class WarService {
                     LogLordHelper.otherLog("battle", player.account.getServerId(), player.roleId, "atk", battleId, type,
                             win, pos, sponsorId, defencerId, atkCamp);
                     //上报数数
-                    EventDataUp.battle(player.account, player.lord, attacker, "atk", battleId, type, win, Long.parseLong(sponsorId), atkHeroList);
+                    EventDataUp.battle(player.account, player.lord, attacker, "atk", battleId, type, win, Long.parseLong(sponsorId), atkHeroList, param);
                 });
 
         // 防守方玩家打日志
@@ -1334,7 +1339,7 @@ public class WarService {
                             win, pos, sponsorId, defencerId, atkCamp);
                     //上报数数
                     if (defender != null) {
-                        EventDataUp.battle(player.account, player.lord, defender, "def", battleId, type, win, Long.parseLong(sponsorId), defHeroList);
+                        EventDataUp.battle(player.account, player.lord, defender, "def", battleId, type, win, Long.parseLong(sponsorId), defHeroList, param);
                     }
                 });
 

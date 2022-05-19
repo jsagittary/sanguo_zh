@@ -1733,7 +1733,7 @@ public class MarchService {
      * @param airShipPos
      */
     public void logAirShipBattle(int areaId, List<CommonPb.BattleRole> battleRoles, boolean atkSuccess, String airShipKeyIdAndId,
-                                 int airShipPos, Fighter attacker, Player firstAttackPlayer, List<CommonPb.RptHero> atkHero) {
+                                 int airShipPos, Fighter attacker, Player firstAttackPlayer, List<CommonPb.RptHero> atkHero, Object... param) {
         String win;
         if(atkSuccess){
             win = String.valueOf(ArmyConstant.FIGHT_RESULT_SUCCESS);
@@ -1746,7 +1746,7 @@ public class MarchService {
                         "atk", areaId, airShipKeyIdAndId, atkSuccess, airShipPos, player.lord.getCamp());
                         //上报数数
                     EventDataUp.battle(player.account, player.lord,attacker,"atk", airShipKeyIdAndId,
-                            String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP),win,firstAttackPlayer.roleId, atkHero);
+                            String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP),win,firstAttackPlayer.roleId, atkHero, param);
                 });
     }
 

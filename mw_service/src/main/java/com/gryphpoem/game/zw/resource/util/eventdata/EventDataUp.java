@@ -14,6 +14,7 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -30,6 +31,7 @@ import com.gryphpoem.game.zw.resource.util.StringUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -372,7 +374,7 @@ public class EventDataUp {
      * @param win       1 成功，2失败
      * @param sponsorId 发起者id
      */
-    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId, List<CommonPb.RptHero> rptHeroList) {
+    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId, List<CommonPb.RptHero> rptHeroList, Object... param) {
         if (account == null || lord == null) {
             return;
         }
@@ -504,6 +506,14 @@ public class EventDataUp {
                 common.put("attacker_troops", forceJsonArray);
             else
                 common.put("defender_troops", forceJsonArray);
+            if (String.valueOf(WorldConstant.BATTLE_TYPE_CAMP).equalsIgnoreCase(type)) {
+                common.put("battle_info", ObjectUtils.isEmpty(param) ? "" : param[0]);
+                common.put("battle_info1", ObjectUtils.isEmpty(param) && param.length >= 2 ? "" : param[1]);
+            }
+            if (String.valueOf(WorldConstant.BATTLE_TYPE_GESTAPO).equalsIgnoreCase(type) ||
+                    String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP).equalsIgnoreCase(type)) {
+                common.put("battle_info", ObjectUtils.isEmpty(param) ? "" : param[0]);
+            }
 
             Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "battle");
             Map<String, Object> properties = new HashMap<>();
