@@ -23,7 +23,7 @@ import io.netty.handler.codec.http.*;
  */
 public class HttpMessageHandler extends HttpBaseChannelHandler {
     private HttpServer httpServer;
-    private ByteArrayOutputStream body;
+//    private ByteArrayOutputStream body;
 
     public HttpMessageHandler(HttpServer httpServer) {
         super();
@@ -55,12 +55,12 @@ public class HttpMessageHandler extends HttpBaseChannelHandler {
         ByteBuf in = ((FullHttpRequest) msg).content();
         byte[] data = new byte[in.readableBytes()];
         in.readBytes(data);
-        if (body == null)
-            body = new ByteArrayOutputStream();
-        body.write(data);
+//        if (body == null)
+//            body = new ByteArrayOutputStream();
+//        body.write(data);
         // System.out.println("bodyLen:"+body.toByteArray().length);
-        Base base = PbHelper.parseFromByte(body.toByteArray());
-
+//        Base base = PbHelper.parseFromByte(body.toByteArray());
+        Base base = PbHelper.parseFromByte(data);
         // buf.release();
 
         // String res = "I am OK";
@@ -85,7 +85,7 @@ public class HttpMessageHandler extends HttpBaseChannelHandler {
         ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 
         httpServer.doPublicCommand(base);
-        body = null;
+//        body = null;
 
         // Base base = PbHelper.parseFromByte(packet);
         //
