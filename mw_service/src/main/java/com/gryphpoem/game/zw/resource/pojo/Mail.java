@@ -15,6 +15,7 @@ import java.util.List;
  *
  */
 public class Mail {
+	private long originator;
 	private int keyId;
 	private int moldId;
 	private int state;
@@ -80,6 +81,12 @@ public class Mail {
 		}
 		setReportStatus(mail.getReportStatus());
 		setCross(mail.getIsCross());
+		setOriginator(mail.getOriginator());
+	}
+
+	public Mail(long originator, int keyId, int type, int moldId, int state, int time) {
+		this(keyId, type, moldId, state, time);
+		this.originator = originator;
 	}
 
 	public Mail(int keyId, int type, int moldId, int state, int time) {
@@ -285,5 +292,13 @@ public class Mail {
 
 	public void setReportStatus(int reportStatus) {
 		this.reportStatus = reportStatus;
+	}
+
+	public long getOriginator() {
+		return originator;
+	}
+
+	public void setOriginator(long originator) {
+		this.originator = originator;
 	}
 }

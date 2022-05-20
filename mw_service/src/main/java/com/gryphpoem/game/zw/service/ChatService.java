@@ -63,6 +63,13 @@ public class ChatService {
     @Autowired
     private CrossChatService crossChatService;
 
+    public void deleteRoleChat(Player player){
+        //删除本服聊天数据
+        chatDataManager.deleteRoleChat(player.roleId);
+        //删除跨服聊天数据
+        crossChatService.deleteChatByRoleId(player);
+    }
+
     /**
      * 获取最近的聊天记录，默认返回本阵营的聊天记录
      *

@@ -69,8 +69,6 @@ public abstract class HttpServer extends Server {
 							ch.pipeline().addLast(new HttpResponseEncoder());
 							// server端接收到的是httpRequest，所以要使用HttpRequestDecoder进行解码
 							ch.pipeline().addLast(new HttpRequestDecoder());
-							ch.pipeline().addLast(new HttpObjectAggregator(65535));
-							ch.pipeline().addLast(new ChunkedWriteHandler());
 							ch.pipeline().addLast(initHandler());
 						}
 					}).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE,

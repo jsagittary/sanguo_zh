@@ -60,15 +60,38 @@ import java.util.Objects;
      * @return
      */
     public Mail sendNormalMail(Player recvPlayer, int moldId, int time, Object... param) {
+        Mail mail = buildNormalMail(null, recvPlayer, moldId, time, param);
+
+        // 发送邮件
+        synMailToPlayer(recvPlayer, mail);
+
+        return mail;
+    }
+
+    public Mail sendCampMail(Player originator, Player receiver, int moldId, int time, Object... param) {
+        Mail mail = buildNormalMail(originator, receiver, moldId, time, param);
+
+        // 发送邮件
+        synMailToPlayer(receiver, mail);
+
+        return mail;
+    }
+
+    public Mail buildNormalMail(Player originator, Player receiver, int moldId, int time, Object... param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
         if (staticMail == null) {
-            LogUtil.error(String.format("roleId :%d, 未找到邮件模版 :%d", recvPlayer != null ? recvPlayer.getLordId() : 0L, moldId));
+            LogUtil.error(String.format("roleId :%d, 未找到邮件模版 :%d", receiver != null ? receiver.getLordId() : 0L, moldId));
             return null;
         }
 
-        if (recvPlayer == null) {
-            LogUtil.debug("sendNormalMail recvPlayer is null");
+        if (Objects.isNull(receiver)) {
+            LogUtil.debug("buildNormalMail receiver is null");
             return null;
+        }
+
+        long originatorId = 0;
+        if (Objects.nonNull(originator)) {
+            originatorId = originator.getLordId();
         }
 
         List<String> tParam = new ArrayList<>();
@@ -77,15 +100,11 @@ import java.util.Objects;
         fillMailParam(moldId, tParam, cParam, param);
 
         int type = staticMail.getType();
-        Mail mail = new Mail(recvPlayer.maxKey(), type, moldId, MailConstant.STATE_UNREAD, time);
+        Mail mail = new Mail(originatorId, receiver.maxKey(), type, moldId, MailConstant.STATE_UNREAD, time);
         mail.settParam(tParam);
         mail.setcParam(cParam);
 
-        recvPlayer.mails.put(mail.getKeyId(), mail);
-
-        // 发送邮件
-        synMailToPlayer(recvPlayer, mail);
-
+        receiver.mails.put(mail.getKeyId(), mail);
         return mail;
     }
 
@@ -99,28 +118,7 @@ import java.util.Objects;
      * @return
      */
     public Mail sendCrossNormalMail(Player recvPlayer, int moldId, int time, List<String> param) {
-        StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
-        if (staticMail == null) {
-            LogUtil.error(String.format("roleId :%d, 未找到邮件模版 :%d", recvPlayer != null ? recvPlayer.getLordId() : 0L, moldId));
-            return null;
-        }
-
-        if (recvPlayer == null) {
-            LogUtil.debug("sendNormalMail recvPlayer is null");
-            return null;
-        }
-
-        List<String> tParam = new ArrayList<>();
-        List<String> cParam = new ArrayList<>();
-        // 填充邮件参数
-        fillMailParam(moldId, tParam, cParam, param);
-
-        int type = staticMail.getType();
-        Mail mail = new Mail(recvPlayer.maxKey(), type, moldId, MailConstant.STATE_UNREAD, time);
-        mail.settParam(tParam);
-        mail.setcParam(cParam);
-
-        recvPlayer.mails.put(mail.getKeyId(), mail);
+        Mail mail = buildNormalMail(null, recvPlayer, moldId, time, param.toArray());
         mail.setCross(true);
         // 发送邮件
         synMailToPlayer(recvPlayer, mail);

@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticChatDataMgr;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncActivityChatRs;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncChatRs;
 import com.gryphpoem.game.zw.resource.constant.ActParamConstant;
@@ -630,6 +631,32 @@ public class ChatDataManager {
                     redPacketMap.remove(rp.getId());
                 });
         return redPacketMap;
+    }
+
+    /**
+     * 删除玩家所有聊天
+     * @param lordId 玩家id
+     */
+    public void deleteRoleChat(long lordId) {
+        // 世界聊天
+        worldChat.removeIf(chat -> chat.getLordId() == lordId);
+        // 大喇叭
+        worldRoleChat.removeIf(chat -> chat.getLordId() == lordId);
+        // 区域聊天
+        areaChat.values().forEach(aChat -> aChat.removeIf(chat -> chat.getLordId() == lordId));
+        // 阵营聊天
+        campChat.values().forEach(cChat -> cChat.removeIf(chat -> chat.getLordId() == lordId));
+        // 私聊
+        privateChat.values().forEach(pChat -> pChat.removeIf(chat -> chat.getLordId() == lordId));
+        // 会话删除, 删除自己的会话和其它人跟自己的会话
+        dialogMap.remove(lordId);
+        dialogMap.values().forEach(map -> map.remove(lordId));
+        GamePb3.SyncChatMailChangeRs.Builder syncBuilder = GamePb3.SyncChatMailChangeRs.newBuilder();
+        syncBuilder.addChatChange(GamePb3.SyncChatMailChangeRs.ChatChange.newBuilder().setLordId(lordId).setAction(1).build());
+        BasePb.Base.Builder builder = PbHelper.createSynBase(GamePb3.SyncChatMailChangeRs.EXT_FIELD_NUMBER, GamePb3.SyncChatMailChangeRs.ext, syncBuilder.build());
+        // 通知在线的客户端删除玩家的聊天记录
+        playerDataManager.getAllOnlinePlayer().values().stream().filter(p -> Objects.nonNull(p.ctx))
+                .forEach(p -> MsgDataManager.getIns().add(new Msg(p.ctx, builder.build(), p.roleId)));
     }
 
     // ===================================序列化反序列化操作====================================

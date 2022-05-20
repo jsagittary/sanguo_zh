@@ -6,15 +6,18 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.GamePb2;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
+import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb3.SendCampMailRq;
 import com.gryphpoem.game.zw.pb.GamePb3.SendCampMailRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
+import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
@@ -25,6 +28,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author TanDonghai
@@ -47,6 +51,23 @@ public class MailService {
     private ServerSetting serverSetting;
     @Autowired
     private ActivityDataManager activityDataManager;
+
+    public void deleteCampMail(long lordId, int moldId) {
+        GamePb3.SyncChatMailChangeRs.Builder syncBuilder = GamePb3.SyncChatMailChangeRs.newBuilder();
+        syncBuilder.addMailChange(GamePb3.SyncChatMailChangeRs.MailChange.newBuilder().setLordId(lordId).setAction(1).setMoldId(moldId).build());
+        BasePb.Base.Builder builder = PbHelper.createSynBase(GamePb3.SyncChatMailChangeRs.EXT_FIELD_NUMBER, GamePb3.SyncChatMailChangeRs.ext, syncBuilder.build());
+        // 删除本服阵营邮件
+        playerDataManager.getAllPlayer().values().stream().filter(p -> !p.mails.isEmpty())
+                // 删除该模板, 该发件人的邮件
+                .forEach(p -> {
+                    Set<Integer> removeSet = p.mails.values().stream().filter(mail -> mail.getMoldId() == moldId && mail.getOriginator() == lordId).map(Mail::getKeyId).collect(Collectors.toSet());
+                    if (CheckNull.nonEmpty(removeSet)) {
+                        removeSet.forEach(p.mails::remove);
+                        // 阵营邮件删除, 同步给客户端
+                        MsgDataManager.getIns().add(new Msg(p.ctx, builder.build(), p.roleId));
+                    }
+                });
+    }
 
     /**
      * 获取邮件列表
@@ -472,7 +493,7 @@ public class MailService {
         ConcurrentHashMap<Long, Player> map = playerDataManager.getPlayerByCamp(player.lord.getCamp());
         for (Player recvPlayer : map.values()) {
             // 发送邮件
-            mailDataManager.sendNormalMail(recvPlayer, MailConstant.MOLD_CAMP_MAIL, now, player.lord.getLevel(),
+            mailDataManager.sendCampMail(player, recvPlayer, MailConstant.MOLD_CAMP_MAIL, now, player.lord.getLevel(),
                     player.lord.getNick(), player.lord.getPortrait(), content, content, player.lord.getLordId(), player.getDressUp().getCurPortraitFrame());
 
             // 判断玩家等级和离线时长 推送 消息
