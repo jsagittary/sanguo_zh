@@ -12,6 +12,7 @@ public abstract class Handler implements ICommand {
     public static final int BUILD_QUE = 2;
     public static final int TANK_QUE = 3;
 
+    protected Base rsMsg;
     protected int rsMsgCmd;
     protected ChannelHandlerContext ctx;
     protected Base msg;
@@ -92,4 +93,7 @@ public abstract class Handler implements ICommand {
         this.rsMsgCmd = rsMsgCmd;
     }
 
+    public Base getRsMsg() {
+        return rsMsg;
+    }
 }
