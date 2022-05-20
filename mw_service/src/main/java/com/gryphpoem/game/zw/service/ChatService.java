@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.RedPacketRole;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMail;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSystem;
 import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.chat.Chat;
@@ -263,16 +264,43 @@ public class ChatService {
                     silence = true;
                 }
             }
-            // 服务器聊天等级限制
-            if (channel == ChatConst.CHANNEL_PRIVATE) {
-                if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_CHAT_IN_PRIVATE)) {
+
+            //等级判断
+            List<List<Integer>> lvConditionList = SystemTabLoader.getListListIntSystemValue(641, "");
+            if (CheckNull.nonEmpty(lvConditionList)) {
+                if (player.lord.getVip() < 0) {
+                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d, vip:%d", player.roleId, channel, player.lord.getVip()));
+                }
+
+                List<Integer> lvCondition = lvConditionList.stream().filter(condition -> CheckNull.nonEmpty(condition) &&
+                        condition.get(0) == player.lord.getVip()).findFirst().orElse(null);
+                if (lvCondition == null) {
+                    //若未找到则找最大vip限制
+                    for (List<Integer> tmp : lvConditionList) {
+                        if (CheckNull.isEmpty(tmp)) {
+                            continue;
+                        }
+                        if (CheckNull.isEmpty(lvCondition))
+                            lvCondition = tmp;
+                        else if (lvCondition.get(0) < tmp.get(0)) {
+                            lvCondition = tmp;
+                        }
+                    }
+                }
+
+                int needLv = 0;
+                if (CheckNull.nonEmpty(lvCondition) && lvCondition.size() >= 3) {
+                    needLv = channel == ChatConst.CHANNEL_PRIVATE ? lvCondition.get(2) : lvCondition.get(1);
+                } else {
+                    LogUtil.error(String.format("chat level config is empty!!! playerVip:%d", player.lord.getVip()));
+                }
+                if (needLv > player.lord.getLevel()) {
                     throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d, level:%d", player.roleId, channel, player.lord.getLevel()));
                 }
             } else {
-                if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_CHAT_IN_PUBLIC)) {
-                    throw new MwException(GameError.FUNCTION_LOCK.getCode(), String.format("聊天等级限制, roleId:%d, channel:%d, level:%d", player.roleId, channel, player.lord.getLevel()));
-                }
+                LogUtil.error(String.format("chat level config is empty!!!"));
             }
+
             // 服务器id
             int serverID = DataResource.ac.getBean(ServerSetting.class).getServerID();
             boolean isLoud = req.hasStyle() && req.getStyle() == 1; // 是否是大喇叭
