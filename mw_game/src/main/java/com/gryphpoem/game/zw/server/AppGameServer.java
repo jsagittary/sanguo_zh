@@ -223,7 +223,7 @@ public class AppGameServer extends Server {
         super.run();
 
         GameServerRpcServerImpl impl = ac.getBean("gameServerRpcServer", GameServerRpcServerImpl.class);
-//        impl.checkServerAlreadyStart();
+        impl.checkServerAlreadyStart();
 
 
         //检查gm命令
