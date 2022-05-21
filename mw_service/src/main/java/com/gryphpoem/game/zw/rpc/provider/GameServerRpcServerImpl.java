@@ -203,7 +203,7 @@ public class GameServerRpcServerImpl implements GameServerRpcService {
     }
 
     @Override
-    public CompletableFuture<String> executeProtoCmd(long roleId, String protoCmd) {
+    public String executeProtoCmd(long l, String s) {
         return null;
     }
 
