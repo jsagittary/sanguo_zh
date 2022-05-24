@@ -63,6 +63,8 @@ public class MailService {
                     Set<Integer> removeSet = p.mails.values().stream().filter(mail -> mail.getMoldId() == moldId && mail.getOriginator() == lordId).map(Mail::getKeyId).collect(Collectors.toSet());
                     if (CheckNull.nonEmpty(removeSet)) {
                         removeSet.forEach(p.mails::remove);
+                        if (p.ctx == null || !p.isLogin || p.isRobot)
+                            return;
                         // 阵营邮件删除, 同步给客户端
                         MsgDataManager.getIns().add(new Msg(p.ctx, builder.build(), p.roleId));
                     }
