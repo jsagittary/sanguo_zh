@@ -1720,7 +1720,7 @@ public class MarchService {
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
         }
 
-        logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer, rpt.getAtkHeroList());
+        logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer, rpt.getAtkHeroList(), String.valueOf(airShipId));
     }
 
     /**
