@@ -135,9 +135,12 @@ public interface Events {
     public static class SyncQuestionnaireEvent {
         /** 活动类型*/
         public int actType;
+        /** 活动配置*/
+        public List<List<String>> configList;
 
-        public SyncQuestionnaireEvent(int actType) {
+        public SyncQuestionnaireEvent(int actType, List<List<String>> configList) {
             this.actType = actType;
+            this.configList = configList;
         }
     }
 }
