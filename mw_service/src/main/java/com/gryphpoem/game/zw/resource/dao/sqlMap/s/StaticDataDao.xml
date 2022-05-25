@@ -770,6 +770,8 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="params" property="params"
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListStringTypeHandler" />
+		<result column="channel" property="channel"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 	</resultMap>
 	<select id="selectStaticActivityPlan" resultMap="staticActivityPlanMap">
 		SELECT * FROM

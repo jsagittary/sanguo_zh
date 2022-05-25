@@ -129,4 +129,15 @@ public interface Events {
         }
     }
 
+    /**
+     * 同步问卷调查事件
+     */
+    public static class SyncQuestionnaireEvent {
+        /** 活动类型*/
+        public int actType;
+
+        public SyncQuestionnaireEvent(int actType) {
+            this.actType = actType;
+        }
+    }
 }

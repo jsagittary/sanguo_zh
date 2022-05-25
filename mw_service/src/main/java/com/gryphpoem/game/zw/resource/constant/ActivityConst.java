@@ -216,6 +216,7 @@ public class ActivityConst {
     public static final int ACT_COLLECT_REWARD = 510;// 采集翻倍 采集获得的资源增加50%
     public static final int ACT_RECRUIT_REWARD = 511;// 制造翻倍（原作坊加速） 兵营每分钟募兵数量增加100%
     public static final int ACT_SHARE_REWARD = 523;// 分享好友 通过分享活动邀请好友进入游戏，到达对应的人数即可领取奖励
+    public static final int ACT_QUESTIONNAIRE = 524;    //问卷调查活动类型
 
     public static final int ACT_DOUBLE_REWARD = 999;// 活动翻倍
 

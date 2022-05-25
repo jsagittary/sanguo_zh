@@ -20,6 +20,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActVoucher;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
@@ -363,5 +364,20 @@ abstract class AbsActivityService {
 
     protected String joinTriggerName(int actType, int actId, int planId) {
         return actType + "_" + actId + "_" + planId;
+    }
+
+    /**
+     * 判断活动是否需要渠道判断
+     *
+     * @param player
+     * @param actBase
+     * @return
+     */
+    public boolean inChannel(Player player, ActivityBase actBase) {
+        if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(actBase) || CheckNull.isNull(actBase.getPlan()))
+            return false;
+        if (CheckNull.isEmpty(actBase.getPlan().getChannel()))
+            return true;
+        return actBase.getPlan().getChannel().contains(player.account.getPlatNo());
     }
 }

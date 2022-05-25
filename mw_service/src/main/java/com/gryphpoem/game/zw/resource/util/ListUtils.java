@@ -44,6 +44,24 @@ public class ListUtils {
         return Arrays.toString(list.toArray());
     }
 
+    public static String toListString(List<List> list) {
+        if (isBlank(list))
+            return "[]";
+
+        int iMax = list.size() - 1;
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; ; i++) {
+            if (isBlank(list.get(i))) {
+                b.append("null");
+                continue;
+            }
+            b.append(Arrays.toString(list.get(i).toArray()));
+            if (i == iMax)
+                return b.toString();
+            b.append(", ");
+        }
+    }
+
     public static boolean contains(int[] array,int val){
         if (Objects.isNull(array) || array.length <= 0) {
             return false;
