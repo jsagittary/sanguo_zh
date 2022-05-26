@@ -2,8 +2,10 @@ package com.gryphpoem.game.zw.resource.domain;
 
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.resource.domain.p.UploadCrossDataType;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActQuestionnaire;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName Events.java
@@ -135,12 +137,15 @@ public interface Events {
     public static class SyncQuestionnaireEvent {
         /** 活动类型*/
         public int actType;
-        /** 活动配置*/
-        public List<List<String>> configList;
+        /** 旧的活动配置*/
+        public Map<Integer, StaticActQuestionnaire> oldConfigMap;
+        /** 新的活动配置*/
+        public Map<Integer, StaticActQuestionnaire> newConfigMap;
 
-        public SyncQuestionnaireEvent(int actType, List<List<String>> configList) {
+        public SyncQuestionnaireEvent(int actType, Map<Integer, StaticActQuestionnaire> oldConfigMap, Map<Integer, StaticActQuestionnaire> newConfigMap) {
             this.actType = actType;
-            this.configList = configList;
+            this.oldConfigMap = oldConfigMap;
+            this.newConfigMap = newConfigMap;
         }
     }
 }

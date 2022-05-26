@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.constant;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.resource.util.ActParamTabLoader;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
@@ -527,12 +528,6 @@ public final class ActParamConstant {
      * KEY:难度, VALUE:数量
      */
     public static Map<Integer, Integer> MUSIC_CRT_OFFICE_TASK_COUNT_BY_DIFFICULT;
-
-    /**
-     * 问卷调查配置
-     *
-     */
-    public static List<List<String>> ACT_QUESTIONNAIRE_CONFIG;
     /*-------------------------------load数据-------------------------------------*/
     public static void loadSystem() {
         MUSIC_CRT_OFFICE_PARAMS = ActParamTabLoader.getListIntSystemValue(ActParamId.MUSIC_CRT_OFFICE_PARAMS, "[]");
@@ -729,15 +724,6 @@ public final class ActParamConstant {
         ACT_GOLDEN_AUTUMN_AWARD_SOWING = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_AWARD_SOWING, 100);
         ACT_GOLDEN_AUTUMN_RANDOM_AWARD_LIBRARY = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_random_AWARD_Library, "[[]]");
         ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION, "[[]]");
-        ACT_QUESTIONNAIRE_CONFIG = ActParamTabLoader.getListListStringSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION, "[[]]");
-        syncServiceConfig();
-    }
-
-    /**
-     * 同步更新配置数据
-     */
-    private static void syncServiceConfig() {
-        DataResource.ac.getBean(ActivityQuestionnaireService.class).syncQuestionnaireConfig(ACT_QUESTIONNAIRE_CONFIG);
     }
 
     /*-------------------------------id值-------------------------------------*/
@@ -1226,11 +1212,6 @@ public final class ActParamConstant {
          * 拍卖活动类型最高出价次数
          */
         public static final int ACT_AUCTION_TYPE_HIGHEST_COUNT = 364;
-
-        /**
-         * 问卷调查配置
-         */
-        public static final int ACT_QUESTIONNAIRE_CONFIG = 374;
     }
 
 }

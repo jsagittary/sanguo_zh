@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.dataMgr;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.dao.impl.s.StaticDataDao;
@@ -11,6 +12,7 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.service.ActivityTriggerService;
+import com.gryphpoem.game.zw.service.activity.ActivityQuestionnaireService;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
@@ -198,6 +200,11 @@ public class StaticActivityDataMgr {
      * 喜悦金秋-日出而作活动任务配置
      */
     private static Map<Integer, StaticActAutumnDayTask> staticActAutumnDayTaskMap;
+
+    /**
+     * 问卷调查配置
+     */
+    private static Map<Integer, Map<Integer, StaticActQuestionnaire>> staticActQuestionnaireMap;
 
     public static void init() {
         List<StaticActAward> list = staticDataDao.selectActAward();
@@ -439,6 +446,12 @@ public class StaticActivityDataMgr {
         //喜悦金秋任务表
         Map<Integer, StaticActAutumnDayTask> staticActAutumnDayTaskMap = staticDataDao.selectActAutumnDayTaskMap();
         setStaticActAutumnDayTaskMap(null == staticActAutumnDayTaskMap ? new HashMap<>() : staticActAutumnDayTaskMap);
+        List<StaticActQuestionnaire> staticActQuestionnaireList = staticDataDao.selectActQuestionnaireList();
+        Map<Integer, Map<Integer, StaticActQuestionnaire>> questionnaireMap = new HashMap<>();
+        staticActQuestionnaireList.forEach(staticData -> {
+            questionnaireMap.computeIfAbsent(staticData.getActivityId(), map -> new HashMap<>()).put(staticData.getPlatNo(), staticData);
+        });
+        staticActQuestionnaireMap = questionnaireMap;
 
         s_christmas_award();
 
@@ -453,6 +466,7 @@ public class StaticActivityDataMgr {
         // 时间触发礼包
         ActivityTriggerService activityTriggerService = DataResource.ac.getBean(ActivityTriggerService.class);
         activityTriggerService.checkTimeTriggerActivity();
+        syncServiceConfig();
     }
 
     private static List<StaticChristmasAward> staticChristmasAwardList;
@@ -1322,5 +1336,16 @@ public class StaticActivityDataMgr {
         return actHotProductKeyMap.get(keyId);
     }
 
+    public static Map<Integer, Map<Integer, StaticActQuestionnaire>> getStaticActQuestionnaireMap() {
+        return staticActQuestionnaireMap;
+    }
 
+    /**
+     * 同步更新配置数据
+     */
+    private static void syncServiceConfig() {
+        Java8Utils.syncMethodInvoke(() -> {
+            DataResource.ac.getBean(ActivityQuestionnaireService.class).syncQuestionnaireConfig(getStaticActQuestionnaireMap());
+        });
+    }
 }

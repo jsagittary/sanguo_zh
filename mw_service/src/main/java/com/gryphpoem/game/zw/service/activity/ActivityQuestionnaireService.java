@@ -7,19 +7,16 @@ import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.pb.ActivityPb;
-import com.gryphpoem.game.zw.pb.BasePb;
-import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.pb.GamePb5;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActQuestionnaire;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.service.AbsGameService;
 import com.gryphpoem.game.zw.service.PlayerService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +37,18 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     @Autowired
     private PlayerDataManager playerDataManager;
 
-    private Map<Integer, List<List<String>>> questionnaireConfigMap;
+    private Map<Integer, Map<Integer, StaticActQuestionnaire>> questionnaireConfigMap;
 
     @Override
     protected GeneratedMessage.Builder<GamePb4.GetActivityDataInfoRs.Builder> getActivityData(Player player, Activity activity, GlobalActivityData globalActivityData) throws Exception {
         GamePb4.GetActivityDataInfoRs.Builder builder = GamePb4.GetActivityDataInfoRs.newBuilder();
-        Optional.ofNullable(createQuestionnaireActDataPb(player, null, activity.getActivityType())).ifPresent(pb -> builder.setQuestionnaireInfo(pb));
+        if (CheckNull.isEmpty(questionnaireConfigMap))
+            return builder;
+        if (CheckNull.isEmpty(questionnaireConfigMap.get(activity.getActivityId())) ||
+                CheckNull.isNull(questionnaireConfigMap.get(activity.getActivityId()).get(player.account.getPlatNo())))
+            return builder;
+        Optional.ofNullable(createQuestionnaireActDataPb(player, questionnaireConfigMap.get(activity.getActivityId()).get(player.account.getPlatNo()),
+                activity.getActivityType())).ifPresent(pb -> builder.setQuestionnaireInfo(pb));
         return builder;
     }
 
@@ -55,18 +58,21 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     }
 
     /**
-     * @param config
+     * 启动服务器或刷表时同步配置
+     *
+     * @param dataMap
      */
-    public void syncQuestionnaireConfig(List<List<String>> config) {
-        if (CheckNull.isEmpty(config))
+    public void syncQuestionnaireConfig(Map<Integer, Map<Integer, StaticActQuestionnaire>> dataMap) {
+        if (CheckNull.isEmpty(dataMap))
             return;
-        if (CheckNull.isEmpty(questionnaireConfigMap))
-            questionnaireConfigMap = new HashMap<>();
+        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_QUESTIONNAIRE);
+        if (CheckNull.isNull(activityBase))
+            return;
         // 配置不同则通知客户端
-        if (!configEqual(questionnaireConfigMap.get(ActivityConst.ACT_QUESTIONNAIRE), config)) {
-            EventBus.getDefault().post(new Events.SyncQuestionnaireEvent(ActivityConst.ACT_QUESTIONNAIRE, config));
-        }
-        questionnaireConfigMap.put(ActivityConst.ACT_QUESTIONNAIRE, new ArrayList<>(config));
+        EventBus.getDefault().post(new Events.SyncQuestionnaireEvent(ActivityConst.ACT_QUESTIONNAIRE,
+                CheckNull.isEmpty(questionnaireConfigMap) ? null : questionnaireConfigMap.get(activityBase.getActivityId()),
+                dataMap.get(activityBase.getActivityId())));
+        questionnaireConfigMap = new HashMap<>(dataMap);
     }
 
     /**
@@ -81,10 +87,17 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(event.actType);
         if (CheckNull.isNull(activityBase))
             return;
+        Map<Integer, StaticActQuestionnaire> diffConfigMap = configCompare(event.oldConfigMap, event.newConfigMap);
+        if (CheckNull.isEmpty(diffConfigMap))
+            return;
+
         Collection<Player> onlinePlayers = playerDataManager.getAllOnlinePlayer().values();
         GamePb5.SyncQuestionnaireActInfo.Builder builder = GamePb5.SyncQuestionnaireActInfo.newBuilder();
         onlinePlayers.forEach(player -> {
-            ActivityPb.QuestionnaireActData actDataInfo = createQuestionnaireActDataPb(player, event.configList, event.actType);
+            StaticActQuestionnaire config = diffConfigMap.get(player.account.getPlatNo());
+            if (CheckNull.isNull(config))
+                return;
+            CommonPb.QuestionnaireActData actDataInfo = createQuestionnaireActDataPb(player, config, event.actType);
             if (CheckNull.isNull(actDataInfo))
                 return;
             builder.setActId(activityBase.getActivityId());
@@ -102,7 +115,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
      * @param actType
      * @return
      */
-    private ActivityPb.QuestionnaireActData createQuestionnaireActDataPb(Player player, List<List<String>> configList, int actType) {
+    private CommonPb.QuestionnaireActData createQuestionnaireActDataPb(Player player, StaticActQuestionnaire config, int actType) {
         if (CheckNull.isNull(player) || CheckNull.isNull(player.account))
             return null;
         if (ObjectUtils.isEmpty(getActivityType()) || !ArrayUtils.contains(getActivityType(), actType)) {
@@ -110,21 +123,16 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         }
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(actType);
         if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
-                CheckNull.isEmpty(activityBase.getPlan().getChannel()) || activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
+                CheckNull.isEmpty(activityBase.getPlan().getChannel()) || !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
             return null;
         if (CheckNull.isEmpty(questionnaireConfigMap))
             return null;
 
-        configList = CheckNull.isEmpty(configList) ? questionnaireConfigMap.get(actType) : configList;
-        if (CheckNull.isEmpty(configList))
-            return null;
-        List<String> configStr = configList.stream().filter(list -> Integer.parseInt(list.get(0)) == player.account.getPlatNo() &&
-                Integer.parseInt(list.get(1)) == activityBase.getActivityId()).findFirst().orElse(null);
-        if (CheckNull.isEmpty(configStr))
-            return null;
-        ActivityPb.QuestionnaireActData.Builder builder = ActivityPb.QuestionnaireActData.newBuilder();
-        builder.setPlatNo(Integer.parseInt(configStr.get(0)));
-        builder.setUrl(configStr.get(2));
+        CommonPb.QuestionnaireActData.Builder builder = CommonPb.QuestionnaireActData.newBuilder();
+        builder.setPlatNo(config.getPlatNo());
+        builder.setUrl(config.getUrl());
+        builder.setDesc(config.getDesc());
+        builder.addAllAwards(PbHelper.createAwardsPb(config.getAwards()));
         return builder.build();
     }
 
@@ -135,13 +143,19 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
      * @param newConfig
      * @return
      */
-    private boolean configEqual(List<List<String>> oldConfig, List<List<String>> newConfig) {
+    private Map<Integer, StaticActQuestionnaire> configCompare(Map<Integer, StaticActQuestionnaire> oldConfig, Map<Integer, StaticActQuestionnaire> newConfig) {
         if (CheckNull.isEmpty(oldConfig))
-            return false;
-        if (!ObjectUtils.nullSafeEquals(oldConfig, newConfig))
-            return false;
+            return newConfig;
 
-        return Collections.singletonList(oldConfig).toString().equals(Collections.singletonList(newConfig).toString());
+        Collection<StaticActQuestionnaire> oldConfigList = oldConfig.values();
+        Collection<StaticActQuestionnaire> newConfigList = newConfig.values();
+        Map<Integer, StaticActQuestionnaire> diffMap = new HashMap<>();
+        for (StaticActQuestionnaire data : oldConfigList) {
+            if (!newConfigList.contains(data))
+                diffMap.put(data.getPlatNo(), data);
+        }
+
+        return diffMap;
     }
 
     @Override

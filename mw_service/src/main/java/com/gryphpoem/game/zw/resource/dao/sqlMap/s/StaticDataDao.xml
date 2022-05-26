@@ -2474,6 +2474,13 @@
 		SELECT * FROM s_act_autumn_day_task
 	</select>
 
+	<resultMap id="staticActQuestionnaire" type="StaticActQuestionnaire">
+		<result column="awards" property="awards" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+	</resultMap>
+	<select id="selectActQuestionnaireList" resultMap="staticActQuestionnaire">
+		SELECT * FROM s_act_questionnaire
+	</select>
+
 	<select id="selectStaticCrossServerRuleList" resultType="StaticCrossServerRule" >
         SELECT * FROM s_cross_server_rule
     </select>
