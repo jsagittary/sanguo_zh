@@ -1,6 +1,9 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.ListUtils;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 
 import java.util.List;
 import java.util.Objects;
@@ -10,12 +13,13 @@ import java.util.Objects;
  * Author: zhangpeng
  * createTime: 2022-05-26 11:06
  */
-public class StaticActQuestionnaire {
+public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActData> {
     private int platNo;
     private int activityId;
     private String url;
     private String desc;
     private List<List<Integer>> awards;
+    private int status;
 
     public int getPlatNo() {
         return platNo;
@@ -57,6 +61,14 @@ public class StaticActQuestionnaire {
         this.awards = awards;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -79,5 +91,15 @@ public class StaticActQuestionnaire {
                 ", desc='" + desc + '\'' +
                 ", awards=" + ListUtils.toString(awards) +
                 '}';
+    }
+
+    @Override
+    public CommonPb.QuestionnaireActData createPb(boolean isSaveDb) {
+        CommonPb.QuestionnaireActData.Builder builder = CommonPb.QuestionnaireActData.newBuilder();
+        builder.setPlatNo(platNo);
+        builder.setUrl(url);
+        builder.setDesc(desc);
+        builder.addAllAwards(PbHelper.createAwardsPb(awards));
+        return builder.build();
     }
 }

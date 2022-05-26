@@ -39,6 +39,13 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
 
     private Map<Integer, Map<Integer, StaticActQuestionnaire>> questionnaireConfigMap;
 
+    /** 问卷更新*/
+    private static final int QUESTIONNAIRE_UPDATE = 0;
+    /** 问卷新增*/
+    private static final int QUESTIONNAIRE_NEW = 1;
+    /** 问卷删除*/
+    private static final int QUESTIONNAIRE_DELETE = 2;
+
     @Override
     protected GeneratedMessage.Builder<GamePb4.GetActivityDataInfoRs.Builder> getActivityData(Player player, Activity activity, GlobalActivityData globalActivityData) throws Exception {
         GamePb4.GetActivityDataInfoRs.Builder builder = GamePb4.GetActivityDataInfoRs.newBuilder();
@@ -92,17 +99,16 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
             return;
 
         Collection<Player> onlinePlayers = playerDataManager.getAllOnlinePlayer().values();
-        GamePb5.SyncQuestionnaireActInfo.Builder builder = GamePb5.SyncQuestionnaireActInfo.newBuilder();
+        GamePb5.SyncQuestionnaireActInfoRs.Builder builder = GamePb5.SyncQuestionnaireActInfoRs.newBuilder();
         onlinePlayers.forEach(player -> {
             StaticActQuestionnaire config = diffConfigMap.get(player.account.getPlatNo());
             if (CheckNull.isNull(config))
                 return;
-            CommonPb.QuestionnaireActData actDataInfo = createQuestionnaireActDataPb(player, config, event.actType);
-            if (CheckNull.isNull(actDataInfo))
-                return;
             builder.setActId(activityBase.getActivityId());
-            builder.setInfo(actDataInfo);
-            BasePb.Base msg = PbHelper.createSynBase(GamePb5.SyncQuestionnaireActInfo.EXT_FIELD_NUMBER, GamePb5.SyncQuestionnaireActInfo.ext, builder.build()).build();
+            builder.setStatus(config.getStatus());
+            if (config.getStatus() != QUESTIONNAIRE_DELETE)
+                builder.setInfo(config.createPb(false));
+            BasePb.Base msg = PbHelper.createSynBase(GamePb5.SyncQuestionnaireActInfoRs.EXT_FIELD_NUMBER, GamePb5.SyncQuestionnaireActInfoRs.ext, builder.build()).build();
             DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(msg, player);
             builder.clear();
         });
@@ -116,7 +122,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
      * @return
      */
     private CommonPb.QuestionnaireActData createQuestionnaireActDataPb(Player player, StaticActQuestionnaire config, int actType) {
-        if (CheckNull.isNull(player) || CheckNull.isNull(player.account))
+        if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(config))
             return null;
         if (ObjectUtils.isEmpty(getActivityType()) || !ArrayUtils.contains(getActivityType(), actType)) {
             return null;
@@ -126,12 +132,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
                 CheckNull.isEmpty(activityBase.getPlan().getChannel()) || !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
             return null;
 
-        CommonPb.QuestionnaireActData.Builder builder = CommonPb.QuestionnaireActData.newBuilder();
-        builder.setPlatNo(config.getPlatNo());
-        builder.setUrl(config.getUrl());
-        builder.setDesc(config.getDesc());
-        builder.addAllAwards(PbHelper.createAwardsPb(config.getAwards()));
-        return builder.build();
+        return config.createPb(false);
     }
 
     /**
@@ -142,17 +143,38 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
      * @return
      */
     private Map<Integer, StaticActQuestionnaire> configCompare(Map<Integer, StaticActQuestionnaire> oldConfig, Map<Integer, StaticActQuestionnaire> newConfig) {
-        if (CheckNull.isEmpty(oldConfig))
+        if (CheckNull.isEmpty(oldConfig)) {
+            newConfig.entrySet().forEach(data -> data.getValue().setStatus(QUESTIONNAIRE_NEW));
             return newConfig;
-
-        Collection<StaticActQuestionnaire> oldConfigList = oldConfig.values();
-        Collection<StaticActQuestionnaire> newConfigList = newConfig.values();
-        Map<Integer, StaticActQuestionnaire> diffMap = new HashMap<>();
-        for (StaticActQuestionnaire data : oldConfigList) {
-            if (!newConfigList.contains(data))
-                diffMap.put(data.getPlatNo(), data);
         }
 
+        Collection<StaticActQuestionnaire> oldConfigList = oldConfig.values();
+        Collection<StaticActQuestionnaire> newConfigList = new ArrayList<>(newConfig.values());
+        Map<Integer, StaticActQuestionnaire> diffMap = new HashMap<>();
+        for (StaticActQuestionnaire data : oldConfigList) {
+            StaticActQuestionnaire newData = newConfigList.stream().filter(config -> config.getActivityId() == data.getActivityId() &&
+                    config.getPlatNo() == data.getPlatNo()).findFirst().orElse(null);
+            if (CheckNull.isNull(newData)) {
+                data.setStatus(QUESTIONNAIRE_DELETE);
+                diffMap.put(newData.getPlatNo(), data);
+                continue;
+            }
+            if (newData.equals(data)) {
+                newConfigList.remove(newData);
+                continue;
+            }
+
+            newData.setStatus(QUESTIONNAIRE_UPDATE);
+            diffMap.put(newData.getPlatNo(), newData);
+            newConfigList.remove(newData);
+        }
+
+        if (CheckNull.nonEmpty(newConfigList)) {
+            newConfigList.forEach(config -> {
+                config.setStatus(QUESTIONNAIRE_NEW);
+                diffMap.put(config.getPlatNo(), config);
+            });
+        }
         return diffMap;
     }
 
