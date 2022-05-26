@@ -125,8 +125,6 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
                 CheckNull.isEmpty(activityBase.getPlan().getChannel()) || !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
             return null;
-        if (CheckNull.isEmpty(questionnaireConfigMap))
-            return null;
 
         CommonPb.QuestionnaireActData.Builder builder = CommonPb.QuestionnaireActData.newBuilder();
         builder.setPlatNo(config.getPlatNo());
