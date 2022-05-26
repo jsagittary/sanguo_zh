@@ -374,10 +374,6 @@ abstract class AbsActivityService {
      * @return
      */
     public boolean inChannel(Player player, ActivityBase actBase) {
-        if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(actBase) || CheckNull.isNull(actBase.getPlan()))
-            return false;
-        if (CheckNull.isEmpty(actBase.getPlan().getChannel()))
-            return true;
-        return actBase.getPlan().getChannel().contains(player.account.getPlatNo());
+        return true;
     }
 }

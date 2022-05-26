@@ -137,14 +137,11 @@ public interface Events {
     public static class SyncQuestionnaireEvent {
         /** 活动类型*/
         public int actType;
-        /** 旧的活动配置*/
-        public Map<Integer, StaticActQuestionnaire> oldConfigMap;
         /** 新的活动配置*/
         public Map<Integer, StaticActQuestionnaire> newConfigMap;
 
-        public SyncQuestionnaireEvent(int actType, Map<Integer, StaticActQuestionnaire> oldConfigMap, Map<Integer, StaticActQuestionnaire> newConfigMap) {
+        public SyncQuestionnaireEvent(int actType, Map<Integer, StaticActQuestionnaire> newConfigMap) {
             this.actType = actType;
-            this.oldConfigMap = oldConfigMap;
             this.newConfigMap = newConfigMap;
         }
     }

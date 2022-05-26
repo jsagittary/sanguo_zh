@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -203,7 +204,7 @@ public class StaticActivityPlan {
     }
 
     public List<Integer> getChannel() {
-        return channel;
+        return CheckNull.isNull(channel) ? new ArrayList<>() : channel;
     }
 
     public void setChannel(List<Integer> channel) {
