@@ -83,12 +83,12 @@ public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActD
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StaticActQuestionnaire that = (StaticActQuestionnaire) o;
-        return platNo == that.platNo && activityId == that.activityId && status == that.status && lv == that.lv && url.equals(that.url) && Objects.equals(desc, that.desc) && Objects.equals(awards, that.awards);
+        return platNo == that.platNo && activityId == that.activityId && status == that.status && url.equals(that.url) && Objects.equals(desc, that.desc) && Objects.equals(awards, that.awards);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(platNo, activityId, url, desc, awards, status, lv);
+        return Objects.hash(platNo, activityId, url, desc, awards, status);
     }
 
     @Override
