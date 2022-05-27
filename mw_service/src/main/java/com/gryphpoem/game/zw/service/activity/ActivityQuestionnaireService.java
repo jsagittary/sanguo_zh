@@ -61,20 +61,11 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     @Override
     protected GeneratedMessage.Builder<GamePb4.GetActivityDataInfoRs.Builder> getActivityData(Player player, Activity activity, GlobalActivityData globalActivityData) throws Exception {
         GamePb4.GetActivityDataInfoRs.Builder builder = GamePb4.GetActivityDataInfoRs.newBuilder();
-        Map<Integer, Map<Integer, StaticActQuestionnaire>> configMap = StaticActivityDataMgr.getStaticActQuestionnaireMap();
-        if (CheckNull.isEmpty(configMap)) {
-            playerQuestionnaireMap.remove(player.lord.getLordId());
+        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activity.getActivityId(), player.account.getPlatNo(), player.lord.getLevel());
+        if (CheckNull.isNull(config)) {
             return builder;
         }
-        if (CheckNull.isEmpty(configMap.get(activity.getActivityId())) ||
-                CheckNull.isNull(configMap.get(activity.getActivityId()).get(player.account.getPlatNo()))) {
-            playerQuestionnaireMap.remove(player.lord.getLordId());
-            return builder;
-        }
-
-        StaticActQuestionnaire config = configMap.get(activity.getActivityId()).get(player.account.getPlatNo());
-        CommonPb.QuestionnaireActData dataPb = createQuestionnaireActDataPb(player, configMap.get(activity.getActivityId()).get(player.account.getPlatNo()),
-                activity.getActivityType());
+        CommonPb.QuestionnaireActData dataPb = createQuestionnaireActDataPb(player, config, activity.getActivityType());
         if (Objects.nonNull(dataPb)) {
             playerQuestionnaireMap.put(player.lord.getLordId(), config);
             builder.setQuestionnaireInfo(dataPb);
@@ -87,6 +78,35 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     @PostConstruct
     public void init() {
         EventBus.getDefault().register(this);
+    }
+
+    /**
+     * 获取问卷配置，过滤不能存在配置以及等级不足配置
+     * (同步时不可调用此方法)
+     *
+     * @param roleId
+     * @param activityId
+     * @param platNo
+     * @param lv
+     * @return
+     */
+    private StaticActQuestionnaire getConfig(long roleId, int activityId, int platNo, int lv) {
+        Map<Integer, Map<Integer, StaticActQuestionnaire>> configMap = StaticActivityDataMgr.getStaticActQuestionnaireMap();
+        if (CheckNull.isEmpty(configMap)) {
+            playerQuestionnaireMap.remove(roleId);
+            return null;
+        }
+        if (CheckNull.isEmpty(configMap.get(activityId)) ||
+                CheckNull.isNull(configMap.get(activityId).get(platNo))) {
+            playerQuestionnaireMap.remove(roleId);
+            return null;
+        }
+        StaticActQuestionnaire config = configMap.get(activityId).get(platNo);
+        if (config.getLv() > lv) {
+            playerQuestionnaireMap.remove(roleId);
+            return null;
+        }
+        return config;
     }
 
     /**
@@ -129,13 +149,15 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
             StaticActQuestionnaire newConfig = event.newConfigMap.get(player.account.getPlatNo());
             builder.setActId(activityBase.getActivityId());
             if (pConfig == null) {
-                if (channels.contains(player.account.getPlatNo()) && Objects.nonNull(newConfig)) {
+                if (channels.contains(player.account.getPlatNo()) && Objects.nonNull(newConfig) &&
+                        player.lord.getLevel() >= newConfig.getLv()) {
                     builder.setStatus(QUESTIONNAIRE_NEW);
                     builder.setInfo(newConfig.createPb(false));
                     builder.setActivity(activityPb);
                 }
             } else {
-                if (!channels.contains(player.account.getPlatNo()) || CheckNull.isNull(newConfig)) {
+                if (!channels.contains(player.account.getPlatNo()) || CheckNull.isNull(newConfig) ||
+                        newConfig.getLv() > player.lord.getLevel()) {
                     builder.setStatus(QUESTIONNAIRE_DELETE);
                 } else if (!newConfig.equals(pConfig)) {
                     builder.setStatus(QUESTIONNAIRE_UPDATE);
@@ -188,6 +210,11 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
             return false;
         if (CheckNull.isEmpty(actBase.getPlan().getChannel()))
             return false;
+        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), actBase.getActivityId(),
+                player.account.getPlatNo(), player.lord.getLevel());
+        if (CheckNull.isNull(config)) {
+            return false;
+        }
         return actBase.getPlan().getChannel().contains(player.account.getPlatNo());
     }
 }

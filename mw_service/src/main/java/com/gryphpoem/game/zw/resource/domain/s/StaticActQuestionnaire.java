@@ -20,6 +20,7 @@ public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActD
     private String desc;
     private List<List<Integer>> awards;
     private int status;
+    private int lv;
 
     public int getPlatNo() {
         return platNo;
@@ -69,17 +70,25 @@ public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActD
         this.status = status;
     }
 
+    public int getLv() {
+        return lv;
+    }
+
+    public void setLv(int lv) {
+        this.lv = lv;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StaticActQuestionnaire that = (StaticActQuestionnaire) o;
-        return platNo == that.platNo && activityId == that.activityId && url.equals(that.url) && Objects.equals(desc, that.desc) && Objects.equals(awards, that.awards);
+        return platNo == that.platNo && activityId == that.activityId && status == that.status && lv == that.lv && url.equals(that.url) && Objects.equals(desc, that.desc) && Objects.equals(awards, that.awards);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(platNo, activityId, url, desc, awards);
+        return Objects.hash(platNo, activityId, url, desc, awards, status, lv);
     }
 
     @Override
