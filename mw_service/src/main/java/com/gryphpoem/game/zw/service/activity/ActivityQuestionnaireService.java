@@ -40,7 +40,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     /**
      * 玩家问卷缓存
      */
-    private Map<Long, StaticActQuestionnaire> playerQuestionnaireMap = new ConcurrentHashMap<>();
+    private Map<Integer, Map<Long, StaticActQuestionnaire>> playerQuestionnaireMap = new ConcurrentHashMap<>();
 
     /**
      * 问卷更新
@@ -58,16 +58,22 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     @Override
     protected GeneratedMessage.Builder<GamePb4.GetActivityDataInfoRs.Builder> getActivityData(Player player, Activity activity, GlobalActivityData globalActivityData) throws Exception {
         GamePb4.GetActivityDataInfoRs.Builder builder = GamePb4.GetActivityDataInfoRs.newBuilder();
-        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activity.getActivityId(), player.account.getPlatNo(), player.lord.getLevel());
+        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activity.getActivityType());
+        if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
+                CheckNull.isEmpty(activityBase.getPlan().getChannel()) || !activityBase.getPlan().getChannel().contains(player.account.getPlatNo())) {
+            return builder;
+        }
+        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activity.getActivityId(), player.account.getPlatNo(), player.lord.getLevel(), activityBase.getPlanKeyId());
         if (CheckNull.isNull(config)) {
             return builder;
         }
-        CommonPb.QuestionnaireActData dataPb = createQuestionnaireActDataPb(player, config, activity.getActivityType());
+
+        CommonPb.QuestionnaireActData dataPb = createQuestionnaireActDataPb(player, config, activityBase);
         if (Objects.nonNull(dataPb)) {
-            playerQuestionnaireMap.put(player.lord.getLordId(), config);
+            getActivityData(activityBase.getPlanKeyId()).put(player.lord.getLordId(), config);
             builder.setQuestionnaireInfo(dataPb);
         } else {
-            playerQuestionnaireMap.remove(player.lord.getLordId());
+            getActivityData(activityBase.getPlanKeyId()).remove(player.lord.getLordId());
         }
         return builder;
     }
@@ -75,6 +81,25 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     @PostConstruct
     public void init() {
         EventBus.getDefault().register(this);
+    }
+
+    /**
+     * 获取玩家已使用问卷配置
+     *
+     * @param actKeyId
+     * @return
+     */
+    private Map<Long, StaticActQuestionnaire> getActivityData(int actKeyId) {
+        Map<Long, StaticActQuestionnaire> dataMap = playerQuestionnaireMap.get(actKeyId);
+        if (CheckNull.isEmpty(dataMap)) {
+            synchronized (playerQuestionnaireMap) {
+                dataMap = playerQuestionnaireMap.get(actKeyId);
+                if (CheckNull.isEmpty(dataMap))
+                    playerQuestionnaireMap.put(actKeyId, new ConcurrentHashMap<>());
+            }
+        }
+
+        return playerQuestionnaireMap.get(actKeyId);
     }
 
     @Override
@@ -95,20 +120,20 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
      * @param lv
      * @return
      */
-    private StaticActQuestionnaire getConfig(long roleId, int activityId, int platNo, int lv) {
+    private StaticActQuestionnaire getConfig(long roleId, int activityId, int platNo, int lv, int actPlanKeyId) {
         Map<Integer, Map<Integer, StaticActQuestionnaire>> configMap = StaticActivityDataMgr.getStaticActQuestionnaireMap();
         if (CheckNull.isEmpty(configMap)) {
-            playerQuestionnaireMap.remove(roleId);
+            getActivityData(actPlanKeyId).remove(roleId);
             return null;
         }
         if (CheckNull.isEmpty(configMap.get(activityId)) ||
                 CheckNull.isNull(configMap.get(activityId).get(platNo))) {
-            playerQuestionnaireMap.remove(roleId);
+            getActivityData(actPlanKeyId).remove(roleId);
             return null;
         }
         StaticActQuestionnaire config = configMap.get(activityId).get(platNo);
         if (config.getLv() > lv) {
-            playerQuestionnaireMap.remove(roleId);
+            getActivityData(actPlanKeyId).remove(roleId);
             return null;
         }
         return config;
@@ -116,13 +141,13 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
 
     @Override
     protected void levelUp(Player player, int level) {
-        if (playerQuestionnaireMap.containsKey(player.lord.getLordId()))
-            return;
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_QUESTIONNAIRE);
         if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
                 !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
             return;
-        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activityBase.getActivityId(), player.account.getPlatNo(), level);
+        if (getActivityData(activityBase.getPlanKeyId()).containsKey(player.lord.getLordId()))
+            return;
+        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activityBase.getActivityId(), player.account.getPlatNo(), level, activityBase.getPlanKeyId());
         if (CheckNull.isNull(config))
             return;
 
@@ -160,15 +185,16 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     public void syncQuestionnaireActInfo(Events.SyncQuestionnaireEvent event) {
         if (CheckNull.isEmpty(playerDataManager.getAllOnlinePlayer()))
             return;
-        if (CheckNull.isEmpty(event.newConfigMap) && CheckNull.isEmpty(playerQuestionnaireMap))
+        if (CheckNull.isEmpty(event.newConfigMap) && CheckNull.isEmpty(getActivityData(event.activityBase.getPlanKeyId())))
             return;
 
+        Map<Long, StaticActQuestionnaire> playerActData = getActivityData(event.activityBase.getPlanKeyId());
         Collection<Player> onlinePlayers = playerDataManager.getAllOnlinePlayer().values();
         GamePb5.SyncQuestionnaireActInfoRs.Builder builder = GamePb5.SyncQuestionnaireActInfoRs.newBuilder();
         CommonPb.Activity activityPb = PbHelper.createActivityPb(event.activityBase, true, 0);
         onlinePlayers.forEach(player -> {
             List<Integer> channels = event.activityBase.getPlan().getChannel();
-            StaticActQuestionnaire pConfig = playerQuestionnaireMap.get(player.lord.getLordId());
+            StaticActQuestionnaire pConfig = playerActData.get(player.lord.getLordId());
             StaticActQuestionnaire newConfig = event.newConfigMap.get(player.account.getPlatNo());
             builder.setActId(event.activityBase.getActivityId());
             if (pConfig == null) {
@@ -189,9 +215,9 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
             }
             if (builder.hasStatus()) {
                 if (builder.getStatus() == QUESTIONNAIRE_DELETE) {
-                    playerQuestionnaireMap.remove(player.lord.getLordId());
+                    playerActData.remove(player.lord.getLordId());
                 } else {
-                    playerQuestionnaireMap.put(player.lord.getLordId(), newConfig);
+                    playerActData.put(player.lord.getLordId(), newConfig);
                 }
                 BasePb.Base msg = PbHelper.createSynBase(GamePb5.SyncQuestionnaireActInfoRs.EXT_FIELD_NUMBER, GamePb5.SyncQuestionnaireActInfoRs.ext, builder.build()).build();
                 DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(msg, player);
@@ -201,7 +227,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         });
 
         if (event.end) {
-            playerQuestionnaireMap.clear();
+            playerActData.clear();
         }
     }
 
@@ -209,19 +235,15 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
      * 创建问卷调查详情
      *
      * @param player
-     * @param actType
+     * @param activityBase
      * @return
      */
-    private CommonPb.QuestionnaireActData createQuestionnaireActDataPb(Player player, StaticActQuestionnaire config, int actType) {
+    private CommonPb.QuestionnaireActData createQuestionnaireActDataPb(Player player, StaticActQuestionnaire config, ActivityBase activityBase) {
         if (CheckNull.isNull(player) || CheckNull.isNull(player.account) || CheckNull.isNull(config))
             return null;
-        if (ObjectUtils.isEmpty(getActivityType()) || !ArrayUtils.contains(getActivityType(), actType)) {
+        if (ObjectUtils.isEmpty(getActivityType()) || !ArrayUtils.contains(getActivityType(), activityBase.getActivityType())) {
             return null;
         }
-        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(actType);
-        if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
-                CheckNull.isEmpty(activityBase.getPlan().getChannel()) || !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
-            return null;
 
         return config.createPb(false);
     }
@@ -238,7 +260,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         if (CheckNull.isEmpty(actBase.getPlan().getChannel()))
             return false;
         StaticActQuestionnaire config = getConfig(player.lord.getLordId(), actBase.getActivityId(),
-                player.account.getPlatNo(), player.lord.getLevel());
+                player.account.getPlatNo(), player.lord.getLevel(), actBase.getPlanKeyId());
         if (CheckNull.isNull(config)) {
             return false;
         }
