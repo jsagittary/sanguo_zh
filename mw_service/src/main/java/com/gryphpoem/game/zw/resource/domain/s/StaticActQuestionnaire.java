@@ -19,7 +19,6 @@ public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActD
     private String url;
     private String desc;
     private List<List<Integer>> awards;
-    private int status;
     private int lv;
 
     public int getPlatNo() {
@@ -62,14 +61,6 @@ public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActD
         this.awards = awards;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
     public int getLv() {
         return lv;
     }
@@ -83,12 +74,12 @@ public class StaticActQuestionnaire implements GamePb<CommonPb.QuestionnaireActD
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StaticActQuestionnaire that = (StaticActQuestionnaire) o;
-        return platNo == that.platNo && activityId == that.activityId && status == that.status && url.equals(that.url) && Objects.equals(desc, that.desc) && Objects.equals(awards, that.awards);
+        return platNo == that.platNo && activityId == that.activityId && url.equals(that.url) && Objects.equals(desc, that.desc) && Objects.equals(awards, that.awards);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(platNo, activityId, url, desc, awards, status);
+        return Objects.hash(platNo, activityId, url, desc, awards);
     }
 
     @Override
