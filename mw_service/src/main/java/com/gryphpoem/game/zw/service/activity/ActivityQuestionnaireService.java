@@ -141,7 +141,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    protected void levelUp(Events.ActLevelUpEvent event) {
+    public void levelUp(Events.ActLevelUpEvent event) {
         Player player = playerDataManager.getPlayer(event.roleId);
         if (CheckNull.isNull(player)) {
             LogUtil.error(String.format("Events.ActLevelUpEvent roleId:%d, not exist", event.roleId));
