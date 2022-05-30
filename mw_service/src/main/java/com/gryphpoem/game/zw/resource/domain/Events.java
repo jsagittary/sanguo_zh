@@ -152,7 +152,7 @@ public interface Events {
     /**
      * 玩家升级活动变更时间
      */
-    class ActLevelUpEvent {
+    public static class ActLevelUpEvent {
         /** 玩家id*/
         public Long roleId;
         /** 升级前等级*/
