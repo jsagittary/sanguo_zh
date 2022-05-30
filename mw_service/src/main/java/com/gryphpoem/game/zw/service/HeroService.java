@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
@@ -1679,7 +1680,10 @@ public class HeroService implements GmCmdService {
                 }
                 common.addHeroSearchSuperProcess(process);
             }
-            player.setMixtureData(PlayerConstant.NORMAL_HERO_SEARCH_COUNT, player.getMixtureDataById(PlayerConstant.NORMAL_HERO_SEARCH_COUNT) + 1);
+            // 心愿武将功能开启后，再记录玩家武将抽取次数
+            if (StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_WISH_HERO)) {
+                player.setMixtureData(PlayerConstant.NORMAL_HERO_SEARCH_COUNT, player.getMixtureDataById(PlayerConstant.NORMAL_HERO_SEARCH_COUNT) + 1);
+            }
         } else if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
             // 记录寻访次数
             searchCount = common.getSuperHero() + 1;
@@ -2216,11 +2220,21 @@ public class HeroService implements GmCmdService {
         return true;
     }
 
+    /**
+     * 选择心愿武将
+     *
+     * @param roleId
+     * @param searchId
+     * @return
+     * @throws MwException
+     */
     public ChooseWishHeroRs chooseWishHero(long roleId, int searchId) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
+        if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_WISH_HERO)) {
+            throw new MwException(GameError.FUNCTION_LOCK.getCode(), "心愿武将功能未开启, roleId:", player.roleId, ", lv:", player.lord.getLevel());
+        }
 
         Map<Integer, StaticHeroSearch> heroSearchMap = StaticHeroDataMgr.getHeroSearchMap();
-
         StaticHeroSearch sHeroSearch = heroSearchMap.get(searchId);
 
         if (Objects.isNull(sHeroSearch)) {
@@ -2243,8 +2257,19 @@ public class HeroService implements GmCmdService {
         return ChooseWishHeroRs.newBuilder().setWishHero(PbHelper.createTwoIntPb(player.getMixtureDataById(PlayerConstant.WISH_HERO), player.getMixtureDataById(PlayerConstant.WISH_HERO_SEARCH_COUNT))).build();
     }
 
+    /**
+     * 领取抽取武将累计奖励
+     *
+     * @param roleId
+     * @param index
+     * @return
+     * @throws MwException
+     */
     public ReceiveRecruitRewardRs receiveRecruitReward(long roleId, int index) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
+        if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_WISH_HERO)) {
+            throw new MwException(GameError.FUNCTION_LOCK.getCode(), "心愿武将功能未开启, roleId:", player.roleId, ", lv:", player.lord.getLevel());
+        }
 
         StaticHeroSearchExtAward sHeroExtAward = StaticHeroDataMgr.getSearchHeroExtAwardById(index);
 
