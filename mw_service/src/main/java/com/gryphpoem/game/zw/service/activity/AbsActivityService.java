@@ -111,6 +111,13 @@ abstract class AbsActivityService {
     protected abstract void handleOnDay(Player player);
 
     /**
+     * 升级时活动处理
+     *
+     * @param player
+     */
+    protected void levelUp(Player player, int level) {}
+
+    /**
      * 重新加载了配置文件
      */
     public void handleOnConfigReload() {

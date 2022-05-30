@@ -61,6 +61,11 @@ public abstract class AbsSimpleActivityService extends AbsActivityService {
     }
 
     @Override
+    protected void levelUp(Player player, int level) {
+
+    }
+
+    @Override
     protected GeneratedMessage.Builder<GamePb4.GetActivityDataInfoRs.Builder> getActivityData(Player player, Activity activity, GlobalActivityData globalActivityData) throws Exception {
         return null;
     }

@@ -321,6 +321,11 @@ public class AutumnTurnplateService extends AbsActivityService implements Refres
     }
 
     @Override
+    protected void levelUp(Player player, int level) {
+
+    }
+
+    @Override
     public void checkAndRefresh(Player player) {
         for (int actType : actTypes) {
             ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(actType);

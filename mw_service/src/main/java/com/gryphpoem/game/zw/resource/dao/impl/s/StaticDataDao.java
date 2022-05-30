@@ -1014,6 +1014,11 @@ public class StaticDataDao extends BaseDao {
         return getSqlSession().selectList("StaticDao.selectBerlinFeverList");
     }
 
+
+    public Map<Integer, StaticHeroSearchExtAward> selectHeroSearchExtAward() {
+        return this.getSqlSession().selectMap("StaticDao.selectHeroSearchExtAward","id");
+    }
+
     //---------------------跨服--------------------
 
     public List<StaticCrossServerRule> selectStaticCrossServerRuleList() {

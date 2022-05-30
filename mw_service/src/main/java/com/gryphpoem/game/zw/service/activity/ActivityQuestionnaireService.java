@@ -1,12 +1,10 @@
 package com.gryphpoem.game.zw.service.activity;
 
-import com.alibaba.nacos.common.utils.MapUtils;
 import com.google.protobuf.GeneratedMessage;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.*;
@@ -18,7 +16,6 @@ import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActQuestionnaire;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.ListUtils;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.PlayerService;
 import org.apache.commons.lang3.ArrayUtils;
@@ -80,6 +77,14 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         EventBus.getDefault().register(this);
     }
 
+    @Override
+    protected void handleOnEndTime(int activityType, int activityId, int keyId) {
+        ActivityBase ab = StaticActivityDataMgr.getActivityList().stream().filter(activityBase -> activityBase.getPlanKeyId() == keyId).findFirst().orElse(null);
+        if (CheckNull.isNull(ab))
+            return;
+        EventBus.getDefault().post(new Events.SyncQuestionnaireEvent(ab, new HashMap<>(), true));
+    }
+
     /**
      * 获取问卷配置，过滤不能存在配置以及等级不足配置
      * (同步时不可调用此方法)
@@ -109,6 +114,27 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         return config;
     }
 
+    @Override
+    protected void levelUp(Player player, int level) {
+        if (playerQuestionnaireMap.containsKey(player.lord.getLordId()))
+            return;
+        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_QUESTIONNAIRE);
+        if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
+                !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
+            return;
+        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activityBase.getActivityId(), player.account.getPlatNo(), level);
+        if (CheckNull.isNull(config))
+            return;
+
+        GamePb5.SyncQuestionnaireActInfoRs.Builder builder = GamePb5.SyncQuestionnaireActInfoRs.newBuilder();
+        builder.setStatus(QUESTIONNAIRE_NEW);
+        builder.setInfo(config.createPb(false));
+        builder.setActivity(PbHelper.createActivityPb(activityBase, true, 0));
+        builder.setActId(activityBase.getActivityId());
+        DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(PbHelper.createSynBase(GamePb5.SyncQuestionnaireActInfoRs.
+                EXT_FIELD_NUMBER, GamePb5.SyncQuestionnaireActInfoRs.ext, builder.build()).build(), player);
+    }
+
     /**
      * 启动服务器或刷表时同步配置
      *
@@ -120,9 +146,9 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         if (CheckNull.isNull(activityBase))
             return;
         // 配置不同则通知客户端
-        EventBus.getDefault().post(new Events.SyncQuestionnaireEvent(ActivityConst.ACT_QUESTIONNAIRE,
+        EventBus.getDefault().post(new Events.SyncQuestionnaireEvent(activityBase,
                 CheckNull.isNull(dataMap.get(activityBase.getActivityId())) ?
-                        new HashMap<>() : dataMap.get(activityBase.getActivityId())));
+                        new HashMap<>() : dataMap.get(activityBase.getActivityId()), false));
     }
 
     /**
@@ -134,20 +160,17 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
     public void syncQuestionnaireActInfo(Events.SyncQuestionnaireEvent event) {
         if (CheckNull.isEmpty(playerDataManager.getAllOnlinePlayer()))
             return;
-        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(event.actType);
-        if (CheckNull.isNull(activityBase))
-            return;
         if (CheckNull.isEmpty(event.newConfigMap) && CheckNull.isEmpty(playerQuestionnaireMap))
             return;
 
         Collection<Player> onlinePlayers = playerDataManager.getAllOnlinePlayer().values();
         GamePb5.SyncQuestionnaireActInfoRs.Builder builder = GamePb5.SyncQuestionnaireActInfoRs.newBuilder();
-        CommonPb.Activity activityPb = PbHelper.createActivityPb(activityBase, true, 0);
+        CommonPb.Activity activityPb = PbHelper.createActivityPb(event.activityBase, true, 0);
         onlinePlayers.forEach(player -> {
-            List<Integer> channels = activityBase.getPlan().getChannel();
+            List<Integer> channels = event.activityBase.getPlan().getChannel();
             StaticActQuestionnaire pConfig = playerQuestionnaireMap.get(player.lord.getLordId());
             StaticActQuestionnaire newConfig = event.newConfigMap.get(player.account.getPlatNo());
-            builder.setActId(activityBase.getActivityId());
+            builder.setActId(event.activityBase.getActivityId());
             if (pConfig == null) {
                 if (channels.contains(player.account.getPlatNo()) && Objects.nonNull(newConfig) &&
                         player.lord.getLevel() >= newConfig.getLv()) {
@@ -157,7 +180,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
                 }
             } else {
                 if (!channels.contains(player.account.getPlatNo()) || CheckNull.isNull(newConfig) ||
-                        newConfig.getLv() > player.lord.getLevel()) {
+                        newConfig.getLv() > player.lord.getLevel() || event.end) {
                     builder.setStatus(QUESTIONNAIRE_DELETE);
                 } else if (!newConfig.equals(pConfig)) {
                     builder.setStatus(QUESTIONNAIRE_UPDATE);
@@ -176,6 +199,10 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
 
             builder.clear();
         });
+
+        if (event.end) {
+            playerQuestionnaireMap.clear();
+        }
     }
 
     /**

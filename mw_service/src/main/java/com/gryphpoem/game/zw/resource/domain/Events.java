@@ -136,13 +136,16 @@ public interface Events {
      */
     public static class SyncQuestionnaireEvent {
         /** 活动类型*/
-        public int actType;
+        public ActivityBase activityBase;
         /** 新的活动配置*/
         public Map<Integer, StaticActQuestionnaire> newConfigMap;
+        /** 是否活动结束*/
+        public boolean end;
 
-        public SyncQuestionnaireEvent(int actType, Map<Integer, StaticActQuestionnaire> newConfigMap) {
-            this.actType = actType;
+        public SyncQuestionnaireEvent(ActivityBase activityBase, Map<Integer, StaticActQuestionnaire> newConfigMap, boolean end) {
+            this.activityBase = activityBase;
             this.newConfigMap = newConfigMap;
+            this.end = end;
         }
     }
 }

@@ -222,6 +222,36 @@ public interface PlayerConstant {
     int CROSS_WAR_FIRE_PRICE = 63;
 
     /**
+     *  爵位每日奖励领取
+     */
+    int DAILY_TITLE_REWARD = 64;
+
+    /**
+     * 心愿英雄
+     */
+    int WISH_HERO = 65;
+
+    /**
+     * 心愿英雄剩余次数
+     */
+    int WISH_HERO_SEARCH_COUNT = 66;
+
+    /**
+     * 普通将领寻访次数
+     */
+    int NORMAL_HERO_SEARCH_COUNT = 67;
+
+    /**
+     * 挖宝数据
+     */
+    int DIGGING_TREASURE_COUNT = 68;
+
+    /**
+     * 开启藏宝图次数
+     */
+    int OPEN_TREASURE_MAP_COUNT = 69;
+
+    /**
      * 注意：10001 - 10007 是最近一周的充值金额的key
      */
     int RECENTLY_PAY = 10000;
@@ -243,6 +273,7 @@ public interface PlayerConstant {
             SHOW_CLIENT_LIST_KEY.add(DAILY_ADVERTISEMENT_REWARD);
             SHOW_CLIENT_LIST_KEY.add(DAILY_QUICK_BUY_ARMY);
             SHOW_CLIENT_LIST_KEY.add(LEAVE_WAR_FIRE_TIME);
+            SHOW_CLIENT_LIST_KEY.add(OPEN_TREASURE_MAP_COUNT);
         }
         return SHOW_CLIENT_LIST_KEY;
     }
@@ -306,6 +337,9 @@ public interface PlayerConstant {
             CLEAN_LIST_KEY.add(ACT_CHRISTMAS_AWARD_COUNT);
             CLEAN_LIST_KEY.add(ACT_DROP_CONTROL_COUNT);
             CLEAN_LIST_KEY.add(ACT_REPAIR_CASTLE_COUNT);
+            CLEAN_LIST_KEY.add(DAILY_TITLE_REWARD);
+
+            CLEAN_LIST_KEY.add(OPEN_TREASURE_MAP_COUNT);
         }
         return CLEAN_LIST_KEY;
     }

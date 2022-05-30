@@ -1515,6 +1515,11 @@ public class SystemId {
      */
     public static final int EQUIP_AUTO_LOCK = 1090;
 
+    /**
+     * 心愿英雄获取次数
+     */
+    public static final int WISH_HERO_COUNT = 1101;
+
 
     // ========================机器人相关配置begin===========================
     /**

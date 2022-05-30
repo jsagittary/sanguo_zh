@@ -31,6 +31,7 @@ import com.gryphpoem.game.zw.resource.util.random.RewardRandomUtil;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
+import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.activity.MusicFestivalCreativeService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -1812,6 +1813,8 @@ public class RewardDataManager {
             }
             //三国新增埋点, 记录玩家升级日志
             LogLordHelper.gameLog(LogParamConstant.LEVEL_UP, player, from, preLv, lv);
+            // 活动处理玩家升级
+            DataResource.ac.getBean(ActivityTemplateService.class).execActivityLevelUp(player, lv);
         }
         // 向客户端同步等级
         playerDataManager.syncRoleInfo(player);
