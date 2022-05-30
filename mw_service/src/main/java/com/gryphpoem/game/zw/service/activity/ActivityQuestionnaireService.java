@@ -165,6 +165,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         builder.setActId(activityBase.getActivityId());
         DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(PbHelper.createSynBase(GamePb5.SyncQuestionnaireActInfoRs.
                 EXT_FIELD_NUMBER, GamePb5.SyncQuestionnaireActInfoRs.ext, builder.build()).build(), player);
+        getActivityData(activityBase.getPlanKeyId()).put(event.roleId, config);
     }
 
     /**
