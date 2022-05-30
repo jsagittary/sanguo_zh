@@ -331,7 +331,7 @@ public class HeroService implements GmCmdService {
             // 士兵回营
             int sub = battleHero.getCount();
             battleHero.setCount(0);
-            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
             if (Objects.nonNull(staticHero)) {
                 LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, hero.getCount(), -sub, staticHero.getType(),
                         Constant.ACTION_ADD);
