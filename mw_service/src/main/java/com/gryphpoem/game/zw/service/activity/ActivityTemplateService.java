@@ -81,14 +81,6 @@ public class ActivityTemplateService implements GmCmdService {
         }
     }
 
-    public void execActivityLevelUp(Player player, int level) {
-        activityServiceList.forEach(service -> {
-            if (Objects.nonNull(service))
-                service.levelUp(player, level);
-        });
-    }
-
-
     public void execActivityEnd(int activityType, int activityId, int planKeyId) {
         AbsActivityService absActivityService = getActivityService(activityType);
         if (Objects.nonNull(absActivityService)) {
