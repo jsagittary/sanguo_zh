@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.rpc.provider;
 
+import com.google.protobuf.TextFormat;
 import com.gryphpoem.cross.chat.dto.CrossChat;
 import com.gryphpoem.cross.chat.dto.CrossRoleChat;
 import com.gryphpoem.cross.chat.dto.CrossSystemChat;
@@ -8,6 +9,9 @@ import com.gryphpoem.cross.gameserver.GameServerRpcService;
 import com.gryphpoem.cross.gameserver.dto.GameServerInfo;
 import com.gryphpoem.cross.gameserver.dto.PlayerShow;
 import com.gryphpoem.cross.manager.GameServerManagerService;
+import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
+import com.gryphpoem.game.zw.core.message.MessagePool;
 import com.gryphpoem.game.zw.core.util.JVMUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.crosssimple.util.PbCrossUtil;
@@ -203,8 +207,38 @@ public class GameServerRpcServerImpl implements GameServerRpcService {
     }
 
     @Override
-    public String executeProtoCmd(long l, String s) {
-        return null;
+    public String executeProtoCmd(long roleId, String protoCmd) {
+        try {
+            String environment = serverSetting.getEnvironment();
+            if (Objects.isNull(environment)) return null;
+            if (environment.equalsIgnoreCase("release")) return null;
+            if (!environment.equals("dev") && !environment.equals("test") && !environment.equals("prerelease")) {
+                LogUtil.error("当前区服环境 :", environment, " 不允许执行 proto 测试!!! roleId :", roleId);
+                return "!!!禁止执行!!!";
+            }
+
+            PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
+            Player player = playerDataManager.getPlayer(roleId);
+            if (Objects.isNull(player)) {
+                return String.format("玩家 :%d 不存在!!!", roleId);
+            } else if (player.ctx == null) {
+                return String.format("玩家 :%d 未登录!!!", roleId);
+            }
+            BasePb.Base.Builder builder = BasePb.Base.newBuilder();
+            TextFormat.merge(protoCmd, DataResource.getRegistry(), builder);
+            AbsClientHandler handler = MessagePool.getIns().getClientHandler(builder.getCmd());
+            handler.setCmd(builder.getCmd());
+            handler.setMsg(builder.build());
+            if (player.ctx != null) handler.setCtx(player.ctx);
+            handler.action();
+            if (Objects.nonNull(handler.getRsMsg())) {
+                return TextFormat.shortDebugString(handler.getRsMsg());
+            }
+        } catch (Exception e) {
+            LogUtil.error("", e);
+            return e.getMessage();
+        }
+        return "执行失败 !!!";
     }
 
     @Override

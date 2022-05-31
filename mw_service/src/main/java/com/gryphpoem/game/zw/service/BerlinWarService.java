@@ -1017,11 +1017,13 @@ public class BerlinWarService {
                 rewardDataManager.addAward(curWinnerPlayer, AwardType.PORTRAIT, portraitId, 1, AwardFrom.BERLIN_WINNER);
             }
             // 加上城堡皮肤
-            rewardDataManager.addAward(curWinnerPlayer, AwardType.CASTLE_SKIN, Constant.BERLIN_WINNER_SKIN_ID, 1, AwardFrom.BERLIN_WINNER);
+            if (Constant.BERLIN_WINNER_SKIN_ID > 0)
+                rewardDataManager.addAward(curWinnerPlayer, AwardType.CASTLE_SKIN, Constant.BERLIN_WINNER_SKIN_ID, 1, AwardFrom.BERLIN_WINNER);
         }
         //增加限时称号
         StaticTitle staticTitle = StaticLordDataMgr.getTitleMapById(StaticCastleSkin.BERLIN_WINNER_TITLE_ID);
-        rewardDataManager.addAward(curWinnerPlayer, AwardType.TITLE, staticTitle.getId(), Math.toIntExact(staticTitle.getDuration()), AwardFrom.BERLIN_WINNER);
+        if (Objects.nonNull(staticTitle))
+            rewardDataManager.addAward(curWinnerPlayer, AwardType.TITLE, staticTitle.getId(), Math.toIntExact(staticTitle.getDuration()), AwardFrom.BERLIN_WINNER);
         // 通知新任霸主
         syncBerlinWinner(curWinnerPlayer, builder);
         //给新任霸主发送决战指令邮件奖励

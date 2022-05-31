@@ -55,6 +55,8 @@ public class GmToolService {
     private GlobalDataManager globalDataManager;
     @Autowired
     private VipDataManager vipDataManager;
+    @Autowired
+    private MailService mailService;
 
     /**
      * 发送GM邮件
@@ -266,6 +268,8 @@ public class GmToolService {
                 if (player.isLogin && player.account.getIsGm() == 0 && player.ctx != null) {
                     player.ctx.close();
                 }
+                chatService.deleteRoleChat(player);
+                mailService.deleteCampMail(player.roleId, MailConstant.MOLD_CAMP_MAIL);
             }
         } else if (forbiddenId == 4) {
             Player player = playerDataManager.getPlayer(lordId);

@@ -52,6 +52,18 @@ public class CrossChatService implements GmCmdService {
     private PlayerDataManager playerDataManager;
 
     /**
+     * 删除跨服上指定玩家的所有聊天记录
+     * @param player 玩家
+     */
+    public void deleteChatByRoleId(Player player) {
+        try {
+            rpcChatService.deleteChatByRoleId(player.getLordId());
+        } catch (Exception e) {
+            LogUtil.error(String.format("删除跨服玩家聊天数据失败!!! roleId :%d", player.getLordId()), e);
+        }
+    }
+
+    /**
      * 查看玩家信息
      *
      * @param player 玩家

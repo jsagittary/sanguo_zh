@@ -165,6 +165,25 @@ public class ActParamTabLoader {
         return list;
     }
 
+    public static List<List<String>> getListListStringSystemValue(int systemId, String defaultVaule) {
+        String str = getStringSystemValue(systemId, defaultVaule);
+        if (CheckNull.isNullTrim(str)) {
+            return null;
+        }
+
+        JSONArray arrs = JSONArray.parseArray(str);
+        List<List<String>> list = new ArrayList<>();
+        for (int i = 0; i < arrs.size(); i++) {
+            JSONArray a = arrs.getJSONArray(i);
+            List<String> arr = new ArrayList<>();
+            for (int j = 0; j < a.size(); j++) {
+                arr.add(a.getString(j));
+            }
+            list.add(arr);
+        }
+        return list;
+    }
+
     /**
      * 根据systemId获取对应的值，返回 嵌套Map 类型
      * 

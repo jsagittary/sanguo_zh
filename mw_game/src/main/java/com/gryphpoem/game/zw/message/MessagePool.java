@@ -424,6 +424,9 @@ public class MessagePool implements IMessagePool {
         // 将领觉醒相关功能
         registerC(AwakenHeroRq.EXT_FIELD_NUMBER, AwakenHeroRs.EXT_FIELD_NUMBER, AwakenHeroHandler.class);
 
+        // 酒馆优化
+        registerC(ReceiveRecruitRewardRq.EXT_FIELD_NUMBER, ReceiveRecruitRewardRs.EXT_FIELD_NUMBER, ReceiveRecruitRewardHandler.class);
+        registerC(ChooseWishHeroRq.EXT_FIELD_NUMBER, ChooseWishHeroRs.EXT_FIELD_NUMBER, ChooseWishHeroHandler.class);
         // 战机相关协议
         registerC(GetWarPlanesRq.EXT_FIELD_NUMBER, GetWarPlanesRs.EXT_FIELD_NUMBER, GetWarPlanesHandler.class);
         registerC(GetPlaneByIdsRq.EXT_FIELD_NUMBER, GetPlaneByIdsRs.EXT_FIELD_NUMBER, GetPlaneByIdsHandler.class);

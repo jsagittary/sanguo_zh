@@ -81,7 +81,6 @@ public class ActivityTemplateService implements GmCmdService {
         }
     }
 
-
     public void execActivityEnd(int activityType, int activityId, int planKeyId) {
         AbsActivityService absActivityService = getActivityService(activityType);
         if (Objects.nonNull(absActivityService)) {

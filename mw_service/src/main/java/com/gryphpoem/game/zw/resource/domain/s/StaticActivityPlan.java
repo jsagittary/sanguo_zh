@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -38,6 +39,7 @@ public class StaticActivityPlan {
     private int serverEnd;// 开服几天之内可以开
     private String name;
     private List<List<Integer>> serverId;// 服务器id
+    private List<Integer> channel;
 //    private String paramsStr;//活动参数
 //    private List<List<Integer>> params;
 
@@ -201,36 +203,11 @@ public class StaticActivityPlan {
         this.serverId = serverId;
     }
 
-//    public String getParamsStr() {
-//        return paramsStr;
-//    }
-//
-//    public void setParamsStr(String paramsStr) {
-//        if (StringUtils.isEmpty(paramsStr)) {
-//            return;
-//        }
-//
-//        List<List<String>> result = new ArrayList<>();
-//        String[] arrays = paramsStr.split("&");
-//        for (String array : arrays) {
-//            if (StringUtils.isEmpty(array)) {
-//                continue;
-//            }
-//            String[] strArray = array.split("\\,");
-//            if (!ObjectUtils.isEmpty(strArray)) {
-//                result.add(Arrays.asList(strArray));
-//            }
-//        }
-//
-//        setParams(result);
-//        this.paramsStr = paramsStr;
-//    }
-//
-//    public List<List<String>> getParams() {
-//        return params;
-//    }
-//
-//    public void setParams(List<List<String>> params) {
-//        this.params = params;
-//    }
+    public List<Integer> getChannel() {
+        return CheckNull.isNull(channel) ? new ArrayList<>() : channel;
+    }
+
+    public void setChannel(List<Integer> channel) {
+        this.channel = channel;
+    }
 }

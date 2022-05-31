@@ -105,6 +105,10 @@ public abstract class MergeUtils {
         REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.WAR_FIRE_PRICE);
         REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE);
         REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.CROSS_WAR_FIRE_PRICE);
+        REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.DAILY_TITLE_REWARD);
+        REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.WISH_HERO);
+        REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.WISH_HERO_SEARCH_COUNT);
+        REATIN_MIXTURE_DATA_KEY.add(PlayerConstant.NORMAL_HERO_SEARCH_COUNT);
 
         /*---------------------------保留的buff--------------------------*/
         REATIN_BUFF = new HashSet<>();

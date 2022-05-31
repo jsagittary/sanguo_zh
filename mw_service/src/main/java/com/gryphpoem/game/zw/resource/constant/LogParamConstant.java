@@ -14,6 +14,10 @@ public class LogParamConstant {
     public static final byte TURNTABLE_ONE_COUNT_TYPE = 1;
     public static final byte TURNTABLE_TEN_COUNT_TYPE = 2;
 
+    public static final String NO_FIRST_KILL_CITY = "-1";
+    public static final String IS_FIRST_KILL_CITY = "1";
+    public static final String IS_NOT_FIRST_KILL_CITY = "0";
+
     //=======================事件名称==========================
     public static final String LEVEL_UP = "levelUp";
     public static final String HERO_BREAK = "heroBreak";

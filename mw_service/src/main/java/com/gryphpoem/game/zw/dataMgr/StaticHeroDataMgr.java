@@ -47,6 +47,8 @@ public class StaticHeroDataMgr {
     private static Map<Integer, Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>>> heroSkillMap = new HashMap<>();
     //赛季将领列表, KEY:heroId
     private static Map<Integer, StaticHeroSeason> seasonHeroMap = new HashMap<>();
+    // 将领寻访额外奖励
+    private static Map<Integer, StaticHeroSearchExtAward> searchHeroExtAward = new HashMap<>();
 
 
     public static void init() {
@@ -74,6 +76,11 @@ public class StaticHeroDataMgr {
         //初始化赛季英雄技能配置
         initSessHeroSkill();
 
+        StaticHeroDataMgr.searchHeroExtAward = staticDataDao.selectHeroSearchExtAward();
+    }
+
+    public static StaticHeroSearchExtAward getSearchHeroExtAwardById(int id) {
+        return searchHeroExtAward.get(id);
     }
 
     private static void initSessHeroSkill() {

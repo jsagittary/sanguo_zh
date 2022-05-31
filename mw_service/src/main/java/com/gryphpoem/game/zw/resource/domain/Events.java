@@ -2,8 +2,10 @@ package com.gryphpoem.game.zw.resource.domain;
 
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.resource.domain.p.UploadCrossDataType;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActQuestionnaire;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName Events.java
@@ -129,4 +131,39 @@ public interface Events {
         }
     }
 
+    /**
+     * 同步问卷调查事件
+     */
+    public static class SyncQuestionnaireEvent {
+        /** 活动类型*/
+        public ActivityBase activityBase;
+        /** 新的活动配置*/
+        public Map<Integer, StaticActQuestionnaire> newConfigMap;
+        /** 是否活动结束*/
+        public boolean end;
+
+        public SyncQuestionnaireEvent(ActivityBase activityBase, Map<Integer, StaticActQuestionnaire> newConfigMap, boolean end) {
+            this.activityBase = activityBase;
+            this.newConfigMap = newConfigMap;
+            this.end = end;
+        }
+    }
+
+    /**
+     * 玩家升级活动变更时间
+     */
+    public static class ActLevelUpEvent {
+        /** 玩家id*/
+        public Long roleId;
+        /** 升级前等级*/
+        public int preLevel;
+        /** 升级后等级*/
+        public int curLevel;
+
+        public ActLevelUpEvent(Long roleId, int preLevel, int curLevel) {
+            this.roleId = roleId;
+            this.preLevel = preLevel;
+            this.curLevel = curLevel;
+        }
+    }
 }

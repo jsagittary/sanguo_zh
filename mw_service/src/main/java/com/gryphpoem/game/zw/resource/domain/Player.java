@@ -704,6 +704,13 @@ public class Player {
      */
     private TreasureCombat treasureCombat = new TreasureCombat();
 
+    /**
+     * 招募奖励 v1: 对应s_system中id=1102的索引位置, v2: 1 已领取、0 未领取
+     */
+    private Map<Integer, Integer> recruitReward = new HashMap<>(5);
+    public Map<Integer, Integer> getRecruitReward() {
+        return recruitReward;
+    }
     public TreasureCombat getTreasureCombat() {
         return treasureCombat;
     }
@@ -1958,6 +1965,9 @@ public class Player {
         if (Objects.nonNull(crossPlayerLocalData)) {
             ser.setSaveCrossData(crossPlayerLocalData.createPb(true));
         }
+        if (CheckNull.nonEmpty(recruitReward)) {
+            recruitReward.forEach((k, v) -> ser.addRecruitRewardRecord(PbHelper.createTwoIntPb(k, v)));
+        }
         return ser.build().toByteArray();
     }
 
@@ -2548,6 +2558,7 @@ public class Player {
         if (ser.hasSaveCrossData()) {
             this.crossPlayerLocalData = new CrossPlayerLocalData(ser.getSaveCrossData());
         }
+        Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(),o.getV2())));
     }
 
     private void dserTrophy(SerTrophy ser) {

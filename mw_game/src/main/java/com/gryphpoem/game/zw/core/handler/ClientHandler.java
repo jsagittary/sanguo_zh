@@ -11,6 +11,7 @@ public abstract class ClientHandler extends AbsClientHandler {
 
     @Override
     public void sendMsgToPlayer(Base.Builder baseBuilder) {
+        super.rsMsg = baseBuilder.build();
         AppGameServer.getInstance().sendMsgToGamer(ctx, baseBuilder);
     }
 

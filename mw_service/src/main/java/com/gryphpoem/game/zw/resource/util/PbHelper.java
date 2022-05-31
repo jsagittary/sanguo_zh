@@ -1250,6 +1250,7 @@ public class PbHelper {
         }
         builder.setReportStatus(mail.getReportStatus());
         builder.setIsCross(mail.isCross());
+        builder.setOriginator(mail.getOriginator());
         return builder.build();
     }
 
@@ -1301,6 +1302,7 @@ public class PbHelper {
         }
         builder.setReportStatus(mail.getReportStatus());
         builder.setIsCross(mail.isCross());
+        builder.setOriginator(mail.getOriginator());
         return builder.build();
     }
 
@@ -1404,6 +1406,7 @@ public class PbHelper {
             builder.addAllParam(mail.getcParam());
         }
         builder.setIsCross(mail.isCross());
+        builder.setOriginator(mail.getOriginator());
         return builder.build();
     }
 

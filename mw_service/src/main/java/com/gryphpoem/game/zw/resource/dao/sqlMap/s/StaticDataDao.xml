@@ -770,6 +770,8 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="params" property="params"
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListStringTypeHandler" />
+		<result column="channel" property="channel"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 	</resultMap>
 	<select id="selectStaticActivityPlan" resultMap="staticActivityPlanMap">
 		SELECT * FROM
@@ -2366,6 +2368,15 @@
 		SELECT * FROM s_berlin_fever
 	</select>
 
+	<resultMap id="staticHeroSearchExtAward" type="StaticHeroSearchExtAward">
+		<id column="id" property="id" />
+		<result column="search_type" property="searchType" />
+		<result column="search_count" property="searchCount" />
+		<result column="search_award" property="searchAward" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
+	</resultMap>
+	<select id="selectHeroSearchExtAward" resultMap="staticHeroSearchExtAward">
+		SELECT * FROM s_hero_search_extra_award
+	</select>
 
 	<resultMap id="staticChristmasAward" type="StaticChristmasAward" >
 		<id column="id" property="id" />
@@ -2470,6 +2481,13 @@
 	</resultMap>
 	<select id="selectActAutumnDayTaskMap" resultMap="staticActAutumnDayTaskMap">
 		SELECT * FROM s_act_autumn_day_task
+	</select>
+
+	<resultMap id="staticActQuestionnaire" type="StaticActQuestionnaire">
+		<result column="awards" property="awards" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+	</resultMap>
+	<select id="selectActQuestionnaireList" resultMap="staticActQuestionnaire">
+		SELECT * FROM s_act_questionnaire
 	</select>
 
 	<select id="selectStaticCrossServerRuleList" resultType="StaticCrossServerRule" >

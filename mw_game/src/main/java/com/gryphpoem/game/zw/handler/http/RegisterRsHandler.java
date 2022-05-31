@@ -37,7 +37,7 @@ public class RegisterRsHandler extends HttpHandler {
         LogUtil.start("       \"\\       \"      \\X/      \"       /\"     ");
         LogUtil.start("                        !                            ");
         LogUtil.start("                                                     ");
-        LogUtil.start("                   -Gryphpoem-                       ");
+        LogUtil.start("                  -ThreeKingdoms-                       ");
         LogUtil.start("*****************************************************");
         LogUtil.start("******************服务器注册成功***********************");
     }

@@ -94,6 +94,8 @@ public class ActivityService {
     private ActivityBoxOfficeService activityBoxOfficeService;
     @Autowired
     private MusicFestivalCreativeService musicFestivalCreativeService;
+    @Autowired
+    private ActivityTemplateService activityTemplateService;
 
     /**
      * 活动开启列表
@@ -110,6 +112,9 @@ public class ActivityService {
         for (ActivityBase actBase : list) {
             try {
                 int activityType = actBase.getActivityType();
+                AbsActivityService absActivityService = activityTemplateService.getActivityService(activityType);
+                if (Objects.nonNull(absActivityService) && !absActivityService.inChannel(player, actBase))
+                    continue;
                 if (ActivityConst.ACT_LIGHTNING_WAR == activityType) {// 闪电战活动
                     actBase = changeActivityTime(actBase);
                 }
@@ -2455,7 +2460,7 @@ public class ActivityService {
         String resultLog = "";
         if (CheckNull.nonEmpty(awards)) {
             List<String> resultLogList = awards.stream().filter(list -> CheckNull.nonEmpty(list) && list.size() >= 3).
-                    map(list -> list.get(0) + "," + list.get(1) + "," + list.get(2)).collect(Collectors.toList());
+                    map(list -> list.get(0) + "," + list.get(1) + "," + list.get(2) + "&").collect(Collectors.toList());
             if (CheckNull.nonEmpty(resultLogList)) {
                 resultLog = ListUtils.toString(resultLogList);
             }

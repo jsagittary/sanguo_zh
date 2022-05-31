@@ -485,6 +485,8 @@ public class GmService{
                             dressUpDataManager.syncDressUp(player, dressUpMap.get(Integer.valueOf(count)), DressUpDataManager.UPDATE_EVENT);
                         }
                     }
+                } else if (StringUtils.equalsIgnoreCase(type, "reload")) {
+                    DataResource.ac.getBean(DressUpService.class).reloadTable();
                 }
             }
         } catch (Exception e) {

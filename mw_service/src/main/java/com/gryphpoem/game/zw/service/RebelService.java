@@ -799,10 +799,6 @@ public class RebelService extends BaseAwkwardDataManager {
         sendRebelBattleMail(battle, report, defSucce, dropList, now, recoverArmyAwardMap, sRound);
         LogLordHelper.commonLog("rebelBattle", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, sRound.getId(),
                 sRound.getRound(), defSucce);
-        EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "atk", String.valueOf(battle.getBattleId()),
-                String.valueOf(battle.getType()), String.valueOf(fightLogic.getWinState()), 0l, rpt.getAtkHeroList());
-        EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "def", String.valueOf(battle.getBattleId()),
-                String.valueOf(battle.getType()), String.valueOf(fightLogic.getWinState()), 0l, rpt.getDefHeroList());
         // 日志记录
         warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 帮助人的部队返回

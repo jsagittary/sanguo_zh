@@ -54,6 +54,11 @@ public class HeroConstant {
      */
     public static int HERO_REGROUP_AWARD_NUM;
 
+    /**
+     * 心愿英雄获取次数
+     */
+    public static int WISH_HERO_COUNT;
+
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
         HERO_BATTLE_LEN = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_BATTLE_LEN, 4);
@@ -69,6 +74,7 @@ public class HeroConstant {
         HERO_WAR_PLANE_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_WAR_PLANE_NUM, 4);
         HERO_WAR_PLANE_UNLOCK = SystemTabLoader.getListListIntSystemValue(SystemId.HERO_WAR_PLANE_UNLOCK, "[[]]");
         HERO_REGROUP_AWARD_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_REGROUP_AWARD_NUM, 8000);
+        WISH_HERO_COUNT = SystemTabLoader.getIntegerSystemValue(SystemId.WISH_HERO_COUNT, 20);
     }
 
     /**

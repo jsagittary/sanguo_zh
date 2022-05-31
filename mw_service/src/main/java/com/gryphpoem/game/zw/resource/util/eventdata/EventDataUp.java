@@ -14,6 +14,7 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -30,6 +31,7 @@ import com.gryphpoem.game.zw.resource.util.StringUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -43,19 +45,7 @@ import java.util.stream.Collectors;
  * author     shi.pei
  */
 public class EventDataUp {
-
-    //    static final String SA_SERVER_URL = "https://dotlog.dian5.com/api/event/report";
-    //    static final int PROJECT_ID = 89;
-    //    static final String PROJECT_KEY = "e8ce20b811fbb7b2694472d223684df2";
-    public static Logger GAME_LOGGER = Logger.getLogger("GAME");
-
     public static Queue<Map<String, Object>> eventList = new LinkedBlockingQueue<>(51);
-
-    /**
-     *
-     */
-    private static ServerSetting serverSetting = DataResource.ac.getBean(ServerSetting.class);
-
     /**
      * 到达最大容量，开始上报
      *
@@ -155,7 +145,7 @@ public class EventDataUp {
             Map<String, Object> common = getCommonParams(account, lord); //通用属性，后面塞特殊属性
             int opType = gold > 0 ? 1 : 2;
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("*money_total", lord.getGold());
             common.put("money_num", Math.abs(gold));
             common.put("money_change_type", opType);
@@ -190,7 +180,7 @@ public class EventDataUp {
         }
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord); //通用属性，后面塞特殊属性
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.remove("vip_level");
             common.put("*vip_level", lord.getVip());
             common.put("knighthood", lord.getRanks());
@@ -235,7 +225,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("props_id", String.valueOf(propId));
             common.put("props_type", String.valueOf(propType));
@@ -276,7 +266,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("resource_type", id);
             common.put("resource_change_num", add); //变动数量
@@ -311,7 +301,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("order_sn", serialId);
             common.put("amount", amount);
@@ -339,7 +329,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("order_sn", serialId);
             common.put("+amount", amount);
@@ -372,7 +362,7 @@ public class EventDataUp {
      * @param win       1 成功，2失败
      * @param sponsorId 发起者id
      */
-    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId, List<CommonPb.RptHero> rptHeroList) {
+    public static void battle(Account account, Lord lord, Fighter fighter, String atk, String battleId, String type, final String win, long sponsorId, List<CommonPb.RptHero> rptHeroList, Object... param) {
         if (account == null || lord == null) {
             return;
         }
@@ -385,7 +375,7 @@ public class EventDataUp {
             String tmpWin = win;
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("battle_area", String.valueOf(lord.getArea()));
             common.put("curr_faction", lord.getCamp());
@@ -504,6 +494,14 @@ public class EventDataUp {
                 common.put("attacker_troops", forceJsonArray);
             else
                 common.put("defender_troops", forceJsonArray);
+            if (String.valueOf(WorldConstant.BATTLE_TYPE_CAMP).equalsIgnoreCase(type)) {
+                common.put("battle_info", ObjectUtils.isEmpty(param) ? "" : param[0]);
+                common.put("battle_info1", ObjectUtils.isEmpty(param) && param.length >= 2 ? "" : param[1]);
+            }
+            if (String.valueOf(WorldConstant.BATTLE_TYPE_GESTAPO).equalsIgnoreCase(type) ||
+                    String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP).equalsIgnoreCase(type)) {
+                common.put("battle_info", ObjectUtils.isEmpty(param) ? "" : param[0]);
+            }
 
             Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "battle");
             Map<String, Object> properties = new HashMap<>();
@@ -538,7 +536,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("curr_faction", lord.getCamp());
             common.put("troop_area", lord.getArea());
@@ -585,7 +583,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("faction", lord.getCamp());
             common.put("building_id", buildingId);
@@ -621,7 +619,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("faction", lord.getCamp());
             common.put("technology_type", techType);
@@ -657,7 +655,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("money", lord.getGold());
             common.put("faction", lord.getCamp());
             common.put("army_type", armyType);
@@ -697,7 +695,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("activity_credits_total", current);
             int changeType = add > 0 ? 1 : 2;
             common.put("activity_credits_change_type", changeType);
@@ -736,7 +734,7 @@ public class EventDataUp {
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
-            common.put("main_group_id", serverSetting.getServerID());
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             common.put("credits_total", creditsTotal); //变更后的货币存量
             common.put("credits_num", amount);
             int changeType = amount > 0 ? 1 : 2;

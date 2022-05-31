@@ -1006,8 +1006,17 @@ public class StaticDataDao extends BaseDao {
         return this.getSqlSession().selectMap("StaticDao.selectActAutumnDayTaskMap","id");
     }
 
+    public List<StaticActQuestionnaire> selectActQuestionnaireList() {
+        return this.getSqlSession().selectList("StaticDao.selectActQuestionnaireList");
+    }
+
     public List<StaticBerlinFever> selectBerlinFeverList() {
         return getSqlSession().selectList("StaticDao.selectBerlinFeverList");
+    }
+
+
+    public Map<Integer, StaticHeroSearchExtAward> selectHeroSearchExtAward() {
+        return this.getSqlSession().selectMap("StaticDao.selectHeroSearchExtAward","id");
     }
 
     //---------------------跨服--------------------

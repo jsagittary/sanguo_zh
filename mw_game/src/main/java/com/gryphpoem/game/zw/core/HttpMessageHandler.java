@@ -24,7 +24,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 
 /**
  * HTTP请求到达处理handler，用于与账号服、后台服务器等之间的通讯
- * 
+ *
  * @Description
  * @author TanDonghai
  *
@@ -40,54 +40,20 @@ public class HttpMessageHandler extends HttpBaseChannelHandler {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        // HttpRequest request = null;
-        // if (msg instanceof HttpRequest) {
-        // HttpRequest request = (HttpRequest) msg;
-        //
-        // String uri = request.getUri();
-        // System.out.println("Uri:" + uri);
-        //
-        // HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(
-        // new DefaultHttpDataFactory(false), request);
-        //
-        // }
-
         if (msg instanceof HttpContent) {
-            // HttpContent content = (HttpContent) msg;
-
-            // System.out.println("http server read:" + );
-
-            // ByteBuf buf = content.content();
-            // byte[] packet = new byte[buf.readableBytes()];
-            // buf.readBytes(packet);
-
             ByteBuf in = ((HttpContent) msg).content();
             byte[] data = new byte[in.readableBytes()];
             in.readBytes(data);
             body.write(data);
             if (msg instanceof LastHttpContent) {
-                // System.out.println("bodyLen:"+body.toByteArray().length);
                 Base base = PbHelper.parseFromByte(body.toByteArray());
-
-                // buf.release();
-
-                // String res = "I am OK";
                 Base rsBase = PbHelper.createRsBase(base.getCmd() + 1, GameError.OK.getCode());
                 byte[] rsData = rsBase.toByteArray();
                 byte[] rsLen = PbHelper.putShort((short) rsData.length);
-                // Content-Type:application/octet-stream
-                // FullHttpResponse response = new
-                // DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                // HttpResponseStatus.OK,
-                // Unpooled.wrappedBuffer(res.getBytes("UTF-8")));
                 FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
                         Unpooled.wrappedBuffer(rsLen, rsData));
                 response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "application/octet-stream");
                 response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, response.content().readableBytes());
-                // if (HttpHeaders.isKeepAlive(request)) {
-                // response.headers().set(HttpHeaders.Names.CONNECTION,
-                // Values.KEEP_ALIVE);
-                // }
                 ctx.write(response);
                 ctx.flush();
                 ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -95,37 +61,6 @@ public class HttpMessageHandler extends HttpBaseChannelHandler {
                 httpServer.doPublicCommand(base);
                 body = null;
             }
-
-            // Base base = PbHelper.parseFromByte(packet);
-            //
-            // // buf.release();
-            //
-            // // String res = "I am OK";
-            // Base rsBase = PbHelper.createRsBase(base.getCmd() + 1,
-            // GameError.OK.getCode());
-            // byte[] rsData = rsBase.toByteArray();
-            // byte[] rsLen = PbHelper.putShort((short) rsData.length);
-            // // Content-Type:application/octet-stream
-            // // FullHttpResponse response = new
-            // // DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            // // HttpResponseStatus.OK,
-            // // Unpooled.wrappedBuffer(res.getBytes("UTF-8")));
-            // FullHttpResponse response = new
-            // DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            // HttpResponseStatus.OK, Unpooled.wrappedBuffer(rsLen, rsData));
-            // response.headers().set(HttpHeaders.Names.CONTENT_TYPE,
-            // "application/octet-stream");
-            // response.headers().set(HttpHeaders.Names.CONTENT_LENGTH,
-            // response.content().readableBytes());
-            // // if (HttpHeaders.isKeepAlive(request)) {
-            // // response.headers().set(HttpHeaders.Names.CONNECTION,
-            // // Values.KEEP_ALIVE);
-            // // }
-            // ctx.write(response);
-            // ctx.flush();
-            // ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-            //
-            // httpServer.doPublicCommand(base);
         } else if (msg instanceof HttpRequest) {
             body = new ByteArrayOutputStream();
         }

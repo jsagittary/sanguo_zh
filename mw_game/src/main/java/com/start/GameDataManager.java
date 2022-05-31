@@ -3,12 +3,19 @@ package com.start;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.constant.ActParamConstant;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.server.AppGameServer;
 import com.gryphpoem.game.zw.service.BerlinWarService;
@@ -18,6 +25,7 @@ import org.springframework.util.ObjectUtils;
 import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 
 import javax.xml.crypto.Data;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -56,7 +64,49 @@ public class GameDataManager {
         //非bug處理，處理礦點數據填充
         fillingMineData();
 
+        // 处理开服时充值足够，没有专属客服数据
+        handleActDedicatedCustomer();
         LogUtil.start("数据处理逻辑结束");
+    }
+
+    /**
+     * 处理开服时充值足够，没有专属客服数据
+     *
+     * @throws MwException
+     */
+    public void handleActDedicatedCustomer() throws MwException {
+        PlayerDataManager playerDataManager = DataResource.getBean(PlayerDataManager.class);
+        if (CheckNull.isEmpty(playerDataManager.getAllPlayer())) {
+            return;
+        }
+
+        int actType = ActivityConst.ACT_DEDICATED_CUSTOMER_SERVICE;
+        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(actType);
+        if (activityBase == null) {
+            return;
+        }
+
+        long now = TimeHelper.getCurrentSecond() * 1l;
+        Date beginTime = activityBase.getBeginTime();
+        int begin = TimeHelper.getDay(beginTime);
+        playerDataManager.getAllPlayer().values().forEach(player -> {
+            if (player.lord.getTopup() < ActParamConstant.ACT_DEDICATED_CUSTOMER_SERVICE_CONF.get(0).get(0)) {
+                return;
+            }
+            Activity activity = player.activitys.get(actType);
+            if (activity == null) {
+                activity = new Activity(activityBase, begin);
+                player.activitys.put(actType, activity);
+                activity.setEndTime(TimeHelper.getCurrentDay());
+            } else {
+                activity.isReset(begin, player);// 是否重新设置活动
+                activity.autoDayClean(activityBase);
+            }
+            Long time = activity.getStatusCnt().getOrDefault(0, 0L);
+            if (time == 0) {
+                activity.getStatusCnt().put(0, now);
+            }
+        });
     }
 
     public void fillingMineData() throws MwException {
