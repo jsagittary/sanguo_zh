@@ -148,4 +148,22 @@ public interface Events {
             this.end = end;
         }
     }
+
+    /**
+     * 玩家升级活动变更时间
+     */
+    public static class ActLevelUpEvent {
+        /** 玩家id*/
+        public Long roleId;
+        /** 升级前等级*/
+        public int preLevel;
+        /** 升级后等级*/
+        public int curLevel;
+
+        public ActLevelUpEvent(Long roleId, int preLevel, int curLevel) {
+            this.roleId = roleId;
+            this.preLevel = preLevel;
+            this.curLevel = curLevel;
+        }
+    }
 }

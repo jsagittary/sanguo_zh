@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.*;
@@ -139,15 +140,21 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         return config;
     }
 
-    @Override
-    protected void levelUp(Player player, int level) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void levelUp(Events.ActLevelUpEvent event) {
+        Player player = playerDataManager.getPlayer(event.roleId);
+        if (CheckNull.isNull(player)) {
+            LogUtil.error(String.format("Events.ActLevelUpEvent roleId:%d, not exist", event.roleId));
+            return;
+        }
+
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_QUESTIONNAIRE);
         if (CheckNull.isNull(activityBase) || CheckNull.isNull(activityBase.getPlan()) ||
                 !activityBase.getPlan().getChannel().contains(player.account.getPlatNo()))
             return;
         if (getActivityData(activityBase.getPlanKeyId()).containsKey(player.lord.getLordId()))
             return;
-        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activityBase.getActivityId(), player.account.getPlatNo(), level, activityBase.getPlanKeyId());
+        StaticActQuestionnaire config = getConfig(player.lord.getLordId(), activityBase.getActivityId(), player.account.getPlatNo(), event.curLevel, activityBase.getPlanKeyId());
         if (CheckNull.isNull(config))
             return;
 
@@ -158,6 +165,7 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
         builder.setActId(activityBase.getActivityId());
         DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(PbHelper.createSynBase(GamePb5.SyncQuestionnaireActInfoRs.
                 EXT_FIELD_NUMBER, GamePb5.SyncQuestionnaireActInfoRs.ext, builder.build()).build(), player);
+        getActivityData(activityBase.getPlanKeyId()).put(event.roleId, config);
     }
 
     /**

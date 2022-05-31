@@ -144,6 +144,10 @@ public class FunctionConstant {
      */
     public static final int FUNC_TREASURE_WARE = 1047;
     /**
+     * 心愿武将
+     */
+    public static final int FUNC_WISH_HERO = 1050;
+    /**
      * 功能：进入世界争霸条件
      */
     public static final int FUNC_ID_ENTER_WORLDWAR = 8886;

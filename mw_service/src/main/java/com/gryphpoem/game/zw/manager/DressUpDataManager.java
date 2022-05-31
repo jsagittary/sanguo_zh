@@ -116,6 +116,9 @@ public class DressUpDataManager implements DelayInvokeEnvironment {
      * @param curEvent      变动事件
      */
     public void syncDressUp(Player player, BaseDressUpEntity dressUpEntity, int curEvent) {
+        if (dressUpEntity instanceof TitleEntity) {
+            return;
+        }
         if (player.ctx != null && player.isLogin) {
             GamePb4.SyncDressUpRs.Builder builder = GamePb4.SyncDressUpRs.newBuilder();
             builder.setCurdEvent(curEvent);
