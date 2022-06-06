@@ -130,7 +130,6 @@ public class PlayerService implements GmCmdService {
     private TreasureCombatService treasureCombatService;
     @Autowired
     private TitleService titleService;
-    @Value("${initName}")
     private String initName;
 
     /**
