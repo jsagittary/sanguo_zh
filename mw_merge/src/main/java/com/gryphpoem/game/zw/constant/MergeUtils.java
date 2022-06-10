@@ -89,6 +89,7 @@ public abstract class MergeUtils {
         REATIN_ACT_TYPE.add(ActivityConst.ACT_CHRISTMAS);//圣诞活动
         REATIN_ACT_TYPE.add(ActivityConst.ACT_REPAIR_CASTLE);//修缮城堡
         REATIN_ACT_TYPE.add(ActivityConst.ACT_DEDICATED_CUSTOMER_SERVICE);//专属客服, 合服保留合服前的进度
+        REATIN_ACT_TYPE.add(ActivityConst.ACT_DAY_DISCOUNTS);//专属客服, 合服保留合服前的进度
 
         /*---------------------------Player.mixtureData需要保存的东西-------------------------------*/
         REATIN_MIXTURE_DATA_KEY = new HashSet<>();

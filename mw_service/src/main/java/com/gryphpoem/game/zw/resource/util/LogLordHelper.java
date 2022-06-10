@@ -24,9 +24,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class LogLordHelper {
@@ -1192,6 +1190,7 @@ public class LogLordHelper {
         StringBuffer message = getCommonParams("heroLvUp", AwardFrom.COMMON, player.account, player.lord)
                 .append("|").append(heroId).append("|").append(addExp).append("|").append(oldLv).append("|").append(newLv);
         GAME_LOGGER.info(message);
+        EventDataUp.heroLevelUp(player, heroId, newLv);
     }
 
     /**
