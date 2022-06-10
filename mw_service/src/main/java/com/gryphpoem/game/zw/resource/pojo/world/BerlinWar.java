@@ -267,7 +267,7 @@ public class BerlinWar {
      */
     public void initBerlinWar() {
         int now = TimeHelper.getCurrentSecond();
-        setLastDate(new Date());
+//        setLastDate(new Date());
         LogUtil.error("初始化柏林会战, 现在时间: " , DateHelper.getDateFormat1().format(now));
         StaticBerlinWar staticBerlinWar = StaticBerlinWarDataMgr.getBerlinSetting();
         if (CheckNull.isNull(staticBerlinWar)) {
