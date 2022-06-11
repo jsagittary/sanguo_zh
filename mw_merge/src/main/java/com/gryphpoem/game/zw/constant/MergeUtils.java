@@ -134,12 +134,12 @@ public abstract class MergeUtils {
 
         /*---------------------------保留的特价礼包进度--------------------------*/
         REATIN_VIP_BAG_GIFT_IDS = new HashSet<>();
-        REATIN_VIP_BAG_GIFT_IDS.add(3003);
-        REATIN_VIP_BAG_GIFT_IDS.add(3004);
-        REATIN_VIP_BAG_GIFT_IDS.add(3005);
-        REATIN_VIP_BAG_GIFT_IDS.add(3006);
-        REATIN_VIP_BAG_GIFT_IDS.add(3007);
-        REATIN_VIP_BAG_GIFT_IDS.add(3008);
+        REATIN_VIP_BAG_GIFT_IDS.add(10001);
+        REATIN_VIP_BAG_GIFT_IDS.add(10002);
+        REATIN_VIP_BAG_GIFT_IDS.add(10003);
+        REATIN_VIP_BAG_GIFT_IDS.add(10004);
+        REATIN_VIP_BAG_GIFT_IDS.add(10005);
+        REATIN_VIP_BAG_GIFT_IDS.add(10006);
     }
 
     public static void invokeCalcExecTime(String param, IMergeCommand command) throws Exception {
