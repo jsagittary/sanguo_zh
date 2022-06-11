@@ -750,6 +750,42 @@ public class EventDataUp {
         });
     }
 
+    /**
+     * 英雄升级
+     *
+     * @param player
+     * @param heroId
+     * @param newLv
+     */
+    public static void heroLevelUp(Player player, int heroId, int newLv) {
+        if (CheckNull.isNull(player.lord) || CheckNull.isNull(player.account))
+            return;
+        Hero hero = player.heros.get(heroId);
+        if (CheckNull.isNull(hero))
+            return;
+
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(player.account, player.lord);
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
+            common.put("heroid", heroId);
+            common.put("herotype", hero.getHeroType());
+            common.put("hero_level", newLv);
+            common.put("hero_military_appointment", hero.getCgyStage());
+            Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
+            common.put("hero_skill", Objects.nonNull(skillLvMap) ? skillLvMap.getValue() : 0);
+            Map<String, Object> propertyMap = new HashMap<>(); //固定格式，只改name
+            propertyMap.put("name", "hero_level_up");
+            propertyMap.put("time", TimeHelper.getCurrentSecond());
+            propertyMap.put("account_id", player.lord.getLordId());
+            propertyMap.put("data", common);
+
+            Map<String, Object> properties = new HashMap<>(); //固定格式
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
+    }
+
 
     /**
      * 检测数数上报的功能

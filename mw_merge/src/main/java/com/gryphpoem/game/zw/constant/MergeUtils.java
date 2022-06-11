@@ -89,6 +89,7 @@ public abstract class MergeUtils {
         REATIN_ACT_TYPE.add(ActivityConst.ACT_CHRISTMAS);//圣诞活动
         REATIN_ACT_TYPE.add(ActivityConst.ACT_REPAIR_CASTLE);//修缮城堡
         REATIN_ACT_TYPE.add(ActivityConst.ACT_DEDICATED_CUSTOMER_SERVICE);//专属客服, 合服保留合服前的进度
+        REATIN_ACT_TYPE.add(ActivityConst.ACT_DAY_DISCOUNTS);//专属客服, 合服保留合服前的进度
 
         /*---------------------------Player.mixtureData需要保存的东西-------------------------------*/
         REATIN_MIXTURE_DATA_KEY = new HashSet<>();
@@ -133,12 +134,12 @@ public abstract class MergeUtils {
 
         /*---------------------------保留的特价礼包进度--------------------------*/
         REATIN_VIP_BAG_GIFT_IDS = new HashSet<>();
-        REATIN_VIP_BAG_GIFT_IDS.add(3003);
-        REATIN_VIP_BAG_GIFT_IDS.add(3004);
-        REATIN_VIP_BAG_GIFT_IDS.add(3005);
-        REATIN_VIP_BAG_GIFT_IDS.add(3006);
-        REATIN_VIP_BAG_GIFT_IDS.add(3007);
-        REATIN_VIP_BAG_GIFT_IDS.add(3008);
+        REATIN_VIP_BAG_GIFT_IDS.add(10001);
+        REATIN_VIP_BAG_GIFT_IDS.add(10002);
+        REATIN_VIP_BAG_GIFT_IDS.add(10003);
+        REATIN_VIP_BAG_GIFT_IDS.add(10004);
+        REATIN_VIP_BAG_GIFT_IDS.add(10005);
+        REATIN_VIP_BAG_GIFT_IDS.add(10006);
     }
 
     public static void invokeCalcExecTime(String param, IMergeCommand command) throws Exception {

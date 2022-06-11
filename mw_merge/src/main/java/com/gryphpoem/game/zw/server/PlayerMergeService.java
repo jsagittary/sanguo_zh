@@ -335,12 +335,14 @@ public class PlayerMergeService {
         dressUpDataManager.subDressUp(player, AwardType.CASTLE_SKIN, StaticCastleSkin.BERLIN_WINNER_SKIN_ID, 0, AwardFrom.COMMON);
         //清除所有限时称号
         Map<Integer, BaseDressUpEntity> dressUpByType = dressUpDataManager.getDressUpByType(player, AwardType.TITLE);
-        dressUpByType.entrySet().forEach(entry->{
-            if (entry.getValue().getDuration()>0){
-                Long duration = StaticLordDataMgr.getTitleMapById(entry.getValue().getId()).getDuration();
-                dressUpDataManager.subDressUp(player, AwardType.TITLE, entry.getValue().getId(), duration, AwardFrom.COMMON);
-            }
-        });
+        if (CheckNull.nonEmpty(dressUpByType)) {
+            dressUpByType.entrySet().forEach(entry -> {
+                if (entry.getValue().getDuration() > 0) {
+                    Long duration = StaticLordDataMgr.getTitleMapById(entry.getValue().getId()).getDuration();
+                    dressUpDataManager.subDressUp(player, AwardType.TITLE, entry.getValue().getId(), duration, AwardFrom.COMMON);
+                }
+            });
+        }
         // player的 mixtureData数据进行处理
         int maxDayOfMonthKey = PlayerConstant.RECENTLY_PAY + 32;
         for (Iterator<Entry<Integer, Integer>> it = player.getMixtureData().entrySet().iterator(); it.hasNext(); ) {
