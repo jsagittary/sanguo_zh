@@ -20,6 +20,7 @@ import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -212,38 +213,45 @@ public class DrawCardService implements GmCmdService {
      * @throws MwException
      */
     private StaticHeroSearch randomPriorityReward(DrawCardData drawCardData, Date now, List<StaticDrawCardWeight> configList) throws MwException {
-        // 首次抽取必出奖励
-        if (!drawCardData.isFirstFinish()) {
-            drawCardData.setFirstFinish(true);
+        try {
+            // 首次抽取必出奖励
+            if (!drawCardData.isFirstFinish()) {
+                drawCardData.setFirstFinish(true);
+                drawCardData.addHeroDrawCount();
+                drawCardData.addFragmentDrawCount();
+                return dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
+            }
+            // 当前次数到必出武将次数
+            if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
+                drawCardData.setHeroDrawCount(0);
+                return dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
+            }
+            // 免费活动次数保底
+            List<Integer> nextRewardList = drawCardData.getNextRewardList();
+            if (CheckNull.nonEmpty(nextRewardList)) {
+                drawCardData.addHeroDrawCount();
+                drawCardData.addFragmentDrawCount();
+                drawCardData.getSpecifyRewardList().add(nextRewardList.get(0));
+                return dataMgr.getHeroSearchMap().get(nextRewardList.get(1));
+            }
+            // 碎片保底
+            if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
+                drawCardData.setFragmentDrawCount(0);
+                drawCardData.addHeroDrawCount();
+                return dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
+            }
+
+            // 记录抽取次数
             drawCardData.addHeroDrawCount();
             drawCardData.addFragmentDrawCount();
+            // 随机奖励
+            return dataMgr.randomReward(configList);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            // 记录玩家抽卡次数
             drawCardData.addDrawCount(now);
-            return dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
         }
-        // 当前次数到必出武将次数
-        if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
-            drawCardData.setHeroDrawCount(0);
-            return dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
-        }
-        // 免费活动次数保底
-        if (CheckNull.nonEmpty(drawCardData.getSpecifyRewardList())) {
-            Integer specifyRewardId = drawCardData.getSpecifyRewardList().removeFirst();
-            if (Objects.nonNull(specifyRewardId)) {
-                return dataMgr.getHeroSearchMap().get(specifyRewardId);
-            }
-        }
-        // 碎片保底
-        if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
-            drawCardData.setFragmentDrawCount(0);
-            return dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
-        }
-
-        // 记录抽取次数
-        drawCardData.addHeroDrawCount();
-        drawCardData.addFragmentDrawCount();
-        drawCardData.addDrawCount(now);
-        // 随机奖励
-        return dataMgr.randomReward(configList);
     }
 
     /**

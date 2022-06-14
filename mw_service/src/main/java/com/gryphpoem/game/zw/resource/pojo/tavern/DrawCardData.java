@@ -47,9 +47,9 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     private Date firstCostMoneyDailyDate;
     /**
-     * 下次抽取指定出奖励
+     * 已经领取的次数下标
      */
-    private LinkedList<Integer> specifyRewardList = new LinkedList<>();
+    private List<Integer> specifyRewardList = new ArrayList<>();
     /**
      * 已使用的活动抽取次数
      */
@@ -149,14 +149,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         this.firstCostMoneyDailyDate = firstCostMoneyDailyDate;
     }
 
-    public LinkedList<Integer> getSpecifyRewardList() {
-        return specifyRewardList;
-    }
-
-    public void setSpecifyRewardList(LinkedList<Integer> specifyRewardList) {
-        this.specifyRewardList = specifyRewardList;
-    }
-
     public int getActiveDrawsUsedCount() {
         return activeDrawsUsedCount;
     }
@@ -187,6 +179,14 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
 
     public void setFragmentDrawCount(int fragmentDrawCount) {
         this.fragmentDrawCount = fragmentDrawCount;
+    }
+
+    public List<Integer> getSpecifyRewardList() {
+        return specifyRewardList;
+    }
+
+    public void setSpecifyRewardList(List<Integer> specifyRewardList) {
+        this.specifyRewardList = specifyRewardList;
     }
 
     public boolean isTodayFirst(Date now) {
@@ -226,15 +226,22 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
             if (count < HeroConstant.DRAW_CARD_WISH_VALUE_LIMIT)
                 this.wishHero.setB(++count);
         }
+    }
 
-        // 若下一次抽卡次数已到活动抽卡数, 促发下次必得奖励
-        if (CheckNull.nonEmpty(HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD)) {
-            List<Integer> nextRewardList = HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
-                    filter(list -> CheckNull.nonEmpty(list) && list.get(0) == this.activeDrawsUsedCount + 1).findFirst().orElse(null);
-            if (CheckNull.nonEmpty(nextRewardList)) {
-                specifyRewardList.addLast(nextRewardList.get(1));
-            }
-        }
+    /**
+     * 获取下次必出奖励
+     *
+     * @return
+     */
+    public List<Integer> getNextRewardList() {
+        List<Integer> nextRewardList = HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
+                filter(list -> CheckNull.nonEmpty(list) && list.get(0) == this.activeDrawsUsedCount).findFirst().orElse(null);
+        if (CheckNull.isEmpty(nextRewardList))
+            return null;
+
+        if (this.specifyRewardList.contains(nextRewardList.get(0)))
+            return null;
+        return nextRewardList;
     }
 
     public Date getLastDrawCardDate() {
@@ -311,7 +318,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (Objects.nonNull(firstCostMoneyDailyDate))
             builder.setFirstCostMoneyDailyDate(firstCostMoneyDailyDate.getTime());
         if (CheckNull.nonEmpty(specifyRewardList)) {
-            builder.addAllSpecifyRewardList(specifyRewardList);
+            builder.addAllSpecifyRewardList(this.specifyRewardList);
         }
         builder.setActiveDrawsUsedCount(activeDrawsUsedCount);
         builder.setHeroDrawCount(heroDrawCount);
