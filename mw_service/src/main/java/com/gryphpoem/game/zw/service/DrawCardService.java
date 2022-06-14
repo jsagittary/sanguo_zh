@@ -213,8 +213,8 @@ public class DrawCardService implements GmCmdService {
      */
     private StaticHeroSearch randomPriorityReward(DrawCardData drawCardData, Date now, List<StaticDrawCardWeight> configList) throws MwException {
         // 首次抽取必出奖励
-        if (drawCardData.isFirstDraw()) {
-            drawCardData.setFirstDraw(false);
+        if (!drawCardData.isFirstFinish()) {
+            drawCardData.setFirstFinish(true);
             drawCardData.addHeroDrawCount();
             drawCardData.addFragmentDrawCount();
             drawCardData.addDrawCount(now);

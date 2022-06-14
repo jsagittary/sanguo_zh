@@ -19,9 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
     /**
-     * 是否是第一次抽取
+     * 第一次抽取是否完成
      */
-    private boolean firstDraw;
+    private boolean firstFinish;
     /**
      * 免费次数 (只记录系统免费次数)
      */
@@ -75,16 +75,12 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     private Map<Integer, Integer> fragmentData = new ConcurrentHashMap<>();
 
-    public DrawCardData() {
-        this.firstDraw = true;
+    public boolean isFirstFinish() {
+        return firstFinish;
     }
 
-    public boolean isFirstDraw() {
-        return firstDraw;
-    }
-
-    public void setFirstDraw(boolean firstDraw) {
-        this.firstDraw = firstDraw;
+    public void setFirstFinish(boolean firstFinish) {
+        this.firstFinish = firstFinish;
     }
 
     public int getFreeCount() {
@@ -276,7 +272,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * @param pb
      */
     public void deSer(SerializePb.SerDrawCardData pb) {
-        this.firstDraw = pb.getFirst();
+        this.firstFinish = pb.getFirst();
         this.freeCount = pb.getFreeCount();
         this.cdFreeTime = pb.getCdFreeTime();
         this.otherFreeCount = pb.getOtherFreeCount();
@@ -307,7 +303,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
     @Override
     public SerializePb.SerDrawCardData createPb(boolean isSaveDb) {
         SerializePb.SerDrawCardData.Builder builder = SerializePb.SerDrawCardData.newBuilder();
-        builder.setFirst(this.firstDraw);
+        builder.setFirst(this.firstFinish);
         builder.setFreeCount(freeCount);
         builder.setCdFreeTime(cdFreeTime);
         builder.setOtherFreeCount(otherFreeCount);
