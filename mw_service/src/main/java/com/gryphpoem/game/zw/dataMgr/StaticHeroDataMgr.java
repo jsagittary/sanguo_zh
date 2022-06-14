@@ -127,9 +127,7 @@ public class StaticHeroDataMgr {
         }
         StaticHeroDataMgr.levelMap = levelMap;
 
-        Map<Integer, StaticHeroSearch> heroSearchMap = staticDataDao.selectHeroSearchMap();
-        StaticHeroDataMgr.heroSearchMap = heroSearchMap;
-        HeroSearchRandom.init(heroSearchMap);
+//        HeroSearchRandom.init(heroSearchMap);
     }
 
     public static Map<Integer, StaticHero> getHeroMap() {

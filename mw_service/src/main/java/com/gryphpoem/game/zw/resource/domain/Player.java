@@ -64,6 +64,7 @@ import com.gryphpoem.game.zw.resource.pojo.party.SupplyRecord;
 import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
+import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
@@ -708,6 +709,11 @@ public class Player {
      * 招募奖励 v1: 对应s_system中id=1102的索引位置, v2: 1 已领取、0 未领取
      */
     private Map<Integer, Integer> recruitReward = new HashMap<>(5);
+    /**
+     * 玩家抽卡详情
+     */
+    private DrawCardData drawCardData = new DrawCardData();
+
     public Map<Integer, Integer> getRecruitReward() {
         return recruitReward;
     }
@@ -1056,6 +1062,10 @@ public class Player {
 
     public void addCollectMineCount() {
         this.collectMineCount++;
+    }
+
+    public DrawCardData getDrawCardData() {
+        return drawCardData;
     }
 
     /**

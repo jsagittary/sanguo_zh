@@ -148,6 +148,10 @@ public class FunctionConstant {
      */
     public static final int FUNC_WISH_HERO = 1050;
     /**
+     * 常驻抽卡功能
+     */
+    public static final int FUNC_PERMANENT_DRAW_CARD = 1051;
+    /**
      * 功能：进入世界争霸条件
      */
     public static final int FUNC_ID_ENTER_WORLDWAR = 8886;

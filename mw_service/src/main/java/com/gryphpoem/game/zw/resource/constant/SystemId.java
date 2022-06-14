@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import java.util.List;
+
 /**
  * @author TanDonghai
  * @ClassName SystemId.java
@@ -1700,7 +1702,58 @@ public class SystemId {
      * 宝具副本默认解锁上阵位
      */
     public static final int TREASURE_COMBAT_DEFAULT_UNLOCK = 640;
+    /**
+     * 常驻寻访金币消耗
+     */
+    public static final int PERMANENT_QUEST_GOLD_CONSUMPTION = 642;
+    /**
+     * 限时寻访金币消耗
+     */
+    public static final int TIME_LIMITED_SEARCH_FOR_GOLD_COIN_CONSUMPTION = 643;
+    /**
+     * 寻访重复武将转化碎片
+     */
+    public static final int DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS = 644;
 
+    /**
+     * 寻访橙色武将碎片保底次数
+     */
+    public static final int DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES = 645;
+
+    /**
+     * 寻访橙色武将保底次数
+     */
+    public static final int DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO = 646;
+
+    /**
+     * 寻访免费次数间隔时间（秒）
+     */
+    public static final int DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL = 647;
+
+    /**
+     * 第一次抽卡必出奖励
+     */
+    public static int FIRST_DRAW_CARD_HERO_REWARD = 648;
+
+    /**
+     * 已使用活动抽取次数必出奖励
+     */
+    public static int ACTIVE_DRAWS_USED_COUNT_HERO_REWARD = 649;
+
+    /**
+     * 每日寻访可增加心愿值次数
+     */
+    public static int DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS = 658;
+
+    /**
+     * 每日寻访单抽折扣消耗玉璧
+     */
+    public static int DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE = 659;
+
+    /**
+     * 寻访心愿值上限
+     */
+    public static int DRAW_CARD_WISH_VALUE_LIMIT = 660;
 
     /**
      * 默认铭牌id

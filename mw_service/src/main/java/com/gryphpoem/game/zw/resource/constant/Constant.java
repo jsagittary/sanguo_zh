@@ -980,7 +980,6 @@ public final class Constant {
      * 跨服排名第一的人物形象奖励
      */
     public static List<Integer> CROSS_WAR_FIRE_WINNER_PORTRAIT;
-
     /**
      * s_system表中定义的常量初始化
      */

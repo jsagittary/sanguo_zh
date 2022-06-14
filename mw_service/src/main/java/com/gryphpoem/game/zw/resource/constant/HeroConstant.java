@@ -59,6 +59,56 @@ public class HeroConstant {
      */
     public static int WISH_HERO_COUNT;
 
+
+    /**
+     * 寻访免费次数间隔时间（秒）
+     */
+    public static int DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL;
+
+    /**
+     * 常驻寻访金币消耗
+     */
+    public static List<Integer> PERMANENT_QUEST_GOLD_CONSUMPTION;
+
+    /**
+     * 限时寻访金币消耗
+     */
+    public static List<Integer> TIME_LIMITED_SEARCH_FOR_GOLD_COIN_CONSUMPTION;
+    /**
+     * 寻访重复武将转化碎片
+     */
+    public static int DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS;
+
+    /**
+     * 寻访橙色武将碎片保底次数
+     */
+    public static int DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES;
+
+    /**
+     * 寻访橙色武将保底次数
+     */
+    public static int DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO;
+    /**
+     * 第一次抽卡必出奖励
+     */
+    public static int FIRST_DRAW_CARD_HERO_REWARD;
+    /**
+     * 已使用活动抽取次数必出奖励
+     */
+    public static List<List<Integer>> ACTIVE_DRAWS_USED_COUNT_HERO_REWARD;
+    /**
+     * 每日寻访可增加心愿值次数
+     */
+    public static int DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS;
+    /**
+     * 每日寻访单抽折扣消耗玉璧
+     */
+    public static int DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE;
+    /**
+     * 寻访心愿值上限
+     */
+    public static int DRAW_CARD_WISH_VALUE_LIMIT;
+
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
         HERO_BATTLE_LEN = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_BATTLE_LEN, 4);
@@ -75,6 +125,17 @@ public class HeroConstant {
         HERO_WAR_PLANE_UNLOCK = SystemTabLoader.getListListIntSystemValue(SystemId.HERO_WAR_PLANE_UNLOCK, "[[]]");
         HERO_REGROUP_AWARD_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_REGROUP_AWARD_NUM, 8000);
         WISH_HERO_COUNT = SystemTabLoader.getIntegerSystemValue(SystemId.WISH_HERO_COUNT, 20);
+        DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL, 41400);
+        PERMANENT_QUEST_GOLD_CONSUMPTION = SystemTabLoader.getListIntSystemValue(SystemId.PERMANENT_QUEST_GOLD_CONSUMPTION, "[]");
+        TIME_LIMITED_SEARCH_FOR_GOLD_COIN_CONSUMPTION = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_SEARCH_FOR_GOLD_COIN_CONSUMPTION, "[]");
+        DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, 20);
+        DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES, 10);
+        DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO, 40);
+        FIRST_DRAW_CARD_HERO_REWARD = SystemTabLoader.getIntegerSystemValue(SystemId.FIRST_DRAW_CARD_HERO_REWARD, 17);
+        ACTIVE_DRAWS_USED_COUNT_HERO_REWARD = SystemTabLoader.getListListIntSystemValue(SystemId.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD, "[[]]");
+        DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS = SystemTabLoader.getIntegerSystemValue(SystemId.DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS, 4);
+        DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE = SystemTabLoader.getIntegerSystemValue(SystemId.DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE, 100);
+        DRAW_CARD_WISH_VALUE_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_CARD_WISH_VALUE_LIMIT, 100);
     }
 
     /**

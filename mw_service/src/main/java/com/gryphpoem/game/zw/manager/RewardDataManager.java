@@ -508,6 +508,10 @@ public class RewardDataManager {
             case AwardType.TITLE:
                 addTitle(player, id, count, convert, from, param);
                 break;
+            // 添加英雄碎片
+            case AwardType.HERO_FRAGMENT:
+                operationHeroFragment(player, id, count, from, true, param);
+                break;
             default:
                 break;
         }
@@ -517,6 +521,25 @@ public class RewardDataManager {
         }
 
         return award.build();
+    }
+
+    /**
+     * 增加或减少武将碎片
+     *
+     * @param player
+     * @param id
+     * @param count
+     * @param from
+     * @param operation
+     * @param param
+     */
+    private void operationHeroFragment(Player player, int id, int count, AwardFrom from, boolean operation, Object... param) {
+        if (count == 0)
+            return;
+
+        count = Math.abs(count);
+        count = operation ? count : -count;
+        player.getDrawCardData().getFragmentData().merge(id, count, Integer::sum);
     }
 
     /**
@@ -3194,9 +3217,10 @@ public class RewardDataManager {
             case AwardType.SPECIAL:
                 subSpecial(player, id, num, from, param);
                 break;
-//            case AwardType.TOTEM_CHIP:
-//                subTotemChip(player,id,num,from,param);
-//                break;
+            // 减少英雄碎片
+            case AwardType.HERO_FRAGMENT:
+                operationHeroFragment(player, id, num, from, false, param);
+                break;
             default:
                 break;
         }

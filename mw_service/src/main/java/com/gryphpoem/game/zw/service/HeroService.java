@@ -2300,6 +2300,32 @@ public class HeroService implements GmCmdService {
 
     }
 
+    /**
+     * 检测当前玩家是否拥有此英雄
+     *
+     * @param player
+     * @param heroId
+     * @param staticHero
+     * @return
+     */
+    public Hero hasOwnedHero(Player player, int heroId, StaticHero staticHero) {
+        if (CheckNull.isNull(staticHero) || CheckNull.isNull(player))
+            return null;
+
+        // 查找玩家是否拥有此英雄
+        Hero hero_ = player.heros.get(heroId);
+        if (CheckNull.isNull(hero_)) {
+            hero_ = player.heros.values().stream().filter(v -> {
+                StaticHero staticData = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
+                if (CheckNull.isNull(staticData))
+                    return false;
+                return staticData.getHeroType() == staticHero.getHeroType();
+            }).findFirst().orElse(null);
+        }
+
+        return hero_;
+    }
+
     @GmCmd("hero")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {

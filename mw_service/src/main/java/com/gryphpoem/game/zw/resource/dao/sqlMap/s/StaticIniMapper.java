@@ -283,4 +283,18 @@ public interface StaticIniMapper {
     @MapKey("diff")
     @Select("select * from s_pvp_battle")
     Map<Integer, StaticBattlePvp> selectStaticBattlePvpMap();
+
+    @MapKey("id")
+    @Results({
+            @Result(column = "serverIdList", property = "serverIdList", typeHandler = ListListTypeHandler.class)
+    })
+    @Select("select * from s_hero_search_plan")
+    Map<Integer, StaticDrawHeoPlan> selectStaticDrawHeoPlanMap();
+
+    @Results({
+            @Result(column = "weight", property = "weight", typeHandler = ListListTypeHandler.class),
+            @Result(column = "serverId", property = "serverIdList", typeHandler = ListListTypeHandler.class)
+    })
+    @Select("select * from s_hero_search_weight")
+    List<StaticDrawCardWeight> selectStaticDrawCardWeightList();
 }

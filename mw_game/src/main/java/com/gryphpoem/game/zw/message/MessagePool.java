@@ -103,6 +103,7 @@ import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
 import com.gryphpoem.game.zw.pb.GamePb3.*;
 import com.gryphpoem.game.zw.pb.GamePb4.*;
+import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
 import com.gryphpoem.game.zw.pb.GamePb6.*;
 import com.gryphpoem.game.zw.pb.GamePb7.*;
@@ -424,9 +425,6 @@ public class MessagePool implements IMessagePool {
         // 将领觉醒相关功能
         registerC(AwakenHeroRq.EXT_FIELD_NUMBER, AwakenHeroRs.EXT_FIELD_NUMBER, AwakenHeroHandler.class);
 
-        // 酒馆优化
-        registerC(ReceiveRecruitRewardRq.EXT_FIELD_NUMBER, ReceiveRecruitRewardRs.EXT_FIELD_NUMBER, ReceiveRecruitRewardHandler.class);
-        registerC(ChooseWishHeroRq.EXT_FIELD_NUMBER, ChooseWishHeroRs.EXT_FIELD_NUMBER, ChooseWishHeroHandler.class);
         // 战机相关协议
         registerC(GetWarPlanesRq.EXT_FIELD_NUMBER, GetWarPlanesRs.EXT_FIELD_NUMBER, GetWarPlanesHandler.class);
         registerC(GetPlaneByIdsRq.EXT_FIELD_NUMBER, GetPlaneByIdsRs.EXT_FIELD_NUMBER, GetPlaneByIdsHandler.class);
@@ -1334,14 +1332,18 @@ public class MessagePool implements IMessagePool {
         registerC(GetCrossWarFirePlayerLiveRq.EXT_FIELD_NUMBER, GetCrossWarFirePlayerLiveRs.EXT_FIELD_NUMBER, GetCrossWarFirePlayerLiveHandler.class);
         registerC(RefreshGetCrossWarFirePlayerInfoRq.EXT_FIELD_NUMBER, RefreshGetCrossWarFirePlayerInfoRs.EXT_FIELD_NUMBER, RefreshGetPlayerInfoHandler.class);
 
-
-
-
         //跨服聊天
         registerC(GetGamePlayChatRoomRq.EXT_FIELD_NUMBER, GetGamePlayChatRoomRs.EXT_FIELD_NUMBER, GetGamePlayChatRoomHandler.class);
         registerC(GetChatRoomMsgRq.EXT_FIELD_NUMBER, GetChatRoomMsgRs.EXT_FIELD_NUMBER, GetChatRoomMsgHandler.class);
         registerC(GetRoomPlayerShowRq.EXT_FIELD_NUMBER, GetRoomPlayerShowRs.EXT_FIELD_NUMBER, GetRoomPlayerShowHandler.class);
         registerC(GetCrossPlayerShowRq.EXT_FIELD_NUMBER, GetCrossPlayerShowRs.EXT_FIELD_NUMBER, GetCrossPlayerShowHandler.class);
+
+        // 酒馆 常驻抽卡
+        registerC(GetDrawHeroCardRq.EXT_FIELD_NUMBER, GetDrawHeroCardRs.EXT_FIELD_NUMBER, GetDrawHeroCardHandler.class);
+        registerC(DrawHeroCardRq.EXT_FIELD_NUMBER, DrawHeroCardRs.EXT_FIELD_NUMBER, DrawHeroCardHandler.class);
+        registerC(ChooseNewWishHeroRq.EXT_FIELD_NUMBER, ChooseNewWishHeroRs.EXT_FIELD_NUMBER, ChooseWishedHeroHandler.class);
+        registerC(ReceiveNewWishHeoRq.EXT_FIELD_NUMBER, ReceiveNewWishHeoRs.EXT_FIELD_NUMBER, ReceiveNewWishHeoHandler.class);
+        registerC(GetAllHeroFragmentRq.EXT_FIELD_NUMBER, GetAllHeroFragmentRs.EXT_FIELD_NUMBER, GetAllHeroFragmentHandler.class);
     }
 
     /**

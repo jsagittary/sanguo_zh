@@ -168,4 +168,12 @@ public class StaticIniDao extends BaseDao {
     public Map<Integer, StaticBattlePvp> selectStaticBattlePvpMap() {
         return getMapper(StaticIniMapper.class).selectStaticBattlePvpMap();
     }
+
+    public Map<Integer, StaticDrawHeoPlan> selectStaticDrawHeoPlanMap() {
+        return getMapper(StaticIniMapper.class).selectStaticDrawHeoPlanMap();
+    }
+
+    public List<StaticDrawCardWeight> selectStaticDrawCardWeightList() {
+        return getMapper(StaticIniMapper.class).selectStaticDrawCardWeightList();
+    }
 }
