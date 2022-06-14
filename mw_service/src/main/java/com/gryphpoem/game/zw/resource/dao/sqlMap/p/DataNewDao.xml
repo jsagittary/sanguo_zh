@@ -14,20 +14,20 @@
 	<insert id="insertData" parameterType="DataNew">
 		insert into
 		p_data(lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
-		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares)
+		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares,drawCardData)
 		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},
 		#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},
 		#{awards},#{supEquips},#{supEquipQue},#{opts},#{wallNpc},#{effects},#{chemical},
-		#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares})
+		#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares},#{drawCardData})
 	</insert>
 
 	<insert id="insertFullData" parameterType="DataNew">
 		insert into
 		p_data(lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
-		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares)
+		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares,drawCardData)
 		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},
 		combats=#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},#{awards},#{supEquips},#{supEquipQue},
-		,#{opts},#{wallNpc},#{effects},#{chemical},#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares})
+		,#{opts},#{wallNpc},#{effects},#{chemical},#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares},#{drawCardData})
 	</insert>
 
 <!--	<insert id="insertFullData" parameterType="DataNew">-->
@@ -47,7 +47,7 @@
 		shop=#{shop},combatFb=#{combatFb},acquisition=#{acquisition},awards=#{awards},supEquips=#{supEquips},
 		supEquipQue=#{supEquipQue},opts=#{opts},wallNpc=#{wallNpc},effects=#{effects},chemical=#{chemical},
 		treasure=#{treasure},friends=#{friends},masterApprentice=#{masterApprentice},cabinet=#{cabinet},trophy=#{trophy},playerExt=#{playerExt},day7Act=#{day7Act},activity=#{activity}
-		,signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares}
+		,signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares},drawCardData=#{drawCardData}
 		where lordId=#{lordId}
 	</update>
 
@@ -93,7 +93,8 @@
 			<if test="signInExt != null">signInExt=#{signInExt},</if>
 			<if test="crossData != null">crossData=#{crossData},</if>
 			<if test="totem != null">totem=#{totem},</if>
-			<if test="treasureWares != null">treasureWares=#{treasureWares}</if>
+			<if test="treasureWares != null">treasureWares=#{treasureWares},</if>
+			<if test="drawCardData != null">drawCardData=#{drawCardData}</if>
 		</set>
 		where lordId=#{lordId}
 	</update>
@@ -105,14 +106,14 @@
 		shop=#{shop},combatFb=#{combatFb},acquisition=#{acquisition},awards=#{awards},supEquips=#{supEquips},
 		supEquipQue=#{supEquipQue},opts=#{opts},wallNpc=#{wallNpc},effects=#{effects},chemical=#{chemical},
 		treasure=#{treasure},friends=#{friends},masterApprentice=#{masterApprentice},cabinet=#{cabinet},trophy=#{trophy},playerExt=#{playerExt},day7Act=#{day7Act},activity=#{activity},
-		signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares}
+		signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares},drawCardData=#{drawCardData}
 	</insert>
 
 	<select id="loadData" parameterType="Map" resultType="DataNew">
 		select
 		lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,mails,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
 		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,
-		crossData,totem,treasureWares
+		crossData,totem,treasureWares,drawCardData
 		from p_data
 		where lordId > #{curIndex} order by lordId limit 0,#{count}
 	</select>

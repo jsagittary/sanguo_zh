@@ -62,7 +62,7 @@ public class DrawCardService implements GmCmdService {
         builder.setCdTime((int) (player.getDrawCardData().getCdFreeTime() / 1000l));
         if (Objects.nonNull(player.getDrawCardData().getWishHero()))
             builder.setWishHero(PbHelper.createTwoIntPb(player.getDrawCardData().getWishHero().getA(), player.getDrawCardData().getWishHero().getB()));
-        builder.setNextGetHeroTimes(player.getDrawCardData().getNextGetHeroCurCount() == 0 ? HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO : player.getDrawCardData().getNextGetHeroCurCount());
+        builder.setNextGetHeroTimes(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - player.getDrawCardData().getHeroDrawCount());
         builder.setFreeNum(player.getDrawCardData().getFreeCount());
         builder.setOtherFreeNum(player.getDrawCardData().getOtherFreeCount());
         List<StaticDrawCardWeight> drawCardPollList = dataMgr.getDrawCardWeightList(now);
@@ -215,6 +215,9 @@ public class DrawCardService implements GmCmdService {
         // 首次抽取必出奖励
         if (drawCardData.isFirstDraw()) {
             drawCardData.setFirstDraw(false);
+            drawCardData.addHeroDrawCount();
+            drawCardData.addFragmentDrawCount();
+            drawCardData.addDrawCount(now);
             return dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
         }
         // 当前次数到必出武将次数

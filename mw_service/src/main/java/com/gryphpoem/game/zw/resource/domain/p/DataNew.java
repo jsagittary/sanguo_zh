@@ -43,6 +43,7 @@ public class DataNew {
     private byte[] crossData;// 跨服数据
     private byte[] totem;//图腾数据
     private byte[] treasureWares;//宝具数据
+    private byte[] drawCardData;// 抽卡数据
 
     public byte[] getActivity() {
         return activity;
@@ -377,5 +378,13 @@ public class DataNew {
 
     public void setTreasureWares(byte[] treasureWares) {
         this.treasureWares = treasureWares;
+    }
+
+    public byte[] getDrawCardData() {
+        return drawCardData;
+    }
+
+    public void setDrawCardData(byte[] drawCardData) {
+        this.drawCardData = drawCardData;
     }
 }

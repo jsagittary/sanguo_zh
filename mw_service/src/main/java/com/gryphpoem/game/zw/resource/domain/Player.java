@@ -1798,6 +1798,7 @@ public class Player {
         dataNew.setCrossData(serCrossData());
         dataNew.setTotem(totemData.ser().toByteArray());
         dataNew.setTreasureWares(serTreasureWares());
+        dataNew.setDrawCardData(getDrawCardData().createPb(true).toByteArray());
         return dataNew;
     }
 
@@ -2319,6 +2320,11 @@ public class Player {
         if (data.getTreasureWares() != null) {
             SerTreasureWares ser = SerTreasureWares.parseFrom(data.getTreasureWares());
             dserTreasureWares(ser);
+        }
+
+        if (data.getDrawCardData() != null) {
+            SerDrawCardData ser = SerDrawCardData.parseFrom(data.getDrawCardData());
+            this.getDrawCardData().deSer(ser);
         }
 
         setMaxKey(data.getMaxKey());

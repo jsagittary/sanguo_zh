@@ -1,10 +1,12 @@
 package com.gryphpoem.game.zw.resource.pojo.tavern;
 
 import com.gryphpoem.game.zw.pb.GamePb5;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 
 import java.util.*;
@@ -15,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Author: zhangpeng
  * createTime: 2022-06-13 14:55
  */
-public class DrawCardData implements GamePb<GamePb5.GetDrawHeroCardRs> {
+public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
     /**
      * 是否是第一次抽取
      */
@@ -28,10 +30,6 @@ public class DrawCardData implements GamePb<GamePb5.GetDrawHeroCardRs> {
      * 免费抽卡cd时间
      */
     private long cdFreeTime;
-    /**
-     * 下次必出英雄所需次数
-     */
-    private int nextGetHeroCurCount;
     /**
      * 免费次数 (活动或任务免费次数)
      */
@@ -113,22 +111,6 @@ public class DrawCardData implements GamePb<GamePb5.GetDrawHeroCardRs> {
         otherFreeCount -= count;
         // 增加活动抽取次数
         this.activeDrawsUsedCount += count;
-        // 当前活动抽取次数足够, 促发下次必得奖励
-        if (CheckNull.nonEmpty(HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD)) {
-            List<Integer> nextRewardList = HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
-                    filter(list -> CheckNull.nonEmpty(list) && list.get(0) == this.activeDrawsUsedCount).findFirst().orElse(null);
-            if (CheckNull.nonEmpty(nextRewardList)) {
-                specifyRewardList.addLast(nextRewardList.get(1));
-            }
-        }
-    }
-
-    public int getNextGetHeroCurCount() {
-        return nextGetHeroCurCount;
-    }
-
-    public void setNextGetHeroCurCount(int nextGetHeroCurCount) {
-        this.nextGetHeroCurCount = nextGetHeroCurCount;
     }
 
     public Turple<Integer, Integer> getWishHero() {
@@ -245,8 +227,17 @@ public class DrawCardData implements GamePb<GamePb5.GetDrawHeroCardRs> {
 
         if (add) {
             Integer count = this.wishHero.getB();
-            if (count >= HeroConstant.DRAW_CARD_WISH_VALUE_LIMIT)
+            if (count < HeroConstant.DRAW_CARD_WISH_VALUE_LIMIT)
                 this.wishHero.setB(++count);
+        }
+
+        // 若下一次抽卡次数已到活动抽卡数, 促发下次必得奖励
+        if (CheckNull.nonEmpty(HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD)) {
+            List<Integer> nextRewardList = HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
+                    filter(list -> CheckNull.nonEmpty(list) && list.get(0) == this.activeDrawsUsedCount + 1).findFirst().orElse(null);
+            if (CheckNull.nonEmpty(nextRewardList)) {
+                specifyRewardList.addLast(nextRewardList.get(1));
+            }
         }
     }
 
@@ -279,8 +270,63 @@ public class DrawCardData implements GamePb<GamePb5.GetDrawHeroCardRs> {
         }
     }
 
+    /**
+     * 反序列化信息
+     *
+     * @param pb
+     */
+    public void deSer(SerializePb.SerDrawCardData pb) {
+        this.firstDraw = pb.getFirst();
+        this.freeCount = pb.getFreeCount();
+        this.cdFreeTime = pb.getCdFreeTime();
+        this.otherFreeCount = pb.getOtherFreeCount();
+        this.wishHero.setA(pb.getWishHero().getV1());
+        this.wishHero.setB(pb.getWishHero().getV2());
+
+        Calendar calendar = Calendar.getInstance();
+        if (pb.hasFirstCostMoneyDailyDate()) {
+            calendar.setTimeInMillis(pb.getFirstCostMoneyDailyDate());
+            this.firstCostMoneyDailyDate = calendar.getTime();
+        }
+        if (CheckNull.nonEmpty(pb.getSpecifyRewardListList())) {
+            this.specifyRewardList.addAll(pb.getSpecifyRewardListList());
+        }
+        this.activeDrawsUsedCount = pb.getActiveDrawsUsedCount();
+        this.heroDrawCount = pb.getHeroDrawCount();
+        this.fragmentDrawCount = pb.getFragmentDrawCount();
+        this.todayDrawCount = pb.getTodayDrawCount();
+        if (pb.hasLastDrawCardDate()) {
+            calendar.setTimeInMillis(pb.getLastDrawCardDate());
+            this.lastDrawCardDate = calendar.getTime();
+        }
+        if (CheckNull.nonEmpty(pb.getFragmentDataList())) {
+            pb.getFragmentDataList().forEach(data -> fragmentData.put(data.getV1(), data.getV2()));
+        }
+    }
+
     @Override
-    public GamePb5.GetDrawHeroCardRs createPb(boolean isSaveDb) {
-        return null;
+    public SerializePb.SerDrawCardData createPb(boolean isSaveDb) {
+        SerializePb.SerDrawCardData.Builder builder = SerializePb.SerDrawCardData.newBuilder();
+        builder.setFirst(this.firstDraw);
+        builder.setFreeCount(freeCount);
+        builder.setCdFreeTime(cdFreeTime);
+        builder.setOtherFreeCount(otherFreeCount);
+        builder.setWishHero(PbHelper.createTwoIntPb(this.wishHero.getA(), this.wishHero.getB()));
+        if (Objects.nonNull(firstCostMoneyDailyDate))
+            builder.setFirstCostMoneyDailyDate(firstCostMoneyDailyDate.getTime());
+        if (CheckNull.nonEmpty(specifyRewardList)) {
+            builder.addAllSpecifyRewardList(specifyRewardList);
+        }
+        builder.setActiveDrawsUsedCount(activeDrawsUsedCount);
+        builder.setHeroDrawCount(heroDrawCount);
+        builder.setFragmentDrawCount(fragmentDrawCount);
+        builder.setTodayDrawCount(todayDrawCount);
+        if (Objects.nonNull(lastDrawCardDate)) {
+            builder.setLastDrawCardDate(lastDrawCardDate.getTime());
+        }
+        if (CheckNull.nonEmpty(this.fragmentData)) {
+            this.fragmentData.entrySet().forEach(entry -> builder.addFragmentData(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
+        }
+        return builder.build();
     }
 }
