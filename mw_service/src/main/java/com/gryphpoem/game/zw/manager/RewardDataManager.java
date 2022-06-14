@@ -667,9 +667,8 @@ public class RewardDataManager {
             case AwardType.TITLE:
                 addTitle(player, id, count, convert, from, param);
                 break;
-//            case AwardType.TOTEM_CHIP://获得图腾碎片
-//                addTotemChip(player,id,count,from, param);
-//                break;
+            case AwardType.HERO_FRAGMENT:
+                operationHeroFragment(player, id, count, from, true, param);
             default:
                 break;
         }
