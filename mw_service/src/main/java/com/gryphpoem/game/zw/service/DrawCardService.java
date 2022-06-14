@@ -67,7 +67,7 @@ public class DrawCardService implements GmCmdService {
         builder.setOtherFreeNum(player.getDrawCardData().getOtherFreeCount());
         List<StaticDrawCardWeight> drawCardPollList = dataMgr.getDrawCardWeightList(now);
         if (CheckNull.nonEmpty(drawCardPollList))
-            builder.addAllSearchTypeIds(drawCardPollList.stream().map(StaticDrawCardWeight::getId).collect(Collectors.toList()));
+            builder.addAllSearchTypeIds(drawCardPollList.stream().map(StaticDrawCardWeight::getId).collect(Collectors.toSet()));
         builder.setTodayDiscount(!player.getDrawCardData().isTodayFirst(now));
         return builder.build();
     }
