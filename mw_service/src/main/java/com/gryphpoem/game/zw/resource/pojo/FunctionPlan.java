@@ -13,5 +13,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface FunctionPlan {
-    PlanFunction[] functions() default PlanFunction.DRAW_CARD;
+    PlanFunction[] functions() default {};
 }

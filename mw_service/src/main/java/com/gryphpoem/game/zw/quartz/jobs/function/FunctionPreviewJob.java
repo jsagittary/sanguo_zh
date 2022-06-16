@@ -19,7 +19,7 @@ public class FunctionPreviewJob extends AbsMainLogicThreadJob {
         try {
             String[] strArr = jobKeyName.split("_");
             service.execFunctionPreview(Integer.parseInt(strArr[0]), Integer.parseInt(strArr[2]));
-            LogUtil.error(String.format("功能EndTime执行job, jobKeyName=%s", jobKeyName));
+            LogUtil.error(String.format("功能PreviewTime执行job, jobKeyName=%s", jobKeyName));
         } catch (Exception e) {
             LogUtil.error("ACTIVITY END JOB, ", e);
         }
