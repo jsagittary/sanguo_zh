@@ -10,6 +10,7 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.ClassUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -36,7 +37,7 @@ public class FunctionPlanDataManager {
             FunctionPlan functionPlan = clazz.getAnnotation(FunctionPlan.class);
             if (CheckNull.isNull(functionPlan))
                 continue;
-            if (!FunctionPlanData.class.equals(clazz.getSuperclass())) {
+            if (!FunctionPlanData.class.equals(clazz.getSuperclass()) || ObjectUtils.isEmpty(functionPlan.functions())) {
                 continue;
             }
             for (PlanFunction enumT : functionPlan.functions()) {
