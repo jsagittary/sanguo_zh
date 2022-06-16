@@ -25,6 +25,9 @@ import com.gryphpoem.game.zw.handler.client.battlepass.GetBattlePassHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveBPAwardHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveTaskAwardHandler;
 import com.gryphpoem.game.zw.handler.client.building.*;
+import com.gryphpoem.game.zw.handler.client.chapterTask.GetChapterAwardHandler;
+import com.gryphpoem.game.zw.handler.client.chapterTask.GetChapterTaskAwardHandler;
+import com.gryphpoem.game.zw.handler.client.chapterTask.GetChapterTaskHandler;
 import com.gryphpoem.game.zw.handler.client.chat.*;
 import com.gryphpoem.game.zw.handler.client.chemical.ChemicalExpandHandler;
 import com.gryphpoem.game.zw.handler.client.chemical.ChemicalFinishHandler;
@@ -32,10 +35,7 @@ import com.gryphpoem.game.zw.handler.client.chemical.ChemicalRecruitHandler;
 import com.gryphpoem.game.zw.handler.client.chemical.GetChemicalHandler;
 import com.gryphpoem.game.zw.handler.client.cia.*;
 import com.gryphpoem.game.zw.handler.client.combat.*;
-import com.gryphpoem.game.zw.handler.client.common.ActionPointHandler;
-import com.gryphpoem.game.zw.handler.client.common.DoSomeHandler;
-import com.gryphpoem.game.zw.handler.client.common.GetBannerHandler;
-import com.gryphpoem.game.zw.handler.client.common.GetTimeHandler;
+import com.gryphpoem.game.zw.handler.client.common.*;
 import com.gryphpoem.game.zw.handler.client.cross.*;
 import com.gryphpoem.game.zw.handler.client.cross.activity.GetCrossRechargeActivityRankHandler;
 import com.gryphpoem.game.zw.handler.client.cross.chat.GetChatRoomMsgHandler;
@@ -63,10 +63,7 @@ import com.gryphpoem.game.zw.handler.client.newcross.*;
 import com.gryphpoem.game.zw.handler.client.newcross.crosswarfire.*;
 import com.gryphpoem.game.zw.handler.client.party.*;
 import com.gryphpoem.game.zw.handler.client.plane.*;
-import com.gryphpoem.game.zw.handler.client.player.OnHookGetAwardHandler;
-import com.gryphpoem.game.zw.handler.client.player.OnHookGetInfoHandler;
-import com.gryphpoem.game.zw.handler.client.player.OnHookOperateHandler;
-import com.gryphpoem.game.zw.handler.client.player.OnHookReplenishHandler;
+import com.gryphpoem.game.zw.handler.client.player.*;
 import com.gryphpoem.game.zw.handler.client.prop.*;
 import com.gryphpoem.game.zw.handler.client.rebellion.BuyRebelBuffHandler;
 import com.gryphpoem.game.zw.handler.client.rebellion.BuyRebelShopHandler;
@@ -87,9 +84,7 @@ import com.gryphpoem.game.zw.handler.client.stone.*;
 import com.gryphpoem.game.zw.handler.client.task.*;
 import com.gryphpoem.game.zw.handler.client.tech.*;
 import com.gryphpoem.game.zw.handler.client.totem.*;
-import com.gryphpoem.game.zw.handler.client.treasure.GetTreasureHandler;
-import com.gryphpoem.game.zw.handler.client.treasure.TreasureOpenHandler;
-import com.gryphpoem.game.zw.handler.client.treasure.TreasureTradeHandler;
+import com.gryphpoem.game.zw.handler.client.treasure.*;
 import com.gryphpoem.game.zw.handler.client.treasureware.*;
 import com.gryphpoem.game.zw.handler.client.wall.*;
 import com.gryphpoem.game.zw.handler.client.warfactory.*;
@@ -704,10 +699,6 @@ public class MessagePool implements IMessagePool {
 
         // 任务
 
-        // 获取任务列表
-        registerC(GetMajorTaskRq.EXT_FIELD_NUMBER, GetMajorTaskRs.EXT_FIELD_NUMBER, GetMajorTaskHandler.class);
-        // 领取任务奖励
-        registerC(TaskAwardRq.EXT_FIELD_NUMBER, TaskAwardRs.EXT_FIELD_NUMBER, TaskAwardHandler.class);
         // 获取军团任务
         registerC(GetPartyTaskRq.EXT_FIELD_NUMBER, GetPartyTaskRs.EXT_FIELD_NUMBER, GetPartyTaskHandler.class);
         // 军团任务领奖
@@ -763,16 +754,10 @@ public class MessagePool implements IMessagePool {
                 GetPowerGiveDataHandler.class);
         // 体力赠送活动
         registerC(GetFreePowerRq.EXT_FIELD_NUMBER, GetFreePowerRs.EXT_FIELD_NUMBER, GetFreePowerHandler.class);
-        // 客户端可以直接完成的任务
-        registerC(CheckTaskRq.EXT_FIELD_NUMBER, CheckTaskRs.EXT_FIELD_NUMBER, CheckTaskHandler.class);
         // 购买成长计划
         registerC(ActGrowBuyRq.EXT_FIELD_NUMBER, ActGrowBuyRs.EXT_FIELD_NUMBER, ActGrowBuyHandler.class);
-        // 获取单个任务信息
-        registerC(TaskInfoRq.EXT_FIELD_NUMBER, TaskInfoRs.EXT_FIELD_NUMBER, TaskInfoHandler.class);
         // 特价礼包
         registerC(GiftShowRq.EXT_FIELD_NUMBER, GiftShowRs.EXT_FIELD_NUMBER, GiftShowHandler.class);
-        // 剧情任务章节领奖
-        registerC(SectionAwardRq.EXT_FIELD_NUMBER, SectionAwardRs.EXT_FIELD_NUMBER, SectionAwardHandler.class);
         // 获取排行活动
         registerC(GetActRankRq.EXT_FIELD_NUMBER, GetActRankRs.EXT_FIELD_NUMBER, GetActRankHandler.class);
         // 获取排行活动
@@ -1332,7 +1317,12 @@ public class MessagePool implements IMessagePool {
         registerC(GetCrossWarFirePlayerLiveRq.EXT_FIELD_NUMBER, GetCrossWarFirePlayerLiveRs.EXT_FIELD_NUMBER, GetCrossWarFirePlayerLiveHandler.class);
         registerC(RefreshGetCrossWarFirePlayerInfoRq.EXT_FIELD_NUMBER, RefreshGetCrossWarFirePlayerInfoRs.EXT_FIELD_NUMBER, RefreshGetPlayerInfoHandler.class);
 
-        //跨服聊天
+        // 章节任务
+        registerC(GetChapterTaskRq.EXT_FIELD_NUMBER, GetChapterTaskRs.EXT_FIELD_NUMBER, GetChapterTaskHandler.class);
+        registerC(GetChapterTaskAwardRq.EXT_FIELD_NUMBER, GetChapterTaskAwardRs.EXT_FIELD_NUMBER, GetChapterTaskAwardHandler.class);
+        registerC(GetChapterAwardRq.EXT_FIELD_NUMBER, GetChapterAwardRs.EXT_FIELD_NUMBER, GetChapterAwardHandler.class);
+
+		//跨服聊天
         registerC(GetGamePlayChatRoomRq.EXT_FIELD_NUMBER, GetGamePlayChatRoomRs.EXT_FIELD_NUMBER, GetGamePlayChatRoomHandler.class);
         registerC(GetChatRoomMsgRq.EXT_FIELD_NUMBER, GetChatRoomMsgRs.EXT_FIELD_NUMBER, GetChatRoomMsgHandler.class);
         registerC(GetRoomPlayerShowRq.EXT_FIELD_NUMBER, GetRoomPlayerShowRs.EXT_FIELD_NUMBER, GetRoomPlayerShowHandler.class);

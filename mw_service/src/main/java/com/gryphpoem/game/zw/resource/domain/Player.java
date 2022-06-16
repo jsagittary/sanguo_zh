@@ -53,6 +53,7 @@ import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
@@ -212,14 +213,14 @@ public class Player {
      * 司令部，兵工厂官员招募
      */
     public Map<Integer, Gains> gains = new ConcurrentHashMap<>();
-    /**
-     * 主线支线,剧情任务
-     */
-    public Map<Integer, Task> majorTasks = new ConcurrentHashMap<>();
-    /**
-     * 当前显示的支线任务id,此值不会被序列化
-     */
-    public List<Integer> curMajorTaskIds = new ArrayList<>();
+//    /**
+//     * 主线支线,剧情任务
+//     */
+//    public Map<Integer, Task> majorTasks = new ConcurrentHashMap<>();
+//    /**
+//     * 当前显示的支线任务id,此值不会被序列化
+//     */
+//    public List<Integer> curMajorTaskIds = new ArrayList<>();
 
     /**
      * 日常任务
@@ -709,10 +710,17 @@ public class Player {
      * 招募奖励 v1: 对应s_system中id=1102的索引位置, v2: 1 已领取、0 未领取
      */
     private Map<Integer, Integer> recruitReward = new HashMap<>(5);
+
     /**
      * 玩家抽卡详情
      */
     private DrawCardData drawCardData = new DrawCardData();
+
+    /**
+     * 章节任务
+     */
+    public ChapterTask chapterTask = new ChapterTask();
+
 
     public Map<Integer, Integer> getRecruitReward() {
         return recruitReward;
@@ -1799,6 +1807,7 @@ public class Player {
         dataNew.setTotem(totemData.ser().toByteArray());
         dataNew.setTreasureWares(serTreasureWares());
         dataNew.setDrawCardData(getDrawCardData().createPb(true).toByteArray());
+        dataNew.setChapterTask(this.chapterTask.ser().toByteArray());
         return dataNew;
     }
 
@@ -2327,6 +2336,11 @@ public class Player {
             this.getDrawCardData().deSer(ser);
         }
 
+        if (data.getChapterTask() != null) {
+            SerChapterTask ser = SerChapterTask.parseFrom(data.getChapterTask());
+            this.chapterTask.dser(ser);
+        }
+
         setMaxKey(data.getMaxKey());
     }
 
@@ -2818,9 +2832,9 @@ public class Player {
 
     private byte[] serTask() {
         SerTask.Builder ser = SerTask.newBuilder();
-        for (Task task : majorTasks.values()) {
-            ser.addMajorTask(PbHelper.createTaskPb(task));
-        }
+//        for (Task task : majorTasks.values()) {
+//            ser.addMajorTask(PbHelper.createTaskPb(task));
+//        }
 
         for (Task task : dailyTask.values()) {
             ser.addDayiyTask(PbHelper.createTaskPb(task));
@@ -3050,7 +3064,7 @@ public class Player {
     private void dserTasks(SerTask ser) {
         for (CommonPb.Task e : ser.getMajorTaskList()) {
             Task task = new Task(e.getTaskId(), e.getSchedule(), e.getStatus(), 1);
-            majorTasks.put(e.getTaskId(), task);
+//            majorTasks.put(e.getTaskId(), task);
         }
 
         for (CommonPb.Task e : ser.getDayiyTaskList()) {

@@ -530,6 +530,7 @@ public class CalculateUtil {
                 hero.getExtAttrs().put(attr, attrVal);
             }
         }
+        DataResource.ac.getBean(TaskDataManager.class).updTask(player, TaskType.COND_516,1, hero.getShowFight().values().stream().mapToInt(Integer::intValue).sum());
         return attrMap;
     }
 

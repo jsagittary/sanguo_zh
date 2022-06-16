@@ -156,7 +156,7 @@ public class EquipService {
         // 返回协议
         GamePb1.EquipForgeRs.Builder builder = GamePb1.EquipForgeRs.newBuilder();
         builder.setQue(PbHelper.createEquipQuePb(equipQue));
-        taskDataManager.updTask(player.roleId, TaskType.COND_29, 1, equipId);
+        taskDataManager.updTask(player, TaskType.COND_29, 1, equipId);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_HERO_EQUIPID_QUALITY, 1, staticEquip.getQuality());
         return builder.build();
     }
@@ -385,6 +385,12 @@ public class EquipService {
                     staticEquip.getEquipPart());
             // 这里的schedule不传部位了
             taskDataManager.updTask(player, TaskType.COND_HERO_EQUIPID, 1, staticEquip.getEquipId());
+            taskDataManager.updTask(player, TaskType.COND_501, 1, pos);
+            taskDataManager.updTask(player, TaskType.COND_519, 1, pos);
+            taskDataManager.updTask(player, TaskType.COND_502, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
+            taskDataManager.updTask(player, TaskType.COND_503, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
+            taskDataManager.updTask(player, TaskType.COND_504, 1, staticEquip.getQuality());
+            taskDataManager.updTask(player, TaskType.COND_505, 1, staticEquip.getQuality());
         }
     }
 
@@ -767,6 +773,8 @@ public class EquipService {
             }
         }
         taskDataManager.updTask(player, TaskType.COND_EQUIP_BAPTIZE, 1);
+        taskDataManager.updTask(player, TaskType.COND_502, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
+        taskDataManager.updTask(player, TaskType.COND_503, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_EQUIP_BAPTIZE, 1);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_EQUIP_BAPTIZE, 1);
         return builder.build();

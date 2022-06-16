@@ -342,6 +342,19 @@ public class PbHelper {
         return builder.build();
     }
 
+    public static CommonPb.Task createTaskPb(Task task,Object...objs) {
+        CommonPb.Task.Builder builder = CommonPb.Task.newBuilder();
+        builder.setTaskId(task.getTaskId());
+        builder.setSchedule(task.getSchedule());
+        // builder.setAccept(task.getAccept());
+        builder.setStatus(task.getStatus());
+        if (objs.length > 0 && objs[0] instanceof Integer) {
+            int taskType = Integer.parseInt(String.valueOf(objs[0]));
+            builder.setTaskType(taskType);
+        }
+        return builder.build();
+    }
+
     public static CommonPb.Task buildTask(int taskId, long progress, int state) {
         CommonPb.Task.Builder builder = CommonPb.Task.newBuilder();
         builder.setTaskId(taskId);

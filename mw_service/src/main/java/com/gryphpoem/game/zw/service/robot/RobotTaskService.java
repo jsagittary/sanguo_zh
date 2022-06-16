@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.robot;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -16,6 +17,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.service.TaskService;
+import com.gryphpoem.game.zw.service.chapterTask.ChapterTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -90,7 +92,7 @@ public class RobotTaskService {
         }
 
         try {
-            taskService.taskAwardRq(player.roleId, task.getTaskId());
+            DataResource.ac.getBean(ChapterTaskService.class).getChapterTaskAward(player.roleId, task.getTaskId());
         } catch (MwException e) {
             LogUtil.robot(e, "机器人领取任务奖励出错, robot:", player.roleId, ", task:", task);
         }
@@ -104,48 +106,40 @@ public class RobotTaskService {
      */
     private List<Task> getFinishedTask(Player player) {
         List<Task> finishedTask = new ArrayList<>();
-        // 将主线任务添加到玩家身上
-        Map<Integer, Task> taskMap = player.majorTasks;
-        if (taskMap.isEmpty()) {
-            initMajorTask(taskMap);
-        }
-
-        Iterator<Task> it = taskMap.values().iterator();
-        while (it.hasNext()) {
-            Task task = it.next();
-            int taskId = task.getTaskId();
-            StaticTask stask = StaticTaskDataMgr.getTaskById(taskId);
-            if (stask == null) {
-                continue;
-            }
-
-            // 特殊任务处理逻辑
-            specialTaskHandler(player, task, stask);
-
-            // 过滤已领取
-            if (task.getStatus() == TaskType.TYPE_STATUS_REWARD) {
-                // LogUtil.robot("机器人已领取奖励的任务, robot:", player.roleId, ", taskId:", task.getTaskId());
-            } else {
-                if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
-                    task.setStatus(TaskType.TYPE_STATUS_FINISH);
-                }
-
-                if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {
-                    finishedTask.add(task);
-                } else {
-                    // 刷新任务状态
-                    taskDataManager.currentMajorTask(player, task, stask);
-                }
-            }
-        }
-
-        // 当前显示的任务
-        if (CheckNull.isEmpty(player.curMajorTaskIds)) {
-            List<Integer> curTask = taskDataManager.getCurTask(player);
-            player.curMajorTaskIds.clear();
-            player.curMajorTaskIds.addAll(curTask);
-            LogUtil.robot("当前需要显示的任务id: ", player.curMajorTaskIds, " , roleId:", player.roleId);
-        }
+//        // 将主线任务添加到玩家身上
+//        Map<Integer, Task> taskMap = player.majorTasks;
+//        if (taskMap.isEmpty()) {
+//            initMajorTask(taskMap);
+//        }
+//
+//        Iterator<Task> it = taskMap.values().iterator();
+//        while (it.hasNext()) {
+//            Task task = it.next();
+//            int taskId = task.getTaskId();
+//            StaticTask stask = StaticTaskDataMgr.getTaskById(taskId);
+//            if (stask == null) {
+//                continue;
+//            }
+//
+//            // 特殊任务处理逻辑
+//            specialTaskHandler(player, task, stask);
+//
+//            // 过滤已领取
+//            if (task.getStatus() == TaskType.TYPE_STATUS_REWARD) {
+//                // LogUtil.robot("机器人已领取奖励的任务, robot:", player.roleId, ", taskId:", task.getTaskId());
+//            } else {
+//                if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
+//                    task.setStatus(TaskType.TYPE_STATUS_FINISH);
+//                }
+//
+//                if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {
+//                    finishedTask.add(task);
+//                } else {
+//                    // 刷新任务状态
+//                    taskDataManager.currentMajorTask(player, task, stask);
+//                }
+//            }
+//        }
         return finishedTask;
     }
 

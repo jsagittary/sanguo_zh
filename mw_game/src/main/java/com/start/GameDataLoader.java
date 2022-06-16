@@ -42,6 +42,9 @@ public class GameDataLoader {
 
         // 加载玩家相关数据
         loadPlayerData();
+
+        // 起服时做一些事情
+        serverStartLogic();
     }
 
     private void loadFileData() {
@@ -60,6 +63,11 @@ public class GameDataLoader {
             throw new MwException("加载配置表数据出错", e);
         }
         LogUtil.start("**********配置表数据加载完成**********");
+    }
+
+    private void serverStartLogic() throws MwException {
+        // 章节任务
+        AppGameServer.ac.getBean(ChapterTaskDataManager.class).checkAllPlayerChapterTask();
     }
 
     private void loadPlayerData() throws MwException {

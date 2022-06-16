@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.dataMgr;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.resource.constant.TaskType;
 import com.gryphpoem.game.zw.resource.dao.impl.s.StaticDataDao;
@@ -22,14 +24,9 @@ public class StaticTaskDataMgr {
     private static Map<Integer, StaticTask> advanceMap = new HashMap<>();
     private static Map<Integer, List<StaticTask>> triggerMap = new HashMap<>();
     private static List<StaticTask> openList = new ArrayList<>();
-    private static List<StaticTask> dayiyList = new ArrayList<StaticTask>();
-    private static List<StaticTask> liveList = new ArrayList<StaticTask>();
-    private static List<StaticTask> sectionList = new ArrayList<StaticTask>();
-    private static List<StaticTask> advanceList = new ArrayList<>();
 
     // 所有的任务
     private static List<StaticTask> allTask = new ArrayList<>();
-    // private List<StaticTaskLive> taskLiveList = new ArrayList<StaticTaskLive>();
     /** 最后一个主线任务任务 */
     private static StaticTask lastMainTask;
 
@@ -42,60 +39,41 @@ public class StaticTaskDataMgr {
     // 记录第一个任务的id
     private static StaticTask firstTask;
 
+    /**
+     * 章节任务
+     * k:章节 v:taskId  任务
+     */
+    private static Map<Integer, Map<Integer, StaticTask>> staticChapterTask;
+
     public static void init() {
-        List<StaticTask> list = staticDataDao.selectTask();
-        StaticTaskDataMgr.allTask = list;
-        Map<Integer, StaticTask> majorMap = new HashMap<>();
-        Map<Integer, StaticTask> dayiyMap = new HashMap<>();
-        Map<Integer, StaticTask> liveMap = new HashMap<>();
-        Map<Integer, StaticTask> sectionMap = new HashMap<>();// 剧情任务
-        Map<Integer, StaticTask> advanceMap = new HashMap<>();// 个人目标
-        Map<Integer, List<StaticTask>> triggerMap = new HashMap<>();
-        List<StaticTask> openList = new ArrayList<>();
-        List<StaticTask> dayiyList = new ArrayList<StaticTask>();
-        List<StaticTask> liveList = new ArrayList<StaticTask>();
-        List<StaticTask> sectionList = new ArrayList<StaticTask>();
-        List<StaticTask> advanceList = new ArrayList<>();
-        for (StaticTask e : list) {
+        StaticTaskDataMgr.allTask = Lists.newArrayList(staticDataDao.selectTaskNewMap().values());
+        StaticTaskDataMgr.majorMap = Maps.newHashMap();
+        StaticTaskDataMgr.dayiyMap = Maps.newHashMap();
+        StaticTaskDataMgr.liveMap = Maps.newHashMap();
+        StaticTaskDataMgr.sectionMap = Maps.newHashMap();
+        StaticTaskDataMgr.advanceMap = Maps.newHashMap();
+        StaticTaskDataMgr.triggerMap = Maps.newHashMap();
+        StaticTaskDataMgr.openList = Lists.newArrayList();
+        StaticTaskDataMgr.staticChapterTask = Maps.newHashMap();
+        for (StaticTask e : allTask) {
             int triggerId = e.getTriggerId();
             if (e.getType() == TaskType.TYPE_MAIN || e.getType() == TaskType.TYPE_SUB) {
                 majorMap.put(e.getTaskId(), e);
-                List<StaticTask> ttlist = triggerMap.computeIfAbsent(triggerId, k -> new ArrayList<>());
-                ttlist.add(e);
+                triggerMap.computeIfAbsent(triggerId, k -> new ArrayList<>()).add(e);
+                staticChapterTask.computeIfAbsent(e.getChapter(), x -> new HashMap<>()).put(e.getTaskId(), e);
+                if (e.getIsOpen() > 0) openList.add(e);
             } else if (e.getType() == TaskType.TYPE_DAYIY) {
                 dayiyMap.put(e.getTaskId(), e);
-                dayiyList.add(e);
             } else if (e.getType() == TaskType.TYPE_LIVE) {
                 liveMap.put(e.getTaskId(), e);
-                liveList.add(e);
             } else if (e.getType() == TaskType.TYPE_SECTION) {
                 sectionMap.put(e.getTaskId(), e);
-                sectionList.add(e);
             } else if (e.getType() == TaskType.TYPE_ADVANCE) {
                 advanceMap.put(e.getTaskId(), e);
-                advanceList.add(e);
-            }
-            if (e.getIsOpen() > 0) {
-                openList.add(e);
             }
         }
-        StaticTaskDataMgr.majorMap = majorMap;
-        StaticTaskDataMgr.triggerMap = triggerMap;
-        StaticTaskDataMgr.dayiyMap = dayiyMap;
-        StaticTaskDataMgr.sectionMap = sectionMap;
-        StaticTaskDataMgr.dayiyList = dayiyList;
-        StaticTaskDataMgr.liveMap = liveMap;
-        StaticTaskDataMgr.liveList = liveList;
-        StaticTaskDataMgr.openList = openList;
-        StaticTaskDataMgr.sectionList = sectionList;
-        StaticTaskDataMgr.advanceMap = advanceMap;
-        StaticTaskDataMgr.advanceList = advanceList;
 
-        // List<StaticTaskLive> taskLiveList = staticDataDao.selectLiveTask();
-        // this.taskLiveList = taskLiveList;
-
-        Map<Integer, StaticPartyTask> partyTaskMap = staticDataDao.selectPartyTaskMap();
-        StaticTaskDataMgr.partyTaskMap = partyTaskMap;
+        StaticTaskDataMgr.partyTaskMap = staticDataDao.selectPartyTaskMap();
         // 剧情
         StaticTaskDataMgr.sectiontaskList = staticDataDao.selectSectiontask();
         int firstTaskId = -1;
@@ -146,10 +124,6 @@ public class StaticTaskDataMgr {
 
     public static List<StaticTask> getInitMajorTask() {
         return triggerMap.get(0);
-    }
-
-    public static List<StaticTask> getLiveList() {
-        return liveList;
     }
 
     /*
@@ -225,10 +199,6 @@ public class StaticTaskDataMgr {
         return sectionMap;
     }
 
-    public static List<StaticTask> getSectionList() {
-        return sectionList;
-    }
-
     public static List<StaticSectiontask> getSectiontaskList() {
         return sectiontaskList;
     }
@@ -253,13 +223,7 @@ public class StaticTaskDataMgr {
         return advanceMap;
     }
 
-    // public StaticTaskLive getTaskLive(int liveAd, int totalLive) {
-    // for (StaticTaskLive e : taskLiveList) {
-    // if (e.getLive() > liveAd && e.getLive() <= totalLive) {
-    // return e;
-    // }
-    // }
-    // return null;
-    // }
-
+    public static Map<Integer, StaticTask> getStaticChapterTaskMap(int chapter) {
+        return staticChapterTask.get(chapter);
+    }
 }

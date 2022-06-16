@@ -1104,6 +1104,10 @@ public class WarService {
                         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_JOIN_CAMP_BATTLE_41, 1, staticCity.getType());
                         if (staticCity != null) {
                             taskDataManager.updTask(player, TaskType.COND_22, 1, staticCity.getType());
+                            taskDataManager.updTask(player, TaskType.COND_520, attacker.getForces().stream().filter(e -> e.ownerId == roleId).mapToInt(e -> e.killed).sum());
+                            taskDataManager.updTask(player,TaskType.COND_521,1,staticCity.getType());
+                            //支线任务
+                            taskDataManager.updTask(player,TaskType.COND_996,1);
                         }
                     }
                 });
@@ -1118,6 +1122,8 @@ public class WarService {
                         taskDataManager.updTask(player, TaskType.COND_JOIN_CAMP_BATTLE_41, 1, atkSuccess ? 0 : 1);
                         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_JOIN_CAMP_BATTLE_41, 1, staticCity.getType());
                         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_JOIN_CAMP_BATTLE_41, 1, staticCity.getType());
+                        taskDataManager.updTask(player, TaskType.COND_520, attacker.getForces().stream().filter(e -> e.ownerId == roleId).mapToInt(e -> e.killed).sum());
+                        taskDataManager.updTask(player,TaskType.COND_521,1,staticCity.getType());
                     }
                 });
 

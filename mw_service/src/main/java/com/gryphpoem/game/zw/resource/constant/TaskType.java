@@ -152,6 +152,51 @@ public class TaskType {
     public static final int COND_USE_PROP = 114;// 使用指定道具
     public static final int COND_ONLINE_AWARD_CNT = 115; // 领取在线奖励次数
 
+    //新增任务
+    public static final int COND_500 = 500;//研究科技X等级LV.X
+    public static final int COND_501 = 501;//有至少x名英雄同时装备绿品质及以上的x装备
+    public static final int COND_502 = 502;//所有英雄穿戴中的装备共有x条x级及以上攻击改造属性
+    public static final int COND_503 = 503;//所有英雄穿戴中的装备共有x条x级及以上任意改造属性
+    public static final int COND_504 = 504;//上阵英雄一共穿戴x件x品质及以上的装备
+    public static final int COND_505 = 505;//任意一名英雄穿戴x件x品质及以上的装备
+    public static final int COND_506 = 506;//累计获得x个x道具
+    public static final int COND_507 = 507;//改名1次
+    public static final int COND_508 = 508;//提升x建筑容量至x
+    public static final int COND_509 = 509;//同时上阵x名x品质及以上的战斗英雄
+    public static final int COND_510 = 510;//同时上阵x名x品质及以上的采集英雄英雄
+    public static final int COND_511 = 511;//x名英雄的资质达到x
+    public static final int COND_512 = 512;//x名英雄的攻击资质达到x
+    public static final int COND_513 = 513;//累计完成x次x任务
+    public static final int COND_514 = 514;//拥有x个x级及以上的英雄
+    public static final int COND_515 = 515;//与x名佳人好感度达到x
+    public static final int COND_516 = 516;//x名英雄战力分别达到x
+    public static final int COND_517 = 517;//分别将x名英雄突破到x
+    public static final int COND_519 = 519;//有至少x名英雄同时装备蓝品质及以上的x装备
+    public static final int COND_520 = 520;//在国战中击杀x名敌军
+    public static final int COND_521 = 521;//参与x次x类型国战
+    public static final int COND_522 = 522;//完成x次精英叛军每日首杀
+    //    public static final int COND_524 = 524;//完成指定关卡的帝国远征   同47，524废弃
+    public static final int COND_525 = 525;//通关x次宝具关卡
+    public static final int COND_527 = 527;//给英雄装备宝具
+    public static final int COND_528 = 528;//进行x次宝具强化
+    public static final int COND_529 = 529;//进行x次宝具洗炼
+    public static final int COND_530 = 530;//在宝具远征中挑战玩家x次
+    public static final int COND_531 = 531;//通关指定的宝具关卡
+    public static final int COND_532 = 532;//将x个宝具强化到x级
+    public static final int COND_533 = 533;//累计在宝具远征中战胜玩家x次
+    public static final int COND_534 = 534;//上阵的x位英雄全部装备宝具
+    public static final int COND_535 = 535;//获得x件x及以上品质的宝具
+    public static final int COND_536 = 536;//获得x件带特技的x品质及以上的宝具
+
+
+    public static final int COND_990 = 990;//完成x次寻访
+    public static final int COND_991 = 991;//将任意x品质以上英雄升到x级 无需参数接取任务处理
+    public static final int COND_992 = 992;//累计对x品质以上英雄进行x次突破
+    public static final int COND_993 = 993;//累计对x品质以上英雄进行x次特训
+    public static final int COND_994 = 994;//打造x品质装备x件
+    public static final int COND_995 = 995;//累计挑战或扫荡战役x次
+    public static final int COND_996 = 996;//累计参与阵营战x次
+
     // 世界任务
     public static final int WORLD_TASK_TYPE_BANDIT = 1; // 打流寇
     public static final int WORLD_TASK_TYPE_CITY = 2; // 打城市

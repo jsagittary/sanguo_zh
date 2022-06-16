@@ -52,6 +52,8 @@ import java.util.stream.Collectors;
 
     @Autowired private ArmyService armyService;
 
+    @Autowired private TaskDataManager taskDataManager;
+
     public ComandoHeroSetRs commandoHeroSet(long roleId, int pos, int heroId, int type, boolean swap, boolean swapPlane) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         if (player.building.getWar() < Constant.CABINET_CONDITION.get(3)) {
@@ -284,6 +286,7 @@ import java.util.stream.Collectors;
             reAdjustHeroPos(player.heroAcq, player.heros);
             // 重新计算并更新将领属性
             CalculateUtil.processAttr(player, hero);
+            taskDataManager.updTask(player,TaskType.COND_510,1,hero.getQuality());
 
             if (techDataManager.isOpen(player, TechConstant.TYPE_19) && player.common.getAutoArmy() == 0) {
                 // 研究自动补兵,并且关闭了自动补兵:不进行补兵

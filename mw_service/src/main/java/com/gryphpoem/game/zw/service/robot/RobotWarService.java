@@ -171,10 +171,10 @@ public class RobotWarService {
      * @return 返回任务需要攻打的流寇等级，如果未找到，返回-1
      */
     private int getTaskBanditLv(Player player) {
-        Optional<StaticTask> task = player.curMajorTaskIds.stream().map(StaticTaskDataMgr::getTaskById)
+        return player.chapterTask.getOpenTasks().keySet().stream().map(StaticTaskDataMgr::getTaskById)
                 .filter(t -> t.getCond() == TaskType.COND_BANDIT_LV_CNT)
-                .min((t1, t2) -> (t1.getCondId() - t2.getCondId()));
-        return task.isPresent() ? task.get().getCondId() : -1;
+                .min(Comparator.comparingInt(StaticTask::getCondId))
+                .map(StaticTask::getCondId).orElse(-1);
     }
 
     /**

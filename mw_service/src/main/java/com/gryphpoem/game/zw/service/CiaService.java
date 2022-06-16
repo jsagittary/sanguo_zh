@@ -648,6 +648,7 @@ public class CiaService {
         //貂蝉任务-佳人好感度
         ActivityDiaoChanService.completeTask(player,ETask.BEAUTY_INTIMACY);//,femaleAgent.getId(),femaleAgent.getExp()
         TaskService.processTask(player,ETask.BEAUTY_INTIMACY);
+        taskDataManager.updTask(player,TaskType.COND_515,1,femaleAgent.getExp());
     }
 
     /**

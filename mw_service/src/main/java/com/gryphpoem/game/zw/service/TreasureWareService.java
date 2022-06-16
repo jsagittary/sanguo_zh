@@ -344,6 +344,11 @@ public class TreasureWareService implements GmCmdService {
         }
 
         player.treasureWares.put(treasureWare.getKeyId(), treasureWare);
+        taskDataManager.updTask(player, TaskType.COND_535, 1, treasureWare.getQuality());
+        Optional.ofNullable(treasureWare.getSpecialAttr()).ifPresent(e -> {
+            if (CheckNull.nonEmpty(e))
+                taskDataManager.updTask(player, TaskType.COND_536, 1, treasureWare.getQuality());
+        });
         return putInBag;
     }
 
@@ -733,6 +738,9 @@ public class TreasureWareService implements GmCmdService {
             //拥有特殊属性
             StaticTreasureWareSpecial nextSpecialAttr = StaticTreasureWareDataMgr.getStaticTreasureWareSpecial(staticTreasureWareSpecial.getSpecialId(), nextLevel);
             if (Objects.nonNull(nextSpecialAttr)) {
+                if (CheckNull.isEmpty(treasureWare.getSpecialAttr()) && CheckNull.nonEmpty(nextSpecialAttr.getAttrSpecial())) {
+                    taskDataManager.updTask(player, TaskType.COND_536, 1, treasureWare.getQuality());
+                }
                 treasureWare.getSpecialAttr().clear();
                 for (List<Integer> specialAttr : nextSpecialAttr.getAttrSpecial()) {
                     treasureWare.getSpecialAttr().add(new Turple<>(specialAttr.get(0), specialAttr.get(1)));
@@ -744,6 +752,10 @@ public class TreasureWareService implements GmCmdService {
 
         //强化触发礼包
         DataResource.getBean(ActivityTriggerService.class).strengthTreasureWare(player, treasureWare.getQuality(), treasureWare.getLevel());
+
+        taskDataManager.updTask(player,TaskType.COND_528,1);
+        taskDataManager.updTask(player,TaskType.COND_532,1,nextLevel);
+
         // 重新计算并更新将领属性
         if (Objects.nonNull(hero))
             CalculateUtil.processAttr(player, hero);
@@ -979,6 +991,8 @@ public class TreasureWareService implements GmCmdService {
 
         hero.onTreasureWare(treasureWare);
         treasureWare.onEquip(hero.getHeroId());
+        taskDataManager.updTask(player, TaskType.COND_527, 1);
+        taskDataManager.updTask(player, TaskType.COND_534, 1);
         if (record)
             list.add(treasureWare.createPb());
     }

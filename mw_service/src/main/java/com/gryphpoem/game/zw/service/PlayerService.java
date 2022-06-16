@@ -1435,6 +1435,7 @@ public class PlayerService implements GmCmdService {
         }
         ChangeLordNameRs.Builder builder = ChangeLordNameRs.newBuilder();
         builder.setName(name);
+        taskDataManager.updTask(player, TaskType.COND_507, 1);
         return builder.build();
     }
 

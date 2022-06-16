@@ -126,6 +126,9 @@ public class BerlinWarService {
     @Autowired
     private HelpShengYuService helpShengYuService;
 
+    @Autowired
+    private TaskDataManager taskDataManager;
+
     /**
      * 获取柏林会战信息
      *
@@ -762,7 +765,8 @@ public class BerlinWarService {
         TaskService.handleTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.BERLIN.getCategory());
         ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.BERLIN.getCategory());
         TaskService.processTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.BERLIN.getCategory());
-
+        Optional.ofNullable(StaticWorldDataMgr.getCityByPos(cityInfo.getPos()))
+                .ifPresent(staticCity -> taskDataManager.updTask(player, TaskType.COND_521, 1, staticCity.getType()));
         return builder.build();
     }
 

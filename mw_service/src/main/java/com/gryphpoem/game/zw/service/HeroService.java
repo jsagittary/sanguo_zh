@@ -19,6 +19,7 @@ import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.task.TaskCone517Type;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Common;
@@ -383,6 +384,7 @@ public class HeroService implements GmCmdService {
         // 返回将领上阵协议
         builder.setUpHero(PbHelper.createHeroPb(hero, player));
         taskDataManager.updTask(player, TaskType.COND_HERO_UP, 1, hero.getHeroId());
+        taskDataManager.updTask(player, TaskType.COND_509, 1, hero.getQuality());
         CalculateUtil.reCalcFight(player);
         // rankDataManager.setFight(player.lord);
         taskDataManager.updTask(player, TaskType.COND_28, 1, hero.getType());
@@ -896,9 +898,10 @@ public class HeroService implements GmCmdService {
         int addHeroExp = addHeroExp(staticHero.getQuality(), hero, addExp, maxLv);
         if (preLv != hero.getLevel()) {
             // 更新任务进度
-            taskDataManager.updTask(player.roleId, TaskType.COND_DESIGNATED_HERO_ID_UPGRADE, 1, staticHero.getHeroId());
-            taskDataManager.updTask(player.roleId, TaskType.COND_DESIGNATED_HERO_QUALITY_UPGRADE, hero.getLevel(), staticHero.getQuality());
+            taskDataManager.updTask(player, TaskType.COND_DESIGNATED_HERO_ID_UPGRADE, 1, staticHero.getHeroId());
+            taskDataManager.updTask(player, TaskType.COND_DESIGNATED_HERO_QUALITY_UPGRADE, hero.getLevel(), staticHero.getQuality());
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
+            taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
             //任务 - xx英雄升到xx级
             TaskService.handleTask(player, ETask.HERO_LEVELUP);
             ActivityDiaoChanService.completeTask(player, ETask.HERO_LEVELUP);
@@ -1117,6 +1120,8 @@ public class HeroService implements GmCmdService {
         taskDataManager.updTask(player, TaskType.COND_WASH_HERO_42, 1);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_WASH_HERO_42, 1);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_WASH_HERO_42, 1);
+        taskDataManager.updTask(player, TaskType.COND_511, 1, Arrays.stream(curWash).sum());
+        taskDataManager.updTask(player, TaskType.COND_512, 1, curWash[0]);
         HeroWashRs.Builder builder = HeroWashRs.newBuilder();
         builder.setHeroId(hero.getHeroId());
         for (int i = 1; i < hero.getWash().length; i++) {
@@ -1341,6 +1346,12 @@ public class HeroService implements GmCmdService {
                 chatDataManager.sendSysChat(ChatConst.CHAT_HERO_BREAK, player.lord.getCamp(), 0, player.lord.getNick(),
                         newHero.getHeroId());
             }
+
+            //处理任务
+            taskDataManager.updTask(player, TaskType.COND_992, 1, heroBreak.getQuality());
+            taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getQuality());
+            taskDataManager.updTask(player, TaskType.COND_517, 1, TaskCone517Type.getCondId(hero.getQuality(), 1/*hero.getStage()*/));
+
             LogLordHelper.hero(AwardFrom.HERO_BREAK, player.account, player.lord, oldHeroId, Constant.ACTION_SUB);
             LogLordHelper.hero(AwardFrom.HERO_BREAK, player.account, player.lord, newHero.getHeroId(), Constant.ACTION_ADD);
         } else {
@@ -2324,6 +2335,22 @@ public class HeroService implements GmCmdService {
         }
 
         return hero_;
+    }
+
+    /**
+     * 指定品质英雄到指定等级
+     * @param player
+     * @param quality
+     * @return
+     */
+    public int getTaskSchedule1(Player player, int quality) {
+        int maxLevel = 0;
+        for (Hero value : player.heros.values()) {
+            if (value.getQuality() >= quality && value.getLevel() > maxLevel) {
+                maxLevel = value.getLevel();
+            }
+        }
+        return maxLevel;
     }
 
     @GmCmd("hero")

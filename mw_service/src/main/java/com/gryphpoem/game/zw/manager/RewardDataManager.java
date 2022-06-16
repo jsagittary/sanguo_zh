@@ -2025,6 +2025,7 @@ public class RewardDataManager {
         // 记录玩家获得道具
         LogLordHelper.prop(from, player.account, player.lord, propId, prop.getCount(), count, Constant.ACTION_ADD,
                 param);
+        taskDataManager.updTask(player, TaskType.COND_506, count, propId);
     }
 
     /**
@@ -2366,8 +2367,9 @@ public class RewardDataManager {
 
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
-        taskDataManager.updTask(player.roleId, TaskType.COND_26, 1, hero.getHeroId());
-        taskDataManager.updTask(player.roleId, TaskType.COND_27, 1, hero.getType());
+        taskDataManager.updTask(player, TaskType.COND_26, 1, hero.getHeroId());
+        taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getType());
+        taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
         if (!ActParamConstant.ACT_TRIGGER_HERO_IGNORE.contains(staticHero.getHeroId())) {
             // 触发第一次增加紫橙将领
             activityTriggerService.awardHeroTriggerGift(player, hero.getQuality());

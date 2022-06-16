@@ -662,4 +662,26 @@ public class StoneService {
         return null;
     }
 
+    /**
+     * 获取已装备的大于等于指定等级的普通佩饰数量
+     */
+    public int getInlaidStoneNumByStoneLv(Player player, int stoneLv) {
+        StoneInfo stoneInfo = player.getStoneInfo();
+        if (stoneInfo == null || CheckNull.isEmpty(stoneInfo.getStoneHoles())) {
+            return 0;
+        }
+
+        return (int) stoneInfo.getStoneHoles().values().stream()
+                .filter(s -> s.getType() == StoneHole.TYPE_STONE_IMPROVE ? stoneLv >= 15 : (s.getType() == StoneHole.TYPE_STONE && isGteStoneLvByStoneId(s.getStoneId(), stoneLv)))
+                .count();
+    }
+
+    /**
+     * 指定佩饰是否大于等于指定等级
+     */
+    private boolean isGteStoneLvByStoneId(int stoneId, int stoneLv) {
+        StaticStone staticStone = StaticPropDataMgr.getStoneMapById(stoneId);
+        return staticStone != null && staticStone.getLv() >= stoneLv;
+    }
+
 }

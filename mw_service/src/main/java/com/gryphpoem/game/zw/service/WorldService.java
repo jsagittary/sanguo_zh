@@ -4176,7 +4176,7 @@ public class WorldService {
      * @return true 表示任务列表中有匪军任务
      */
     public boolean checkCurTaskHasBandit(Player player) {
-        return !Collections.disjoint(Constant.ATK_BANDIT_MARCH_TIME_TASKID, player.curMajorTaskIds); // 有交集
+        return !Collections.disjoint(Constant.ATK_BANDIT_MARCH_TIME_TASKID, player.chapterTask.getOpenTasks().keySet()); // 有交集
     }
 
     /**

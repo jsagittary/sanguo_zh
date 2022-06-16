@@ -1386,8 +1386,6 @@ public class GmService{
                 p.getMentorInfo().getMentors().values()
                         .forEach(mentor -> mentorDataManager.checkAllBetterEquip(p, mentor));
             });
-        } else if (str.equalsIgnoreCase("majorTask")) {
-            taskService.gmFixMajorTask();
         } else if (str.equalsIgnoreCase("decisivePropTime")) {
             player.getDecisiveInfo().nextPropTime();
         } else if (str.equalsIgnoreCase("planeBattlePos")) { // 修复所有玩家的战机位置
@@ -1413,23 +1411,7 @@ public class GmService{
 
         } else if (str.equalsIgnoreCase("playerListKey")) {
             PlayerConstant.CLEAN_LIST_KEY.clear();
-        } else if (str.equalsIgnoreCase("mainTaskTo")) { // 修复主线任务到什么什么位置
-            int curTask = 1110;
-            int toTask = 1115;
-            for (Player p : playerDataManager.getAllPlayer().values()) {
-                if (p.curMajorTaskIds.isEmpty()) {
-                    p.curMajorTaskIds.addAll(taskDataManager.getCurTask(p));
-                }
-                if (p.curMajorTaskIds.isEmpty()) {
-                    continue;
-                }
-                int realCurTask = p.curMajorTaskIds.get(0).intValue();
-                if (curTask >= realCurTask && p.lord.getLevel() > 50) {
-                    gmOpen(p, "task", toTask);
-                    LogUtil.common("主线任务修复mainTaskTo, roleId:", p.roleId);
-                }
-            }
-        } else if (str.equalsIgnoreCase("clearAndInitCity")) {
+        }  else if (str.equalsIgnoreCase("clearAndInitCity")) {
             CrossWorldMap cMap = crossWorldMapDataManager.getCrossWorldMapById(CrossWorldMapConstant.CROSS_MAP_ID);
             MapEntityGenerator mapEntityGenerator = cMap.getMapEntityGenerator();
             mapEntityGenerator.clearAndInitCity();
@@ -1465,21 +1447,7 @@ public class GmService{
                 }
 
             }
-        } else if (str.equalsIgnoreCase("sectionTask")) {
-            playerDataManager.getPlayers().values().stream().filter(p -> p.lord.getLevel() > 23).forEach(p -> {
-                p.sectiontask.clear();
-                StaticTaskDataMgr.getSectiontaskList().forEach(st -> {
-                    p.sectiontask.add(new Sectiontask(st.getSectionId(), TaskType.TYPE_STATUS_REWARD));
-                    st.getSectionTask().forEach(taskId -> {
-                        Task task = new Task(taskId);
-                        StaticTask sTask = StaticTaskDataMgr.getTaskById(taskId);
-                        task.setSchedule(sTask.getSchedule());
-                        task.setStatus(TaskType.TYPE_STATUS_REWARD);
-                        p.majorTasks.put(taskId, task);
-                    });
-                });
-            });
-        } else if (str.equalsIgnoreCase("rebel")) {
+        }  else if (str.equalsIgnoreCase("rebel")) {
             Map<Integer, Integer> nextOpenMap = globalDataManager.getGameGlobal().getMixtureDataById(GlobalConstant.REBEL_NEXT_OPEN_TIME);
             // 记录的下次开放时间
             int nextTime = nextOpenMap.getOrDefault(0, 0);
@@ -2271,184 +2239,7 @@ public class GmService{
         if (count <= 0) {
             return;
         }
-        if (str.equalsIgnoreCase("task")) {
-            /*player.majorTasks.keySet().stream().filter(taskId -> !StaticTaskDataMgr.getSectionMap().containsKey(taskId)).forEach(player.majorTasks::remove);
-            for (StaticTask e : StaticTaskDataMgr.getOpenList()) {
-                Task task = new Task(e.getTaskId());
-                player.majorTasks.put(e.getTaskId(), task);
-            }
-            for (int i = 0; i <= count; i++) {
-                StaticTask e = StaticTaskDataMgr.getMajorMap().get(i);
-                if (e != null) {
-                    Task task = new Task(e.getTaskId());
-                    task.setSchedule(e.getCond());
-                    task.setStatus(i < count ? TaskType.TYPE_STATUS_REWARD : TaskType.TYPE_STATUS_FINISH);
-                    player.majorTasks.put(e.getTaskId(), task);
-                    // 触发剧情任务
-                    taskService.checkTriggerSectionTask(task, player);
-                    // 剧情任务不使用triggerId做解锁
-                    if (e.getType() == TaskType.TYPE_SECTION) continue;
-                    List<StaticTask> triggerList = StaticTaskDataMgr.getTriggerTask(e.getTaskId());
-                    if (triggerList != null) {
-                        for (StaticTask ee : triggerList) {
-                            Task etask = new Task(ee.getTaskId());
-                            player.majorTasks.put(ee.getTaskId(), etask);
-                            // if (ee.getType() == 2) {
-                            // etask.setSchedule(ee.getCond());
-                            // etask.setStatus(TaskType.TYPE_STATUS_FINISH);
-                            // triggerTask(player, ee.getTaskId());
-                            // }
-                        }
-                    }
-                }
-            }
-            // 重新计算主线task
-            List<Integer> curTask = taskDataManager.getCurTask(player);
-            player.curMajorTaskIds.clear();
-            player.curMajorTaskIds.addAll(curTask);*/
-            int finalCount = count;
-            StaticSectiontask sst = StaticTaskDataMgr.getSectiontaskList().stream().filter(st -> st.getSectionTask().contains(finalCount)).findFirst().orElse(null);
-            int sectionId = 0;
-            // 剧情任务
-            if (!CheckNull.isNull(sst)) {
-                // 在剧情任务中
-                sectionId = sst.getSectionId();
-                // 修复主线停留
-                if (sectionId >= TaskType.SECOND_SECTION_ID) {
-                    // 第二阶段
-                    count = Constant.SECTIONTASK_BEGIN_HERO_ID.get(1);
-                } else {
-                    // 第一阶段
-                    count = Constant.SECTIONTASK_BEGIN_HERO_ID.get(0);
-                }
-            } else {
-                // 不在剧情任务中, 主线任务在第一段剧情
-                if (count > Constant.SECTIONTASK_BEGIN_HERO_ID.get(0) && count <= Constant.SECTIONTASK_BEGIN_HERO_ID.get(1)) {
-                    // 完成第一章节所有的剧情任务
-                    sectionId = TaskType.SECOND_FIRST_ID + 1;
-                } else if (count > Constant.SECTIONTASK_BEGIN_HERO_ID.get(1)) {
-                    // 完成所有的剧情任务
-                    sectionId = TaskType.SECOND_SECTION_ID + 1;
-                }
-            }
-            if (sectionId > 0) {
-                // 清除剧情任务
-                player.sectiontask.clear();
-                // 剧情任务修复
-                int finalSectionId = sectionId;
-                Stream.iterate(1, id -> ++id).limit(sectionId).forEach(id -> {
-                    // 根据剧情任务获取剧情任务的配置
-                    StaticSectiontask sectiontask = StaticTaskDataMgr.getSectiontaskById(id);
-                    if (!CheckNull.isNull(sectiontask)) {
-                        Sectiontask section;
-                        // 当前这一章的剧情id
-                        if (id == finalSectionId) {
-                            // 当前剧情id
-                            section = new Sectiontask(id, TaskType.TYPE_STATUS_UNFINISH);
-                            sectiontask.getSectionTask().stream().map(StaticTaskDataMgr::getTaskById).filter(st -> !CheckNull.isNull(st)).forEach(st -> {
-                                // 给资源+1次征收
-                                taskService.processTask(player, st.getTaskId());
-                                Task task = new Task(st.getTaskId());
-                                player.majorTasks.put(st.getTaskId(), task);
-                            });
-                        } else {
-                            // 前面的剧情
-                            section = new Sectiontask(id, TaskType.TYPE_STATUS_REWARD);
-                            sectiontask.getSectionTask().stream().map(StaticTaskDataMgr::getTaskById).filter(st -> !CheckNull.isNull(st)).forEach(st -> {
-                                // 给资源+1次征收
-                                taskService.processTask(player, st.getTaskId());
-                                Task task = new Task(st.getTaskId());
-                                task.setSchedule(st.getCond());
-                                task.setStatus(TaskType.TYPE_STATUS_REWARD);
-                                player.majorTasks.put(st.getTaskId(), task);
-                            });
-                        }
-                        // 添加剧情任务
-                        player.sectiontask.add(section);
-                    }
-                });
-            }
-            // 修复主线任务
-            for (StaticTask e : StaticTaskDataMgr.getOpenList()) {
-                if (e.getType() == TaskType.TYPE_SECTION) continue;
-                Task task = new Task(e.getTaskId());
-                player.majorTasks.put(e.getTaskId(), task);
-            }
-            for (int i = 0; i <= count; i++) {
-                StaticTask e = StaticTaskDataMgr.getMajorMap().get(i);
-                if (e != null) {
-                    Task task = new Task(e.getTaskId());
-                    task.setSchedule(e.getCond());
-                    task.setStatus(i < count ? TaskType.TYPE_STATUS_REWARD : TaskType.TYPE_STATUS_FINISH);
-                    player.majorTasks.put(e.getTaskId(), task);
-                    // 触发剧情任务
-                    taskService.checkTriggerSectionTask(task, player);
-                    // 剧情任务不由triggerId触发
-                    if (e.getType() == TaskType.TYPE_SECTION) continue;
-                    List<StaticTask> triggerList = StaticTaskDataMgr.getTriggerTask(e.getTaskId());
-                    if (triggerList != null) {
-                        for (StaticTask ee : triggerList) {
-                            Task etask = new Task(ee.getTaskId());
-                            player.majorTasks.put(ee.getTaskId(), etask);
-                        }
-                    }
-                }
-            }
-            // 重新计算主线task
-            List<Integer> curTask = taskDataManager.getCurTask(player);
-            player.curMajorTaskIds.clear();
-            player.curMajorTaskIds.addAll(curTask);
-        }
-        // 老的世界任务 gm注释掉
-        // else if (str.equalsIgnoreCase("myTask")) {
-        // player.worldTasks.clear();
-        // player.worldTasks.put(1, new Task(1, 1, TaskType.TYPE_STATUS_REWARD,
-        // 1));
-        // player.worldTasks.put(2, new Task(2, 1, TaskType.TYPE_STATUS_FINISH,
-        // 1));
-        // } else if (str.equalsIgnoreCase("worldTask")) {
-        // WorldTask wTask = worldDataManager.getWorldTask();
-        // LogUtil.debug("into worldTask" + wTask);
-        // wTask.getWorldTaskMap().clear();
-        // wTask.getWorldTaskId().set(2);
-        // for (int i = 2; i <= count; i++) {
-        // StaticWorldTask e = StaticWorldDataMgr.getWorldTaskMap().get(i);
-        // if (e == null) {
-        // continue;
-        // }
-        // wTask.getWorldTaskId().set(e.getTaskId());
-        // wTask.getWorldTaskMap().put(e.getTaskId(),
-        // CommonPb.WorldTask.newBuilder().setTaskId(e.getTaskId())
-        // .setTaskCnt(1).setCamp(1).setHp(0).build());
-        //
-        // if (e.getTaskId() == TaskType.WORLD_BOSS_TASK_ID_1) {
-        // globalDataManager.openAreaData(2);
-        // partyService.openPartyJobDelay();
-        // chatDataManager.sendSysChat(ChatConst.CHAT_WORLD_BOSS_1,
-        // player.lord.getCamp(), 0, e.getTaskId());
-        // } else if (e.getTaskId() == TaskType.WORLD_BOSS_TASK_ID_2) {
-        // globalDataManager.openAreaData(3);
-        // chatDataManager.sendSysChat(ChatConst.CHAT_WORLD_BOSS_2,
-        // player.lord.getCamp(), 0, e.getTaskId());
-        // }
-        //
-        // StaticWorldTask worldTask =
-        // StaticWorldDataMgr.getWorldTask(wTask.getWorldTaskId().get() + 1);
-        // if (worldTask != null) {
-        // // 新开启
-        // int newWorldTaskId = wTask.getWorldTaskId().incrementAndGet();
-        // wTask.getWorldTaskMap().put(newWorldTaskId,
-        // CommonPb.WorldTask.newBuilder().setTaskId(newWorldTaskId).setHp(worldTask.getHp()).build());
-        // if (worldTask.getTaskId() == TaskType.WORLD_BOSS_TASK_ID_1
-        // || worldTask.getTaskId() == TaskType.WORLD_BOSS_TASK_ID_2) {
-        // //
-        // wTask.setDefender(fightService.createNpcFighter(worldTask.getParam()));
-        // wTask.setDefender(null);
-        // }
-        // }
-        // }
-        // }
-        else if (str.equalsIgnoreCase("combat")) {
+         if (str.equalsIgnoreCase("combat")) {
             player.combats.clear();
             player.combatFb.clear();
             player.lord.combatId = 0;
@@ -2538,23 +2329,6 @@ public class GmService{
             }
         }
         LogUtil.debug("修复玩家副本完毕=" + cnt);
-    }
-
-    private void triggerTask(Player player, int taskId) {
-        List<StaticTask> triggerList = StaticTaskDataMgr.getTriggerTask(taskId);
-        if (triggerList != null) {
-            for (StaticTask ee : triggerList) {
-                if (ee.getTaskId() != taskId) {
-                    Task etask = new Task(ee.getTaskId());
-                    player.majorTasks.put(ee.getTaskId(), etask);
-                    if (ee.getType() == 2) {
-                        etask.setSchedule(ee.getCond());
-                        etask.setStatus(TaskType.TYPE_STATUS_FINISH);
-                        triggerTask(player, ee.getTaskId());
-                    }
-                }
-            }
-        }
     }
 
     public void gmMail(Mail mail, String to) {

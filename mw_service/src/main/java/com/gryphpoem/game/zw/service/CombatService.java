@@ -387,7 +387,7 @@ public class CombatService {
             builder.setStar(star);
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_COMBAT);
             // activityDataManager.updActivity(player, ActivityConst.ACT_COMBAT, 1, 0);
-            taskDataManager.updTask(roleId, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
+            taskDataManager.updTask(player, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
             processNextCombat(player, combat, builder);
             taskDataManager.updTask(player, TaskType.COND_COMBAT_37, 1);
             battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_COMBAT_37, 1);
@@ -421,7 +421,7 @@ public class CombatService {
         LogLordHelper.commonLog("combatFight", AwardFrom.COMBAT_FIGHT, player, player.lord.getFight()
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
-        taskDataManager.updTask(roleId, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
+        taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
 
 
         // 给将领加经验
@@ -907,7 +907,7 @@ public class CombatService {
             if (!CheckNull.isEmpty(staticCombat.getTitanDrop()) && player.lord.getLevel() >= Constant.RED_DROP_AWARD_LV) {
                 builder.addAllAward(rewardDataManager.sendReward(player, staticCombat.getTitanDrop(), count, AwardFrom.GAIN_COMBAT));
             }
-            taskDataManager.updTask(roleId, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
+            taskDataManager.updTask(player, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
 
             // 勋章掉落
             List<Medal> medals = medalDataManager.getMedalBydoCombat(player);
@@ -932,7 +932,7 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
 
-        taskDataManager.updTask(roleId, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
+        taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));

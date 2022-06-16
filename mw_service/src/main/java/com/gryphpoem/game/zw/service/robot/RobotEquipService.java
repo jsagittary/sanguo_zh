@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.robot;
 
+import com.google.common.collect.Lists;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
@@ -85,7 +86,7 @@ public class RobotEquipService {
      */
     private int findOptimizedEquipId(Player player) {
         int equipId = -1;
-        List<Integer> curTaskIds = player.curMajorTaskIds;
+        List<Integer> curTaskIds = Lists.newArrayList(player.chapterTask.getOpenTasks().keySet());
         List<StaticTask> buildTask = curTaskIds.stream().map(StaticTaskDataMgr::getTaskById)
                 .filter(forgeEquipTaskFilter).collect(Collectors.toList());
 

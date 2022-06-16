@@ -130,7 +130,7 @@ public class StaticFunctionDataMgr {
         // 任务要求
         int taskId = sOpen.getTaskId();
         if (taskId > 0) {
-            Task task = player.majorTasks.get(taskId);
+            Task task = player.chapterTask.getOpenTasks().get(taskId);
             if (task == null || task.getStatus() < TaskType.TYPE_STATUS_REWARD) {
                 return false;
             }

@@ -627,7 +627,7 @@ public class MarchService {
             dropList.addAll(totemService.dropTotem(player,2,AwardFrom.TOTOEM_DROP_PANJUN));
 
             // 更新任务进度
-            taskDataManager.updTask(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
+            taskDataManager.updTask(player, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
             battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
             royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
             activityDataManager.updActivity(player, ActivityConst.ACT_ELIMINATE_BANDIT, 1, staticBandit.getLv(), true);
@@ -835,7 +835,7 @@ public class MarchService {
         dropList.addAll(totemService.dropTotem(player,2,AwardFrom.TOTOEM_DROP_PANJUN));
 
         // 更新任务进度
-        taskDataManager.updTask(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
+        taskDataManager.updTask(player, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
         activityDataManager.updActivity(player, ActivityConst.ACT_ELIMINATE_BANDIT, 1, staticBandit.getLv(), true);
@@ -1648,6 +1648,7 @@ public class MarchService {
                             if (!CheckNull.isEmpty(awards)) {
                                 drops.addAll(awards);
                             }
+                            taskDataManager.updTask(p, TaskType.COND_522, 1);
                         }
                         // 记录获取击杀奖励次数
                         p.getAndCreateAirshipPersonData().subKillAwardCnt(1);

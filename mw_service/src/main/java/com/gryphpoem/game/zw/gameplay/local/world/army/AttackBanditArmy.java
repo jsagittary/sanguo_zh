@@ -294,7 +294,7 @@ public class AttackBanditArmy extends BaseArmy {
             // 流寇上限++
             armyPlayer.setBanditCnt(armyPlayer.getBanditCnt() + 1);
             // 任务
-            taskDataManager.updTask(armyPlayer.roleId, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
+            taskDataManager.updTask(armyPlayer, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
             // 荣耀日报 打匪军成功更新
             honorDailyService.addAndCheckHonorReport2s(armyPlayer, HonorDailyConstant.COND_ID_3);
             // 世界争霸攻打匪军完成记录

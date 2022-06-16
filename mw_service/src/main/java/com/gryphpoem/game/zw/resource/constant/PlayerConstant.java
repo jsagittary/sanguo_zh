@@ -252,6 +252,16 @@ public interface PlayerConstant {
     int OPEN_TREASURE_MAP_COUNT = 69;
 
     /**
+     * 阵营战累计攻打次数
+     */
+    int CAMP_FIGHT_TOTAL_COUNT = 70;
+
+    /**
+     * 酒馆寻访总次数记录
+     */
+    int HERO_SEARCH_NEW_TOTAL_COUNT = 71;
+
+    /**
      * 注意：10001 - 10007 是最近一周的充值金额的key
      */
     int RECENTLY_PAY = 10000;

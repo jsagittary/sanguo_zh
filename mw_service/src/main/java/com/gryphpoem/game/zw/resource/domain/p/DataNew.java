@@ -44,6 +44,7 @@ public class DataNew {
     private byte[] totem;//图腾数据
     private byte[] treasureWares;//宝具数据
     private byte[] drawCardData;// 抽卡数据
+    private byte[] chapterTask;//宝具数据
 
     public byte[] getActivity() {
         return activity;
@@ -386,5 +387,13 @@ public class DataNew {
 
     public void setDrawCardData(byte[] drawCardData) {
         this.drawCardData = drawCardData;
+    }
+
+    public byte[] getChapterTask() {
+        return chapterTask;
+    }
+
+    public void setChapterTask(byte[] chapterTask) {
+        this.chapterTask = chapterTask;
     }
 }

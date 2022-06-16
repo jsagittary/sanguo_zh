@@ -519,8 +519,8 @@ public class BuildingService {
                 }
             }
         }*/
-        taskDataManager.updTask(player.roleId, TaskType.COND_18, 1, buildingType);
-        taskDataManager.updTask(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
+        taskDataManager.updTask(player, TaskType.COND_18, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_BUILDING_UP_43, 1);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
 
         // 立即完成不添加进入队列
@@ -1016,7 +1016,7 @@ public class BuildingService {
         // player.removePushRecord(PushConstant.ID_RESOURCE_FULL);
 
         builder.setResource(PbHelper.createCombatPb(player.resource));
-        taskDataManager.updTask(roleId, TaskType.COND_RES_AWARD, 1);
+        taskDataManager.updTask(player, TaskType.COND_RES_AWARD, 1, type);
         battlePassDataManager.updTaskSchedule(roleId, TaskType.COND_RES_AWARD, 1);
         return builder.build();
     }
@@ -1288,6 +1288,7 @@ public class BuildingService {
                 buildQue.getPos());
         LogLordHelper.build(AwardFrom.BUILD_UP_FINISH, player.account, player.lord, buildingId, buildingLv);
         EventDataUp.buildingSuccess(player, buildingId, 0, buildingLv);
+        taskDataManager.updTask(player, TaskType.COND_BUILDING_TYPE_LV, 1, buildingType);
         return pros;
     }
 
@@ -1426,7 +1427,6 @@ public class BuildingService {
                 building.setAir(lv);
                 break;
         }
-
         return lv;
     }
 
@@ -1984,8 +1984,8 @@ public class BuildingService {
                 LogUtil.error(e);
             }
         }*/
-        taskDataManager.updTask(player.roleId, TaskType.COND_18, 1, type);
-        taskDataManager.updTask(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
+        taskDataManager.updTask(player, TaskType.COND_18, 1, type);
+        taskDataManager.updTask(player, TaskType.COND_BUILDING_UP_43, 1);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
 
         return 0;
@@ -2033,15 +2033,14 @@ public class BuildingService {
         }
         // 获取当前任务id
         // List<Integer> curTaskIds = taskDataManager.getCurTask(player);
-        List<Integer> curTaskIds = player.curMajorTaskIds;
-        List<StaticTask> buildTask = curTaskIds.stream().map(t -> StaticTaskDataMgr.getTaskById(t))
+        List<StaticTask> buildTask =  player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
                 .filter(t -> t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
                         || t.getCond() == TaskType.COND_RES_OIL_CNT || t.getCond() == TaskType.COND_RES_ELE_CNT
                         || t.getCond() == TaskType.COND_RES_ORE_CNT)
                 // 过滤未完成的任务
                 .filter(t -> {
                     int taskId = t.getTaskId();
-                    Task task = player.majorTasks.get(taskId);
+                    Task task = player.chapterTask.getOpenTasks().get(taskId);
                     if (CheckNull.isNull(task)) {
                         return false;
                     }
