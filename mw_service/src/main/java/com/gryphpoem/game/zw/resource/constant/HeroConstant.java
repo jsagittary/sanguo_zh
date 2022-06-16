@@ -108,6 +108,10 @@ public class HeroConstant {
      * 寻访心愿值上限
      */
     public static int DRAW_CARD_WISH_VALUE_LIMIT;
+    /**
+     * 限时寻访击败叛军次数和免费次数
+     */
+    public static List<Integer> TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES;
 
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
@@ -136,6 +140,7 @@ public class HeroConstant {
         DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS = SystemTabLoader.getIntegerSystemValue(SystemId.DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS, 4);
         DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE = SystemTabLoader.getIntegerSystemValue(SystemId.DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE, 100);
         DRAW_CARD_WISH_VALUE_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_CARD_WISH_VALUE_LIMIT, 100);
+        TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES, "[]");
     }
 
     /**

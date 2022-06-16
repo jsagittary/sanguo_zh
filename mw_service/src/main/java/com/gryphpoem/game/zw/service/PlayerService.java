@@ -42,6 +42,7 @@ import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.activity.AnniversaryEggService;
+import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,8 @@ public class PlayerService implements GmCmdService {
     private List<RefreshTimerService> refreshTimerServices;
     @Autowired
     private TreasureCombatService treasureCombatService;
+    @Autowired
+    private DrawCardPlanTemplateService drawCardPlanTemplateService;
     @Autowired
     private TitleService titleService;
     private String initName;
@@ -664,6 +667,8 @@ public class PlayerService implements GmCmdService {
                     activityTemplateService.execActivityDay(p);
                     // 宝具副本处理
                     treasureCombatService.acrossTheDayProcess(p);
+                    // 功能计划过天处理
+                    Java8Utils.invokeNoExceptionICommand(() -> drawCardPlanTemplateService.execFunctionDay(p));
                 } catch (Exception e) {
                     LogUtil.error("roleId: ", p.roleId, ", 转点定时任务出错: ", e);
                 }

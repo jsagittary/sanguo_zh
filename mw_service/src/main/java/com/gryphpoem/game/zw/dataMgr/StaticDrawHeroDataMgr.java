@@ -7,8 +7,10 @@ import com.gryphpoem.game.zw.resource.constant.DrawCardRewardType;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
+import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -90,18 +92,58 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
     }
 
     /**
-     * 获取当前所有奖池
+     *
+     * @param now
+     * @param functionId
+     * @param status
+     * @return
+     */
+    public List<StaticDrawHeoPlan> getPlanList(Date now, int functionId, PlanFunction.PlanStatus... status) {
+        if (CheckNull.isEmpty(drawHeoPlanMap))
+            return null;
+        return drawHeoPlanMap.values().stream().filter(plan -> Objects.nonNull(plan) && plan.getFunctionId() == functionId &&
+                ArrayUtils.contains(status, plan.planStatus(now))).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取对应status planList
+     *
+     * @param now
+     * @param status
+     * @return
+     */
+    public List<StaticDrawHeoPlan> getPlanList(Date now, PlanFunction.PlanStatus... status) {
+        if (CheckNull.isEmpty(drawHeoPlanMap))
+            return null;
+        return drawHeoPlanMap.values().stream().filter(plan -> Objects.nonNull(plan) && ArrayUtils.contains(status, plan.planStatus(now))).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取指定奖池
+     *
+     * @param searchTypeId
+     * @return
+     */
+    public List<StaticDrawCardWeight> getSpecifyPool(int searchTypeId) {
+        if (CheckNull.isEmpty(drawCardWeightList))
+            return null;
+
+        return drawCardWeightList.stream().filter(pool -> Objects.nonNull(pool) && pool.getSearchTypeId() == searchTypeId).collect(Collectors.toList());
+    }
+
+    /**
+     * 常驻抽卡获取可抽取奖池
      *
      * @param now
      * @return
      */
-    public List<StaticDrawCardWeight> getDrawCardWeightList(Date now) {
+    public List<StaticDrawCardWeight> getPermanentDrawCardWeightList(Date now) {
         if (CheckNull.isEmpty(drawCardWeightList) || CheckNull.isEmpty(poolHeroSearchMap))
             return null;
         Set<Integer> poolIdConfigSet = null;
         if (CheckNull.nonEmpty(drawHeoPlanMap)) {
             poolIdConfigSet = drawHeoPlanMap.values().stream().filter(staticData -> Objects.nonNull(staticData) &&
-                    staticData.isOver(now)).map(StaticDrawHeoPlan::getSearchTypeId).collect(Collectors.toSet());
+                    staticData.planStatus(now) == PlanFunction.PlanStatus.OVER).map(StaticDrawHeoPlan::getSearchTypeId).collect(Collectors.toSet());
         }
 
         // 获取所有英雄池子

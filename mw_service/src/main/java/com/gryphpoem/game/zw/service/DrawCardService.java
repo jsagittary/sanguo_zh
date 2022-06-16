@@ -66,7 +66,7 @@ public class DrawCardService implements GmCmdService {
         builder.setNextGetHeroTimes(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - player.getDrawCardData().getHeroDrawCount());
         builder.setFreeNum(player.getDrawCardData().getFreeCount());
         builder.setOtherFreeNum(player.getDrawCardData().getOtherFreeCount());
-        List<StaticDrawCardWeight> drawCardPollList = dataMgr.getDrawCardWeightList(now);
+        List<StaticDrawCardWeight> drawCardPollList = dataMgr.getPermanentDrawCardWeightList(now);
         if (CheckNull.nonEmpty(drawCardPollList))
             builder.addAllSearchTypeIds(drawCardPollList.stream().map(StaticDrawCardWeight::getId).collect(Collectors.toSet()));
         builder.setTodayDiscount(!player.getDrawCardData().isTodayFirst(now));
@@ -89,7 +89,7 @@ public class DrawCardService implements GmCmdService {
         drawCardData.refreshData();
 
         Date now = new Date();
-        List<StaticDrawCardWeight> configList = dataMgr.getDrawCardWeightList(now);
+        List<StaticDrawCardWeight> configList = dataMgr.getPermanentDrawCardWeightList(now);
         if (CheckNull.isEmpty(configList)) {
             throw new MwException(GameError.NO_CONFIG.getCode(), String.format("roleId:%d, no draw hero config", roleId));
         }
@@ -157,7 +157,7 @@ public class DrawCardService implements GmCmdService {
      * @return
      * @throws MwException
      */
-    private CommonPb.SearchHero onceDraw(Player player, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
+    public CommonPb.SearchHero onceDraw(Player player, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
                                          DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now) throws MwException {
         // 记录随机到的奖励信息
         StaticHeroSearch shs = randomPriorityReward(player.getDrawCardData(), now, configList);
@@ -267,13 +267,13 @@ public class DrawCardService implements GmCmdService {
 
         DrawCardData drawCardData = player.getDrawCardData();
         Date now = new Date();
-        List<StaticDrawCardWeight> configList = dataMgr.getDrawCardWeightList(now);
+        List<StaticDrawCardWeight> configList = dataMgr.getPermanentDrawCardWeightList(now);
         if (CheckNull.isEmpty(configList)) {
             throw new MwException(GameError.NO_CONFIG.getCode(), String.format("roleId:%d, no draw hero config", roleId));
         }
         List<Integer> heroIdPoolList = dataMgr.getWishedHeroPool(configList);
         if (CheckNull.isEmpty(heroIdPoolList) || !heroIdPoolList.contains(heroId)) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, has chosen heroId:%d", roleId));
+            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, has chosen heroId:%d", roleId, heroId));
         }
 
         drawCardData.getWishHero().setA(heroId);

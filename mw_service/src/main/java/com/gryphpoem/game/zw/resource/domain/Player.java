@@ -62,6 +62,7 @@ import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.SupplyRecord;
+import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
@@ -721,6 +722,15 @@ public class Player {
      */
     public ChapterTask chapterTask = new ChapterTask();
 
+
+    /**
+     * 玩家抽卡活动详情
+     */
+    private PlayerFunctionPlanData functionPlanData = new PlayerFunctionPlanData();
+
+    public PlayerFunctionPlanData getFunctionPlanData() {
+        return functionPlanData;
+    }
 
     public Map<Integer, Integer> getRecruitReward() {
         return recruitReward;

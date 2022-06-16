@@ -34,6 +34,7 @@ import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.quartz.*;
@@ -335,6 +336,14 @@ public class ScheduleManager {
         loadActRankAwardScheule();
         loadActBeginScheule();
         loadMedalGoodsSchedule();
+        loadFunctionPlanSchedule();
+    }
+
+    /**
+     * 加在所有plan定时器
+     */
+    private void loadFunctionPlanSchedule() {
+        DataResource.ac.getBean(DrawCardPlanTemplateService.class).loadFunctionPlanJob();
     }
 
     /**

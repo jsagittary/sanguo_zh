@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.resource.pojo.tavern;
 
-import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
@@ -38,10 +37,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * 心愿英雄 <英雄id, 次数>
      */
     private Turple<Integer, Integer> wishHero = new Turple<>(0, 0);
-    /**
-     * 抽卡活动信息详情
-     */
-    private Map<Integer, DrawCardActData> drawCardActDataMap = new ConcurrentHashMap<>();
     /**
      * 每日使用折扣寻访时间
      */
@@ -115,14 +110,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
 
     public void setWishHero(Turple<Integer, Integer> wishHero) {
         this.wishHero = wishHero;
-    }
-
-    public Map<Integer, DrawCardActData> getDrawCardActDataMap() {
-        return drawCardActDataMap;
-    }
-
-    public void setDrawCardActDataMap(Map<Integer, DrawCardActData> drawCardActDataMap) {
-        this.drawCardActDataMap = drawCardActDataMap;
     }
 
     public long getCdFreeTime() {

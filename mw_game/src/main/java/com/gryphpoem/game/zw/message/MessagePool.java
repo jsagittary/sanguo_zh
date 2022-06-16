@@ -56,6 +56,10 @@ import com.gryphpoem.game.zw.handler.client.factory.*;
 import com.gryphpoem.game.zw.handler.client.fish.*;
 import com.gryphpoem.game.zw.handler.client.friend.*;
 import com.gryphpoem.game.zw.handler.client.hero.*;
+import com.gryphpoem.game.zw.handler.client.hero.function.DrawActHeroCardHandler;
+import com.gryphpoem.game.zw.handler.client.hero.function.GetDrawHeroCardActInfoHandler;
+import com.gryphpoem.game.zw.handler.client.hero.function.GetDrawHeroCardPlanListHandler;
+import com.gryphpoem.game.zw.handler.client.hero.function.ReceiveTimeLimitedDrawCountHandler;
 import com.gryphpoem.game.zw.handler.client.mail.*;
 import com.gryphpoem.game.zw.handler.client.medal.*;
 import com.gryphpoem.game.zw.handler.client.mentor.*;
@@ -1334,6 +1338,10 @@ public class MessagePool implements IMessagePool {
         registerC(ChooseNewWishHeroRq.EXT_FIELD_NUMBER, ChooseNewWishHeroRs.EXT_FIELD_NUMBER, ChooseWishedHeroHandler.class);
         registerC(ReceiveNewWishHeoRq.EXT_FIELD_NUMBER, ReceiveNewWishHeoRs.EXT_FIELD_NUMBER, ReceiveNewWishHeoHandler.class);
         registerC(GetAllHeroFragmentRq.EXT_FIELD_NUMBER, GetAllHeroFragmentRs.EXT_FIELD_NUMBER, GetAllHeroFragmentHandler.class);
+        registerC(DrawActHeroCardRq.EXT_FIELD_NUMBER, DrawActHeroCardRs.EXT_FIELD_NUMBER, DrawActHeroCardHandler.class);
+        registerC(GetDrawHeroCardActInfoRq.EXT_FIELD_NUMBER, GetDrawHeroCardActInfoRs.EXT_FIELD_NUMBER, GetDrawHeroCardActInfoHandler.class);
+        registerC(GetDrawHeroCardPlanRq.EXT_FIELD_NUMBER, GetDrawHeroCardPlanRs.EXT_FIELD_NUMBER, GetDrawHeroCardPlanListHandler.class);
+        registerC(ReceiveTimeLimitedDrawCountRq.EXT_FIELD_NUMBER, ReceiveTimeLimitedDrawCountRs.EXT_FIELD_NUMBER, ReceiveTimeLimitedDrawCountHandler.class);
     }
 
     /**
@@ -1389,6 +1397,7 @@ public class MessagePool implements IMessagePool {
         // 机器人
         registerH(HttpPb.RobotsExternalBehaviorRq.EXT_FIELD_NUMBER, 0, RobotsExternalBehaviorRqHandler.class);
         registerH(HttpPb.RobotsCountByAreaRq.EXT_FIELD_NUMBER, 0, RobotsCountByAreaRqHandler.class);
+
     }
 
     private void innerMessagePool() {
