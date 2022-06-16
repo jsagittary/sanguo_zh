@@ -45,6 +45,7 @@ public class DataNew {
     private byte[] treasureWares;//宝具数据
     private byte[] drawCardData;// 抽卡数据
     private byte[] chapterTask;//宝具数据
+    private byte[] functionPlanData;// 功能计划数据
 
     public byte[] getActivity() {
         return activity;
@@ -395,5 +396,13 @@ public class DataNew {
 
     public void setChapterTask(byte[] chapterTask) {
         this.chapterTask = chapterTask;
+    }
+
+    public byte[] getFunctionPlanData() {
+        return functionPlanData;
+    }
+
+    public void setFunctionPlanData(byte[] functionPlanData) {
+        this.functionPlanData = functionPlanData;
     }
 }

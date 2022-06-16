@@ -53,7 +53,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
 
         Date now = new Date();
         checkAndGetPlan(req.getKeyId(), now, player, PlanFunction.PlanStatus.OPEN);
-        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player, planFunction, req.getKeyId(), true);
+        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, req.getKeyId(), true);
         if (CheckNull.isNull(functionPlanData)) {
             throw new MwException(GameError.PARAM_ERROR, String.format("role:%d, function:%d, keyId:%d, no player function data", roleId, req.getFunctionId(), req.getKeyId()));
         }
@@ -97,7 +97,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
 
         Date now = new Date();
         onlinePlayer.forEach(player -> {
-            FunctionPlanData planData = functionPlanDataManager.functionPlanData(player, planFunction, keyId, true);
+            FunctionPlanData planData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, keyId, true);
             if (CheckNull.isNull(planData))
                 return;
             drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, staticPlan, ACT_NEW, now);
@@ -126,7 +126,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
 
         Date now = new Date();
         onlinePlayer.forEach(player -> {
-            FunctionPlanData planData = functionPlanDataManager.functionPlanData(player, planFunction, keyId, false);
+            FunctionPlanData planData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, keyId, false);
             drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, staticPlan, ACT_DELETE, now);
         });
     }
@@ -143,7 +143,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
         if (CheckNull.isEmpty(planList))
             return;
         planList.forEach(plan -> {
-            DrawCardTimeLimitedFunctionPlanData planData = (DrawCardTimeLimitedFunctionPlanData) functionPlanDataManager.functionPlanData(player, PlanFunction.DRAW_CARD, plan.getId(), true);
+            DrawCardTimeLimitedFunctionPlanData planData = (DrawCardTimeLimitedFunctionPlanData) functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), PlanFunction.DRAW_CARD, plan.getId(), true);
             if (CheckNull.isNull(planData))
                 return;
             planData.resetDaily();
@@ -187,7 +187,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
         if (CheckNull.isEmpty(planList))
             return;
         planList.forEach(plan -> {
-            DrawCardTimeLimitedFunctionPlanData planData = (DrawCardTimeLimitedFunctionPlanData) functionPlanDataManager.functionPlanData(player, PlanFunction.DRAW_CARD, plan.getId(), true);
+            DrawCardTimeLimitedFunctionPlanData planData = (DrawCardTimeLimitedFunctionPlanData) functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), PlanFunction.DRAW_CARD, plan.getId(), true);
             if (CheckNull.isNull(planData))
                 return;
             planData.operationProgress((int) params[0]);

@@ -116,6 +116,7 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
         builder.setOpen(true);
         builder.setKeyId(id);
         builder.setPreviewTime(CheckNull.isNull(previewTime) ? 0 : (int) (previewTime.getTime() / 1000l));
+        builder.setSearchTypeId(searchTypeId);
         return builder.build();
     }
 }

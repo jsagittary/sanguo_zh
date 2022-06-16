@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.FunctionPlan;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
+import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.ClassUtil;
 import org.apache.commons.lang3.ArrayUtils;
@@ -47,22 +48,22 @@ public class FunctionPlanDataManager {
     /**
      * 获取玩家功能计划信息
      *
-     * @param player
+     * @param playerFunctionPlanData
      * @param planFunction
      * @param planKeyId
      * @return
      */
-    public FunctionPlanData functionPlanData(Player player, PlanFunction planFunction, int planKeyId, boolean add) {
+    public FunctionPlanData functionPlanData(PlayerFunctionPlanData playerFunctionPlanData, PlanFunction planFunction, int planKeyId, boolean add) {
         if (!functionClassMap.containsKey(planFunction))
             return null;
-        FunctionPlanData functionPlanData = player.getFunctionPlanData().getData(planKeyId);
+        FunctionPlanData functionPlanData = playerFunctionPlanData.getData(planKeyId);
         if (!add || Objects.nonNull(functionPlanData))
             return functionPlanData;
 
         Class<?> clazz = functionClassMap.get(planFunction);
         try {
             FunctionPlanData data = (FunctionPlanData) clazz.getConstructor(Integer.class).newInstance(planKeyId);
-            player.getFunctionPlanData().updateData(data);
+            playerFunctionPlanData.updateData(data);
             return data;
         } catch (Exception e) {
             LogUtil.error("", e);

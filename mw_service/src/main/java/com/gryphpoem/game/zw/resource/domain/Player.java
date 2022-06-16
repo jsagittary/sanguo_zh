@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.*;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.p.ActBarton;
@@ -1818,6 +1819,7 @@ public class Player {
         dataNew.setTreasureWares(serTreasureWares());
         dataNew.setDrawCardData(getDrawCardData().createPb(true).toByteArray());
         dataNew.setChapterTask(this.chapterTask.ser().toByteArray());
+        dataNew.setFunctionPlanData(getFunctionPlanData().createPb(true).toByteArray());
         return dataNew;
     }
 
@@ -2349,6 +2351,11 @@ public class Player {
         if (data.getChapterTask() != null) {
             SerChapterTask ser = SerChapterTask.parseFrom(data.getChapterTask());
             this.chapterTask.dser(ser);
+        }
+
+        if (data.getFunctionPlanData() != null) {
+            SerializePb.SerFunctionPlanData ser = SerializePb.SerFunctionPlanData.parseFrom(data.getFunctionPlanData());
+            this.getFunctionPlanData().dePlanFunctionPb(ser);
         }
 
         setMaxKey(data.getMaxKey());

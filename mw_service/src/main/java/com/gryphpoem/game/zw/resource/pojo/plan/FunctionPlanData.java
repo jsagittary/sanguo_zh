@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.pojo.plan;
 
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 
 /**
@@ -23,13 +24,13 @@ public abstract class FunctionPlanData<T> implements GamePb<T> {
     public static final int CANNOT_RECEIVE_STATUS = 0;
 
     /** 功能plan keyId*/
-    private int keyId;
+    protected int keyId;
 
     public int getKeyId() {
         return keyId;
     }
 
-    public FunctionPlanData(int keyId) {
+    public FunctionPlanData(Integer keyId) {
         this.keyId = keyId;
     }
 
@@ -39,6 +40,10 @@ public abstract class FunctionPlanData<T> implements GamePb<T> {
      * @return
      */
     public abstract PlanFunction[] functionId();
+
+    public abstract SerializePb.SerBaseFunctionPlanData createBasePb();
+
+    public abstract void deBaseFunctionPlanPb(SerializePb.SerBaseFunctionPlanData pb);
 
     @Override
     public T createPb(boolean isSaveDb) {

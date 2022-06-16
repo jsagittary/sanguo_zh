@@ -1,12 +1,17 @@
 package com.gryphpoem.game.zw.resource.pojo.plan.draw;
 
 import com.gryphpoem.game.zw.pb.ActivityPb;
+import com.gryphpoem.game.zw.pb.SerializePb;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.FunctionPlan;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Description:
@@ -27,7 +32,7 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
      */
     private Map<Integer, Integer> saveMap = new HashMap<>();
 
-    public DrawCardTimeLimitedFunctionPlanData(int keyId) {
+    public DrawCardTimeLimitedFunctionPlanData(Integer keyId) {
         super(keyId);
     }
 
@@ -64,6 +69,9 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
     }
 
     public void resetDaily() {
+        if (getReceiveStatus() == CAN_RECEIVE_STATUS) {
+            operationFreeNum(HeroConstant.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES.get(1));
+        }
         this.saveMap.remove(PROGRESS_INDEX);
         this.saveMap.remove(RECEIVED_STATUS_INDEX);
     }
@@ -71,6 +79,28 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
     @Override
     public PlanFunction[] functionId() {
         return new PlanFunction[]{PlanFunction.DRAW_CARD};
+    }
+
+    @Override
+    public SerializePb.SerBaseFunctionPlanData createBasePb() {
+        SerializePb.SerTimeLimitedDrawCardActData.Builder dataPb = SerializePb.SerTimeLimitedDrawCardActData.newBuilder();
+        dataPb.addAllSaveData(this.saveMap.entrySet().stream().map(entry -> PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())).collect(Collectors.toList()));
+        SerializePb.SerBaseFunctionPlanData.Builder builder = SerializePb.SerBaseFunctionPlanData.newBuilder();
+        builder.setKeyId(keyId);
+        builder.setFunctionId(PlanFunction.DRAW_CARD.getFunctionId());
+        builder.setExtension(SerializePb.SerTimeLimitedDrawCardActData.ext, dataPb.build());
+        return builder.build();
+    }
+
+    @Override
+    public void deBaseFunctionPlanPb(SerializePb.SerBaseFunctionPlanData pb) {
+        SerializePb.SerTimeLimitedDrawCardActData dataPb = pb.getExtension(SerializePb.SerTimeLimitedDrawCardActData.ext);
+        if (CheckNull.isNull(dataPb))
+            return;
+        this.keyId = pb.getKeyId();
+        if (CheckNull.nonEmpty(dataPb.getSaveDataList())) {
+            dataPb.getSaveDataList().forEach(dataPbBase -> saveMap.put(dataPbBase.getV1(), dataPbBase.getV2()));
+        }
     }
 
     @Override

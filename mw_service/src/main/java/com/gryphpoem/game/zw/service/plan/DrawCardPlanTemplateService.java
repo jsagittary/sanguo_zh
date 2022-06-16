@@ -98,7 +98,7 @@ public class DrawCardPlanTemplateService {
         }
 
         Turple<PlanFunction, StaticDrawHeoPlan> planFunction = service.checkAndGetPlan(req.getKeyId(), new Date(), player, PlanFunction.PlanStatus.OPEN);
-        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player, planFunction.getA(), planFunction.getB().getId(), true);
+        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction.getA(), planFunction.getB().getId(), true);
         if (CheckNull.isNull(functionPlanData)) {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, no player plan data, keyId:%d", player.lord.getLordId(), req.getKeyId()));
         }
@@ -123,7 +123,7 @@ public class DrawCardPlanTemplateService {
         }
         Date now = new Date();
         Turple<PlanFunction, StaticDrawHeoPlan> planFunction = service.checkAndGetPlan(req.getKeyId(), now, player, PlanFunction.PlanStatus.OPEN);
-        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player, planFunction.getA(), planFunction.getB().getId(), true);
+        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction.getA(), planFunction.getB().getId(), true);
         if (CheckNull.isNull(functionPlanData)) {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, no player plan data, keyId:%d", player.lord.getLordId(), req.getKeyId()));
         }
@@ -141,7 +141,7 @@ public class DrawCardPlanTemplateService {
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         switch (planFunction.getA()) {
             case DRAW_CARD:
-                service.checkCondition(player, drawCardCostType, drawCardCount, change);
+                service.checkCondition(player, drawCardCostType, drawCardCount, change, functionPlanData);
                 break;
             default:
                 throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
@@ -268,7 +268,7 @@ public class DrawCardPlanTemplateService {
 
         for (AbsFunctionPlanService service : functionServiceList) {
             PlanFunction[] functions = service.functionId();
-            if (ArrayUtils.contains(functions, planFunction)){
+            if (ArrayUtils.contains(functions, planFunction)) {
                 return service;
             }
         }
