@@ -190,13 +190,14 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
             DrawCardTimeLimitedFunctionPlanData planData = (DrawCardTimeLimitedFunctionPlanData) functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), PlanFunction.DRAW_CARD, plan.getId(), true);
             if (CheckNull.isNull(planData))
                 return;
-            planData.operationProgress((int) params[0]);
-            if (planData.getReceiveStatus() == FunctionPlanData.HAS_RECEIVED_STATUS) {
+            // 若任务还未完成 则更新
+            if (planData.getReceiveStatus() != FunctionPlanData.CANNOT_RECEIVE_STATUS) {
                 return;
             }
-            if (planData.getProgress() < HeroConstant.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES.get(0))
-                return;
-            planData.updateReceiveStatus(FunctionPlanData.CAN_RECEIVE_STATUS);
+            planData.operationProgress((int) params[0]);
+            if (planData.getProgress() >= HeroConstant.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES.get(0)) {
+                planData.updateReceiveStatus(FunctionPlanData.CAN_RECEIVE_STATUS);
+            }
             drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, plan, ACT_UPDATE, now);
         });
     }
