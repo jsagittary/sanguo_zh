@@ -307,6 +307,31 @@ public class TaskDataManager {
                     return true;
                 }
                 break;
+            case TaskType.COND_RES_FOOD_CNT:
+                long count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_FOOD, sCondId);
+                task.setSchedule(count);
+                return true;
+            case TaskType.COND_RES_OIL_CNT:
+                count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_OIL, sCondId);
+                task.setSchedule(count);
+                return true;
+            case TaskType.COND_RES_ELE_CNT:
+                count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_ELE, sCondId);
+                task.setSchedule(count);
+                return true;
+            case TaskType.COND_RES_ORE_CNT:
+                count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_ORE, sCondId);
+                task.setSchedule(count);
+                return true;
+            case TaskType.COND_32: {
+                paramId = param.length > 0 ? param[0] : 0;
+                if (paramId == sCondId) {
+                    count = player.heros.values().stream().filter(hero -> hero.getEquip().length >= paramId && hero.getEquip()[paramId] > 0).count();
+                    task.setSchedule(count);
+                    return true;
+                }
+                break;
+            }
             // 单个条件 非累加
             case TaskType.COND_500:
             case TaskType.COND_507:
@@ -388,7 +413,7 @@ public class TaskDataManager {
                 int quality = sCond == TaskType.COND_501 ? Constant.Quality.green : Constant.Quality.blue;
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId == paramId) {
-                    long count = chapterTaskDataManager.getHeroQualityEquipCount(player, sCondId, quality);
+                    count = chapterTaskDataManager.getHeroQualityEquipCount(player, sCondId, quality);
                     task.setSchedule(count);
                     return true;
                 }
@@ -396,7 +421,7 @@ public class TaskDataManager {
             case TaskType.COND_502:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = chapterTaskDataManager.getHeroEquipReformAttack(player, sCondId);
+                    count = chapterTaskDataManager.getHeroEquipReformAttack(player, sCondId);
                     task.setSchedule(count);
                     return true;
                 }
@@ -404,7 +429,7 @@ public class TaskDataManager {
             case TaskType.COND_503:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = chapterTaskDataManager.getHeroEquipReform(player, sCondId);
+                    count = chapterTaskDataManager.getHeroEquipReform(player, sCondId);
                     task.setSchedule(count);
                     return true;
                 }
@@ -412,7 +437,7 @@ public class TaskDataManager {
             case TaskType.COND_504:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = chapterTaskDataManager.battleHeroWearingEquipment(player, sCondId);
+                    count = chapterTaskDataManager.battleHeroWearingEquipment(player, sCondId);
                     task.setSchedule(count);
                     return true;
                 }
@@ -420,7 +445,7 @@ public class TaskDataManager {
             case TaskType.COND_505:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = chapterTaskDataManager.arbitrarilyHeroWearingEquipment(player, sCondId, sSchedule);
+                    count = chapterTaskDataManager.arbitrarilyHeroWearingEquipment(player, sCondId, sSchedule);
                     task.setSchedule(count);
                     return true;
                 }
@@ -432,7 +457,7 @@ public class TaskDataManager {
             case TaskType.COND_509:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = player.getAllOnBattleHeros().stream().filter(hero -> hero.getQuality() >= sCondId).count();
+                    count = player.getAllOnBattleHeros().stream().filter(hero -> hero.getQuality() >= sCondId).count();
                     task.setSchedule(count);
                     return true;
                 }
@@ -440,7 +465,7 @@ public class TaskDataManager {
             case TaskType.COND_510:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = Arrays.stream(player.heroAcq).filter(heroId -> {
+                    count = Arrays.stream(player.heroAcq).filter(heroId -> {
                         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
                         if (Objects.nonNull(staticHero)) {
                             return staticHero.getQuality() >= sCondId;
@@ -454,7 +479,7 @@ public class TaskDataManager {
             case TaskType.COND_511:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && Arrays.stream(Arrays.copyOfRange(hero.getWash(), 1, hero.getWash().length)).sum() >= sCondId).count();
+                    count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && Arrays.stream(Arrays.copyOfRange(hero.getWash(), 1, hero.getWash().length)).sum() >= sCondId).count();
                     task.setSchedule(count);
                     return true;
                 }
@@ -462,7 +487,7 @@ public class TaskDataManager {
             case TaskType.COND_512:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getWash()[HeroConstant.ATTR_ATTACK] >= sCondId).count();
+                    count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getWash()[HeroConstant.ATTR_ATTACK] >= sCondId).count();
                     task.setSchedule(count);
                     return true;
                 }
@@ -470,7 +495,7 @@ public class TaskDataManager {
             case TaskType.COND_514:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getLevel() >= sCondId).count();
+                    count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getLevel() >= sCondId).count();
                     task.setSchedule(count);
                     return true;
                 }
@@ -478,7 +503,7 @@ public class TaskDataManager {
             case TaskType.COND_515:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId && Objects.nonNull(player.getCia())) {
-                    long count = player.getCia().getFemaleAngets().values().stream().filter(cia -> Objects.nonNull(cia) && cia.getExp() >= sCondId).count();
+                    count = player.getCia().getFemaleAngets().values().stream().filter(cia -> Objects.nonNull(cia) && cia.getExp() >= sCondId).count();
                     task.setSchedule(count);
                     return true;
                 }
@@ -486,7 +511,7 @@ public class TaskDataManager {
             case TaskType.COND_516:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    long count = player.heros.values().stream().filter(e -> e.getFightVal() >= sCondId).count();
+                    count = player.heros.values().stream().filter(e -> e.getFightVal() >= sCondId).count();
                     task.setSchedule(count);
                     return true;
                 }
@@ -507,7 +532,7 @@ public class TaskDataManager {
 //                }
                 break;
             case TaskType.COND_534:
-                long count = player.getAllOnBattleHeros().stream().filter(e -> {
+                count = player.getAllOnBattleHeros().stream().filter(e -> {
                     Integer treasureWare = e.getTreasureWare();
                     return Objects.nonNull(treasureWare) && treasureWare > 0;
                 }).count();

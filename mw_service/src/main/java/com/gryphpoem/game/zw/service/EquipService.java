@@ -386,6 +386,7 @@ public class EquipService {
             // 这里的schedule不传部位了
             taskDataManager.updTask(player, TaskType.COND_HERO_EQUIPID, 1, staticEquip.getEquipId());
             taskDataManager.updTask(player, TaskType.COND_501, 1, pos);
+            taskDataManager.updTask(player, TaskType.COND_32, 1, pos);
             taskDataManager.updTask(player, TaskType.COND_519, 1, pos);
             taskDataManager.updTask(player, TaskType.COND_502, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
             taskDataManager.updTask(player, TaskType.COND_503, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));

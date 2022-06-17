@@ -1289,6 +1289,10 @@ public class BuildingService {
         LogLordHelper.build(AwardFrom.BUILD_UP_FINISH, player.account, player.lord, buildingId, buildingLv);
         EventDataUp.buildingSuccess(player, buildingId, 0, buildingLv);
         taskDataManager.updTask(player, TaskType.COND_BUILDING_TYPE_LV, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_FOOD_CNT, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_OIL_CNT, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_ELE_CNT, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_ORE_CNT, 1, buildingType);
         return pros;
     }
 
