@@ -158,6 +158,7 @@ public class EquipService {
         builder.setQue(PbHelper.createEquipQuePb(equipQue));
         taskDataManager.updTask(player, TaskType.COND_29, 1, equipId);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_HERO_EQUIPID_QUALITY, 1, staticEquip.getQuality());
+        taskDataManager.updTask(player,TaskType.COND_994,1,staticEquip.getQuality());
         return builder.build();
     }
 

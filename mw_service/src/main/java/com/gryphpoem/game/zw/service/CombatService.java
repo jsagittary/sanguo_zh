@@ -422,7 +422,7 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
         taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
-
+        taskDataManager.updTask(player,TaskType.COND_995,1);
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
@@ -1013,6 +1013,8 @@ public class CombatService {
         //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_BARRIER, cnt);
 
+        taskDataManager.updTask(player, TaskType.COND_995, cnt);
+
         // 副本掉落活动
         List<List<Integer>> actCombatDropAward = activityDataManager.getActCombatDrop(player, cnt);
         if (!CheckNull.isEmpty(actCombatDropAward)) {
@@ -1211,6 +1213,7 @@ public class CombatService {
             }
         }
         taskDataManager.updTask(player, TaskType.COND_COMBAT_37, cnt);
+        taskDataManager.updTask(player, TaskType.COND_995, cnt);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_COMBAT_37, cnt);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_COMBAT_37, cnt);
         // 挑战战役活动
