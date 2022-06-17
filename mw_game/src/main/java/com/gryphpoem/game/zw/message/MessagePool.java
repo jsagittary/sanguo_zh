@@ -411,9 +411,9 @@ public class MessagePool implements IMessagePool {
         // 自动补兵
         registerC(AutoAddArmyRq.EXT_FIELD_NUMBER, AutoAddArmyRs.EXT_FIELD_NUMBER, AutoAddArmyHandler.class);
         // 获取将领寻访信息
-        registerC(GetHeroSearchRq.EXT_FIELD_NUMBER, GetHeroSearchRs.EXT_FIELD_NUMBER, GetHeroSearchHandler.class);
+//        registerC(GetHeroSearchRq.EXT_FIELD_NUMBER, GetHeroSearchRs.EXT_FIELD_NUMBER, GetHeroSearchHandler.class);
         // 将领寻访
-        registerC(SearchHeroRq.EXT_FIELD_NUMBER, SearchHeroRs.EXT_FIELD_NUMBER, SearchHeroHandler.class);
+//        registerC(SearchHeroRq.EXT_FIELD_NUMBER, SearchHeroRs.EXT_FIELD_NUMBER, SearchHeroHandler.class);
         // 获取部分将领信息
         registerC(GetHeroByIdsRq.EXT_FIELD_NUMBER, GetHeroByIdsRs.EXT_FIELD_NUMBER, GetHeroByIdsHandler.class);
         // 获取上阵将领在其他地方的位置
