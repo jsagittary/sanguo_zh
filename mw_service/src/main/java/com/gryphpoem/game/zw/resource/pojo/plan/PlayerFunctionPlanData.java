@@ -32,10 +32,11 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
         return functionPlanDataMap.get(planKeyId);
     }
 
-    public void updateData(FunctionPlanData data) {
+    public FunctionPlanData updateData(FunctionPlanData data) {
         if (CheckNull.isNull(data))
-            return;
+            return null;
         functionPlanDataMap.put(data.getKeyId(), data);
+        return data;
     }
 
     public void dePlanFunctionPb(SerializePb.SerFunctionPlanData builder) {
@@ -45,10 +46,11 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
                     PlanFunction planFunction = PlanFunction.convertTo(dataPb.getFunctionId());
                     if (CheckNull.isNull(planFunction))
                         return null;
-                    return DataResource.ac.getBean(FunctionPlanDataManager.class).functionPlanData(this, planFunction, dataPb.getKeyId(), true);
+                    return DataResource.ac.getBean(FunctionPlanDataManager.class).newFunctionPlanData(planFunction, dataPb.getKeyId());
                 });
                 if (Objects.nonNull(functionPlanData)) {
                     functionPlanData.deBaseFunctionPlanPb(dataPb);
+                    this.functionPlanDataMap.put(dataPb.getKeyId(), functionPlanData);
                 }
             });
         }

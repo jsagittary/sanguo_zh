@@ -60,11 +60,24 @@ public class FunctionPlanDataManager {
         FunctionPlanData functionPlanData = playerFunctionPlanData.getData(planKeyId);
         if (!add || Objects.nonNull(functionPlanData))
             return functionPlanData;
+        return playerFunctionPlanData.updateData(newFunctionPlanData(planFunction, planKeyId));
+    }
 
+    /**
+     * 创建functionData
+     *
+     * @param planFunction
+     * @param planKeyId
+     * @return
+     */
+    public FunctionPlanData newFunctionPlanData(PlanFunction planFunction, int planKeyId) {
         Class<?> clazz = functionClassMap.get(planFunction);
+        if (CheckNull.isNull(clazz))
+            return null;
+
+        FunctionPlanData data;
         try {
-            FunctionPlanData data = (FunctionPlanData) clazz.getConstructor(Integer.class).newInstance(planKeyId);
-            playerFunctionPlanData.updateData(data);
+            data = (FunctionPlanData) clazz.getConstructor(Integer.class).newInstance(planKeyId);
             return data;
         } catch (Exception e) {
             LogUtil.error("", e);
