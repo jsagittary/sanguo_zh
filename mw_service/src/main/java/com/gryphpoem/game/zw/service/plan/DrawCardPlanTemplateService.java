@@ -157,6 +157,7 @@ public class DrawCardPlanTemplateService {
                 builder.addHero(sh);
             }
         }
+        builder.setData((ActivityPb.TimeLimitedDrawCardActData) functionPlanData.createPb(false));
         return builder.build();
     }
 
