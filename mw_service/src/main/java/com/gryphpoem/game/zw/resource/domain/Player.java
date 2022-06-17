@@ -2374,7 +2374,7 @@ public class Player {
         }
 
         if (data.getFunctionPlanData() != null) {
-            SerializePb.SerFunctionPlanData ser = SerializePb.SerFunctionPlanData.parseFrom(data.getFunctionPlanData());
+            SerializePb.SerFunctionPlanData ser = SerializePb.SerFunctionPlanData.parseFrom(data.getFunctionPlanData(), DataResource.getRegistry());
             this.getFunctionPlanData().dePlanFunctionPb(ser);
         }
 
