@@ -17,18 +17,21 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
+import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.util.*;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.gryphpoem.game.zw.resource.constant.TreasureChallengePlayerConstant.TREASURE_SPECIAL_PROPS_ID;
+import static com.gryphpoem.game.zw.resource.constant.TreasureChallengePlayerConstant.TREASURE_SPECIAL_PROPS_OUTPUT_NUM;
 
 /**
  * @description:
@@ -56,6 +59,9 @@ public class TreasureCombatService implements GmCmdService {
     @Autowired
     private TreasureWareService treasureWareService;
 
+    @Autowired
+    private TreasureChallengePlayerService treasureChallengePlayerService;
+
     /**
      * 宝具副本详情
      *
@@ -73,6 +79,11 @@ public class TreasureCombatService implements GmCmdService {
         TreasureCombat treasureCombat = player.getTreasureCombat();
         if (Objects.nonNull(treasureCombat)) {
             builder.setCombat(treasureCombat.ser(true));
+
+            if (treasureCombat.getCurCombatId() > 0) {
+                // 挑战玩家信息
+                builder.setChallengePlayer(treasureChallengePlayerService.getChallengeData(player));
+            }
         }
         return builder.build();
     }
@@ -113,52 +124,28 @@ public class TreasureCombatService implements GmCmdService {
         GamePb4.DoTreasureCombatRs.Builder builder = GamePb4.DoTreasureCombatRs.newBuilder();
 
         int pass = combatInfo.getOrDefault(combatId, 0);
-        if (wipe == 1) {
-            if (pass == 0) {
-                throw new MwException(GameError.COMBAT_PASS_BEFORE.getCode(), String.format("挑战关卡时，当前关卡未通关, roleId: %s, combatId: %s", roleId, combatId));
-            }
-            int dailyWipeCnt = treasureCombat.getDailyWipeCnt();
-            if (dailyWipeCnt + 1 > roleDailyWipeMaxCnt(player)) {
-                throw new MwException(GameError.TREASURE_COMBAT_DAILY_PROMOTE_MAX.getCode(), String.format("挑战关卡时，已达每日扫荡上限, roleId: %s", roleId));
-            }
-            // 每日一次免费次数
-            if (dailyWipeCnt >= Constant.TREASURE_COMBAT_DAILY_WIPE_MAX) {
-                int wipePrice = wipePrice(dailyWipeCnt);
-                rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, wipePrice);
-                rewardDataManager.subGold(player, wipePrice, AwardFrom.TREASURE_COMBAT_WIPE_COST, combatId);
-            }
-            builder.setCost(player.lord.getGold());
-            treasureCombat.setDailyWipeCnt(dailyWipeCnt + 1);
-            int startTime = treasureCombat.getOnHook().getStartTime();
-            int now = TimeHelper.getCurrentSecond();
-            int interval = now - startTime;
-            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(sCombat, Constant.TREASURE_COMBAT_WIPE_AWARD), null, AwardFrom.TREASURE_COMBAT_WIPE_AWARD, interval, treasureCombat.getCurCombatId()));
-            //  扫荡埋点
-            LogLordHelper.commonLog("treasureCombatWipe", AwardFrom.TREASURE_COMBAT_WIPE_AWARD, player);
-        } else if (wipe == 0) {
+        if (wipe == 0) {
             if (pass != 0) {
                 throw new MwException(GameError.COMBAT_PASSED.getCode(), String.format("挑战关卡时，当前关卡已通关, roleId: %s, combatId: %s", roleId, combatId));
             }
+
+            // 关卡要求的领主等级限制
+            if (player.lord.getLevel() < sCombat.getNeedLv()) {
+                throw new MwException(GameError.TREASURE_COMBAT_LEVELS_NOT_UNLOCK.getCode(), String.format("挑战宝具副本关卡, 领主等级不足, roleId: %s, combatId: %s, needLv: %s, lv: %s", roleId, combatId, sCombat.getNeedLv(), player.lord.getLevel()));
+            }
+
             // 将领校验和阵型记录
             checkHeroCombat(player, heroIds);
-            treasureCombat.swapHeroForm(heroIds);
-            // 每日推进副本校验
-            if (treasureCombat.getDailyPromoteCnt() >= Constant.TREASURE_COMBAT_DAILY_PROMOTE_MAX) {
-                throw new MwException(GameError.TREASURE_COMBAT_DAILY_PROMOTE_MAX.getCode(), String.format("挑战关卡时，已达每日推进上限, roleId: %s", roleId));
-            }
-            // 增益添加到Fighter#Force#AttrData中, 只参与计算
-            Fighter attacker = fightService.createTreasureCombatFighter(player, heroIds);
+            Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
             Fighter defender = fightService.createNpcFighter(sCombat.getForm());
+
             FightLogic fightLogic = new FightLogic(attacker, defender, true);
             fightLogic.fight();
             int winState = fightLogic.getWinState();
             if (winState == 1) {
-                // 每日推进进度记录
                 combatInfo.put(combatId, 1);
                 treasureCombat.promoteCombat(combatId);
                 builder.addAllAward(rewardDataManager.addAwardDelaySync(player, sCombat.getFirstAward(), null, AwardFrom.TREASURE_COMBAT_PROMOTE_AWARD));
-                // 副本埋点
-                LogLordHelper.commonLog("treasureCombatPromote", AwardFrom.TREASURE_COMBAT_PROMOTE_AWARD, player, combatId);
                 if (CheckNull.nonEmpty(sCombat.getSectionAward())) {
                     // 可领取章节奖励
                     treasureCombat.getSectionStatus().put(sCombat.getCombatId(), 1);
@@ -170,13 +157,25 @@ public class TreasureCombatService implements GmCmdService {
             } else {
                 // do nothing
             }
+
+            // 副本埋点
+            LogLordHelper.treasureCombatPromote("treasureCombatPromote", AwardFrom.TREASURE_COMBAT_PROMOTE_AWARD, player, combatId, winState, player.lord.getFight(), ListUtils.toString(heroIds));
             builder.setResult(winState);
             builder.setRecord(fightLogic.generateRecord());
             builder.addAllAtkHero(fightSettleLogic.stoneCombatCreateRptHero(player, attacker.forces));
             builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         } else if (wipe == 2) {
+            checkOpenNextSection(player, treasureCombat);
             Integer nextSectionId = StaticTreasureWareDataMgr.getNextSectionId(treasureCombat.getSectionId());
             if (CheckNull.isNull(nextSectionId)) {
+                throw new MwException(GameError.NO_CONFIG.getCode(), String.format("解锁新章节时，无关卡配置, roleId: %s, combatId: %s, sectionId: %s", roleId, combatId, treasureCombat.getSectionId()));
+            }
+
+            StaticTreasureCombat staticTreasureCombat = StaticTreasureWareDataMgr.getTreasureCombatMap().values().stream()
+                    .filter(s -> s.getPreId() == treasureCombat.getCurCombatId())
+                    .findFirst()
+                    .orElse(null);
+            if (CheckNull.isNull(staticTreasureCombat)) {
                 throw new MwException(GameError.NO_CONFIG.getCode(), String.format("解锁新章节时，无关卡配置, roleId: %s, combatId: %s, sectionId: %s", roleId, combatId, treasureCombat.getSectionId()));
             }
 
@@ -189,15 +188,15 @@ public class TreasureCombatService implements GmCmdService {
     }
 
     /**
-     * 购买价格
-     * @param wipeCount 扫荡次数
-     * @return 价格
+     * 检测能否开启下一章节
      */
-    private int wipePrice(int wipeCount) {
-        int maxKey = Constant.TREASURE_WIPE_INCREASE_PRICE.keySet().stream().max(Integer::compareTo).get();
-        // 购买价格
-        int key = Math.min(maxKey, wipeCount);
-        return Constant.TREASURE_WIPE_INCREASE_PRICE.get(key);
+    private void checkOpenNextSection(Player player, TreasureCombat treasureCombat) {
+        int curCombatId = treasureCombat.getCurCombatId();
+        int sectionId = treasureCombat.getSectionId();
+        Integer maxCombatId = StaticTreasureWareDataMgr.getTreasureCombatMaxCombatMap().getOrDefault(sectionId, 0);
+        if (curCombatId != maxCombatId) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("宝具副本 - 非最后一个关卡不能开启新章节, roleId: %s, combatId: %s, sectionId: %s", player.getLordId(), curCombatId, sectionId));
+        }
     }
 
     /**
@@ -207,23 +206,54 @@ public class TreasureCombatService implements GmCmdService {
      * @param cnt     次数
      * @return 奖励
      */
-    private List<List<Integer>> addNaturalAward(StaticTreasureCombat sCombat, int cnt) {
+    public List<List<Integer>> addNaturalAward(Player player, StaticTreasureCombat sCombat, int cnt) {
         List<List<Integer>> list = new ArrayList<>();
         List<List<Integer>> minuteAward = sCombat.getMinuteAward();
         for (List<Integer> award : minuteAward) {
             list.add(Arrays.asList(award.get(0), award.get(1), award.get(2) * cnt));
         }
-        List<List<Integer>> minuteRandomAward = sCombat.getMinuteRandomAward();
-        List<Integer> randomAward;
+
         while (cnt-- > 0) {
-            randomAward = RandomUtil.getRandomByWeightAndRatio(minuteRandomAward, 3, false, (int) Constant.TEN_THROUSAND);
-            if (ObjectUtils.isEmpty(randomAward))
-                continue;
-            list.add(randomAward);
+            List<List<Integer>> minuteRandomAward = handRandomPropNumLimit(player, sCombat);
+            for (List<Integer> awardList : minuteRandomAward) {
+                if (awardList.size() >= 4 && RandomHelper.isHitRangeIn10000(awardList.get(3))) {
+                    list.add(Arrays.asList(awardList.get(0), awardList.get(1), awardList.get(2)));
+
+                    // 记录特殊道具的掉落个数
+                    if (awardList.get(0) == AwardType.PROP && TREASURE_SPECIAL_PROPS_ID.contains(awardList.get(1))) {
+                        player.getTreasureCombat().getRandomPropNumMap().merge(awardList.get(1), awardList.get(2), Integer::sum);
+                    }
+                }
+            }
         }
 
         return RewardDataManager.mergeAward(list);
     }
+
+    /**
+     * 随机掉落数量限制处理, 1607每天最多掉2次, 1608每天最多掉1次
+     */
+    private List<List<Integer>> handRandomPropNumLimit(Player player, StaticTreasureCombat sCombat) {
+        // 对1607、1608材料的掉落数量做限制
+        if (Objects.isNull(player.getTreasureCombat())) {
+            return Collections.emptyList();
+        }
+        Map<Integer, Integer> randomPropNumMap = player.getTreasureCombat().getRandomPropNumMap();
+
+        List<Integer> removePropIdList = TREASURE_SPECIAL_PROPS_OUTPUT_NUM.stream()
+                .filter(l -> l.size() >= 2 && randomPropNumMap.getOrDefault(l.get(0), 0) >= l.get(1))
+                .map(l -> l.get(0))
+                .collect(Collectors.toList());
+
+        if (removePropIdList.isEmpty()) {
+            return sCombat.getMinuteRandomAward();
+        }
+
+        return sCombat.getMinuteRandomAward().stream()
+                .filter(l -> !removePropIdList.contains(l.get(1)))
+                .collect(Collectors.toList());
+    }
+
 
     /**
      * 副本挑战将领判断
@@ -233,74 +263,19 @@ public class TreasureCombatService implements GmCmdService {
      * @throws MwException 异常
      */
     private void checkHeroCombat(Player player, List<Integer> heroIds) throws MwException {
-        long roleId = player.roleId;
-        if (heroIds.size() > player.getTreasureCombat().getUnLockHeroPos() || heroIds.size() < 1) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("挑战关卡时, 将领数量有误, roleId: %s, heroSize: %s", roleId, heroIds.size()));
+        // 检测上阵英雄
+        List<Integer> battleHeroId = Arrays.stream(player.heroBattle)
+                .filter(i -> i > 0)
+                .boxed()
+                .collect(Collectors.toList());
+
+        List<Integer> heroList = heroIds.stream()
+                .filter(id -> id > 0)
+                .collect(Collectors.toList());
+
+        if (!battleHeroId.containsAll(heroList)) {
+            throw new MwException(GameError.PARAM_ERROR, "宝具副本挑战关卡 - 上阵英雄错误; roleId = " + player.getLordId() + "heroIdList = " + heroIds);
         }
-
-        int count = 0;
-        for (int heroId : heroIds) {
-            if (heroId == 0)
-                continue;
-            Hero hero = player.heros.get(heroId);
-            if (hero == null) {
-                throw new MwException(GameError.HERO_NOT_FOUND.getCode(), String.format("挑战关卡时, 选择的将领不存在, roleId: %s, heroId: %s", roleId, heroId));
-            }
-            ++count;
-        }
-
-        if (count > player.getTreasureCombat().getUnLockHeroPos()) {
-            throw new MwException(GameError.TREASURE_COMBAT_HERO_OUT_OF_INDEX.getCode(), String.format("挑战关卡时, 选择的将领不存在," +
-                    " roleId: %s, heroIds: %s", roleId, StringUtils.join(heroIds.toArray(), ",")));
-        }
-    }
-
-
-    /**
-     * 解锁宝具副本将领上阵位
-     *
-     * @param roleId 玩家
-     * @param index  要解锁的上阵位
-     * @return 副本数据
-     * @throws MwException 异常
-     */
-    public GamePb4.TreasureUnlockHeroPosRs treasureUnlockHeroPos(long roleId, int index) throws MwException {
-        Player player = playerDataManager.checkPlayerIsExist(roleId);
-        treasureWareService.checkOpenTreasureWare(player);
-
-        TreasureCombat treasureCombat = player.getTreasureCombat();
-        if (index > 8 || index < treasureCombat.getUnLockHeroPos()) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("解锁副本将领上阵位, 位置错误, roleId: %s, index: %s", roleId, index));
-        }
-
-        List<Integer> conf = Constant.TREASURE_UNLOCK_HERO_POS_CONF.stream().filter(c -> c.get(0) == index).findAny().orElse(null);
-        if (CheckNull.isEmpty(conf)) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), String.format("解锁副本将领上阵位, 未找到对应位置的配置, roleId: %s, index: %s", roleId, index));
-        }
-        int combatId = conf.get(1);
-        if (treasureCombat.getCombatInfo().getOrDefault(combatId, 0) == 0) {
-            throw new MwException(GameError.COMBAT_PASS_BEFORE.getCode(), String.format("挑战关卡时，当前关卡未通关, roleId: %s, combatId: %s", roleId, combatId));
-        }
-
-        int type = conf.get(2);
-        int id = conf.get(3);
-        int count = conf.get(4);
-
-        rewardDataManager.checkAndSubPlayerRes(player, type, id, count, AwardFrom.TREASURE_UNLOCK_HERO_POS, true);
-        treasureCombat.setUnLockHeroPos(index);
-
-        return GamePb4.TreasureUnlockHeroPosRs.newBuilder().setCombat(treasureCombat.ser(true)).build();
-    }
-
-    /**
-     * 玩家每日最大可扫荡次数
-     *
-     * @param player 玩家
-     * @return 最大扫荡次数
-     */
-    private int roleDailyWipeMaxCnt(Player player) {
-        StaticVip sVip = StaticVipDataMgr.getVipMap(player.lord.getVip());
-        return Objects.isNull(sVip) ? Constant.TREASURE_COMBAT_DAILY_WIPE_MAX : Constant.TREASURE_COMBAT_DAILY_WIPE_MAX + sVip.getHangUpTime();
     }
 
     /**
@@ -348,7 +323,7 @@ public class TreasureCombatService implements GmCmdService {
         int count = interval / Constant.TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
         GamePb4.TreasureOnHookAwardRs.Builder builder = GamePb4.TreasureOnHookAwardRs.newBuilder();
         if (count > 0) {
-            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(sCombat, count), null, AwardFrom.TREASURE_ON_HOOK_AWARD, interval, treasureCombat.getCurCombatId()));
+            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(player, sCombat, count), null, AwardFrom.TREASURE_ON_HOOK_AWARD, interval, treasureCombat.getCurCombatId()));
             onHook.setStartTime(TimeHelper.getCurrentSecond());
         }
 
@@ -358,7 +333,8 @@ public class TreasureCombatService implements GmCmdService {
 
     /**
      * 领取章节奖励
-     * @param roleId 角色id
+     *
+     * @param roleId   角色id
      * @param combatId 章节id
      * @return 奖励
      * @throws MwException 异常
@@ -387,7 +363,7 @@ public class TreasureCombatService implements GmCmdService {
         GamePb4.TreasureSectionAwardRs.Builder builder = GamePb4.TreasureSectionAwardRs.newBuilder();
         builder.setCombatId(combatId);
         builder.setStatus(2);
-        builder.addAllAward(rewardDataManager.addAwardDelaySync(player, sectionAward, null, AwardFrom.TREASURE_COMBAT_PROMOTE_AWARD, "treasureCombatSection"));
+        builder.addAllAward(rewardDataManager.addAwardDelaySync(player, sectionAward, null, AwardFrom.TREASURE_ON_HOOK_AWARD));
         return builder.build();
     }
 
@@ -402,7 +378,7 @@ public class TreasureCombatService implements GmCmdService {
      * @param change
      * @throws MwException
      */
-    public void useProp(int propCount, Player player, List<List<Integer>> addAward, int propId, List<CommonPb.Award> listAward, ChangeInfo change)  throws MwException {
+    public void useProp(int propCount, Player player, List<List<Integer>> addAward, int propId, List<CommonPb.Award> listAward, ChangeInfo change) throws MwException {
         if (player.getTreasureCombat().getCurCombatId() <= 0) {
             throw new MwException(GameError.COMBAT_PASS_BEFORE.getCode(), String.format("领取章节奖励时，当前关卡未通关, roleId: %s, curCombatId: %s, propId: %s",
                     player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
@@ -460,22 +436,39 @@ public class TreasureCombatService implements GmCmdService {
                 AwardFrom.USE_PROP, propId));
     }
 
+    /**
+     * 转点处理
+     */
+    public void acrossTheDayProcess(Player p) {
+        if (Objects.isNull(p)) {
+            return;
+        }
+        TreasureCombat treasureCombat = p.getTreasureCombat();
+        if (Objects.nonNull(treasureCombat)) {
+            // 清空每日掉落数据
+            treasureCombat.getRandomPropNumMap().clear();
+        }
+    }
 
     @GmCmd("treasureWareCombat")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
         switch (params[0]) {
-            case "naturalAward":
-                int forEachCount = Integer.parseInt(params[1]);
-                int randomCount = Integer.parseInt(params[2]);
-                long start = System.currentTimeMillis();
-                LogUtil.error(String.format("暴力随机测试, start: %s", start));
-                StaticTreasureCombat sCombat = StaticTreasureWareDataMgr.getTreasureCombatMap(8012);
-                for (int i = 0; i < forEachCount; i++) {
-                    addNaturalAward(sCombat, randomCount);
+            case "addCombatAward":
+                int combatId = Integer.parseInt(params[1]);
+                int times = Integer.parseInt(params[2]);
+                StaticTreasureCombat sCombat = StaticTreasureWareDataMgr.getTreasureCombatMap(combatId);
+                if (sCombat == null) {
+                    LogUtil.error("无效的宝具副本combatId: " + combatId);
+                    return;
                 }
-                long end = System.currentTimeMillis();
-                LogUtil.error(String.format("暴力随机测试, end: %s, elapsed_time: %s", end, end - start));
+
+                List<List<Integer>> lists = addNaturalAward(player, sCombat, times);
+                rewardDataManager.addAwardDelaySync(player, lists, null, AwardFrom.TREASURE_ON_HOOK_AWARD, times * Constant.TREASURE_WARE_RES_OUTPUT_TIME_UNIT, combatId);
+
+                Map<Integer, Integer> resultMap = new HashMap<>();
+                lists.forEach(l -> resultMap.merge(l.get(1), l.get(2), Integer::sum));
+                LogUtil.error("奖励结果", resultMap);
                 break;
             case "clear":
                 player.lord.setTreasureWareGolden(0);
@@ -484,23 +477,24 @@ public class TreasureCombatService implements GmCmdService {
                 break;
             case "clearCombat":
                 player.setTreasureCombat(new TreasureCombat());
+                player.setTreasureChallengePlayer(new TreasureChallengePlayer());
                 break;
             case "setCombatId":
-                player.getTreasureCombat().setCurCombatId(Integer.parseInt(params[1]));
+                StaticTreasureCombat staticTreasureCombat = StaticTreasureWareDataMgr.getTreasureCombatMap(Integer.parseInt(params[1]));
+                if (staticTreasureCombat != null) {
+                    TreasureCombat treasureCombat = player.getTreasureCombat();
+                    treasureCombat.setCurCombatId(staticTreasureCombat.getCombatId());
+                    treasureCombat.setSectionId(staticTreasureCombat.getSectionId());
+
+                    Map<Integer, Integer> combatInfo = treasureCombat.getCombatInfo();
+                    StaticTreasureWareDataMgr.getTreasureCombatMap().keySet().forEach(id -> {
+                        if (id <= staticTreasureCombat.getCombatId()) {
+                            combatInfo.put(id, 1);
+                        }
+                    });
+                }
+                break;
         }
     }
 
-    /**
-     * 转点处理
-     * @param p 玩家
-     */
-    public void acrossTheDayProcess(Player p) {
-        if (Objects.isNull(p)) {
-            return;
-        }
-        TreasureCombat treasureCombat = p.getTreasureCombat();
-        // 重置每日扫荡次数和每日推进副本次数
-        treasureCombat.setDailyWipeCnt(0);
-        treasureCombat.setDailyPromoteCnt(0);
-    }
 }

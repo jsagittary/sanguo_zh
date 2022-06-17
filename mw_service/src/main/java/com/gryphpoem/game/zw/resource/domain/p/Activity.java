@@ -15,6 +15,7 @@ import com.gryphpoem.game.zw.resource.util.Turple;
 
 public class Activity {
     private int activityId;
+    private int activityKeyId;
     private Map<Integer, Long> statusCnt = new HashMap<>();// key, cnt完成多少次 0排行值 1时间戳 3最高排名  配表中clean=1会每日清除 key(0 1 3)不可用
     private Map<Integer, Integer> statusMap = new HashMap<>();// 活动keyID,领取状态1已领取 clean=1 每日清理
     private Map<Integer, Integer> propMap = new HashMap<>(); // 设置每日重置 clean=1 每日清理
@@ -201,10 +202,12 @@ public class Activity {
             this.activityAuction = new ActivityAuction();
             this.activityAuction.deserialization(tmp);
         });
+        this.activityKeyId = e.getActKeyId();
     }
 
     public Activity(ActivityBase activityBase, int begin) {
         this.activityId = activityBase.getActivityId();
+        this.activityKeyId = activityBase.getPlanKeyId();
         this.activityType = activityBase.getStaticActivity().getType();
         this.beginTime = begin;
         this.statusMap = new HashMap<>();
@@ -249,6 +252,7 @@ public class Activity {
     public void autoDayClean(ActivityBase activityBase) {
         StaticActivity sa = activityBase.getStaticActivity();
         this.activityId = activityBase.getActivityId();
+        this.activityKeyId = activityBase.getPlanKeyId();
         if (sa.getClean() == ActivityConst.CLEAN_DAY) {
             int nowDay = TimeHelper.getCurrentDay();
             if (this.endTime != nowDay) {
@@ -322,5 +326,13 @@ public class Activity {
 
     public Map<String, String> getDataMap() {
         return dataMap;
+    }
+
+    public int getActivityKeyId() {
+        return activityKeyId;
+    }
+
+    public void setActivityKeyId(int activityKeyId) {
+        this.activityKeyId = activityKeyId;
     }
 }

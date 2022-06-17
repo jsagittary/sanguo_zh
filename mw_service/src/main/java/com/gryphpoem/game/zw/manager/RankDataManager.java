@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 
 @Component
 public class RankDataManager {
@@ -48,9 +49,9 @@ public class RankDataManager {
     @Autowired
     private SeasonService seasonService;
 
-    // //战斗力
-    // public RankList fightRankList = new RankList();
-    // public Set<Long> fightRankSet = new HashSet<>();
+     //战斗力
+     public RankList fightRankList = new RankList();
+     public Set<Long> fightRankSet = new HashSet<>();
     //
     // // 等级
     // public RankList lvRankList = new RankList();
@@ -113,7 +114,7 @@ public class RankDataManager {
             return;
         }
         Lord lord = player.lord;
-        // fightRankList.add(lord);
+        fightRankList.add(lord);
         // lvRankList.add(lord);
         // exploitList.add(lord);
         // ranksList.add(lord);
@@ -149,10 +150,10 @@ public class RankDataManager {
     }
 
     public void sort() {
-        // Collections.sort(fightRankList.getList(), new ComparatorFight());
-        // while (fightRankList.getSize() > MAX_RANK_NUM) {
-        // fightRankList.removeLast();
-        // }
+        Collections.sort(fightRankList.getList(), new ComparatorFight());
+        while (fightRankList.getSize() > MAX_RANK_NUM) {
+        fightRankList.removeLast();
+        }
         //
         // Collections.sort(lvRankList.getList(), new ComparatorLv());
         // while (lvRankList.getSize() > MAX_RANK_NUM) {
@@ -188,9 +189,9 @@ public class RankDataManager {
             pitchComabtType1RankList.removeLast();
         }
 
-        // for (Lord lord : fightRankList.getList()) {
-        // fightRankSet.add(lord.getLordId());
-        // }
+        for (Lord lord : fightRankList.getList()) {
+            fightRankSet.add(lord.getLordId());
+        }
         // for (Lord lord : lvRankList.getList()) {
         // lvRankSet.add(lord.getLordId());
         // }
@@ -221,6 +222,7 @@ public class RankDataManager {
      */
     public void setFight(Lord lord) {
         // updateRank(lord, fightRankList, fightRankSet, RankType.type_1, new ComparatorFight());
+        refreshBaseRank(lord, fightRankList, fightRankSet, new ComparatorFight());
         setComplex(lord);
         setAgentAllLv(lord);
         setPitchType1CombatId(lord);
@@ -425,9 +427,9 @@ public class RankDataManager {
     public GetRankRs getRank(Lord myLord, int type, int page, int scope, int camp) {
         GetRankRs.Builder builder = GetRankRs.newBuilder();
         switch (type) {
-            // case RankType.type_1: // 战力榜
-            // processRank(myLord, type, page, scope, fightRankList, builder);
-            // break;
+            case RankType.type_1: // 战力榜
+                processRank(myLord, type, page, scope, camp, fightRankList, builder);
+            break;
             // case RankType.type_2:
             // processRank(myLord, type, page, scope, lvRankList, builder);
             // break;
@@ -513,6 +515,55 @@ public class RankDataManager {
     }
 
     /**
+     * 获取子排行榜
+     * @param rankList 排行榜
+     * @param startRank 开始的排名
+     * @param limit 个数
+     */
+    public List<Lord> getSubRank(RankList rankList, int startRank, int limit) {
+        LinkedList<Lord> list = rankList.getList();
+        if (startRank > list.size() || limit == 0) {
+            return Collections.emptyList();
+        }
+
+        int startIndex = Math.max(0, startRank - 1);
+        int endIndex = Math.min(list.size(), startIndex + limit);
+        return list.subList(startIndex, endIndex);
+    }
+
+    /**
+     * 根据条件获取子排行榜
+     * @param rankList 排行榜
+     * @param predicate 条件 <排名, 领主>
+     */
+    public List<Lord> getSubRankByCondition(RankList rankList, BiPredicate<Integer, Lord> predicate, int limit) {
+        int curRank = 1;
+        boolean start = false;
+        List<Lord> result = new ArrayList<>(limit);
+        ListIterator<Lord> it = rankList.getList().listIterator();
+        while (it.hasNext()) {
+            Lord lord = it.next();
+            if (predicate.test(curRank, lord)) {
+                if (!start) {
+                    start = true;
+                }
+                result.add(lord);
+
+                if (result.size() >= limit) {
+                    // 达到需求的个数后提前结束
+                    break;
+                }
+            } else if (start){
+                // 不符合条件后提前结束
+                break;
+            }
+
+            curRank++;
+        }
+        return result;
+    }
+
+    /**
      * 获取自己的排名和榜总人数
      * 
      * @param type
@@ -522,8 +573,8 @@ public class RankDataManager {
      */
     private int[] getPlayerRank(int type, Lord myLord, int scope, int camp) {
         switch (type) {
-            // case RankType.type_1:
-            // return getMyRankAndAllSize(fightRankList, myLord, scope);
+            case RankType.type_1:
+                return getMyRankAndAllSize(fightRankList, myLord, scope, camp);
             // case RankType.type_2:
             // return getMyRankAndAllSize(lvRankList, myLord, scope);
             // case RankType.type_3:
@@ -552,8 +603,8 @@ public class RankDataManager {
      */
     public int getMyRankByTypeAndScop(int type, Lord myLord, int scope) {
         switch (type) {
-            // case RankType.type_1:
-            // return getMyRank(fightRankList, myLord, scope);
+            case RankType.type_1:
+                return getMyRank(fightRankList, myLord, scope);
             // case RankType.type_2:
             // return getMyRank(lvRankList, myLord, scope);
             // case RankType.type_3:

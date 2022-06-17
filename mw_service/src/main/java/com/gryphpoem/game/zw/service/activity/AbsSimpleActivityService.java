@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.activity;
 
 import com.google.protobuf.GeneratedMessage;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.pb.ActivityPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
@@ -9,6 +10,7 @@ import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.Objects;
 
@@ -75,4 +77,15 @@ public abstract class AbsSimpleActivityService extends AbsActivityService {
         return baseBuilder.build();
     }
 
+    @Override
+    public boolean isAllGainActivity(Player player, ActivityBase actBase, Activity activity) {
+        return false;
+    }
+
+    public static int getTipsInActList(Player player, int actType) {
+        AbsActivityService absActivityService = DataResource.ac.getBean(ActivityTemplateService.class).getActivityService(actType);
+        if (CheckNull.isNull(absActivityService))
+            return 0;
+        return absActivityService.getTips(player, actType);
+    }
 }

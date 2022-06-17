@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.resource.domain.s;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import org.springframework.util.ObjectUtils;
 
@@ -208,13 +209,15 @@ public class StaticTreasureWare {
         }));
     }
 
-    public int getMaxRank() {
-        return this.numProb.stream().max((a, b) -> {
-            if (a.get(0) > b.get(0)) {
-                return 1;
-            } else return -1;
-        }).get().get(0);
-    }
+//    public int getMaxRank() {
+//        Objects.requireNonNull(numProb, String.format("treasure ware id :%d, numProb must not null", id));
+//        return numProb.stream().mapToInt(iter -> iter.get(0)).max().orElse(1);
+////        return this.numProb.stream().max((a, b) -> {
+////            if (a.get(0) > b.get(0)) {
+////                return 1;
+////            } else return -1;
+////        }).get().get(0);
+//    }
 
     public Integer getSpecialId(int addProbability) {
         if (!RandomHelper.isHitRangeIn10000(this.specialAttr + addProbability)) {
@@ -237,6 +240,21 @@ public class StaticTreasureWare {
                                 "宝具随机专属属性比例总权重: " + specialTotalWeight + ", random=" + random + ", temp=" + temp);
                         return list.get(0);
                     }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public Integer checkSpecialId(int specialId) {
+        if (CheckNull.isEmpty(specialProb))
+            return null;
+
+        for (List<Integer> list : specialProb) {
+            if (list.size() > 1) {
+                if (specialId == list.get(0)) {
+                    return specialId;
                 }
             }
         }

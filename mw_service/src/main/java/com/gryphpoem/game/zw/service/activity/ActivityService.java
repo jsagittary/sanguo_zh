@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.activity;
 
 import com.alibaba.fastjson.JSONObject;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -109,11 +110,12 @@ public class ActivityService {
         List<ActivityBase> list = StaticActivityDataMgr.getActivityList();
         GetActivityListRs.Builder builder = GetActivityListRs.newBuilder();
         Date now = new Date();
+        PersonalActService.initData(player);
         for (ActivityBase actBase : list) {
             try {
                 int activityType = actBase.getActivityType();
                 AbsActivityService absActivityService = activityTemplateService.getActivityService(activityType);
-                if (Objects.nonNull(absActivityService) && !absActivityService.inChannel(player, actBase))
+                if (Objects.nonNull(absActivityService) && !absActivityService.inChannel(player, actBase) && !absActivityService.functionOpen(player, activityType))
                     continue;
                 if (ActivityConst.ACT_LIGHTNING_WAR == activityType) {// 闪电战活动
                     actBase = changeActivityTime(actBase);
@@ -126,6 +128,8 @@ public class ActivityService {
                 if (activity == null) {
                     continue;
                 }
+                if (player.getPersonalActs().containActType(activityType))
+                    continue;
                 Date awardBeginTime = actBase.getAwardBeginTime();
                 int tips = 0;
                 if (ActivityConst.ACT_COMMAND_LV == activityType || ActivityConst.ACT_LEVEL == activityType
@@ -420,6 +424,8 @@ public class ActivityService {
                     continue;
                 }
                 boolean cangetAward = true;// 可领奖，不可领奖
+                int tips_ = AbsSimpleActivityService.getTipsInActList(player, activityType);
+                tips = tips_ == 0 ? tips : tips_;
                 if(ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType){
                     builder.addActivity(activityChristmasService.buildActivityPb(activity,actBase,cangetAward,tips));
                 }else {
@@ -431,6 +437,44 @@ public class ActivityService {
                 continue;
             }
         }
+
+        //个人活动信息，不随主服活动变化
+        int tips = 0;
+        for (ActivityBase ab : StaticActivityDataMgr.getPersonalActivityList()) {
+            try {
+                int activityType = ab.getActivityType();
+                int open = ab.getBaseOpen();
+                // 活动未开启
+                if (open == ActivityConst.OPEN_CLOSE || ab.isBaseDisplay()) {
+                    continue;
+                }
+                Activity activity = activityDataManager.getActivityInfo(player, activityType);
+                if (activity == null) {
+                    continue;
+                }
+                if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType)) { // 部分活动结束后还显示
+                    continue;
+                }
+                if (!player.getPersonalActs().containActKey(activityType, ab.getPlanKeyId()))
+                    continue;
+                AbsActivityService abService = DataResource.ac.getBean(ActivityTemplateService.class).getActivityService(activityType);
+                if (CheckNull.isNull(abService))
+                    continue;
+                if (!abService.functionOpen(player, activityType)) {
+                    continue;
+                }
+                if (abService.isAllGainActivity(player, ab, activity))
+                    continue;
+                int tips_ = AbsSimpleActivityService.getTipsInActList(player, activityType);
+                tips = tips_ == 0 ? tips : tips_;
+                builder.addActivity(PbHelper.createActivityPb(ab, true, tips));
+            } catch (Exception error) {
+                LogUtil.error("---------警告活动列表出错----------- actType:", ab.getActivityType());
+                LogUtil.error("---------警告活动列表出错-----------", error);
+                continue;
+            }
+        }
+
         Date beginTime = TimeHelper.getDateZeroTime(player.account.getCreateDate());
         int dayiy = DateHelper.dayiy(beginTime, now);
         builder.setDay(dayiy);
@@ -2777,7 +2821,7 @@ public class ActivityService {
      * @param awardList
      * @param integralIndex
      */
-    private void getTurnplatePoint(int integral, List<Integer> awardList, int integralIndex) {
+    public void getTurnplatePoint(int integral, List<Integer> awardList, int integralIndex) {
         if (awardList.size() >= integralIndex + 1) {
             integral += awardList.get(integralIndex);
         }
@@ -2790,7 +2834,7 @@ public class ActivityService {
      * @param player
      * @param turnplat
      */
-    private List<Integer> doSweepstakesAwards(StaticTurnplateConf conf, Player player, ActTurnplat turnplat) {
+    public List<Integer> doSweepstakesAwards(StaticTurnplateConf conf, Player player, ActTurnplat turnplat) {
         List<Integer> awardList = null;
         boolean falg = true;
         while (falg) {
@@ -6618,4 +6662,23 @@ public class ActivityService {
         }
     }
 
+    /**
+     * 合服处理活动
+     *
+     * @param player
+     * @param now
+     */
+    public void combineServerAct(Player player, int now) {
+        if (CheckNull.isEmpty(player.activitys)) {
+            return;
+        }
+
+        for (int actType : ActivityConst.COMBINED_SERVICE_REMOVED_ACT_TYPE) {
+            Activity activity = player.activitys.get(actType);
+            if (CheckNull.isNull(activity))
+                continue;
+
+            activityDataManager.processCombineServerAct(player, activity.getActivityType(), now);
+        }
+    }
 }

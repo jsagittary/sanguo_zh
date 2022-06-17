@@ -18,7 +18,7 @@
 		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},
 		#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},
 		#{awards},#{supEquips},#{supEquipQue},#{opts},#{wallNpc},#{effects},#{chemical},
-		#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares},#{drawCardData},#{chapterTask}),#{functionPlanData}
+		#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares},#{drawCardData},#{chapterTask},#{functionPlanData})
 	</insert>
 
 	<insert id="insertFullData" parameterType="DataNew">
@@ -27,7 +27,7 @@
 		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,crossData,totem,treasureWares,drawCardData,chapterTask,functionPlanData)
 		values(#{lordId},#{maxKey},#{roleData},#{heros},#{equips},#{medals},#{props},#{buildQue},#{tasks},#{mill},#{gains},#{factory},#{army},
 		combats=#{combats},#{equipQue},#{typeInfo},#{tech},#{shop},#{combatFb},#{acquisition},#{awards},#{supEquips},#{supEquipQue},
-		,#{opts},#{wallNpc},#{effects},#{chemical},#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares},#{drawCardData}),#{chapterTask},#{functionPlanData})
+		,#{opts},#{wallNpc},#{effects},#{chemical},#{treasure},#{friends},#{masterApprentice},#{cabinet},#{trophy},#{playerExt},#{day7Act},#{activity},#{signin},#{signInExt},#{crossData},#{totem},#{treasureWares},#{drawCardData},#{chapterTask},#{functionPlanData})
 	</insert>
 
 <!--	<insert id="insertFullData" parameterType="DataNew">-->

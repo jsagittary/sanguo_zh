@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.service.activity.AbsGiftBagActivityService;
 import com.gryphpoem.game.zw.service.activity.ActivityBoxOfficeService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -101,6 +102,11 @@ public class PayService {
      * 音乐活动解锁售票处
      */
     public static final int FLAG_UNLOCK_BOX_OFFICE = 14;
+
+    /**
+     * 神兵宝具礼包
+     */
+    public static final int MAGIC_TREASURE_WARE_GIFT_BAG = 15;
 
 
     @Autowired
@@ -349,8 +355,34 @@ public class PayService {
             rs = processPaySkinEncoreActivity(player, pay, sPay);
         } else if (FLAG_UNLOCK_BOX_OFFICE == banFlag) {
             rs = processPayBoxOfficeActivity(player, pay, sPay);
+        } else if (MAGIC_TREASURE_WARE_GIFT_BAG == banFlag) {
+            processActGiftBgActivity(player, pay, sPay);
         }
         return rs;
+    }
+
+    /**
+     * 购买活动礼包
+     *
+     * @param player
+     * @param pay
+     * @param sPay
+     * @return
+     */
+    private PayConfirmRq processActGiftBgActivity(Player player, Pay pay, StaticPay sPay) {
+//        //充值获得钻石处理
+//        if (sPay.getTopup() > 0) {
+//            rewardDataManager.sendRewardSignle(player, AwardType.MONEY, AwardType.Money.GOLD, sPay.getTopup(),
+//                    AwardFrom.ANNIVERSARY_SKIN_ENCORE_RECHARGE, pay.getSerialId(), sPay.getPayId(), pay.getAmount());
+//        }
+        // vip处理
+        if (sPay.getVipexp() > 0) {
+            vipProcess(player, sPay);
+        }
+        AbsGiftBagActivityService.buyActGiftBag(player, sPay);
+        // 充值成功的同步数据(礼包购买成功)
+        syncPaybackSuc(player, pay.getSerialId(), pay.getAmount(), sPay.getBanFlag(), sPay.getTopup(), sPay.getPayId());
+        return payBackReturn(player, pay, sPay, sPay.getTopup());
     }
 
     private PayConfirmRq processPayBoxOfficeActivity(Player player, Pay pay, StaticPay sPay) {

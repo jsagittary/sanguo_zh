@@ -134,7 +134,8 @@ public class ActTurnplat extends Activity {
         ChatDataManager chatDataManager = DataResource.ac.getBean(ChatDataManager.class);
         if(this.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR
                 || this.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
-                || this.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE){
+                || this.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE
+                || this.getActivityType() == ActivityConst.ACT_MAGIC_TREASURE_WARE){
             chatDataManager.getActivityChat(this.getActivityType()).clear();
         }
         return true;

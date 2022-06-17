@@ -1,7 +1,11 @@
 package com.gryphpoem.game.zw.dataMgr;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
+import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
+import com.gryphpoem.game.zw.manager.GlobalDataManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.dao.impl.s.StaticDataDao;
@@ -9,10 +13,14 @@ import com.gryphpoem.game.zw.resource.dao.impl.s.StaticIniDao;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
+import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.ListUtils;
 import com.gryphpoem.game.zw.service.ActivityTriggerService;
 import com.gryphpoem.game.zw.service.activity.ActivityQuestionnaireService;
+import com.gryphpoem.game.zw.service.activity.PersonalActService;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
@@ -34,6 +42,9 @@ public class StaticActivityDataMgr {
     private static Map<Integer, StaticActivityOpen> activityOpenMap;
 
     private static List<ActivityBase> activityList;
+
+    /** 个人活动列表*/
+    private static Map<Integer, ActivityBase> personalActMap = new HashMap<>();
 
     private static Map<Integer, List<StaticActivityTime>> activityTimeMap = new HashMap<>();
 
@@ -789,12 +800,14 @@ public class StaticActivityDataMgr {
         // 开服时间
         Date openTime = DateHelper.parseDate(serverSetting.getOpenTime());
         List<ActivityBase> activityList = new ArrayList<>();
+        Map<Integer, ActivityBase> personalActMapCopy = new HashMap<>();
         for (StaticActivityPlan e : planList) {
             int activityType = e.getActivityType();
             StaticActivity staticActivity = activityMap.get(activityType);
             if (staticActivity == null) {
                 continue;
             }
+
             int moldId = e.getMoldId();
             if (activityMoldId != moldId) {
                 continue;
@@ -807,8 +820,13 @@ public class StaticActivityDataMgr {
             if (flag && activityBase.isSelfSeverPlan(serverSetting.getServerID())) {
                 activityList.add(activityBase);
             }
+            if (flag && PersonalActService.isPersonalAct(activityType)) {
+                personalActMapCopy.put(activityBase.getPlanKeyId(), activityBase);
+            }
         }
         StaticActivityDataMgr.activityList = activityList;
+        personalActMap = personalActMapCopy;
+        handleRemovedAct();
 
         StaticActivityDataMgr.specialPlans = staticDataDao.selectSpecialPlan().values().stream()
                 .filter(plan -> plan.isSelfSeverPlan(serverSetting.getServerID())).collect(Collectors.toList());
@@ -944,6 +962,10 @@ public class StaticActivityDataMgr {
         return activityList;
     }
 
+    public static Collection<ActivityBase> getPersonalActivityList() {
+        return personalActMap.values();
+    }
+
     public static ActivityBase getActivityByType(int activityType) {
         ActivityBase rab = null;
         for (ActivityBase e : activityList) {
@@ -958,6 +980,23 @@ public class StaticActivityDataMgr {
             }
         }
         return rab;
+    }
+
+    public static ActivityBase getPersonalActivityByType(int actPlanKeyId) {
+        ActivityBase e = personalActMap.get(actPlanKeyId);
+        if (CheckNull.isNull(e))
+            return null;
+
+        StaticActivity a = e.getStaticActivity();
+        StaticActivityPlan plan = e.getPlan();
+        if (a == null || plan == null) {
+            return null;
+        }
+        if (e.getStep0() == ActivityConst.OPEN_CLOSE) {
+            return null;
+        }
+
+        return e;
     }
 
 //    /**
@@ -1142,7 +1181,8 @@ public class StaticActivityDataMgr {
             }
             StaticActAward staticActAward = value.get(0);
             if (!isActTypeRank(staticActAward.getType())
-                    && staticActAward.getType() != ActivityConst.ACT_NEWYEAR_2022_FISH) {
+                    && staticActAward.getType() != ActivityConst.ACT_NEWYEAR_2022_FISH
+                    && staticActAward.getType() != ActivityConst.ACT_MAGIC_TREASURE_WARE) {
                 continue;
             }
             Integer actId = a.getKey();
@@ -1218,7 +1258,7 @@ public class StaticActivityDataMgr {
                 || ActivityConst.ACT_CONSUME_GOLD_RANK == activityType || ActivityConst.ACT_TUTOR_RANK == activityType
                 || ActivityConst.ACT_ROYAL_ARENA == activityType || ActivityConst.ACT_CHRISTMAS == activityType
                 || ActivityConst.ACT_DIAOCHAN    == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType
-                || ActivityConst.ACT_SEASON_HERO == activityType;
+                || ActivityConst.ACT_SEASON_HERO == activityType || ActivityConst.ACT_MAGIC_TREASURE_WARE == activityType;
     }
 
     /**
@@ -1347,5 +1387,37 @@ public class StaticActivityDataMgr {
         Java8Utils.syncMethodInvoke(() -> {
             DataResource.ac.getBean(ActivityQuestionnaireService.class).syncQuestionnaireConfig(getStaticActQuestionnaireMap());
         });
+    }
+
+    /**
+     * 某些活动KeyId在合服之后不再活动列表存在
+     *
+     * @throws MwException
+     */
+    public static void handleRemovedAct() throws MwException {
+        GameGlobal gameGlobal;
+        if (CheckNull.isNull(gameGlobal = DataResource.ac.getBean(GlobalDataManager.class).
+                getGameGlobal()) || CheckNull.isEmpty(gameGlobal.removedActData))
+            return;
+
+        GlobalActivityData globalActivityData;
+        List<ActivityBase> activityBaseList = StaticActivityDataMgr.getActivityList();
+        for (Integer actKeyId : gameGlobal.removedActData) {
+            Iterator<ActivityBase> activityBaseIterator = activityBaseList.iterator();
+            while (activityBaseIterator.hasNext()) {
+                ActivityBase activityBase = activityBaseIterator.next();
+                if (CheckNull.isNull(activityBase))
+                    continue;
+                if (activityBase.getPlanKeyId() == actKeyId) {
+                    activityBaseIterator.remove();
+                }
+            }
+            globalActivityData = DataResource.ac.getBean(ActivityDataManager.class).getActivityMap().values().stream().
+                    filter(data -> Objects.nonNull(data) && data.getActivityKeyId() == actKeyId).findFirst().orElse(null);
+            if (Objects.nonNull(globalActivityData))
+                DataResource.ac.getBean(ActivityDataManager.class).getActivityMap().remove(globalActivityData.getActivityType());
+        }
+
+        LogUtil.common("gameGlobal.removedActData： ", ListUtils.toString(new ArrayList(gameGlobal.removedActData)), ", has clear");
     }
 }

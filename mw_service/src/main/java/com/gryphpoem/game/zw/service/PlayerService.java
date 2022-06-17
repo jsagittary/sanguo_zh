@@ -134,6 +134,8 @@ public class PlayerService implements GmCmdService {
     @Autowired
     private TitleService titleService;
     private String initName;
+    @Autowired
+    private TreasureChallengePlayerService challengePlayerService;
 
     /**
      * 账号服务器的验证返回处理
@@ -667,6 +669,8 @@ public class PlayerService implements GmCmdService {
                     activityTemplateService.execActivityDay(p);
                     // 宝具副本处理
                     treasureCombatService.acrossTheDayProcess(p);
+                    // 宝具挑战玩家处理
+                    challengePlayerService.acrossTheDayProcess(p);
                     // 功能计划过天处理
                     Java8Utils.invokeNoExceptionICommand(() -> drawCardPlanTemplateService.execFunctionDay(p));
                 } catch (Exception e) {
@@ -850,6 +854,7 @@ public class PlayerService implements GmCmdService {
                         builder.setCurTitle(dressUp.getCurTitle());
                     });
             builder.setFishingGuide(player.getFishingData().getGuide());
+            builder.setFirstMakeTw(player.getMakeTreasureWare().createPb(false));
             return builder.build();
         }
         return null;

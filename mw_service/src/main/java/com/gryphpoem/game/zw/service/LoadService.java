@@ -45,6 +45,8 @@ public class LoadService {
         LogUtil.common("------------------MentorConstant加载完成-------------");
         EquipConstant.loadSystem();
         LogUtil.common("------------------EquipConstant加载完成-------------");
+        TreasureChallengePlayerConstant.loadSystem();
+        LogUtil.common("------------------TreasureChallengePlayer加载完成-------------");
     }
 
     /**

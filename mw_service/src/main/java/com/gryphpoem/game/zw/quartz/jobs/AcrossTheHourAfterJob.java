@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.service.ActivityTriggerService;
+import com.gryphpoem.game.zw.service.TreasureWareService;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -22,6 +23,7 @@ public class AcrossTheHourAfterJob extends AbsMainLogicThreadJob {
             // 转点执行时间触发活动事件
             ActivityTriggerService activityTriggerService = DataResource.ac.getBean(ActivityTriggerService.class);
             activityTriggerService.checkTimeTriggerActivity();
+            DataResource.ac.getBean(TreasureWareService.class).timedClearDecomposeTreasureWare();
         });
         LogUtil.debug("------------AcrossTheHourAfterJob整点处理end-------------");
     }

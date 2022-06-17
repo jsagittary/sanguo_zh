@@ -1,11 +1,7 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import org.springframework.util.ObjectUtils;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 public class StaticTreasureWareLevel {
     /**
@@ -27,11 +23,13 @@ public class StaticTreasureWareLevel {
     /**
      * 属性
      */
-    private List<List<Integer>> attr;
+    private Map<Integer, Integer> attr;
     /**
      * 分解材料
      */
     private List<List<Integer>> resolve;
+    /** 需要的等级 */
+    private int needLevel;
 
     public int getId() {
         return id;
@@ -65,14 +63,6 @@ public class StaticTreasureWareLevel {
         this.consume = consume;
     }
 
-    public List<List<Integer>> getAttr() {
-        return attr;
-    }
-
-    public void setAttr(List<List<Integer>> attr) {
-        this.attr = attr;
-    }
-
     public List<List<Integer>> getResolve() {
         return resolve;
     }
@@ -81,36 +71,19 @@ public class StaticTreasureWareLevel {
         this.resolve = resolve;
     }
 
-    /**
-     * 获取对应属性id的属性值
-     *
-     * @param attrId
-     * @return
-     */
-    public List<Integer> getAttrById(int attrId) {
-        if (ObjectUtils.isEmpty(this.attr)) {
-            return null;
-        }
-
-        return this.attr.stream().filter(list -> list.get(0) == attrId).findFirst().get();
+    public Map<Integer, Integer> getAttr() {
+        return attr;
     }
 
-    public List<List<Integer>> getStrengthAttr(List<Integer> attrIds, int attrPercentage) {
-        if (ObjectUtils.isEmpty(attr) || ObjectUtils.isEmpty(attrIds)) {
-            return null;
-        }
+    public void setAttr(Map<Integer, Integer> attr) {
+        this.attr = attr;
+    }
 
-        List<List<Integer>> result = new ArrayList<>();
-        attr.forEach(list -> {
-            if (!attrIds.contains(list.get(0)))
-                return;
+    public int getNeedLevel() {
+        return needLevel;
+    }
 
-            List<Integer> newAttr = new ArrayList<>(list);
-            Integer value = newAttr.remove(1);
-            newAttr.add(value);
-            result.add(newAttr);
-        });
-
-        return result;
+    public void setNeedLevel(int needLevel) {
+        this.needLevel = needLevel;
     }
 }

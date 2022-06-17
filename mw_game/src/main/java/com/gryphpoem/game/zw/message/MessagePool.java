@@ -1280,12 +1280,25 @@ public class MessagePool implements IMessagePool {
         registerC(TreasureWareBagExpandRq.EXT_FIELD_NUMBER, TreasureWareBagExpandRs.EXT_FIELD_NUMBER, TreasureWareBagExpandHandler.class);
         registerC(TreasureWareBatchDecomposeRq.EXT_FIELD_NUMBER, TreasureWareBatchDecomposeRs.EXT_FIELD_NUMBER, TreasureWareDecomposeHandler.class);
         registerC(TreasureWareLockedRq.EXT_FIELD_NUMBER, TreasureWareLockedRs.EXT_FIELD_NUMBER, TreasureWareLockedHandler.class);
+        //宝具洗练
+        registerC(TreasureWareTrainRq.EXT_FIELD_NUMBER, TreasureWareTrainRs.EXT_FIELD_NUMBER, TreasureWareTrainHandler.class);
+        //保存洗练结果
+        registerC(TreasureWareSaveTrainRq.EXT_FIELD_NUMBER, TreasureWareSaveTrainRs.EXT_FIELD_NUMBER, TreasureWareSaveTrainHandler.class);
         // 宝具副本
         registerC(GetTreasureCombatRq.EXT_FIELD_NUMBER, GetTreasureCombatRs.EXT_FIELD_NUMBER, GetTreasureCombatHandler.class);
         registerC(DoTreasureCombatRq.EXT_FIELD_NUMBER, DoTreasureCombatRs.EXT_FIELD_NUMBER, DoTreasureCombatHandler.class);
-        registerC(TreasureUnlockHeroPosRq.EXT_FIELD_NUMBER, TreasureUnlockHeroPosRs.EXT_FIELD_NUMBER, TreasureUnlockHeroPosHandler.class);
         registerC(TreasureOnHookAwardRq.EXT_FIELD_NUMBER, TreasureOnHookAwardRs.EXT_FIELD_NUMBER, TreasureOnHookAwardHandler.class);
         registerC(TreasureSectionAwardRq.EXT_FIELD_NUMBER, TreasureSectionAwardRs.EXT_FIELD_NUMBER, TreasureSectionAwardHandler.class);
+        registerC(TreasureChallengePlayerRq.EXT_FIELD_NUMBER, TreasureChallengePlayerRs.EXT_FIELD_NUMBER, TreasureChallengePlayerHandler.class);
+        registerC(TreasureRefreshChallengeRq.EXT_FIELD_NUMBER, TreasureRefreshChallengeRs.EXT_FIELD_NUMBER, TreasureRefreshChallengeHandler.class);
+        registerC(TreasureChallengePurchaseRq.EXT_FIELD_NUMBER, TreasureChallengePurchaseRs.EXT_FIELD_NUMBER, TreasureChallengePurchaseHandler.class);
+
+        //宝具征程活动
+        registerC(ReceiveActTwJourneyAwardRq.EXT_FIELD_NUMBER, ReceiveActTwJourneyAwardRs.EXT_FIELD_NUMBER, ReceiveActTwJourneyAwardHandler.class);
+        registerC(GetActTwJourneyRq.EXT_FIELD_NUMBER, GetActTwJourneyRs.EXT_FIELD_NUMBER, GetActTwJourneyInfoHandler.class);
+        //神兵宝具活动
+        registerC(DrawTwTurntableAwardRq.EXT_FIELD_NUMBER, DrawTwTurntableAwardRs.EXT_FIELD_NUMBER, DrawMagicTwTurntableAwardHandler.class);
+        registerC(ReceiveMtwTurntableCntAwardRq.EXT_FIELD_NUMBER, ReceiveMtwTurntableCntAwardRs.EXT_FIELD_NUMBER, ReceiveMTwtCntAwardHandler.class);
 
         //2022新年活动
         registerC(LongLightIgniteRq.EXT_FIELD_NUMBER, LongLightIgniteRs.EXT_FIELD_NUMBER, LongLightIgniteHandler.class);

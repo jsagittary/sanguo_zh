@@ -658,7 +658,8 @@ public class RewardDataManager {
                 List<TreasureWare> treasureWareIds = addTreasureWare(player, id, count, from, param);
                 if (!CheckNull.isEmpty(treasureWareIds)) {
                     award.setKeyId(treasureWareIds.get(0).getKeyId());
-                    award.addAllParam(treasureWareIds.stream().map(treasureWare -> treasureWare.getProfileId()).collect(Collectors.toList()));
+                    award.addAllParam(treasureWareIds.stream().map(TreasureWare::getProfileId).collect(Collectors.toList()));
+                    award.addAllExtParam(treasureWareIds.stream().map(tw -> Objects.isNull(tw.getSpecialId()) ? 0 : tw.getSpecialId()).collect(Collectors.toList()));
                 }
                 break;
             case AwardType.TOTEM:
@@ -774,7 +775,7 @@ public class RewardDataManager {
 
         // 记录玩家获得新宝具
         LogLordHelper.treasureWare(from, player.account, player.lord, treasureWareId, keyId, Constant.ACTION_ADD,
-                param);
+                treasureWare.getQuality(), treasureWare.logAttrs(), CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
     }
 
     /**
@@ -2416,12 +2417,21 @@ public class RewardDataManager {
      * @param from
      */
     public void subTreasureWare(Player player, int keyId, AwardFrom from, Object... param) {
-        TreasureWare treasureWare = player.treasureWares.remove(keyId);
-        if (treasureWare != null) {
+        TreasureWare treasureWare = player.treasureWares.get(keyId);
+        if (CheckNull.isNull(treasureWare)) {
+            LogUtil.error(String.format("sub treasureWare is empty, lordId: %d, keyId: %d, from: %s", player.lord.getLordId(), keyId, from));
+            return;
+        }
+
+        if (treasureWare.getQuality() >= TreasureWareConst.PURPLE_QUALITY) {
+            treasureWare.setStatus(TreasureWareConst.TREASURE_HAS_DECOMPOSED);
+            treasureWare.setDecomposeTime(TimeHelper.getCurrentSecond());
+        } else {
+            player.treasureWares.remove(keyId);
             // 记录玩家减少的宝具
             LogLordHelper.treasureWare(from, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(),
-                    Constant.ACTION_SUB, param, LogUtil.obj2ShortStr(treasureWare.getAttrAndLv()),
-                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId());
+                    Constant.ACTION_SUB, treasureWare.getQuality(), treasureWare.logAttrs(),
+                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
         }
     }
 
@@ -2797,7 +2807,8 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareDust(cur);
 
-        LogLordHelper.commonLog("treasureWareDust", from, player, player.lord.getTreasureWareDust(), add ? sub : -sub, StringHelper.mergeToKey(param));
+        String paramString = Arrays.toString(param);
+        LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareDust(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
             EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
@@ -2815,7 +2826,8 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareEssence(cur);
 
-        LogLordHelper.commonLog("treasureWareEssence", from, player, player.lord.getTreasureWareEssence(), add ? sub : -sub, StringHelper.mergeToKey(param));
+        String paramString = Arrays.toString(param);
+        LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_ESSENCE, sub, player.lord.getTreasureWareEssence(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
             EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
@@ -2833,7 +2845,8 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareGolden(cur);
 
-        LogLordHelper.commonLog("treasureWareGolden", from, player, player.lord.getTreasureWareGolden(), add ? sub : -sub, StringHelper.mergeToKey(param));
+        String paramString = Arrays.toString(param);
+        LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareGolden(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
             EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub,

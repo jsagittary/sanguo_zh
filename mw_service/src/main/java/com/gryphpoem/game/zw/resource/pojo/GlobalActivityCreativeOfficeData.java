@@ -85,6 +85,7 @@ public class GlobalActivityCreativeOfficeData extends GlobalActivityData {
             serAct.addSave(twoInt);
         }
         serAct.setActivityId(getActivityId());
+        serAct.setActKeyId(getActivityKeyId());
         serGlobal.setParams(serAct.build().toByteArray());
         return serGlobal;
     }

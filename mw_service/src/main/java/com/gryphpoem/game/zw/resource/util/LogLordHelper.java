@@ -14,8 +14,10 @@ import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
+import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.LoginService;
 import org.apache.commons.lang3.StringUtils;
@@ -1305,5 +1307,57 @@ public class LogLordHelper {
                 GAME_LOGGER.info(message);
             });
         });
+    }
+
+    /**
+     * 宝具副本埋点
+     *
+     * @param type
+     * @param from
+     * @param player
+     * @param combatId
+     * @param state
+     * @param fight
+     * @param heroId
+     * @param params
+     */
+    public static void treasureCombatPromote(String type, AwardFrom from, Player player, int combatId, int state, long fight, String heroId, Object... params) {
+        if (player == null) {
+            return;
+        }
+        commonLog(type, from, player.account, player.lord, combatId, state, fight, heroId);
+    }
+
+    public static void saveTreasureWareTrain(AwardFrom from, Player player, TreasureWare tw) {
+        if (player.account == null || player.lord == null || tw == null) {
+            return;
+        }
+        StringBuffer message = getCommonParams("saveTrainTreasureWare", from, player.account, player.lord)
+                .append("|").append(tw.getEquipId())
+                .append("|").append(tw.getKeyId())
+                .append("|").append(tw.getQuality())
+                .append("|").append(tw.logAttrs())
+                .append("|").append(tw.getProfileId());
+        GAME_LOGGER.info(message);
+    }
+
+    public static void trainTreasureWare(AwardFrom from, Account account, Lord lord, TreasureWare mat, TreasureWare major, TreasureWareAttrItem trainAttr) {
+        if (account == null || lord == null || mat == null || major == null) {
+            return;
+        }
+        StringBuffer message = getCommonParams("trainTreasureWare", from, account, lord)
+                .append("|").append(mat.getEquipId())
+                .append("|").append(mat.getKeyId())
+                .append("|").append(mat.getQuality())
+                .append("|").append(mat.logAttrs())
+                .append("|").append(major.getEquipId())
+                .append("|").append(major.getKeyId())
+                .append("|").append(major.getQuality())
+                .append("|").append(major.logAttrs())
+                .append("|").append(trainAttr.getIndex())
+                .append("|").append(trainAttr.getTrainTargetIndex())
+                .append("|").append(mat.getProfileId())
+                .append("|").append(major.getProfileId());
+        GAME_LOGGER.info(message);
     }
 }

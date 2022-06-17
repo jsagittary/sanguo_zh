@@ -17,7 +17,8 @@ public class StaticTreasureCombat {
     private List<List<Integer>> firstAward;
     private List<List<Integer>> sectionAward;
     private int preId;
-
+    /** 解锁需要的等级 */
+    private int needLv;
 
     public int getCombatId() {
         return combatId;
@@ -82,4 +83,13 @@ public class StaticTreasureCombat {
     public void setSectionId(int sectionId) {
         this.sectionId = sectionId;
     }
+
+    public int getNeedLv() {
+        return needLv;
+    }
+
+    public void setNeedLv(int needLv) {
+        this.needLv = needLv;
+    }
+
 }

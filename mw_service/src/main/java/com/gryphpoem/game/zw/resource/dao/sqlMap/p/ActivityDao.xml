@@ -6,8 +6,8 @@
 
 	<insert id="insertGlobalActivity" parameterType="GlobalActivity">
 		insert into
-		p_global_activity(activityType,goal,sortord,topupa, topupb, topupc, activityTime, params, recordTime, royalArena)
-		values(#{activityType},#{goal},#{sortord},#{topupa},#{topupb},#{topupc},#{activityTime},#{params},#{recordTime}, #{royalArena})
+		p_global_activity(activityType,goal,sortord,topupa, topupb, topupc, activityTime, params, recordTime, royalArena, actKeyId)
+		values(#{activityType},#{goal},#{sortord},#{topupa},#{topupb},#{topupc},#{activityTime},#{params},#{recordTime}, #{royalArena}, #{actKeyId})
 	</insert>
 
 	<update id="updateGlobalActivity" parameterType="GlobalActivity">
@@ -21,13 +21,14 @@
 		recordTime=#{recordTime},
 		params=#{params},
 		royalArena=#{royalArena},
-		auction=#{auction}
+		auction=#{auction},
+		actKeyId=#{actKeyId}
 		where activityType=#{activityType}
 	</update>
 	
 	<select id="selectGlobalActivity" resultType="GlobalActivity">
 		select
-		activityType,goal,sortord,topupa, topupb, topupc, activityTime, params, recordTime, royalArena, auction
+		activityType,goal,sortord,topupa, topupb, topupc, activityTime, params, recordTime, royalArena, auction, actKeyId
 		from p_global_activity 
 	</select>
 	

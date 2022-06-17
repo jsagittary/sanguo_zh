@@ -176,4 +176,8 @@ public class StaticIniDao extends BaseDao {
     public List<StaticDrawCardWeight> selectStaticDrawCardWeightList() {
         return getMapper(StaticIniMapper.class).selectStaticDrawCardWeightList();
     }
+
+    public List<StaticActTreasureWareJourney> selectStaticActTreasureWareJourney() {
+        return getMapper(StaticIniMapper.class).selectStaticActTreasureWareJourney();
+    }
 }

@@ -376,4 +376,16 @@ abstract class AbsActivityService {
     public boolean inChannel(Player player, ActivityBase actBase) {
         return true;
     }
+
+    public boolean isAllGainActivity(Player player, ActivityBase actBase, Activity activity){
+        return false;
+    }
+
+    public boolean functionOpen(Player player, int actType) {
+        return true;
+    }
+
+    public int getTips(Player player, int actType) {
+        return 0;
+    }
 }

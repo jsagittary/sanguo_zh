@@ -68,6 +68,8 @@ import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.MakeTreasureWare;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
@@ -707,6 +709,8 @@ public class Player {
      * 宝具副本
      */
     private TreasureCombat treasureCombat = new TreasureCombat();
+    /** 宝具挑战玩家 */
+    private TreasureChallengePlayer treasureChallengePlayer = new TreasureChallengePlayer();
 
     /**
      * 招募奖励 v1: 对应s_system中id=1102的索引位置, v2: 1 已领取、0 未领取
@@ -731,6 +735,18 @@ public class Player {
 
     public PlayerFunctionPlanData getFunctionPlanData() {
         return functionPlanData;
+    }
+
+
+    private PersonalActs personalActs = new PersonalActs();
+
+    /**
+     * 是否第一次打造宝具
+     */
+    private MakeTreasureWare makeTreasureWare = new MakeTreasureWare();
+
+    public MakeTreasureWare getMakeTreasureWare() {
+        return makeTreasureWare;
     }
 
     public Map<Integer, Integer> getRecruitReward() {
@@ -1828,7 +1844,7 @@ public class Player {
         treasureWares.values().forEach(treasureWare -> {
             serTreasureWares.addTreasure(treasureWare.createPb(true));
         });
-
+        serTreasureWares.setFirstMakeTw(this.makeTreasureWare.createPb(true));
         return serTreasureWares.build().toByteArray();
     }
 
@@ -1986,6 +2002,10 @@ public class Player {
         if (Objects.nonNull(treasureCombat)) {
             // 宝具副本
             ser.setTreasureCombat(treasureCombat.ser(false));
+        }
+        if (Objects.nonNull(treasureChallengePlayer)) {
+            // 宝具挑战玩家数据
+            ser.setTreasureChallengePlayer(treasureChallengePlayer.ser());
         }
         if (treasureWareIdMakeCount.size() > 0) {
             //宝具打造次数
@@ -2600,6 +2620,9 @@ public class Player {
         if (ser.hasTreasureCombat()) {
             this.treasureCombat.dSer(ser.getTreasureCombat());
         }
+        if (ser.hasTreasureChallengePlayer()) {
+            this.treasureChallengePlayer.dSer(ser.getTreasureChallengePlayer());
+        }
         //宝具id打造次数
         Optional.ofNullable(ser.getTreasureWareIdMakeCountList()).ifPresent(tmp -> tmp.forEach(o -> this.treasureWareIdMakeCount.put(o.getV1(), o.getV2())));
         if (ser.hasSaveCrossData()) {
@@ -2971,6 +2994,7 @@ public class Player {
         ser.setActBlackhawk(this.blackhawkAct.dser());
         this.actBarton.values().forEach(e -> ser.addActBarton(e.dser()));
         this.actRobinHood.values().forEach(e -> ser.addRobinHood(e.ser()));
+        ser.addAllPersonalActs(this.personalActs.createPb(true));
         return ser.build().toByteArray();
     }
 
@@ -3184,6 +3208,8 @@ public class Player {
                 this.actRobinHood.put(robinHood.getActivityId(), new ActRobinHood(robinHood));
             }
         }
+        List<CommonPb.TwoInt> personalActs = ser.getPersonalActsList();
+        this.personalActs = new PersonalActs(personalActs);
     }
 
     private void dserSignInInfo(SignInInfo ser) {
@@ -3215,6 +3241,7 @@ public class Player {
             ser.getTreasureList().forEach(treasureWare -> {
                 treasureWares.put(treasureWare.getKeyId(), new TreasureWare(treasureWare));
             });
+            this.makeTreasureWare.dsePb(ser.getFirstMakeTw());
         }
     }
 
@@ -3230,7 +3257,8 @@ public class Player {
                 || e.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
                 || e.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW
                 || e.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR
-                || e.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE) {
+                || e.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE
+                || e.getActivityType() == ActivityConst.ACT_MAGIC_TREASURE_WARE) {
             activity = new ActTurnplat(e);
         } else if (e.getActivityType() == ActivityConst.ACT_EQUIP_TURNPLATE) {
             activity = new EquipTurnplat(e);
@@ -3518,5 +3546,21 @@ public class Player {
 
     public TotemData getTotemData() {
         return totemData;
+    }
+
+    public TreasureChallengePlayer getTreasureChallengePlayer() {
+        return treasureChallengePlayer;
+    }
+
+    public void setTreasureChallengePlayer(TreasureChallengePlayer treasureChallengePlayer) {
+        this.treasureChallengePlayer = treasureChallengePlayer;
+    }
+
+    public PersonalActs getPersonalActs() {
+        return personalActs;
+    }
+
+    public void setPersonalActs(PersonalActs personalActs) {
+        this.personalActs = personalActs;
     }
 }

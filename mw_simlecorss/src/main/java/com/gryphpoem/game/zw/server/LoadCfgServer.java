@@ -8,17 +8,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMentorDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
-import com.gryphpoem.game.zw.resource.constant.ActParamConstant;
-import com.gryphpoem.game.zw.resource.constant.ChatConst;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.EquipConstant;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.MentorConstant;
-import com.gryphpoem.game.zw.resource.constant.PartyConstant;
-import com.gryphpoem.game.zw.resource.constant.PlaneConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 
 /**
  * @ClassName LoadCfgService.java
@@ -71,6 +61,8 @@ public class LoadCfgServer {
         LogUtil.common("------------------MentorConstant加载完成-------------");
         EquipConstant.loadSystem();
         LogUtil.common("------------------EquipConstant加载完成-------------");
+        TreasureChallengePlayerConstant.loadSystem();
+        LogUtil.common("------------------TreasureChallengePlayer加载完成-------------");
 
     }
 }

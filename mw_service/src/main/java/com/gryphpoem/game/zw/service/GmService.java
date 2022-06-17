@@ -2371,7 +2371,12 @@ public class GmService{
                 camp.setEndTime(firstOpenTime);
             }
         } else if (str.equals("mergeBefore")) {// 合服前的处理
-            playerDataManager.getPlayers().values().forEach(player -> mailService.gainAttrMaill(player));
+            //领取所有玩家的邮件附件
+            int now = TimeHelper.getCurrentSecond();
+            playerDataManager.getPlayers().values().forEach(player -> {
+                activityService.combineServerAct(player, now);
+                mailService.gainAttrMaill(player);
+            });
         } else if (str.equalsIgnoreCase("onWeekEnd")) {
             Java8Utils.syncMethodInvoke(() -> {
                 CrossWorldMap cMap = crossWorldMapDataManager.getCrossWorldMapById(CrossWorldMapConstant.CROSS_MAP_ID);

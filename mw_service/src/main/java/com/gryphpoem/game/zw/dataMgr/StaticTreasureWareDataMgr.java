@@ -19,6 +19,8 @@ public class StaticTreasureWareDataMgr extends AbsStaticIniService {
     private static Map<Integer, Map<Integer, StaticTreasureWareSpecial>> staticTreasureWareSpecialLevelMap;
     private static Map<Integer, Map<Integer, StaticTreasureWareLevel>> staticTreasureWareLevelMap;
     private static Map<Integer, StaticTreasureCombat> treasureCombatMap;
+    /** 每章节的最大关卡id */
+    private static Map<Integer, Integer> treasureCombatMaxCombatMap;
     private static List<StaticTreasureCombatBuff> treasureCombatBuffs;
     private static List<Integer> treasureSection;
     private static Map<Integer, Map<Integer, StaticTreasureWareProfile>> staticTreasureWareProfileMap;
@@ -158,6 +160,7 @@ public class StaticTreasureWareDataMgr extends AbsStaticIniService {
 
     /**
      * 获取宝具名id
+     *
      * @param attrType
      * @param quality
      * @param specialId
@@ -225,6 +228,18 @@ public class StaticTreasureWareDataMgr extends AbsStaticIniService {
                 treasureSection.add(treasureCombat.getSectionId());
             });
             treasureSection = treasureSection.stream().sorted(Comparator.comparingInt(Integer::intValue)).collect(Collectors.toList());
+
+            // 找到每个章节的最大关卡
+            treasureCombatMaxCombatMap = treasureCombatMap.values().stream()
+                    .collect(
+                            Collectors.groupingBy(
+                                    StaticTreasureCombat::getSectionId,
+                                    Collectors.collectingAndThen(
+                                            Collectors.maxBy(Comparator.comparingInt(StaticTreasureCombat::getCombatId)),
+                                            o -> o.map(StaticTreasureCombat::getCombatId).orElse(0)
+                                    )
+                            )
+                    );
         });
 
         staticTreasureWareProfileMap = new HashMap<>();
@@ -247,5 +262,13 @@ public class StaticTreasureWareDataMgr extends AbsStaticIniService {
         if (ObjectUtils.isEmpty(staticTreasureWareMakeMap)) {
             LogUtil.error("<<<<<<宝具打造表为空>>>>>>>");
         }
+    }
+
+    public static Map<Integer, Integer> getTreasureCombatMaxCombatMap() {
+        return treasureCombatMaxCombatMap;
+    }
+
+    public static Map<Integer, StaticTreasureCombat> getTreasureCombatMap() {
+        return treasureCombatMap;
     }
 }

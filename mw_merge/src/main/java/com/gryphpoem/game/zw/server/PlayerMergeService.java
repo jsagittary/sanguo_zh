@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.server;
 
 import com.gryphpoem.game.zw.constant.MergeConstant;
 import com.gryphpoem.game.zw.constant.MergeUtils;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -23,6 +24,7 @@ import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPortrait;
+import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
@@ -32,6 +34,7 @@ import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.CastleSkinProcessService;
+import com.gryphpoem.game.zw.service.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -230,8 +233,15 @@ public class PlayerMergeService {
                 ActivityBase actBase = serverData.getActivityMap().get(actType);
                 mergActivityService.multiAwardActProcess(actType, player, actBase);
                 if (actBase != null) {
-                    // activityId和时间修改成主服一样
-                    mergActivityService.actIdAndBeginTimeUnity(player, activity, actBase);
+                    if (!MergeUtils.REATIN_REMOVED_ACT_TYPE.contains(actType)) {
+                        // activityId和时间修改成主服一样
+                        mergActivityService.actIdAndBeginTimeUnity(player, activity, actBase);
+                    } else {
+                        it.remove();
+                        if (activity.getActivityKeyId() != 0) {
+                            serverData.getGameGlobal().removedActData.add(activity.getActivityKeyId());
+                        }
+                    }
                 }
             } else {
                 it.remove();
@@ -553,6 +563,64 @@ public class PlayerMergeService {
             }
         }
         return true;
+    }
+
+    /**
+     * 处理公共活动数据
+     *
+     * @param serverData
+     */
+    public void handleGlobalActivityData(MasterCacheData serverData) {
+        if (CheckNull.isEmpty(serverData.getMasterServer().getComposeServer()))
+            return;
+
+        int now = TimeHelper.getCurrentSecond();
+        List<ElementServer> composeServer = serverData.getMasterServer().getComposeServer();
+        Map<Integer, List<ElementServer>> composeServerByServerId = composeServer.stream()
+                .collect(Collectors.groupingBy(ElementServer::getServerId));
+        composeServerByServerId.keySet().forEach(serverId -> {
+            DynamicDataSource.DataSourceContextHolder.setDBType(MergeConstant.getSrcDatasourceKey(serverId));
+            List<GlobalActivity> slaveGlobalActivityData = DataResource.ac.getBean(ActivityDao.class).selectGlobalActivity();
+            if (CheckNull.isEmpty(slaveGlobalActivityData))
+                return;
+            slaveGlobalActivityData.forEach(globalActivity -> {
+                if (CheckNull.isNull(globalActivity))
+                    return;
+                if (!MergeUtils.REATIN_NEED_HANDLE_GLOBAL_ACT_DATA.contains(globalActivity.getActivityType()))
+                    return;
+                GlobalActivityData globalActivityData = null;
+                try {
+                    globalActivityData = new GlobalActivityData(globalActivity);
+                    for (Player player : serverData.getAllPlayer().values()) {
+                        MergePlayer p = (MergePlayer) player;
+                        if (p.getOldServerId() != serverId)
+                            continue;
+                        mergActivityService.multiHandleGlobalActProcess(globalActivity.getActivityType(), p, now, globalActivityData);
+                    }
+                } catch (Exception e) {
+                    LogUtil.error("", e);
+                }
+                if (globalActivityData.getActivityKeyId() != 0)
+                    serverData.getGameGlobal().removedActData.add(globalActivityData.getActivityKeyId());
+            });
+        });
+
+        //还原指向主服
+        DynamicDataSource.DataSourceContextHolder.setDBType(MergeConstant.getSrcDatasourceKey(serverData.getMasterServer().getServerId()));
+    }
+
+    public void sendBaseMergeUnrewardedMailByRank(MergePlayer player, int actType, int serverId, int now, GlobalActivityData globalActivityData) {
+        try {
+            if (player == null || player.getOldServerId() != serverId) {
+                return;
+            }
+            // 此处不能使用 getActivityInfo方法,因为此时活动可能是未开启状态
+            Activity activity = player.activitys.get(actType);
+            // 发送排行榜奖励
+            DataResource.ac.getBean(ActivityService.class).sendUnrewardedMailByRank(player, now, activity, globalActivityData);
+        } catch (Exception e) {
+            LogUtil.error("邮件发送奖励异常", e);
+        }
     }
 
     private boolean loadAccount(Map<Long, Player> tmpPlayerMap, int serverId) {

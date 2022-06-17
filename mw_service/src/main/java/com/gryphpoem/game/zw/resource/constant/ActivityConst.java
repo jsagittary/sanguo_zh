@@ -142,6 +142,9 @@ public class ActivityConst {
 	public static final int ACT_NEWYEAR_2022_FISH = 68;
 	public static final int ACT_FIRST_PAY_RESET = 69;//首充重置
 
+    public static final int ACT_TREASURE_WARE_JOURNEY = 71;//宝具征程
+    public static final int ACT_MAGIC_TREASURE_WARE = 72;//神兵宝具
+
     public static final int ACT_GIFT_PAY = 101;// 充值有礼 累计充值指定黄金领取奖励
     public static final int ACT_COST_GOLD = 102;// 消费有礼 累计消费指定黄金领取奖励
     public static final int ACT_PAY_RANK = 103;// 充值排行 根据充值参与排名领取超值奖励！活动首日19:00开始按排名计算奖励，活动结束后未领取奖励将以邮件形式补发
@@ -479,6 +482,7 @@ public class ActivityConst {
     public static final int LUCKY_TURNPLATE_FREE = 1;// 免费抽奖
     public static final int LUCKY_TURNPLATE_GOLD = 2;// 金币抽奖
     public static final int LUCKY_TURNPLATE_PROP = 3;// 道具抽奖
+    public static final int LUCKY_TURNTABLE_ACT_EXCLUSIVE_TIMES = 4;    //活动专属次数
 
     /*----------------每日特惠的存储key说明----------------*/
     public static final int ACT_DAYDICOUNTS_LV_KEY = 1; // 每日特惠活动存储到statusCnt中的玩家等级的key
@@ -553,4 +557,5 @@ public class ActivityConst {
         int STATUS_SPEND_SUM = 2;
     }
 
+    public static final int[] COMBINED_SERVICE_REMOVED_ACT_TYPE = new int[]{ActivityConst.ACT_MAGIC_TREASURE_WARE};
 }

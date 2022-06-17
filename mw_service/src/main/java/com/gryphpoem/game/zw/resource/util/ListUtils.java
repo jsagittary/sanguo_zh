@@ -10,6 +10,27 @@ import java.util.*;
 public class ListUtils {
 
     /**
+     * 判断指定的值在区间列表中的位置
+     * @param num 指定值
+     * @param numList numList: [[1],[2,10],[100,1000]]
+     * @return 指定值所在区间, 如果未找到返回-1
+     */
+    public static int getInListIndex(int num, List<List<Integer>> numList) {
+        Objects.requireNonNull(numList);
+        for (int i = 0; i < numList.size(); i++) {
+            List<Integer> ids = numList.get(i);
+            if (ids != null) {
+                if (ids.size() == 1) {
+                    if (ids.get(0) == num) return i;
+                } else if (ids.size() == 2) {
+                    if (ids.get(0) <= num && num <= ids.get(1)) return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
      * 判断指定数字是否在列表中<br/>
      * 通常用于 判断指定服务器ID 时候在列表中, 指定赛季是否在列表中
      * @param

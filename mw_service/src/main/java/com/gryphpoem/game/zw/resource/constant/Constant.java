@@ -961,6 +961,21 @@ public final class Constant {
      */
     public static int TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
 
+    /** 宝具洗练, 主体宝具属性系数 */
+    public static Map<Integer, Integer> TREASURE_WARE_MASTER_ATTR_COEFFICIENT;
+    /** 宝具洗练, 主体宝具属性评价系数*/
+    public static List<Integer> TREASURE_WARE_MASTER_STAGE_COEFFICIENT;
+    /** 宝具洗练, 材料宝具属性系数 */
+    public static Map<Integer, Integer> TREASURE_WARE_MATERIAL_ATTR_COEFFICIENT;
+    /** 宝具洗练, 材料宝具属性评价系数*/
+    public static List<Integer> TREASURE_WARE_MATERIAL_STAGE_COEFFICIENT;
+    /** 蓝/紫宝具总体评价区间 */
+    public static List<List<Integer>> TREASURE_WARE_LOWER_STAGE;
+    /** 橙/红/远古宝具总体评价区间 */
+    public static List<List<Integer>> TREASURE_WARE_HIGHER_STAGE;
+    /** 宝具属性阶数对应的评估分值 KEY: 属性阶数 VALUE: 阶数对应的分值*/
+    public static Map<Integer, Integer> TREASURE_WARE_ATTR_STAGE_SCORE;
+
     //图腾 万能碎片
     public static int TOTEM_UNIVERSAL_CHIP_ID;
     //图腾 图腾符文时强化增加概率，万分比
@@ -984,6 +999,14 @@ public final class Constant {
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
+
+        TREASURE_WARE_ATTR_STAGE_SCORE = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_ATTR_STAGE_SCORE, "[[]]");
+        TREASURE_WARE_HIGHER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_HIGHER_STAGE, "[[]]");
+        TREASURE_WARE_LOWER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_LOWER_STAGE, "[[]]");
+        TREASURE_WARE_MATERIAL_STAGE_COEFFICIENT = SystemTabLoader.getListIntSystemValue(SystemId.TREASURE_WARE_MATERIAL_STAGE_COEFFICIENT, "[]");
+        TREASURE_WARE_MATERIAL_ATTR_COEFFICIENT = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_MATERIAL_ATTR_COEFFICIENT, "[[]]");
+        TREASURE_WARE_MASTER_STAGE_COEFFICIENT = SystemTabLoader.getListIntSystemValue(SystemId.TREASURE_WARE_MASTER_STAGE_COEFFICIENT, "[]");
+        TREASURE_WARE_MASTER_ATTR_COEFFICIENT = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_MASTER_ATTR_COEFFICIENT, "[[]]");
 
         LONG_LIGHT_DAY_AWARD = ActParamTabLoader.getListListIntSystemValue(369,"[[]]");
 

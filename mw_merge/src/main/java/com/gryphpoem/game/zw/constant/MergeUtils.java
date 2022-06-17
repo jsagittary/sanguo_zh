@@ -51,6 +51,15 @@ public abstract class MergeUtils {
      */
     public final static Set<Integer> REATIN_VIP_BAG_GIFT_IDS;
 
+    /**
+     * 合服之后需要移除的活动类型
+     */
+    public final static Set<Integer> REATIN_REMOVED_ACT_TYPE;
+
+    public final static Set<Integer> REATIN_NEED_HANDLE_GLOBAL_ACT_DATA;
+
+    public final static Set<Integer> REATIN_PERMANENT_ACT_TYPE;
+
     static {
         REATIN_ACT_TYPE = new HashSet<>();
         REATIN_ACT_TYPE.add(ActivityConst.ACT_FIRSH_CHARGE);// 首充礼包 首次充值领取奖励
@@ -90,6 +99,18 @@ public abstract class MergeUtils {
         REATIN_ACT_TYPE.add(ActivityConst.ACT_REPAIR_CASTLE);//修缮城堡
         REATIN_ACT_TYPE.add(ActivityConst.ACT_DEDICATED_CUSTOMER_SERVICE);//专属客服, 合服保留合服前的进度
         REATIN_ACT_TYPE.add(ActivityConst.ACT_DAY_DISCOUNTS);//专属客服, 合服保留合服前的进度
+        REATIN_ACT_TYPE.add(ActivityConst.ACT_MAGIC_TREASURE_WARE);
+        REATIN_ACT_TYPE.add(ActivityConst.ACT_TREASURE_WARE_JOURNEY);
+
+        /*---------------------------游戏服需要移除的活动类型-------------------------------*/
+        REATIN_REMOVED_ACT_TYPE = new HashSet<>();
+        REATIN_REMOVED_ACT_TYPE.add(ActivityConst.ACT_MAGIC_TREASURE_WARE);
+        /*---------------------------游戏服需要处理的公共活动数据-------------------------------*/
+        REATIN_NEED_HANDLE_GLOBAL_ACT_DATA = new HashSet<>();
+        REATIN_NEED_HANDLE_GLOBAL_ACT_DATA.add(ActivityConst.ACT_MAGIC_TREASURE_WARE);
+        /*---------------------------游戏服从服永久性活动-------------------------------*/
+        REATIN_PERMANENT_ACT_TYPE = new HashSet<>();
+        REATIN_PERMANENT_ACT_TYPE.add(ActivityConst.ACT_TREASURE_WARE_JOURNEY);
 
         /*---------------------------Player.mixtureData需要保存的东西-------------------------------*/
         REATIN_MIXTURE_DATA_KEY = new HashSet<>();

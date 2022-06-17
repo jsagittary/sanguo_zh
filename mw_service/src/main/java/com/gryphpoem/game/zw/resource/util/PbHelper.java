@@ -2098,7 +2098,8 @@ public class PbHelper {
                 || activity.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
                 || activity.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW
                 || activity.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR
-                || activity.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE) {
+                || activity.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE
+                || activity.getActivityType() == ActivityConst.ACT_MAGIC_TREASURE_WARE) {
             ActTurnplat actTurnplat = (ActTurnplat) activity;
             builder.setTurnplat(actTurnplat.ser());
         } else if (activity.getActivityType() == ActivityConst.ACT_EQUIP_TURNPLATE) {
@@ -2118,6 +2119,7 @@ public class PbHelper {
             Optional.ofNullable(activity.getActivityAuction()).
                     ifPresent(activityAuction -> builder.setActivityAuction(activityAuction.serialization()));
         }
+        builder.setActKeyId(activity.getActivityKeyId());
         return builder.build();
     }
 
@@ -3213,5 +3215,15 @@ public class PbHelper {
             }
         });
         return map.values();
+    }
+
+    public static CommonPb.ActTask createActTaskPb(ActivityTask task) {
+        CommonPb.ActTask.Builder builder = CommonPb.ActTask.newBuilder();
+        builder.setUid(task.getUid());
+        builder.setProgress(task.getProgress());
+        builder.setFinishCnt(task.getCount());
+        builder.setDrawCnt(task.getDrawCount());
+        builder.setTaskType(task.getTaskId());
+        return builder.build();
     }
 }

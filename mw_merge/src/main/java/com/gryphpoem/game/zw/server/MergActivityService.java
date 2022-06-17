@@ -1,14 +1,23 @@
 package com.gryphpoem.game.zw.server;
 
 import com.gryphpoem.game.zw.constant.MergeUtils;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.domain.MergePlayer;
+import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.p.ActTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTurnplateExtra;
+import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +34,8 @@ import java.util.stream.Collectors;
 public class MergActivityService {
 
     private Map<Integer, MultiAwardActProcess> multiAwardActMap = new HashMap<>();
+
+    private Map<Integer, MultiHandleGlobalActProcess> multiHandleGlobalActMap = new HashMap<>();
 
     @Autowired
     private ActivityService activityService;
@@ -43,6 +54,9 @@ public class MergActivityService {
         registMultiAwardActPrc(ActivityConst.ACT_COST_GOLD, this::actCostGoldProcess);
         // registMultiAwardActPrc(ActivityConst.ACT_CONSUME_GOLD_RANK, this::actConsumeGoldProcess);
         registMultiAwardActPrc(ActivityConst.ACT_VIP_BAG, this::actVipBagProcess);
+        registMultiAwardActPrc(ActivityConst.ACT_MAGIC_TREASURE_WARE, this::actMagicTreasureWareProcess);
+        //公共数据处理
+        registerMultiHandleGlobalActPrc(ActivityConst.ACT_MAGIC_TREASURE_WARE, this::actGlobalMagicTreasureWare);
     }
 
     /**
@@ -57,6 +71,11 @@ public class MergActivityService {
         if (prc != null && activity != null) {
             prc.pocess(player, activity, masterServerActBase);
         }
+    }
+
+    public void multiHandleGlobalActProcess(int actType, MergePlayer player, int now, GlobalActivityData globalActivityData) {
+        MultiHandleGlobalActProcess prc = multiHandleGlobalActMap.get(actType);
+        prc.process(player, actType, now, globalActivityData);
     }
 
     /**
@@ -81,6 +100,46 @@ public class MergActivityService {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 结算神兵宝具活动
+     *
+     * @param player
+     * @param activity
+     * @param masterServerActBase
+     */
+    private void actMagicTreasureWareProcess(Player player, Activity activity, ActivityBase masterServerActBase) {
+        if (player instanceof MergePlayer) {
+            MergePlayer p = (MergePlayer) player;
+            if (CheckNull.isNull(activity)) {
+                return;
+            }
+
+            List<StaticTurnplateExtra> sExtrasConf = StaticActivityDataMgr.getActTurnplateExtraByActId(activity.getActivityId());
+            if (CheckNull.isEmpty(sExtrasConf))
+                return;
+
+            List<List<Integer>> awardList = new ArrayList<>();
+            ActTurnplat actTurnplat = (ActTurnplat) activity;
+            if (actTurnplat.getCnt() <= 0) {
+                return;
+            }
+            sExtrasConf.forEach(extra -> {
+                if (actTurnplat.getStatusMap().getOrDefault(extra.getId(), 0) > 0 ||
+                        actTurnplat.getCnt() < extra.getTimes())
+                    return;
+
+                awardList.addAll(extra.getAwardList());
+            });
+
+            if (CheckNull.nonEmpty(awardList)) {
+                DataResource.ac.getBean(MailDataManager.class).sendAttachMail(player, PbHelper.createAwardsPb(awardList), MailConstant.MOLD_ACT_UNREWARDED_REWARD,
+                        AwardFrom.SEND_END_MAGIC_TREASURE_WARE_ACT_AWARD, TimeHelper.getCurrentSecond(), activity.getActivityType(), activity.getActivityId(),
+                        activity.getActivityType(), activity.getActivityId());
+            }
+            awardList.clear();
         }
     }
 
@@ -258,6 +317,22 @@ public class MergActivityService {
         }
     }
 
+    public void actGlobalMagicTreasureWare(MergePlayer player, int actType, int now, GlobalActivityData globalActivityData) {
+        try {
+            if (player == null || CheckNull.isNull(globalActivityData)) {
+                return;
+            }
+            // 此处不能使用 getActivityInfo方法,因为此时活动可能是未开启状态
+            Activity activity = player.activitys.get(actType);
+            if (CheckNull.isNull(activity))
+                return;
+            // 发送排行榜奖励
+            DataResource.ac.getBean(ActivityService.class).sendUnrewardedMailByRank(player, now, activity, globalActivityData);
+        } catch (Exception e) {
+            LogUtil.error("邮件发送奖励异常", e);
+        }
+    }
+
     /**
      * 和主服统一activityId和开始时间
      *
@@ -270,7 +345,9 @@ public class MergActivityService {
         int oldActBegin = activity.getBeginTime();
         // activityId统一
         int activityId = masterServerActBase.getActivityId();
-        activity.setActivityId(activityId);
+        if (!MergeUtils.REATIN_PERMANENT_ACT_TYPE.contains(activity.getActivityType())) {
+            activity.setActivityId(activityId);
+        }
         Date beginTime = masterServerActBase.getBeginTime();
         int begin = TimeHelper.getDay(beginTime); // 时间重置
         activity.setBeginTime(begin);
@@ -281,9 +358,18 @@ public class MergActivityService {
         multiAwardActMap.put(actType, actPrc);
     }
 
+    private void registerMultiHandleGlobalActPrc(int actType, MultiHandleGlobalActProcess actPrc) {
+        multiHandleGlobalActMap.put(actType, actPrc);
+    }
+
     @FunctionalInterface
     static interface MultiAwardActProcess {
 
         void pocess(Player player, Activity activity, ActivityBase masterServerActBase);
+    }
+
+    @FunctionalInterface
+    interface MultiHandleGlobalActProcess {
+        void process(MergePlayer player, int actType, int now, GlobalActivityData globalActivityData);
     }
 }

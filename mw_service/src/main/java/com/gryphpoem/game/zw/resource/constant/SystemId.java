@@ -1486,6 +1486,34 @@ public class SystemId {
      */
     public static final int CIA_FAVORABILITY_QUALITY = 1077;
 
+    /** 宝具洗练, 主体宝具属性系数 */
+    public static final int TREASURE_WARE_MASTER_ATTR_COEFFICIENT = 650;
+    /** 宝具洗练, 主体宝具属性评价系数*/
+    public static final int TREASURE_WARE_MASTER_STAGE_COEFFICIENT = 651;
+    /** 宝具洗练, 材料宝具属性系数 */
+    public static final int TREASURE_WARE_MATERIAL_ATTR_COEFFICIENT = 652;
+    /** 宝具洗练, 材料宝具属性评价系数*/
+    public static final int TREASURE_WARE_MATERIAL_STAGE_COEFFICIENT = 653;
+    /** 蓝/紫宝具总体评价区间 */
+    public static final int TREASURE_WARE_LOWER_STAGE = 654;
+    /** 橙/红/远古宝具总体评价区间 */
+    public static final int TREASURE_WARE_HIGHER_STAGE = 655;
+    /** 宝具属性阶数对应的评估分值*/
+    public static final int TREASURE_WARE_ATTR_STAGE_SCORE = 656;
+    /** 橙色/红色宝具材料单个玩家每天掉落数量 */
+    public static final int TREASURE_MATERIALS_OUTPUT_NUM = 657;
+
+    /** 新手池第12次抽卡必出随机一个紫，池子和次数都写死。 */
+    public static final int PRIMARY_TAVERN_BAODI = 672;
+    /** 体力赠送冷却时间 */
+    public static final int ACT_POWER_CD = 888;
+
+    /** 宝具副本 钻石购买击败玩家次数 */
+    public static final int TREASURE_COMBAT_CHALLENGE_PLAYER_PURCHASE = 777;
+    /** 刷新挑战玩家消耗钻石数 */
+    public static final int TREASURE_CHALLENGE_REFRESH_COST_DIAMOND = 778;
+
+
 
     /**
      * 行宫星级突破
