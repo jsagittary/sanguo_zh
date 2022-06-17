@@ -92,16 +92,22 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * @param count
      */
     public void subFreeCount(int count) {
-        if (freeCount >= count) {
-            freeCount -= count;
-            return;
-        }
+        try {
+            if (freeCount >= count) {
+                freeCount -= count;
+                return;
+            }
 
-        count -= freeCount;
-        freeCount = 0;
-        otherFreeCount -= count;
-        // 增加活动抽取次数
-        this.activeDrawsUsedCount += count;
+            count -= freeCount;
+            freeCount = 0;
+            otherFreeCount -= count;
+            // 增加活动抽取次数
+            this.activeDrawsUsedCount += count;
+        } finally {
+            // 系统免费次数使用完, 进入cd时间
+            if (freeCount == 0)
+                cdFreeTime = System.currentTimeMillis() + HeroConstant.DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL * 1000l;
+        }
     }
 
     public Turple<Integer, Integer> getWishHero() {
@@ -255,7 +261,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (freeCount == 0) {
             if (System.currentTimeMillis() >= cdFreeTime) {
                 freeCount++;
-                cdFreeTime = System.currentTimeMillis() + HeroConstant.DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL * 1000l;
             }
         }
     }
