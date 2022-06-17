@@ -12,6 +12,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticActivity;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
+import com.gryphpoem.game.zw.service.activity.PersonalActService;
 
 public class Activity {
     private int activityId;
@@ -222,6 +223,8 @@ public class Activity {
      * @param player
      */
     public boolean isReset(int begin, Player player) {
+        if (PersonalActService.isPersonalAct(activityType))
+            return false;
 //        LogUtil.debug("活动重开检测 isReset=" + (this.beginTime == begin) + ",activityType=" + activityType + ", actvityId="
 //                + activityId + ",beginTime=" + beginTime + ",begin=" + begin);
         if(activityType==111)
