@@ -25,15 +25,15 @@ public abstract class AbsFunctionPlanService {
     /**
      * 活动更新
      */
-    protected static final int ACT_UPDATE = 0;
+    public static final int ACT_UPDATE = 0;
     /**
      * 活动新增
      */
-    protected static final int ACT_NEW = 1;
+    public static final int ACT_NEW = 1;
     /**
      * 活动删除
      */
-    protected static final int ACT_DELETE = 2;
+    public static final int ACT_DELETE = 2;
 
     @Autowired
     protected PlayerDataManager playerDataManager;
