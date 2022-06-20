@@ -271,12 +271,16 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * @param pb
      */
     public void deSer(SerializePb.SerDrawCardData pb) {
-        this.firstFinish = pb.getFirst();
-        this.freeCount = pb.getFreeCount();
-        this.cdFreeTime = pb.getCdFreeTime();
-        this.otherFreeCount = pb.getOtherFreeCount();
-        this.wishHero.setA(pb.getWishHero().getV1());
-        this.wishHero.setB(pb.getWishHero().getV2());
+        this.firstFinish = pb.hasFirst() ? pb.getFirst() : false;
+        this.freeCount = pb.hasFreeCount() ? pb.getFreeCount() : 0;
+        this.cdFreeTime = pb.hasCdFreeTime() ? pb.getCdFreeTime() : 0l;
+        this.otherFreeCount = pb.hasOtherFreeCount() ? pb.getOtherFreeCount() : 0;
+        if (pb.hasWishHero()) {
+            this.wishHero.setA(pb.getWishHero().getV1());
+            this.wishHero.setB(pb.getWishHero().getV2());
+        } else {
+            this.wishHero = new Turple<>(0, 0);
+        }
 
         Calendar calendar = Calendar.getInstance();
         if (pb.hasFirstCostMoneyDailyDate()) {
@@ -286,10 +290,10 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (CheckNull.nonEmpty(pb.getSpecifyRewardListList())) {
             this.specifyRewardList.addAll(pb.getSpecifyRewardListList());
         }
-        this.activeDrawsUsedCount = pb.getActiveDrawsUsedCount();
-        this.heroDrawCount = pb.getHeroDrawCount();
-        this.fragmentDrawCount = pb.getFragmentDrawCount();
-        this.todayDrawCount = pb.getTodayDrawCount();
+        this.activeDrawsUsedCount = pb.hasActiveDrawsUsedCount() ? pb.getActiveDrawsUsedCount() : 0;
+        this.heroDrawCount = pb.hasHeroDrawCount() ? pb.getHeroDrawCount() : 0;
+        this.fragmentDrawCount = pb.hasFragmentDrawCount() ? pb.getFragmentDrawCount() : 0;
+        this.todayDrawCount = pb.hasTodayDrawCount() ? pb.getTodayDrawCount() : 0;
         if (pb.hasLastDrawCardDate()) {
             calendar.setTimeInMillis(pb.getLastDrawCardDate());
             this.lastDrawCardDate = calendar.getTime();
