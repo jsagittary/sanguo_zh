@@ -316,7 +316,7 @@ public class DrawCardService implements GmCmdService {
             Hero hero = player.heros.get(staticHero.getHeroId());
             builder.setHero(PbHelper.createHeroPb(hero, player));
         }
-
+        builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
         return builder.build();
     }
 
@@ -332,6 +332,36 @@ public class DrawCardService implements GmCmdService {
 
         GamePb5.GetAllHeroFragmentRs.Builder builder = GamePb5.GetAllHeroFragmentRs.newBuilder();
         fragmentData.entrySet().forEach(entry -> builder.addAllFragments(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
+        return builder.build();
+    }
+
+    /**
+     * 兑换武将碎片
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+    public GamePb5.ExchangeHeroFragmentRs exchangeItem(long roleId, GamePb5.ExchangeHeroFragmentRq req) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        if (CheckNull.isEmpty(req.getConsumeItemsList())) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("exchange Item consume list is empty"));
+        }
+
+        List<List<Integer>> awardList = new ArrayList<>();
+        List<List<Integer>> consumeList = PbHelper.convertTo(req.getConsumeItemsList());
+        rewardDataManager.checkPlayerResIsEnough(player, consumeList);
+        Hero hero = player.heros.get(Integer.parseInt(req.getExtData()));
+        if (CheckNull.isNull(hero)) {
+            throw new MwException(GameError.MUST_OWN_THIS_HERO_BEFORE_REDEMPTION, String.format("roleId:%d, must own this hero before redemption, heroId:%s", req, req.getExtData()));
+        }
+
+
+        rewardDataManager.subPlayerResHasChecked(player, consumeList, true, AwardFrom.EXCHANGE_ITEM_CONSUMPTION);
+        List<CommonPb.Award> awardPbList = rewardDataManager.sendReward(player, awardList, AwardFrom.EXCHANGE_ITEM_CONSUMPTION);
+        GamePb5.ExchangeHeroFragmentRs.Builder builder = GamePb5.ExchangeHeroFragmentRs.newBuilder();
+        if (CheckNull.nonEmpty(awardPbList))
+            builder.addAllAward(awardPbList);
         return builder.build();
     }
 
