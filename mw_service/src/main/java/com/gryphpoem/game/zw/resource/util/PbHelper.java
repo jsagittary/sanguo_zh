@@ -653,7 +653,7 @@ public class PbHelper {
         if (Objects.nonNull(hero.getTreasureWare())) {
             builder.setTreasureWare(hero.getTreasureWare());
         }
-        builder.setGrade(hero.getGradeKeyId());
+//        builder.setGrade(hero.getGradeKeyId());
         return builder.build();
     }
 
