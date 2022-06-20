@@ -653,6 +653,7 @@ public class PbHelper {
         if (Objects.nonNull(hero.getTreasureWare())) {
             builder.setTreasureWare(hero.getTreasureWare());
         }
+        builder.setGrade(hero.getGradeKeyId());
         return builder.build();
     }
 
@@ -3225,5 +3226,17 @@ public class PbHelper {
         builder.setDrawCnt(task.getDrawCount());
         builder.setTaskType(task.getTaskId());
         return builder.build();
+    }
+
+    public static List<List<Integer>> convertTo(List<CommonPb.ExchangeItemConsume> subList) {
+        List<List<Integer>> consumeList = new ArrayList<>(subList.size());
+        for (CommonPb.ExchangeItemConsume tmp : subList) {
+            List<Integer> list = new ArrayList<>(3);
+            list.add(tmp.getType());
+            list.add(tmp.getId());
+            list.add(tmp.getCount());
+            consumeList.add(list);
+        }
+        return consumeList;
     }
 }
