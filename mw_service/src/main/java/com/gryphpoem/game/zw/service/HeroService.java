@@ -1353,7 +1353,6 @@ public class HeroService implements GmCmdService {
 
             //处理任务
             taskDataManager.updTask(player, TaskType.COND_992, 1, heroBreak.getQuality());
-            taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getQuality());
             taskDataManager.updTask(player, TaskType.COND_517, 1, TaskCone517Type.getCondId(hero.getQuality(), 1/*hero.getStage()*/));
 
             LogLordHelper.hero(AwardFrom.HERO_BREAK, player.account, player.lord, oldHeroId, Constant.ACTION_SUB);
