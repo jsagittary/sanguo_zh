@@ -294,14 +294,14 @@ public class DrawCardService implements GmCmdService {
 
         DrawCardData drawCardData = player.getDrawCardData();
         if (drawCardData.getWishHero().getA() == 0) {
-            throw new MwException(GameError.HAVE_NOT_CHOSEN_WISHED_HERO, String.format("roleId:%d, have not chosen wished hero:%d", roleId, drawCardData.getWishHero()));
+            throw new MwException(GameError.HAVE_NOT_CHOSEN_WISHED_HERO, String.format("roleId:%d, have not chosen wished hero:%s", roleId, drawCardData.getWishHero()));
         }
         if (drawCardData.getWishHero().getB() < HeroConstant.DRAW_CARD_WISH_VALUE_LIMIT) {
-            throw new MwException(GameError.WISHED_HERO_VALUE_NOT_ENOUGH, String.format("roleId:%d, wished hero value not enough:%d", roleId, drawCardData.getWishHero()));
+            throw new MwException(GameError.WISHED_HERO_VALUE_NOT_ENOUGH, String.format("roleId:%d, wished hero value not enough:%s", roleId, drawCardData.getWishHero()));
         }
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(drawCardData.getWishHero().getA());
         if (CheckNull.isNull(staticHero)) {
-            throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, wished hero no config:%d", roleId, drawCardData.getWishHero()));
+            throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, wished hero no config:%s", roleId, drawCardData.getWishHero()));
         }
 
         Hero hero_ = heroService.hasOwnedHero(player, drawCardData.getWishHero().getA(), staticHero);
