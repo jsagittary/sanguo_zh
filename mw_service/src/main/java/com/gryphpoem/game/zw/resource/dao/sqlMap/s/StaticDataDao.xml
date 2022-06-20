@@ -496,6 +496,7 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 		<result column="firstform" property="firstform"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="randomAward" property="randomAward" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="winAward" property="winAward"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="firstAward" property="firstAward"

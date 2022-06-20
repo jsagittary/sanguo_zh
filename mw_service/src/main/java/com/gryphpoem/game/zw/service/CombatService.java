@@ -366,6 +366,12 @@ public class CombatService {
                 builder.addAllAward(
                         rewardDataManager.sendReward(player, staticCombat.getWinAward(), num, AwardFrom.GAIN_COMBAT));
             }
+
+            //处理随机奖励
+            if(ListUtils.isNotBlank(staticCombat.getRandomAward())){
+                builder.addAllAward(rewardDataManager.sendReward(player, staticCombat.getRandomAward(), num, AwardFrom.GAIN_COMBAT));
+            }
+
             if (!CheckNull.isEmpty(staticCombat.getTitanDrop()) && player.lord.getLevel() >= Constant.RED_DROP_AWARD_LV) {
                 builder.addAllAward(rewardDataManager.sendReward(player, staticCombat.getTitanDrop(), 1, AwardFrom.GAIN_COMBAT));
             }
