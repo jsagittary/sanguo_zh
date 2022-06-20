@@ -1,9 +1,13 @@
 package com.gryphpoem.game.zw.resource.util;
 
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.ActivityTask;
+import com.gryphpoem.game.zw.resource.domain.s.StaticStone;
+import com.gryphpoem.game.zw.resource.pojo.Stone;
+import com.gryphpoem.game.zw.resource.pojo.StoneHole;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -29,9 +33,11 @@ public class ActTaskUtil {
             case FIGHT_REBEL:
             case FIGHT_ELITE_REBEL:
                 if (cfgParams.size() < 2) return false;
-                if (params[1] >= cfgParams.get(0) && params[1] <= cfgParams.get(1)) {
-                    b = true;
-                    activityTask.setProgress(activityTask.getProgress() + 1);
+                if (params[1] >= cfgParams.get(0)) {
+                    if (cfgParams.size() == 2 || params[1] <= cfgParams.get(1)) {
+                        b = true;
+                        activityTask.setProgress(activityTask.getProgress() + 1);
+                    }
                 }
                 break;
             case JOIN_CITY_WAR:
@@ -44,7 +50,6 @@ public class ActTaskUtil {
                     activityTask.setProgress(activityTask.getProgress() + 1);
                 }
                 break;
-            case PASS_THE_COMBAT:
             case MAKE_QUALITY_AND_COUNT_TREASURE_WARE:
             case MAKE_QUALITY_AND_COUNT_AND_SPECIAL_TREASURE_WARE:
                 if (params[0] == cfgParams.get(0)) {
@@ -60,12 +65,14 @@ public class ActTaskUtil {
             case KILLED_NUMBER:
             case ARMY_MAK_LOST:
             case GOLDEN_AUTUMN_CATCH_FISH:
-                b = true;
-                activityTask.setProgress(progress + params[0]);
+                if (progress < cfgParams.get(0)) {
+                    b = true;
+                    activityTask.setProgress(progress + params[0]);
+                }
                 break;
             case CONSUME_ITEM:
             case COLLECT_RES:
-                if (cfgParams.get(1) == 0 || params[0] == cfgParams.get(1)) {
+                if (params[0] == cfgParams.get(1)) {
                     b = true;
                     activityTask.setProgress(activityTask.getProgress() + params[1]);
                 }
@@ -91,23 +98,20 @@ public class ActTaskUtil {
                     activityTask.setProgress(activityTask.getProgress() + 1);
                 }
                 break;
-            case APPOINTMENT:
-            case TRADE_TIMES:
-                if (cfgParams.get(0) == 0 || params[0] == cfgParams.get(0)) {
-                    b = true;
-                    activityTask.setProgress(activityTask.getProgress() + 1);
-                }
-                break;
             case REFORM_EQUIP:
             case HERO_TRAINING:
             case DAILY_LOGIN:
             case CITY_FIRSTKILLED:
+            case APPOINTMENT:
             case TRAINING_HIGH:
             case TRAINING_LOW:
             case FINISHED_DAILYTASK:
             case BUILD_CAMP:
             case HITFLY_PLAYER:
             case GOLDEN_AUTUMN_FISHING:
+                b = true;
+                activityTask.setProgress(activityTask.getProgress() + 1);
+                break;
             case GET_ITEM:
                 if (params[0] == cfgParams.get(0)) {
                     b = true;
@@ -115,16 +119,10 @@ public class ActTaskUtil {
                 }
                 break;
             case ARTIFACT_UP:
-                int superEquipLv = -1;
-                if (cfgParams.get(0) == 0) {
-                    superEquipLv = params[0];
-                } else {
-                    SuperEquip superEquip = player.supEquips.get(cfgParams.get(0));
-                    superEquipLv = CheckNull.isNull(superEquip) ? superEquipLv : superEquip.getLv();
-                }
-                if (superEquipLv != -1 && superEquipLv > activityTask.getProgress()) {
+                SuperEquip superEquip = player.supEquips.get(cfgParams.get(0));
+                if (superEquip != null && superEquip.getLv() > activityTask.getProgress()) {
                     b = true;
-                    activityTask.setProgress(superEquipLv);
+                    activityTask.setProgress(superEquip.getLv());
                 }
                 break;
             case BEAUTY_GIFT:
@@ -151,9 +149,22 @@ public class ActTaskUtil {
                 }
                 break;
             case ORNAMENT_COUNT:
-                if (cfgParams.get(0) == 0 || params[1] >= cfgParams.get(0)) {
+                int stoneCount = 0;
+                for (Stone stone : player.getStoneInfo().getStones().values()) {
+                    StaticStone sStone = StaticPropDataMgr.getStoneMapById(stone.getStoneId());
+                    if (sStone.getLv() >= cfgParams.get(0)) {
+                        stoneCount += stone.getCnt();
+                    }
+                }
+                for (StoneHole stoneHole : player.getStoneInfo().getStoneHoles().values()) {
+                    StaticStone sStone = StaticPropDataMgr.getStoneMapById(stoneHole.getStoneId());
+                    if (sStone.getLv() >= cfgParams.get(0)) {
+                        stoneCount += 1;
+                    }
+                }
+                if (activityTask.getProgress() < stoneCount) {
                     b = true;
-                    activityTask.setProgress(activityTask.getProgress() + params[0]);
+                    activityTask.setProgress(stoneCount);
                 }
                 break;
             case TITLE_LV:
@@ -170,7 +181,7 @@ public class ActTaskUtil {
                 }
                 break;
             case OWN_HERO:
-                int heroCount = (int) player.heros.values().stream().map(tmp -> StaticHeroDataMgr.getHeroMap().get(tmp.getHeroId())).filter(staticHero -> staticHero.getQuality() >= cfgParams.get(0)).count();
+                int heroCount = (int) player.heros.values().stream().map(tmp -> StaticHeroDataMgr.getHeroMap().get(tmp.getHeroId())).filter(staticHero -> staticHero.getQuality() == cfgParams.get(1)).count();
                 if (heroCount > activityTask.getProgress()) {
                     b = true;
                     activityTask.setProgress(heroCount);
@@ -188,12 +199,11 @@ public class ActTaskUtil {
                     activityTask.setProgress((int) player.lord.getFight());
                 }
                 break;
-//            case TRADE_TIMES:
-//                if (cfgParams.get(0) == 0 || params[0] == cfgParams.get(0)) {
-//                    b = true;
-//                    activityTask.setProgress(activityTask.getProgress() + 1);
-//                }
-//                break;
+            case TRADE_TIMES:
+                if (params[0] == cfgParams.get(1)) {
+                    activityTask.setProgress(activityTask.getProgress() + 1);
+                }
+                break;
             case GET_HERO:
                 if (Objects.nonNull(player.heros.get(cfgParams.get(0)))) {
                     b = true;
@@ -235,7 +245,7 @@ public class ActTaskUtil {
                 break;
             case TRAIN_QUALITY_AND_COUNT_TREASURE_WARE:
                 if (params[1] == cfgParams.get(0)) {
-                    b= true;
+                    b = true;
                     activityTask.setProgress(activityTask.getProgress() + params[0]);
                 }
                 break;
@@ -262,7 +272,6 @@ public class ActTaskUtil {
             case COLLECT_RES:
             case HERO_UPSKILL:
             case BEAUTY_GIFT:
-            case CONSUME_ITEM:
             case STRENGTH_QUALITY_AND_COUNT_TREASURE_WARE:
             case TRAIN_QUALITY_AND_2SAME_ANY_ATTR_TREASURE_WARE:
                 return activityTask.getProgress() >= cfgParams.get(2);
@@ -272,14 +281,6 @@ public class ActTaskUtil {
             case FINISHED_TASK:
             case GET_TASKAWARD:
             case HERO_LEVELUP:
-            case BUILD_UP:
-            case TECHNOLOGY_UP:
-            case ARTIFACT_UP:
-            case MAKE_ARMY:
-            case ORNAMENT_COUNT:
-            case APPOINTMENT:
-            case OWN_HERO:
-            case TRADE_TIMES:
             case MAKE_QUALITY_AND_COUNT_TREASURE_WARE:
             case MAKE_QUALITY_AND_COUNT_AND_SPECIAL_TREASURE_WARE:
             case TRAIN_QUALITY_AND_COUNT_TREASURE_WARE:
@@ -297,18 +298,27 @@ public class ActTaskUtil {
             case GOLDEN_AUTUMN_FISHING:
             case GOLDEN_AUTUMN_CATCH_FISH:
             case HITFLY_PLAYER:
-            case BUILD_CAMP:
-            case PLAYER_LV:
-            case PLAYER_POWER:
                 return activityTask.getProgress() >= cfgParams.get(0);
+            case CONSUME_ITEM:
+            case BUILD_UP:
+            case TECHNOLOGY_UP:
             case GET_ITEM:
+            case ARTIFACT_UP:
+            case MAKE_ARMY:
             case BEAUTY_INTIMACY:
             case DAILY_LOGIN:
             case CITY_FIRSTKILLED:
+            case ORNAMENT_COUNT:
+            case APPOINTMENT:
             case RECHARGE_DIAMOND:
             case TITLE_LV:
             case FINISHED_DAILYTASK:
             case OWN_BEAUTY:
+            case OWN_HERO:
+            case BUILD_CAMP:
+            case PLAYER_LV:
+            case PLAYER_POWER:
+            case TRADE_TIMES:
                 break;
             case GET_HERO:
             case PASS_THE_COMBAT:
