@@ -332,6 +332,10 @@ public class TaskDataManager {
                 }
                 break;
             }
+            case TaskType.COND_LORD_LV:
+                count = player.lord.getLevel();
+                task.setSchedule(count);
+                return true;
             // 单个条件 非累加
             case TaskType.COND_500:
             case TaskType.COND_507:

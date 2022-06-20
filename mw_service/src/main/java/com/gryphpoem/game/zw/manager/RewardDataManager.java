@@ -1819,6 +1819,7 @@ public class RewardDataManager {
             }
             buildingDataManager.refreshSourceData(player);
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_LEVEL);
+            taskDataManager.updTask(player, TaskType.COND_LORD_LV, 1);
 
             activityTriggerService.roleLevelUpTriggerGift(player, lvThroughList);
 

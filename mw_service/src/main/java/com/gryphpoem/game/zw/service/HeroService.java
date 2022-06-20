@@ -901,6 +901,7 @@ public class HeroService implements GmCmdService {
             taskDataManager.updTask(player, TaskType.COND_DESIGNATED_HERO_ID_UPGRADE, 1, staticHero.getHeroId());
             taskDataManager.updTask(player, TaskType.COND_DESIGNATED_HERO_QUALITY_UPGRADE, hero.getLevel(), staticHero.getQuality());
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
+            taskDataManager.updTask(player, TaskType.COND_991, hero.getLevel(), staticHero.getQuality());
             taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
             //任务 - xx英雄升到xx级
             TaskService.handleTask(player, ETask.HERO_LEVELUP);
@@ -1079,6 +1080,9 @@ public class HeroService implements GmCmdService {
         ActivityDiaoChanService.completeTask(player, ETask.HERO_TRAINING);
         //喜悦金秋-日出而作- 英雄特训x次（包含高级特训）
         TaskService.processTask(player, ETask.HERO_TRAINING);
+
+        //任务处理
+        taskDataManager.updTask(player, TaskType.COND_993, 1, hero.getQuality());
 
         // 洗属性
         hero.getWash()[HeroConstant.ATTR_ATTACK] = curWash[0];
