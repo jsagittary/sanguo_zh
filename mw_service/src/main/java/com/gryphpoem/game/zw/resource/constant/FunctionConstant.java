@@ -142,7 +142,7 @@ public class FunctionConstant {
     /**
      * 宝具征程
      */
-    public static final int ACT_TREASURE_WARE_JOURNEY = 3007;
+    public static final int ACT_TREASURE_WARE_JOURNEY = 3037;
 
     /**
      * 神兵宝具

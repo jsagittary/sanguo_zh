@@ -66,7 +66,7 @@ public interface PersonalActService {
         PersonalAct annotation = clazz.getAnnotation(PersonalAct.class);
         if (CheckNull.isNull(annotation))
             return;
-        if (!Arrays.stream(annotation.actTypes()).anyMatch(type -> type == actType))
+        if (Arrays.stream(annotation.actTypes()).noneMatch(type -> type == actType))
             return;
         player.getPersonalActs().saveData(actType, actPlanKeyId);
     }

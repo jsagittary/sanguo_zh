@@ -115,8 +115,11 @@ public class ActivityService {
             try {
                 int activityType = actBase.getActivityType();
                 AbsActivityService absActivityService = activityTemplateService.getActivityService(activityType);
-                if (Objects.nonNull(absActivityService) && !absActivityService.inChannel(player, actBase) && !absActivityService.functionOpen(player, activityType))
+                if (Objects.nonNull(absActivityService) &&
+                        (!absActivityService.inChannel(player, actBase) || !absActivityService.functionOpen(player, activityType))) {
                     continue;
+                }
+
                 if (ActivityConst.ACT_LIGHTNING_WAR == activityType) {// 闪电战活动
                     actBase = changeActivityTime(actBase);
                 }
