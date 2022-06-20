@@ -1181,16 +1181,14 @@ public class StaticActivityDataMgr {
             }
             StaticActAward staticActAward = value.get(0);
             if (!isActTypeRank(staticActAward.getType())
-                    && staticActAward.getType() != ActivityConst.ACT_NEWYEAR_2022_FISH
-                    && staticActAward.getType() != ActivityConst.ACT_MAGIC_TREASURE_WARE) {
+                    && staticActAward.getType() != ActivityConst.ACT_NEWYEAR_2022_FISH) {
                 continue;
             }
             Integer actId = a.getKey();
             rankCapacityMap.put(actId, getMaxRank(actId));
             // 排序保存
             List<StaticActAward> sortList = value.stream()
-                    .sorted((saa0, saa1) -> saa0.getParam().get(0) < saa1.getParam().get(0) ? -1
-                            : (saa0.getParam().get(0) == saa1.getParam().get(0) ? 0 : 1))
+                    .sorted(Comparator.comparing(saa0 -> saa0.getParam().get(0)))
                     .collect(Collectors.toList());
             rankActMap.put(actId, sortList);
         }

@@ -39,6 +39,7 @@ import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.constant.Constant.CombatType;
 import com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao;
 import com.gryphpoem.game.zw.resource.dao.impl.p.GlobalDao;
+import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.*;
@@ -60,10 +61,7 @@ import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.server.thread.SendEventDataThread;
-import com.gryphpoem.game.zw.service.activity.ActivityAuctionService;
-import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
-import com.gryphpoem.game.zw.service.activity.ActivityService;
-import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
+import com.gryphpoem.game.zw.service.activity.*;
 import com.gryphpoem.game.zw.service.robot.RobotService;
 import com.gryphpoem.game.zw.service.sandtable.SandTableContestService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -2776,6 +2774,28 @@ public class GmService{
         } else if (str.equalsIgnoreCase("errorSuperMineGuard")) {
             LogUtil.common("开始清理超级矿点异常驻军!!!");
             worldDataManager.cntCityCamp(0, 0);
+        } else if (str.equalsIgnoreCase("activity")) {
+            int activityType = count;
+            ActivityBase activityBase;
+            if (PersonalActService.isPersonalAct(activityType)) {
+                activityBase = StaticActivityDataMgr.getPersonalActivityList().stream()
+                        .filter(a -> a.getActivityType() == activityType)
+                        .findFirst()
+                        .orElse(null);
+            } else {
+                activityBase = StaticActivityDataMgr.getActivityByType(activityType);
+            }
+
+            if (activityBase == null) {
+                LogUtil.error("清除活动数据, 活动类型错误; activityType = " + activityType);
+                return;
+            }
+
+            Date beginTime = activityBase.getBeginTime();
+            int begin = TimeHelper.getDay(beginTime);
+            Activity activity = activityDataManager.conActivity(activityBase, activityType, begin, player);
+            activity.setOpen(activityBase.getBaseOpen());
+            player.activitys.put(activityType, activity);
         }
     }
 

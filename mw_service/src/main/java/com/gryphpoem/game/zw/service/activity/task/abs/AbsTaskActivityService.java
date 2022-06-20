@@ -39,7 +39,7 @@ public abstract class AbsTaskActivityService extends AbsSimpleActivityService im
     protected List<ActivityTask> getTaskList(Player player, Integer actKeyId, int actType, boolean process, boolean errorCode, int index, int functionId) throws MwException {
         List<ActivityTask> taskList;
         try {
-            if (!Arrays.stream(getActivityType()).anyMatch(type -> type == actType)) {
+            if (Arrays.stream(getActivityType()).noneMatch(type -> type == actType)) {
                 throw new MwException(GameError.PARAM_ERROR.getCode(), "参数错误, service无法处理此类型, activityType: ", actType);
             }
             if (!process && !StaticFunctionDataMgr.funcitonIsOpen(player, functionId)) {

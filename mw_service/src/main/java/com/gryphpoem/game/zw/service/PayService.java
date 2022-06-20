@@ -356,7 +356,7 @@ public class PayService {
         } else if (FLAG_UNLOCK_BOX_OFFICE == banFlag) {
             rs = processPayBoxOfficeActivity(player, pay, sPay);
         } else if (MAGIC_TREASURE_WARE_GIFT_BAG == banFlag) {
-            processActGiftBgActivity(player, pay, sPay);
+            rs = processActGiftBgActivity(player, pay, sPay);
         }
         return rs;
     }
