@@ -119,7 +119,7 @@ public class DrawCardService implements GmCmdService {
                             ", costType:", drawCardCostType, ", drawCount:", drawCardCount.getCount());
                 }
                 // 若是今日首次花钱单抽, 则有折扣
-                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCostType) && !drawCardData.isTodayFirst(now)) {
+                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && !drawCardData.isTodayFirst(now)) {
                     goldNum = HeroConstant.DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE;
                 }
 
