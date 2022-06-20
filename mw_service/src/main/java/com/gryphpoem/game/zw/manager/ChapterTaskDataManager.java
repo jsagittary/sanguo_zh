@@ -64,11 +64,28 @@ public class ChapterTaskDataManager {
                 continue;
             }
             if (taskDataManager.modifyTaskSchedule(player, task, staticTask.getCond(), staticTask.getCondId(), staticTask.getSchedule(), schedule, param)) {
-                if (CheckNull.isEmpty(changeTaskList)) changeTaskList = Lists.newArrayList();
-                changeTaskList.add(PbHelper.createTaskPb(task, staticTask.getType()));
+                if (isSync(player, staticTask)) {
+                    if (CheckNull.isEmpty(changeTaskList)) changeTaskList = Lists.newArrayList();
+                    changeTaskList.add(PbHelper.createTaskPb(task, staticTask.getType()));
+                }
             }
         }
         this.synTaskInfo(player, changeTaskList);
+    }
+
+    /**
+     * 是否给玩家推送此任务的进度
+     *
+     * @param player
+     * @param staticTask
+     * @return
+     */
+    public boolean isSync(Player player, StaticTask staticTask) {
+        if (Objects.isNull(player) || Objects.isNull(staticTask)) return false;
+        Map<Integer, StaticTask> staticChapterTaskMap = StaticTaskDataMgr.getStaticChapterTaskMap(player.chapterTask.getChapterId());
+        if (Objects.isNull(staticChapterTaskMap)) return false;
+        if (staticTask.getType() == TaskType.TYPE_SUB) return true;
+        return staticTask.getType() == TaskType.TYPE_MAIN && staticChapterTaskMap.containsKey(staticTask.getTaskId());
     }
 
     /**
