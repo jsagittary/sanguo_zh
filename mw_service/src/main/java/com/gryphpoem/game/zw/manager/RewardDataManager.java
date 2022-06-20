@@ -2813,11 +2813,11 @@ public class RewardDataManager {
         LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareDust(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
-                    Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareDust(),
+                    paramString, "");
         } else {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
-                    Arrays.toString(param), "");
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareDust(),
+                    paramString, "");
         }
     }
 
@@ -2832,11 +2832,11 @@ public class RewardDataManager {
         LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_ESSENCE, sub, player.lord.getTreasureWareEssence(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
-                    Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareEssence(),
+                    paramString, "");
         } else {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
-                    Arrays.toString(param), "");
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareEssence(),
+                    paramString, "");
         }
     }
 
@@ -2851,10 +2851,11 @@ public class RewardDataManager {
         LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareGolden(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub,
-                    player.lord.getTreasureWareGolden(), Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, sub,
+                    player.lord.getTreasureWareGolden(), paramString, "");
         } else {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub, player.lord.getTreasureWareGolden(), Arrays.toString(param), "");
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, sub,
+                    player.lord.getTreasureWareGolden(), paramString, "");
         }
 
     }

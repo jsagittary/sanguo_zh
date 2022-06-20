@@ -1094,16 +1094,10 @@ public class TreasureWareService implements GmCmdService {
     public void timedClearDecomposeTreasureWare() {
         LogUtil.common("===start delete expired treasureWare");
         int delTime = TimeHelper.getCurrentSecond() - Constant.DEL_DECOMPOSED_TREASURE_WARE * TimeHelper.DAY_S;
-        Optional.ofNullable(playerDataManager.getAllPlayer().values()).ifPresent(players -> {
+        Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players -> {
             players.forEach(p -> {
-                Iterator<TreasureWare> treasureWareIt = p.treasureWares.values().iterator();
-                while (treasureWareIt.hasNext()) {
-                    TreasureWare treasureWare = treasureWareIt.next();
-                    if (treasureWare.getDecomposeTime() != 0 &&
-                            treasureWare.getDecomposeTime() <= delTime) {
-                        treasureWareIt.remove();
-                    }
-                }
+                p.treasureWares.values().removeIf(treasureWare -> treasureWare.getDecomposeTime() != 0 &&
+                        treasureWare.getDecomposeTime() <= delTime);
             });
 
         });
