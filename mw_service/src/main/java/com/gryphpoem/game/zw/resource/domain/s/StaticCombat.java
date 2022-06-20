@@ -11,6 +11,7 @@ public class StaticCombat {
     private List<List<Integer>> winAward;
     private List<List<Integer>> firstAward;
     private List<Integer> firstform; // 首次攻打的阵型
+    private List<List<Integer>> randomAward;//扫荡随机掉落奖励
     private List<Integer> form;
     private List<Integer> hero;
     private List<List<Integer>> attr;
@@ -177,5 +178,13 @@ public class StaticCombat {
 
     public void setTitanDrop(List<List<Integer>> titanDrop) {
         this.titanDrop = titanDrop;
+    }
+
+    public List<List<Integer>> getRandomAward() {
+        return randomAward;
+    }
+
+    public void setRandomAward(List<List<Integer>> randomAward) {
+        this.randomAward = randomAward;
     }
 }
