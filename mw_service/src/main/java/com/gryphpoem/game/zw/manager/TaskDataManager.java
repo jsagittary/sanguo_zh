@@ -700,7 +700,7 @@ public class TaskDataManager {
                 schedule = heroService.getTaskSchedule1(player, condId);
                 break;
             case TaskType.COND_27:
-                schedule = player.heros.values().stream().filter(e -> e.getQuality() >= condId).count();
+                schedule = player.heros.values().stream().filter(e -> e.getType() == condId).count();
                 break;
             case TaskType.COND_996:
                 int v = player.getMixtureDataById(PlayerConstant.CAMP_FIGHT_TOTAL_COUNT);
