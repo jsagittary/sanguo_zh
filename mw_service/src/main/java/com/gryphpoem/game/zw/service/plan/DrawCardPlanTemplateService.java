@@ -97,7 +97,7 @@ public class DrawCardPlanTemplateService {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, keyId:%d, function:%d", roleId, req.getKeyId(), req.getFunctionId()));
         }
 
-        Turple<PlanFunction, StaticDrawHeoPlan> planFunction = service.checkAndGetPlan(req.getKeyId(), new Date(), player, PlanFunction.PlanStatus.OPEN);
+        Turple<PlanFunction, StaticDrawHeoPlan> planFunction = service.checkAndGetPlan(req.getKeyId(), new Date(), player, PlanFunction.PlanStatus.OPEN, PlanFunction.PlanStatus.PREVIEW);
         FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction.getA(), planFunction.getB().getId(), true);
         if (CheckNull.isNull(functionPlanData)) {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, no player plan data, keyId:%d", player.lord.getLordId(), req.getKeyId()));
