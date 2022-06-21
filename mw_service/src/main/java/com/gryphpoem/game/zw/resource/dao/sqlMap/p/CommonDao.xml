@@ -5,40 +5,34 @@
 <mapper namespace="CommonDao">
 	<select id="selectCommon" parameterType="Long" resultType="Common">
 		select
-		lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,washCount,washTime,autoArmy,heroCdTime,normalHero,superProcess,superHero,
-		superTime,superOpenNum,superFreeNum,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt
+		lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,autoArmy,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt
 		from p_common where lordId=#{lordId}
 	</select>
 
 	<update id="updateCommon" parameterType="Common">
 		update p_common set
-		baptizeCnt=#{baptizeCnt},baptizeTime=#{baptizeTime},reBuild=#{reBuild},scoutCdTime=#{scoutCdTime},bagCnt=#{bagCnt},bagBuy=#{bagBuy},washCount=#{washCount},washTime=#{washTime},
-		autoArmy=#{autoArmy},heroCdTime=#{heroCdTime},normalHero=#{normalHero},superProcess=#{superProcess},superHero=#{superHero},superTime=#{superTime},
-		superOpenNum=#{superOpenNum},superFreeNum=#{superFreeNum},buyAct=#{buyAct},retreat=#{retreat},killNum=#{killNum},renameCnt=#{renameCnt},autoBuildCnt=#{autoBuildCnt},
+		baptizeCnt=#{baptizeCnt},baptizeTime=#{baptizeTime},reBuild=#{reBuild},scoutCdTime=#{scoutCdTime},bagCnt=#{bagCnt},bagBuy=#{bagBuy},
+		autoArmy=#{autoArmy},buyAct=#{buyAct},retreat=#{retreat},killNum=#{killNum},renameCnt=#{renameCnt},autoBuildCnt=#{autoBuildCnt},
 		autoBuildOnOff=#{autoBuildOnOff},treasureWareCnt=#{treasureWareCnt},buyTreasureWareBagCnt=#{buyTreasureWareBagCnt}
 		where lordId=#{lordId}
 	</update>
 
 	<insert id="replaceCommon" parameterType="Common">
 		replace into p_common set
-		lordId=#{lordId},baptizeCnt=#{baptizeCnt},baptizeTime=#{baptizeTime},reBuild=#{reBuild},scoutCdTime=#{scoutCdTime},bagCnt=#{bagCnt},bagBuy=#{bagBuy},washCount=#{washCount},washTime=#{washTime},
-		autoArmy=#{autoArmy},heroCdTime=#{heroCdTime},normalHero=#{normalHero},superProcess=#{superProcess},superHero=#{superHero},superTime=#{superTime},
-		superOpenNum=#{superOpenNum},superFreeNum=#{superFreeNum},buyAct=#{buyAct},retreat=#{retreat},killNum=#{killNum},renameCnt=#{renameCnt},autoBuildCnt=#{autoBuildCnt},
+		lordId=#{lordId},baptizeCnt=#{baptizeCnt},baptizeTime=#{baptizeTime},reBuild=#{reBuild},scoutCdTime=#{scoutCdTime},bagCnt=#{bagCnt},bagBuy=#{bagBuy},
+		autoArmy=#{autoArmy},buyAct=#{buyAct},retreat=#{retreat},killNum=#{killNum},renameCnt=#{renameCnt},autoBuildCnt=#{autoBuildCnt},
 		autoBuildOnOff=#{autoBuildOnOff},treasureWareCnt=#{treasureWareCnt},buyTreasureWareBagCnt=#{buyTreasureWareBagCnt}
 	</insert>
 
 	<insert id="insertCommon" parameterType="Common">
 		insert into
-		p_common(lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,washCount,washTime,autoArmy,heroCdTime,normalHero,superProcess,superHero,superTime,
-		superOpenNum,superFreeNum,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt)
-		values(#{lordId},#{baptizeCnt},#{baptizeTime},#{reBuild},#{scoutCdTime},#{bagCnt},#{bagBuy},#{washCount},#{washTime},#{autoArmy},#{heroCdTime},#{normalHero},
-		#{superProcess},#{superHero},#{superTime},#{superOpenNum},#{superFreeNum},#{buyAct},#{retreat},#{killNum},#{renameCnt},#{autoBuildCnt},#{autoBuildOnOff},#{treasureWareCnt},#{buyTreasureWareBagCnt})
+		p_common(lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,autoArmy,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt)
+		values(#{lordId},#{baptizeCnt},#{baptizeTime},#{reBuild},#{scoutCdTime},#{bagCnt},#{bagBuy},#{autoArmy},#{buyAct},#{retreat},#{killNum},#{renameCnt},#{autoBuildCnt},#{autoBuildOnOff},#{treasureWareCnt},#{buyTreasureWareBagCnt})
 	</insert>
 
 	<select id="load" parameterType="Map" resultType="Common">
 		select
-		lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,washCount,washTime,autoArmy,heroCdTime,normalHero,superProcess,superHero,superTime,superOpenNum,
-		superFreeNum,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt
+		lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,autoArmy,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt
 		from
 		p_common where lordId > #{curIndex} order by lordId limit
 		0,#{count}

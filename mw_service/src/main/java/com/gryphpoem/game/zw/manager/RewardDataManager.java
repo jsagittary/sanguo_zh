@@ -512,6 +512,9 @@ public class RewardDataManager {
             case AwardType.HERO_FRAGMENT:
                 operationHeroFragment(player, id, count, from, true, param);
                 break;
+            case AwardType.SYSTEM_COUNT:
+                operationSystemCount(player, id, count, from, true, param);
+                break;
             default:
                 break;
         }
@@ -521,6 +524,47 @@ public class RewardDataManager {
         }
 
         return award.build();
+    }
+
+    /**
+     * 添加系统次数
+     *
+     * @param player
+     * @param id
+     * @param count
+     * @param from
+     * @param operation
+     * @param param
+     */
+    private void operationSystemCount(Player player, int id, int count, AwardFrom from, boolean operation, Object... param) {
+        if (count == 0)
+            return;
+
+        switch (id) {
+            case AwardType.SystemCount.DRAW_PERMANENT_CARD_COUNT:
+                operationDrawPermanentCardCount(player, id, count, from, operation, param);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 添加常驻抽卡次数
+     *
+     * @param player
+     * @param id
+     * @param count
+     * @param from
+     * @param operation
+     * @param param
+     */
+    private void operationDrawPermanentCardCount(Player player, int id, int count, AwardFrom from, boolean operation, Object... param) {
+        if (count == 0)
+            return;
+        count = Math.abs(count);
+        count = operation ? count : -count;
+        player.getDrawCardData().setOtherFreeCount(player.getDrawCardData().getOtherFreeCount() + count);
     }
 
     /**
@@ -670,6 +714,10 @@ public class RewardDataManager {
                 break;
             case AwardType.HERO_FRAGMENT:
                 operationHeroFragment(player, id, count, from, true, param);
+                break;
+            case AwardType.SYSTEM_COUNT:
+                operationSystemCount(player, id, count, from, true, param);
+                break;
             default:
                 break;
         }
@@ -3240,6 +3288,9 @@ public class RewardDataManager {
             case AwardType.HERO_FRAGMENT:
                 operationHeroFragment(player, id, num, from, false, param);
                 break;
+            case AwardType.SYSTEM_COUNT:
+                operationSystemCount(player, id, num, from, false, param);
+                break;
             default:
                 break;
         }
@@ -3626,20 +3677,10 @@ public class RewardDataManager {
             case AwardType.HERO_FRAGMENT:
                 checkHeroFragmentIsEnough(player, id, num, message);
                 break;
-//            case AwardType.TOTEM_CHIP:
-//                checkTotemChipEnough(player,id,num,message);
-//                break;
             default:
                 break;
         }
     }
-
-//    private void checkTotemChipEnough(Player player,int id,int num,String...message) throws MwException {
-//        TotemChip totemChip = player.getTotemData().getTotemChip(id);
-//        if(Objects.isNull(totemChip) || totemChip.getCount() < num){
-//            throw new MwException(GameError.TOTEM_CHIP_NOT_ENOUGH.getCode(),GameError.err(player.roleId,"检查图腾碎片不足",id,num));
-//        }
-//    }
 
     /**
      * 校验英雄碎片

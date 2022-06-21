@@ -247,6 +247,23 @@ public class HeroUpgradeService implements GmCmdService {
     }
 
     /**
+     * 获取品阶属性
+     *
+     * @param hero
+     * @param attrId
+     * @return
+     */
+    public int getGradeAttrValue(Hero hero, int attrId) {
+        StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+        if (CheckNull.isNull(staticData) || CheckNull.isEmpty(staticData.getAttr()))
+            return 0;
+        List<Integer> attrs = staticData.getAttr().stream().filter(attrList -> attrList.get(0) == attrId).findFirst().orElse(null);
+        if (CheckNull.isEmpty(attrs))
+            return 0;
+        return attrs.get(1);
+    }
+
+    /**
      * 校验升阶消耗
      *
      * @param player

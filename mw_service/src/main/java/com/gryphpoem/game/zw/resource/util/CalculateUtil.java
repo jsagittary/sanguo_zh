@@ -32,10 +32,7 @@ import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.totem.Totem;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
-import com.gryphpoem.game.zw.service.TaskService;
-import com.gryphpoem.game.zw.service.TitleService;
-import com.gryphpoem.game.zw.service.TreasureWareService;
-import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.util.ObjectUtils;
@@ -610,12 +607,13 @@ public class CalculateUtil {
         Map<Integer, Integer> tempMap = new HashMap<>();// 基础属性
         Map<Integer, Integer> attrMutMap = new HashMap<>();// 万分比属性
         // 基础属性
-//        tempMap.put(HeroConstant.ATTR_ATTACK, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.ATTACK,
-//                hero.getWash()[HeroConstant.ATTR_ATTACK], hero.getLevel()));
-//        tempMap.put(HeroConstant.ATTR_DEFEND, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.DEFEND,
-//                hero.getWash()[HeroConstant.ATTR_DEFEND], hero.getLevel()));
-//        tempMap.put(HeroConstant.ATTR_LEAD, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.LEAD,
-//                hero.getWash()[HeroConstant.ATTR_LEAD], hero.getLevel()));
+        tempMap.put(HeroConstant.ATTR_ATTACK, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.ATTACK,
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.ATTACK), hero.getLevel()));
+        tempMap.put(HeroConstant.ATTR_DEFEND, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.DEFEND,
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.DEFEND), hero.getLevel()));
+        tempMap.put(HeroConstant.ATTR_LEAD, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.LEAD,
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.LEAD), hero.getLevel()));
+
 
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "base tempMap=" + tempMap);
 
