@@ -291,7 +291,7 @@ public class DrawCardService implements GmCmdService {
         }
         List<Integer> heroIdPoolList = dataMgr.getWishedHeroPool(configList);
         if (CheckNull.isEmpty(heroIdPoolList) || !heroIdPoolList.contains(heroId)) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, has chosen heroId:%d", roleId, heroId));
+            throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, not contain heroId:%d", roleId, heroId));
         }
 
         drawCardData.getWishHero().setA(heroId);
