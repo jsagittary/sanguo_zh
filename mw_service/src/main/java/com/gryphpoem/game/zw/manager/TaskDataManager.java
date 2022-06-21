@@ -298,6 +298,14 @@ public class TaskDataManager {
                     task.setSchedule(task.getSchedule() + schedule);
                 }
                 break;
+            case TaskType.COND_SUPER_EQUIP:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId == paramId) {
+                    Optional.ofNullable(player.supEquips.get(sCondId)).ifPresent(superEquip -> {
+                        task.setSchedule(superEquip.getLv());
+                    });
+                }
+                break;
             case TaskType.COND_BUILDING_TYPE_LV:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId == paramId) {
