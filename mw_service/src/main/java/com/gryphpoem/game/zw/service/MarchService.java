@@ -682,6 +682,8 @@ public class MarchService {
             CommonPb.RptAtkBandit rpt_ = rpt.build();
             mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt_, now),
                     MailConstant.MOLD_ATK_BANDIT_SUCC, dropList, now, tParam, cParam, recoverArmyAward);
+            // 更新功能活动数据
+            DataResource.ac.getBean(DrawCardPlanTemplateService.class).updateFunctionData(player, FunctionTrigger.DEFEAT_THE_ROBBER, 1);
         } else {
             if (!bandit_task_999) {
                 // 荣耀日报 打匪军失败更新
@@ -695,8 +697,6 @@ public class MarchService {
         //上报数数
         EventDataUp.battle(player.account, player.lord,attacker,"atk", String.valueOf(banditId), String.valueOf(WorldConstant.BATTLE_TYPE_BANDIT),
                 String.valueOf(fightLogic.getWinState()),lord.getLordId(), rpt.getAtkHeroList());
-        // 更新功能活动数据
-        DataResource.ac.getBean(DrawCardPlanTemplateService.class).updateFunctionData(player, FunctionTrigger.DEFEAT_THE_ROBBER, 1);
         // 判断当前任务列表中是否有流寇任务
         if (worldService.checkCurTaskHasBandit(staticBandit.getLv(), historyLv) || bandit_task_999) {
             retreatArmyByMarchTime(player, army, now, Constant.ATTACK_BANDIT_MARCH_TIME);
