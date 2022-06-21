@@ -342,7 +342,8 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler" />
 		<result column="recombination" property="recombination"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
-
+		<result column="evolveGroup" property="evolveGroup"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 	</resultMap>
 
 	<select id="selectHeroMap" resultMap="heroMap">
@@ -2632,5 +2633,17 @@
 	</resultMap>
 	<select id="selectTaskChapterMap" resultMap="taskChapterMap">
 		SELECT * FROM s_task_chapter
+	</select>
+
+	<resultMap id="staticHeroUpgrade" type="StaticHeroUpgrade">
+		<result column="attr" property="attr"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+		<result column="consume" property="consume"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+		<result column="condition" property="condition"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+	</resultMap>
+	<select id="selectHeroUpgradeList" resultMap="staticHeroUpgrade" >
+		SELECT * FROM s_hero_upgrade
 	</select>
 </mapper>

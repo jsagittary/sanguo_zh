@@ -112,6 +112,10 @@ public class HeroConstant {
      * 限时寻访击败叛军次数和免费次数
      */
     public static List<Integer> TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES;
+    /**
+     * 英雄合成所需碎片数量
+     */
+    public static int NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS;
 
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
@@ -141,6 +145,7 @@ public class HeroConstant {
         DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE = SystemTabLoader.getIntegerSystemValue(SystemId.DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE, 100);
         DRAW_CARD_WISH_VALUE_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_CARD_WISH_VALUE_LIMIT, 100);
         TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES, "[]");
+        NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS = SystemTabLoader.getIntegerSystemValue(SystemId.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, 80);
     }
 
     /**

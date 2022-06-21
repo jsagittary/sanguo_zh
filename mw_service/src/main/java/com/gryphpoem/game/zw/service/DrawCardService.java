@@ -342,7 +342,7 @@ public class DrawCardService implements GmCmdService {
      * @param req
      * @return
      */
-    public GamePb5.ExchangeHeroFragmentRs exchangeItem(long roleId, GamePb5.ExchangeHeroFragmentRq req) {
+    public GamePb5.ExchangeHeroFragmentRs exchangeHeroFragment(long roleId, GamePb5.ExchangeHeroFragmentRq req) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         if (CheckNull.isEmpty(req.getConsumeItemsList())) {
             throw new MwException(GameError.PARAM_ERROR, String.format("exchange Item consume list is empty"));
@@ -355,13 +355,42 @@ public class DrawCardService implements GmCmdService {
         if (CheckNull.isNull(hero)) {
             throw new MwException(GameError.MUST_OWN_THIS_HERO_BEFORE_REDEMPTION, String.format("roleId:%d, must own this hero before redemption, heroId:%s", req, req.getExtData()));
         }
-
+        for (List<Integer> list : consumeList) {
+            List<Integer> config = Constant.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT.stream().filter(configList ->
+                    CheckNull.nonEmpty(configList) && configList.get(1) == list.get(1)).findFirst().orElse(null);
+            if (CheckNull.isEmpty(config)) {
+                continue;
+            }
+            if (hero.getQuality() != list.get(0)) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("quality mismatch, player:%d, req.consumeList:%s", roleId, Arrays.toString(list.toArray())));
+            }
+        }
 
         rewardDataManager.subPlayerResHasChecked(player, consumeList, true, AwardFrom.EXCHANGE_ITEM_CONSUMPTION);
         List<CommonPb.Award> awardPbList = rewardDataManager.sendReward(player, awardList, AwardFrom.EXCHANGE_ITEM_CONSUMPTION);
         GamePb5.ExchangeHeroFragmentRs.Builder builder = GamePb5.ExchangeHeroFragmentRs.newBuilder();
         if (CheckNull.nonEmpty(awardPbList))
             builder.addAllAward(awardPbList);
+        return builder.build();
+    }
+
+    /**
+     * 合成英雄碎片
+     *
+     * @param roleId
+     * @param heroId
+     * @return
+     */
+    public GamePb5.SynthesizingHeroFragmentsRs synthesizingHeroFragments(long roleId, int heroId) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        Hero hero = player.heros.get(heroId);
+        if (Objects.nonNull(hero)) {
+            throw new MwException(GameError.HERO_EXISTS, String.format("player:%d, has owned this hero:%d", roleId, heroId));
+        }
+        rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.HERO_FRAGMENT, heroId, HeroConstant.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, AwardFrom.SYNTHETIC_HERO);
+        rewardDataManager.sendRewardSignle(player, AwardType.HERO, heroId, 1, AwardFrom.SYNTHETIC_HERO);
+        GamePb5.SynthesizingHeroFragmentsRs.Builder builder = GamePb5.SynthesizingHeroFragmentsRs.newBuilder();
+        builder.setHero(PbHelper.createHeroPb(player.heros.get(heroId), player));
         return builder.build();
     }
 

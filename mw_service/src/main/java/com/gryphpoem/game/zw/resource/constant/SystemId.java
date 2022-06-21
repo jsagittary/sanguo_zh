@@ -1825,6 +1825,16 @@ public class SystemId {
     public static final int TREASURE_WARE_RES_OUTPUT_TIME_UNIT = 1096;
 
     /**
+     * 品质与万能碎片的兑换
+     */
+    public static final int EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = 4001;
+
+    /**
+     * 英雄合成所需碎片数量
+     */
+    public static int NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS = 4002;
+
+    /**
      * 宝具已分解定时删除间隔时间
      */
     public static final int DEL_DECOMPOSED_TREASURE_WARE = 9991;

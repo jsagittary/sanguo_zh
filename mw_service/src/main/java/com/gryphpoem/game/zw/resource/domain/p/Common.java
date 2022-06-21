@@ -13,16 +13,16 @@ public class Common implements Cloneable {
     private int scoutCdTime;// 侦查CD结束时间
     private int bagCnt;// 装备容量
     private int bagBuy;// 装备容量购买次数
-    private int washCount;// 将领洗髓免费次数
-    private int washTime;// 免费洗髓次数下次更新时间
+//    private int washCount;// 将领洗髓免费次数
+//    private int washTime;// 免费洗髓次数下次更新时间
     private int autoArmy;// 自动补兵
-    private int heroCdTime;// 良将寻访功能，下次免费寻访CD结束时间
-    private int normalHero;// 良将已寻访次数
-    private int superProcess;// 神将寻访解锁进度，百分比（0-100）
-    private int superHero;// 神将已寻访次数,不会继续清0操作
-    private int superTime;// 如果已激活神将，本次结束时间
-    private int superOpenNum;// 神将已激活次数，用于做首次激活特殊处理
-    private int superFreeNum;// 神将寻访免费次数
+//    private int heroCdTime;// 良将寻访功能，下次免费寻访CD结束时间
+//    private int normalHero;// 良将已寻访次数
+//    private int superProcess;// 神将寻访解锁进度，百分比（0-100）
+//    private int superHero;// 神将已寻访次数,不会继续清0操作
+//    private int superTime;// 如果已激活神将，本次结束时间
+//    private int superOpenNum;// 神将已激活次数，用于做首次激活特殊处理
+//    private int superFreeNum;// 神将寻访免费次数
     private int lineAdd;// 兵排额外加
     private int resCnt;// 能领取资源的次数(每小时加一次)
     private int resTime;// 上次领取时间
@@ -40,54 +40,49 @@ public class Common implements Cloneable {
      * 
      * @return
      */
-    public boolean washCountFull() {
-        return getWashCount() >= WorldConstant.HERO_WASH_FREE_MAX;
-    }
+//    public boolean washCountFull() {
+//        return getWashCount() >= WorldConstant.HERO_WASH_FREE_MAX;
+//    }
 
-    /**
-     * 开启洗髓免费次数刷新定时
-     * 
-     * @param now
-     */
-    public void beginWashTime(int now) {
-        washTime = now + WorldConstant.HERO_WASH_TIME;
-    }
+//    /**
+//     * 开启洗髓免费次数刷新定时
+//     *
+//     * @param now
+//     */
+//    public void beginWashTime(int now) {
+//        washTime = now + WorldConstant.HERO_WASH_TIME;
+//    }
 
-    /**
-     * 洗髓次数刷新定时结束处理
-     * 
-     * @param now
-     */
-    public void washTimeEnd(int now) {
-        if (washCount < WorldConstant.HERO_WASH_FREE_MAX) {
-            washCount++;
-            if (washCount < WorldConstant.HERO_WASH_FREE_MAX) {
-                beginWashTime(now);// 增加后仍未到上限，开启下一次刷新定时
-                return;
-            }
-        }
-        washTime = 0;
-    }
+//    /**
+//     * 洗髓次数刷新定时结束处理
+//     *
+//     * @param now
+//     */
+//    public void washTimeEnd(int now) {
+//        if (washCount < WorldConstant.HERO_WASH_FREE_MAX) {
+//            washCount++;
+//            if (washCount < WorldConstant.HERO_WASH_FREE_MAX) {
+//                beginWashTime(now);// 增加后仍未到上限，开启下一次刷新定时
+//                return;
+//            }
+//        }
+//        washTime = 0;
+//    }
 
-    /**
-     * 增加良将寻访激活进度
-     * 
-     * @param process
-     */
-    public void addHeroSearchSuperProcess(int process) {
-        if (superProcess >= Constant.INT_HUNDRED) {
-            return;
-        }
-
-        this.superProcess += process;
-        if (superProcess >= Constant.INT_HUNDRED) {
-            superProcess = Constant.INT_HUNDRED;
-            superOpenNum = 1;// 记录神将激活次数
-
-            // 记录失效时间
-            superTime = TimeHelper.getCurrentSecond() + HeroConstant.SUPER_OPEN_TIME;
-        }
-    }
+//    public void addHeroSearchSuperProcess(int process) {
+//        if (superProcess >= Constant.INT_HUNDRED) {
+//            return;
+//        }
+//
+//        this.superProcess += process;
+//        if (superProcess >= Constant.INT_HUNDRED) {
+//            superProcess = Constant.INT_HUNDRED;
+//            superOpenNum = 1;// 记录神将激活次数
+//
+//            // 记录失效时间
+//            superTime = TimeHelper.getCurrentSecond() + HeroConstant.SUPER_OPEN_TIME;
+//        }
+//    }
 
     public long getLordId() {
         return lordId;
@@ -144,22 +139,22 @@ public class Common implements Cloneable {
     public void setBagBuy(int bagBuy) {
         this.bagBuy = bagBuy;
     }
-
-    public int getWashCount() {
-        return washCount;
-    }
-
-    public void setWashCount(int washCount) {
-        this.washCount = washCount;
-    }
-
-    public int getWashTime() {
-        return washTime;
-    }
-
-    public void setWashTime(int washTime) {
-        this.washTime = washTime;
-    }
+//
+//    public int getWashCount() {
+//        return washCount;
+//    }
+//
+//    public void setWashCount(int washCount) {
+//        this.washCount = washCount;
+//    }
+//
+//    public int getWashTime() {
+//        return washTime;
+//    }
+//
+//    public void setWashTime(int washTime) {
+//        this.washTime = washTime;
+//    }
 
     public int getAutoArmy() {
         return autoArmy;
@@ -168,54 +163,54 @@ public class Common implements Cloneable {
     public void setAutoArmy(int autoArmy) {
         this.autoArmy = autoArmy;
     }
-
-    public int getHeroCdTime() {
-        return heroCdTime;
-    }
-
-    public void setHeroCdTime(int heroCdTime) {
-        this.heroCdTime = heroCdTime;
-    }
-
-    public int getNormalHero() {
-        return normalHero;
-    }
-
-    public void setNormalHero(int normalHero) {
-        this.normalHero = normalHero;
-    }
-
-    public int getSuperProcess() {
-        return superProcess;
-    }
-
-    public void setSuperProcess(int superProcess) {
-        this.superProcess = superProcess;
-    }
-
-    public int getSuperHero() {
-        return superHero;
-    }
-
-    public void setSuperHero(int superHero) {
-        this.superHero = superHero;
-    }
-
-    public int getSuperTime() {
-        return superTime;
-    }
-
-    public void setSuperTime(int superTime) {
-        this.superTime = superTime;
-    }
-
-    public int getSuperOpenNum() {
-        return superOpenNum;
-    }
-
-    public void setSuperOpenNum(int superOpenNum) {
-        this.superOpenNum = superOpenNum;
-    }
+//
+//    public int getHeroCdTime() {
+//        return heroCdTime;
+//    }
+//
+//    public void setHeroCdTime(int heroCdTime) {
+//        this.heroCdTime = heroCdTime;
+//    }
+//
+//    public int getNormalHero() {
+//        return normalHero;
+//    }
+//
+//    public void setNormalHero(int normalHero) {
+//        this.normalHero = normalHero;
+//    }
+//
+//    public int getSuperProcess() {
+//        return superProcess;
+//    }
+//
+//    public void setSuperProcess(int superProcess) {
+//        this.superProcess = superProcess;
+//    }
+//
+//    public int getSuperHero() {
+//        return superHero;
+//    }
+//
+//    public void setSuperHero(int superHero) {
+//        this.superHero = superHero;
+//    }
+//
+//    public int getSuperTime() {
+//        return superTime;
+//    }
+//
+//    public void setSuperTime(int superTime) {
+//        this.superTime = superTime;
+//    }
+//
+//    public int getSuperOpenNum() {
+//        return superOpenNum;
+//    }
+//
+//    public void setSuperOpenNum(int superOpenNum) {
+//        this.superOpenNum = superOpenNum;
+//    }
 
     public int getLineAdd() {
         return lineAdd;
@@ -225,13 +220,13 @@ public class Common implements Cloneable {
         this.lineAdd = lineAdd;
     }
 
-    public int getSuperFreeNum() {
-        return superFreeNum;
-    }
-
-    public void setSuperFreeNum(int superFreeNum) {
-        this.superFreeNum = superFreeNum;
-    }
+//    public int getSuperFreeNum() {
+//        return superFreeNum;
+//    }
+//
+//    public void setSuperFreeNum(int superFreeNum) {
+//        this.superFreeNum = superFreeNum;
+//    }
 
     public int getResCnt() {
         return resCnt;
@@ -343,9 +338,9 @@ public class Common implements Cloneable {
      * 
      * @return
      */
-    public String heroSearchToString() {
-        return "Common [lordId=" + lordId + ", heroCdTime=" + heroCdTime + ", normalHero=" + normalHero
-                + ", superProcess=" + superProcess + ", superHero=" + superHero + ", superTime=" + superTime
-                + ", superOpenNum=" + superOpenNum + ", superFreeNum=" + superFreeNum + "]";
-    }
+//    public String heroSearchToString() {
+//        return "Common [lordId=" + lordId + ", heroCdTime=" + heroCdTime + ", normalHero=" + normalHero
+//                + ", superProcess=" + superProcess + ", superHero=" + superHero + ", superTime=" + superTime
+//                + ", superOpenNum=" + superOpenNum + ", superFreeNum=" + superFreeNum + "]";
+//    }
 }

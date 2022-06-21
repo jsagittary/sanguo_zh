@@ -403,7 +403,7 @@ public class MessagePool implements IMessagePool {
         // 保存将领洗髓
         registerC(SaveHeroWashRq.EXT_FIELD_NUMBER, SaveHeroWashRs.EXT_FIELD_NUMBER, SaveHeroWashHandler.class);
         // 将领突破
-        registerC(HeroBreakRq.EXT_FIELD_NUMBER, HeroBreakRs.EXT_FIELD_NUMBER, HeroBreakHandler.class);
+//        registerC(HeroBreakRq.EXT_FIELD_NUMBER, HeroBreakRs.EXT_FIELD_NUMBER, HeroBreakHandler.class);
         // 获取将领洗髓次数等信息
         registerC(GetHeroWashInfoRq.EXT_FIELD_NUMBER, GetHeroWashInfoRs.EXT_FIELD_NUMBER, GetHeroWashInfoHandler.class);
         // 将领换位置
@@ -422,8 +422,10 @@ public class MessagePool implements IMessagePool {
         // 将领授勋
         registerC(HeroDecoratedRq.EXT_FIELD_NUMBER, HeroDecoratedRs.EXT_FIELD_NUMBER, HeroDecoratedHandler.class);
         // 将领觉醒相关功能
-        registerC(AwakenHeroRq.EXT_FIELD_NUMBER, AwakenHeroRs.EXT_FIELD_NUMBER, AwakenHeroHandler.class);
-
+        registerC(GamePb5.StudyHeroTalentRq.EXT_FIELD_NUMBER, StudyHeroTalentRs.EXT_FIELD_NUMBER, StudyHeroTalentHandler.class);
+        registerC(GamePb5.UpgradeHeroRq.EXT_FIELD_NUMBER, UpgradeHeroRs.EXT_FIELD_NUMBER, HeroUpgradeHandler.class);
+        registerC(GamePb5.ExchangeHeroFragmentRq.EXT_FIELD_NUMBER, ExchangeHeroFragmentRs.EXT_FIELD_NUMBER, ExchangeHeroFragmentHandler.class);
+        registerC(GamePb5.SynthesizingHeroFragmentsRq.EXT_FIELD_NUMBER, SynthesizingHeroFragmentsRs.EXT_FIELD_NUMBER, SynthesizingHeroFragmentsHandler.class);
         // 战机相关协议
         registerC(GetWarPlanesRq.EXT_FIELD_NUMBER, GetWarPlanesRs.EXT_FIELD_NUMBER, GetWarPlanesHandler.class);
         registerC(GetPlaneByIdsRq.EXT_FIELD_NUMBER, GetPlaneByIdsRs.EXT_FIELD_NUMBER, GetPlaneByIdsHandler.class);

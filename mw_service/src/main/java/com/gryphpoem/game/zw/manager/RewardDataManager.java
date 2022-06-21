@@ -1207,7 +1207,7 @@ public class RewardDataManager {
      * @param from
      */
     private void addHeroWashCnt(Player player, int count, AwardFrom from) {
-        player.common.setWashCount(player.common.getWashCount() + count);
+//        player.common.setWashCount(player.common.getWashCount() + count);
         LogLordHelper.commonLog("addHeroWashCnt", from, player, count);
     }
 
@@ -2335,9 +2335,11 @@ public class RewardDataManager {
         hero.setHeroType(staticHero.getHeroType());
         hero.setQuality(staticHero.getQuality());
         // 初始化将领属性
-        hero.getWash()[HeroConstant.ATTR_ATTACK] = staticHero.getAttack();
-        hero.getWash()[HeroConstant.ATTR_DEFEND] = staticHero.getDefend();
-        hero.getWash()[HeroConstant.ATTR_LEAD] = staticHero.getLead();
+//        hero.getWash()[HeroConstant.ATTR_ATTACK] = staticHero.getAttack();
+//        hero.getWash()[HeroConstant.ATTR_DEFEND] = staticHero.getDefend();
+//        hero.getWash()[HeroConstant.ATTR_LEAD] = staticHero.getLead();
+        // 初始化将领品阶数据
+        hero.initHeroGrade();
         //如果是赛季英雄则初始化英雄技能
         if (staticHero.getSeason() > 0) {
             Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
@@ -3621,6 +3623,9 @@ public class RewardDataManager {
             case AwardType.SPECIAL:
                 checkSpecialIsEnough(player, id, num, message);
                 break;
+            case AwardType.HERO_FRAGMENT:
+                checkHeroFragmentIsEnough(player, id, num, message);
+                break;
 //            case AwardType.TOTEM_CHIP:
 //                checkTotemChipEnough(player,id,num,message);
 //                break;
@@ -3635,6 +3640,23 @@ public class RewardDataManager {
 //            throw new MwException(GameError.TOTEM_CHIP_NOT_ENOUGH.getCode(),GameError.err(player.roleId,"检查图腾碎片不足",id,num));
 //        }
 //    }
+
+    /**
+     * 校验英雄碎片
+     *
+     * @param player
+     * @param heroId
+     * @param need
+     * @param message
+     * @throws MwException
+     */
+    private void checkHeroFragmentIsEnough(Player player, int heroId, long need, String... message) throws MwException {
+        Integer ownNum = player.getDrawCardData().getFragmentData().getOrDefault(heroId, 0);
+        if (CheckNull.isNull(ownNum) || ownNum < need) {
+            throw new MwException(GameError.NOT_ENOUGH_HERO_FRAGMENTS, String.format("player:%d, not enough hero fragments, ownNum:%d, need:%d, heroId:%d, message:%s",
+                    player.roleId, ownNum, need, heroId, message));
+        }
+    }
 
     /**
      * 检测特殊道具时候足够
@@ -4070,7 +4092,7 @@ public class RewardDataManager {
                         count = player.common.getBaptizeCnt();
                         break;
                     case AwardType.Special.HERO_WASH:
-                        count = player.common.getWashCount();
+//                        count = player.common.getWashCount();
                         break;
                     case AwardType.Special.TECH_SPEED:
                         count = Optional.ofNullable(player.getCanSpeedTechQue()).map(TechQue::getParam).orElse(0);

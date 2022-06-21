@@ -1613,7 +1613,8 @@ public class Player {
      * @return
      */
     public boolean washCountFull() {
-        return common.washCountFull();
+        return false;
+//        return common.washCountFull();
     }
 
     /**

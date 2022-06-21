@@ -1051,4 +1051,8 @@ public class StaticDataDao extends BaseDao {
     public Map<Integer, StaticTaskChapter> selectTaskChapterMap() {
         return getSqlSession().selectMap("StaticDao.selectTaskChapterMap", "chapterId");
     }
+
+    public List<StaticHeroUpgrade> selectHeroUpgradeList() {
+        return getSqlSession().selectList("StaticDao.selectHeroUpgradeList");
+    }
 }

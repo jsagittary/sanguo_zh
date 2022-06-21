@@ -12,7 +12,7 @@ import java.util.Map;
 public class StaticHeroDecorated {
     private int cnt;// 授勋次数
     private int heroLv;// 需要将领等级
-    private int heroQuality;// 需要将领品质
+    private int heroGrade;// 需要将领品阶
     private List<List<Integer>> needEquip;// 需要的装备id [[equipId,equipId,attrId],[equipId,equipId,attrId]],最后一个值是attrId
     private Map<Integer, Integer> addAttr;// 授勋后加的属性
     private int setsOf;// 授勋后加的属性
@@ -31,14 +31,6 @@ public class StaticHeroDecorated {
 
     public void setHeroLv(int heroLv) {
         this.heroLv = heroLv;
-    }
-
-    public int getHeroQuality() {
-        return heroQuality;
-    }
-
-    public void setHeroQuality(int heroQuality) {
-        this.heroQuality = heroQuality;
     }
 
     public List<List<Integer>> getNeedEquip() {
@@ -63,6 +55,14 @@ public class StaticHeroDecorated {
 
     public void setSetsOf(int setsOf) {
         this.setsOf = setsOf;
+    }
+
+    public int getHeroGrade() {
+        return heroGrade;
+    }
+
+    public void setHeroGrade(int heroGrade) {
+        this.heroGrade = heroGrade;
     }
 
     /**
@@ -90,7 +90,7 @@ public class StaticHeroDecorated {
 
     @Override
     public String toString() {
-        return "StaticHeroDecorated [cnt=" + cnt + ", heroLv=" + heroLv + ", heroQuality=" + heroQuality
+        return "StaticHeroDecorated [cnt=" + cnt + ", heroLv=" + heroLv + ", heroGrade=" + heroGrade
                 + ", needEquip=" + needEquip + ", addAttr=" + addAttr + "]";
     }
 

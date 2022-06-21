@@ -39,7 +39,7 @@ public class StaticHero {
     private int skillId;// 技能ID
     private List<List<Integer>> activateConsume;// 激活进化组的消耗
     private Map<Integer, Integer> activateAttr;// 激活加成属性
-    private int evolveGroup;// 技能组，链接到 hero_evolve表格中的group字段
+    private List<Integer> evolveGroup;// 技能组，链接到 hero_evolve表格中的group字段
     private List<List<Integer>> recombination;// 重组的消耗
 
     public int getHeroType() {
@@ -242,14 +242,6 @@ public class StaticHero {
         this.skillId = skillId;
     }
 
-    public int getEvolveGroup() {
-        return evolveGroup;
-    }
-
-    public void setEvolveGroup(int evolveGroup) {
-        this.evolveGroup = evolveGroup;
-    }
-
     public List<List<Integer>> getActivateConsume() {
         return activateConsume;
     }
@@ -284,6 +276,14 @@ public class StaticHero {
 
     public boolean isSeasonHero() {
         return season > 0;
+    }
+
+    public List<Integer> getEvolveGroup() {
+        return evolveGroup;
+    }
+
+    public void setEvolveGroup(List<Integer> evolveGroup) {
+        this.evolveGroup = evolveGroup;
     }
 
     /**

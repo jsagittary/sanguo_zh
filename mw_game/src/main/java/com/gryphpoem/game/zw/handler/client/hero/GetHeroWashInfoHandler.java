@@ -15,12 +15,12 @@ public class GetHeroWashInfoHandler extends ClientHandler {
 
 	@Override
 	public void action() throws MwException {
-		HeroService heroService = getService(HeroService.class);
-		GetHeroWashInfoRs resp = heroService.getHeroWashInfo(getRoleId());
-
-		if (null != resp) {
-			sendMsgToPlayer(GetHeroWashInfoRs.ext, resp);
-		}
+//		HeroService heroService = getService(HeroService.class);
+//		GetHeroWashInfoRs resp = heroService.getHeroWashInfo(getRoleId());
+//
+//		if (null != resp) {
+//			sendMsgToPlayer(GetHeroWashInfoRs.ext, resp);
+//		}
 	}
 
 }

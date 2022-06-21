@@ -2044,8 +2044,8 @@ public class GmService{
         } else if (str.equalsIgnoreCase("playerArea")) {
             worldService.moveCityByGm(player, count);
         } else if (str.equalsIgnoreCase("washFull")) {
-            player.common.setWashCount(WorldConstant.HERO_WASH_FREE_MAX);
-            player.common.washTimeEnd(TimeHelper.getCurrentSecond());
+//            player.common.setWashCount(WorldConstant.HERO_WASH_FREE_MAX);
+//            player.common.washTimeEnd(TimeHelper.getCurrentSecond());
         } else if (str.equalsIgnoreCase("merageArea")) {
             worldService.mergeArea(id, count);
         } else if (str.equalsIgnoreCase("allPlayerEffectProtect")) {

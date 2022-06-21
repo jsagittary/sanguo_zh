@@ -95,7 +95,7 @@ public class LogicServer extends AbsLogicServer {
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new WorldTimer());
 
         // 定时完成执行将领相关任务
-        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new HeroTimer());
+//        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new HeroTimer());
 
         // 定时执行军团相关任务
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new PartyTimer());

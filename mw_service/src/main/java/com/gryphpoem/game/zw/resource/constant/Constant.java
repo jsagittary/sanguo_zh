@@ -995,6 +995,11 @@ public final class Constant {
      * 跨服排名第一的人物形象奖励
      */
     public static List<Integer> CROSS_WAR_FIRE_WINNER_PORTRAIT;
+
+    /**
+     * 品质与万能碎片的兑换
+     */
+    public static List<List<Integer>> EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT;
     /**
      * s_system表中定义的常量初始化
      */
@@ -1294,6 +1299,7 @@ public final class Constant {
         TREASURE_WARE_DEFENCE_ATTR_TYPE = SystemTabLoader.getListIntSystemValue(SystemId.TREASURE_WARE_DEFENCE_ATTR_TYPE, "[2,22,36]");
         TREASURE_WARE_RES_OUTPUT_TIME_UNIT = SystemTabLoader.getIntegerSystemValue(SystemId.TREASURE_WARE_RES_OUTPUT_TIME_UNIT, 60);
         CROSS_WAR_FIRE_WINNER_PORTRAIT = SystemTabLoader.getListIntSystemValue(SystemId.CROSS_WAR_FIRE_WINNER_PORTRAIT, "[9,20,2592000]");
+        EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = SystemTabLoader.getListListIntSystemValue(SystemId.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT, "[[]]");
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

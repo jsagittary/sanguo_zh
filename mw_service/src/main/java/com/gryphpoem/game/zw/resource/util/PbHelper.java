@@ -488,12 +488,12 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue() + addAttrValue));
         }
         int value;
-        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-            value = hero.getWash()[i];
-            if (value > 0) {
-                builder.addWash(createTwoIntPb(i, value));
-            }
-        }
+//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
+//            value = hero.getWash()[i];
+//            if (value > 0) {
+//                builder.addWash(createTwoIntPb(i, value));
+//            }
+//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -535,18 +535,24 @@ public class PbHelper {
             }
         }
         builder.setComandoPos(hero.getCommandoPos());
-        AwakenData awaken = hero.getAwaken();
-        if (!CheckNull.isNull(awaken)) {
+        Map<Integer, AwakenData> awakenMap = hero.getAwaken();
+        if (!CheckNull.isEmpty(awakenMap)) {
             CommonPb.AwakenData.Builder data = CommonPb.AwakenData.newBuilder();
-            data.setStatus(awaken.getStatus());
-            Map<Integer, Integer> evolutionGene = awaken.getEvolutionGene();
-            if (!CheckNull.isEmpty(evolutionGene)) {
-                for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
-                    data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+            awakenMap.values().forEach(awakenData -> {
+                if (CheckNull.isNull(awakenData))
+                    return;
+                data.setStatus(awakenData.getStatus());
+                Map<Integer, Integer> evolutionGene = awakenData.getEvolutionGene();
+                if (!CheckNull.isEmpty(evolutionGene)) {
+                    for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
+                        data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
                 }
-            }
-            builder.setAwakendata(data);
+                builder.addAwakendata(data.build());
+                data.clear();
+            });
         }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
@@ -578,12 +584,12 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         int value;
-        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-            value = hero.getWash()[i];
-            if (value > 0) {
-                builder.addWash(createTwoIntPb(i, value));
-            }
-        }
+//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
+//            value = hero.getWash()[i];
+//            if (value > 0) {
+//                builder.addWash(createTwoIntPb(i, value));
+//            }
+//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -625,18 +631,24 @@ public class PbHelper {
             }
         }
         builder.setComandoPos(hero.getCommandoPos());
-        AwakenData awaken = hero.getAwaken();
-        if (!CheckNull.isNull(awaken)) {
+        Map<Integer, AwakenData> awakenMap = hero.getAwaken();
+        if (!CheckNull.isEmpty(awakenMap)) {
             CommonPb.AwakenData.Builder data = CommonPb.AwakenData.newBuilder();
-            data.setStatus(awaken.getStatus());
-            Map<Integer, Integer> evolutionGene = awaken.getEvolutionGene();
-            if (!CheckNull.isEmpty(evolutionGene)) {
-                for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
-                    data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+            awakenMap.values().forEach(awakenData -> {
+                if (CheckNull.isNull(awakenData))
+                    return;
+                data.setStatus(awakenData.getStatus());
+                Map<Integer, Integer> evolutionGene = awakenData.getEvolutionGene();
+                if (!CheckNull.isEmpty(evolutionGene)) {
+                    for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
+                        data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
                 }
-            }
-            builder.setAwakendata(data);
+                builder.addAwakendata(data.build());
+                data.clear();
+            });
         }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
@@ -653,7 +665,7 @@ public class PbHelper {
         if (Objects.nonNull(hero.getTreasureWare())) {
             builder.setTreasureWare(hero.getTreasureWare());
         }
-//        builder.setGrade(hero.getGradeKeyId());
+        builder.setGrade(hero.getGradeKeyId());
         return builder.build();
     }
 

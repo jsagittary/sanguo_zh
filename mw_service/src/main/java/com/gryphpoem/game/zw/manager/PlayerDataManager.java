@@ -432,7 +432,7 @@ public class PlayerDataManager implements PlayerDM {
         common.setLordId(player.roleId);
         common.setBagCnt(Constant.BAG_INIT_CNT);
         common.setBaptizeCnt(Constant.EQUIP_MAX_BAPTIZECNT);
-        common.setWashCount(WorldConstant.HERO_WASH_FREE_MAX);
+//        common.setWashCount(WorldConstant.HERO_WASH_FREE_MAX);
         common.setTreasureWareCnt(Constant.TREASURE_WARE_BAG_INIT);
         commonDao.insertCommon(common);
         player.common = common;

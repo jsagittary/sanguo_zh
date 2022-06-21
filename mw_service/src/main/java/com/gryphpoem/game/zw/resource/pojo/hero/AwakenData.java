@@ -24,20 +24,37 @@ public class AwakenData {
      * 基因进化的状态
      */
     private Map<Integer, Integer> evolutionGene = new HashMap<>(5);
+    /**
+     * 天赋下标
+     */
+    private int index;
 
-    public AwakenData(CommonPb.AwakenData awakendata) {
+    public AwakenData(CommonPb.AwakenData awakenData) {
         this();
-        this.status = awakendata.getStatus();
-        for (CommonPb.TwoInt twoInt : awakendata.getEvolutionGeneList()) {
+        this.status = awakenData.getStatus();
+        for (CommonPb.TwoInt twoInt : awakenData.getEvolutionGeneList()) {
             this.evolutionGene.put(twoInt.getV1(), twoInt.getV2());
         }
+        this.index = awakenData.getIndex();
     }
 
     public AwakenData() {
     }
 
+    public AwakenData(int index) {
+        this.index = index;
+    }
+
     public Map<Integer, Integer> getEvolutionGene() {
         return evolutionGene;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     /**
