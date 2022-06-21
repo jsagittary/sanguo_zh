@@ -92,6 +92,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * @param count
      */
     public void subFreeCount(int count) {
+        int preFreeCount = freeCount;
         try {
             if (freeCount >= count) {
                 freeCount -= count;
@@ -105,7 +106,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
             this.activeDrawsUsedCount += count;
         } finally {
             // 系统免费次数使用完, 进入cd时间
-            if (freeCount == 0)
+            if (preFreeCount > freeCount && freeCount == 0)
                 cdFreeTime = System.currentTimeMillis() + HeroConstant.DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL * 1000l;
         }
     }
