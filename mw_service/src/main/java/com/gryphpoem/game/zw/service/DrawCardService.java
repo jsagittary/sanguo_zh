@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticDrawHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -43,6 +44,8 @@ public class DrawCardService implements GmCmdService {
     private RewardDataManager rewardDataManager;
     @Autowired
     private HeroService heroService;
+    @Autowired
+    private ChatDataManager chatDataManager;
 
     /**
      * 获取抽卡详情
@@ -192,6 +195,10 @@ public class DrawCardService implements GmCmdService {
                     // 返回新得到的将领信息
                     Hero hero = player.heros.get(staticHero.getHeroId());
                     builder.setHero(PbHelper.createHeroPb(hero, player));
+                    if (staticHero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO) {
+                        chatDataManager.sendSysChat(ChatConst.CHAT_RECRUIT_HERO, player.lord.getCamp(), 0,
+                                    player.lord.getNick(), heroId);
+                    }
                 }
                 break;
             case PROP_REWARD:
