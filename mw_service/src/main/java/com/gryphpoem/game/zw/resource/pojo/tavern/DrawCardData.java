@@ -202,22 +202,21 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * @param now
      */
     public void addDrawCount(Date now) {
-        boolean add = false;
+        // 先重置数据
         if (CheckNull.isNull(this.lastDrawCardDate) || !DateHelper.isSameDate(now, lastDrawCardDate)) {
-            this.todayDrawCount = 1;
+            this.todayDrawCount = 0;
             this.lastDrawCardDate = now;
-            add = true;
-        } else {
-            if (this.todayDrawCount < HeroConstant.DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS) {
-                this.todayDrawCount++;
-                add = true;
-            }
         }
 
-        if (add) {
-            Integer count = this.wishHero.getB();
-            if (count < HeroConstant.DRAW_CARD_WISH_VALUE_LIMIT)
-                this.wishHero.setB(++count);
+        int count = this.wishHero.getB();
+        // 若心愿武将值已满, 则不记录
+        if (count >= HeroConstant.DRAW_CARD_WISH_VALUE_LIMIT) {
+            return;
+        }
+
+        if (this.todayDrawCount < HeroConstant.DAILY_DRAW_CARD_CAN_INCREASE_WISH_POINTS) {
+            this.todayDrawCount++;
+            this.wishHero.setB(++count);
         }
     }
 

@@ -163,7 +163,7 @@ public class DrawCardService implements GmCmdService {
     public CommonPb.SearchHero onceDraw(Player player, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
                                          DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now) throws MwException {
         // 记录随机到的奖励信息
-        StaticHeroSearch shs = randomPriorityReward(player.getDrawCardData(), now, configList);
+        StaticHeroSearch shs = randomPriorityReward(player.roleId, player.getDrawCardData(), now, configList);
         if (CheckNull.isNull(shs) || CheckNull.isEmpty(shs.getRewardList())) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType);
         }
@@ -219,19 +219,24 @@ public class DrawCardService implements GmCmdService {
      * @return
      * @throws MwException
      */
-    private StaticHeroSearch randomPriorityReward(DrawCardData drawCardData, Date now, List<StaticDrawCardWeight> configList) throws MwException {
+    private StaticHeroSearch randomPriorityReward(long roleId, DrawCardData drawCardData, Date now, List<StaticDrawCardWeight> configList) throws MwException {
+        StaticHeroSearch staticData;
         try {
             // 首次抽取必出奖励
             if (!drawCardData.isFirstFinish()) {
                 drawCardData.setFirstFinish(true);
                 drawCardData.addHeroDrawCount();
                 drawCardData.addFragmentDrawCount();
-                return dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
+                staticData = dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
+                LogUtil.debug(String.format("player:%d, 首次抽卡：%s", roleId, staticData));
+                return staticData;
             }
             // 当前次数到必出武将次数
             if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.setHeroDrawCount(0);
-                return dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
+                staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
+                LogUtil.debug(String.format("player:%d, 橙色武将保底：%s", roleId, staticData));
+                return staticData;
             }
             // 免费活动次数保底
             List<Integer> nextRewardList = drawCardData.getNextRewardList();
@@ -239,20 +244,26 @@ public class DrawCardService implements GmCmdService {
                 drawCardData.addHeroDrawCount();
                 drawCardData.addFragmentDrawCount();
                 drawCardData.getSpecifyRewardList().add(nextRewardList.get(0));
-                return dataMgr.getHeroSearchMap().get(nextRewardList.get(1));
+                staticData = dataMgr.getHeroSearchMap().get(nextRewardList.get(1));
+                LogUtil.debug(String.format("player:%d, 活动次数保底：%s", roleId, staticData));
+                return staticData;
             }
             // 碎片保底
             if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
                 drawCardData.setFragmentDrawCount(0);
                 drawCardData.addHeroDrawCount();
-                return dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
+                staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
+                LogUtil.debug(String.format("player:%d, 碎片保底：%s", roleId, staticData));
+                return staticData;
             }
 
             // 记录抽取次数
             drawCardData.addHeroDrawCount();
             drawCardData.addFragmentDrawCount();
             // 随机奖励
-            return dataMgr.randomReward(configList);
+            staticData = dataMgr.randomReward(configList);
+            LogUtil.debug(String.format("player:%d, 随机抽卡：%s", roleId, staticData));
+            return staticData;
         } catch (Exception e) {
             throw e;
         } finally {
