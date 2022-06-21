@@ -55,19 +55,15 @@ public class ChapterTaskDataManager {
         }
         checkPlayerChapterTask(player);
         // 主线任务
-        List<CommonPb.Task> changeTaskList = null;
+        List<CommonPb.Task> changeTaskList = Lists.newArrayList();
         ChapterTask chapterTask = player.chapterTask;
         Map<Integer, Task> updateTask = chapterTask.getOpenTasks();
         for (Task task : updateTask.values()) {
             StaticTask staticTask = StaticTaskDataMgr.getTaskById(task.getTaskId());
-            if (Objects.isNull(staticTask) || staticTask.getCond() != cond) {
-                continue;
-            }
-            if (taskDataManager.modifyTaskSchedule(player, task, staticTask.getCond(), staticTask.getCondId(), staticTask.getSchedule(), schedule, param)) {
-                if (isSync(player, staticTask)) {
-                    if (CheckNull.isEmpty(changeTaskList)) changeTaskList = Lists.newArrayList();
-                    changeTaskList.add(PbHelper.createTaskPb(task, staticTask.getType()));
-                }
+            if (Objects.isNull(staticTask) || staticTask.getCond() != cond) continue;
+            if (taskDataManager.modifyTaskSchedule(player, task, staticTask.getCond(), staticTask.getCondId(), staticTask.getSchedule(), schedule, param)
+                    && isSync(player, staticTask)) {
+                changeTaskList.add(PbHelper.createTaskPb(task, staticTask.getType()));
             }
         }
         this.synTaskInfo(player, changeTaskList);

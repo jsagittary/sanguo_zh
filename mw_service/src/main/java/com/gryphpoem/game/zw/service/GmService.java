@@ -2796,6 +2796,16 @@ public class GmService{
             Activity activity = activityDataManager.conActivity(activityBase, activityType, begin, player);
             activity.setOpen(activityBase.getBaseOpen());
             player.activitys.put(activityType, activity);
+
+            if (AbsRankActivityService.isActRankAct(activityType)) {
+                GlobalActivityData gActDate = activityDataManager.getGlobalActivity(activityType);
+                if (gActDate == null) {
+                    return;
+                }
+
+                gActDate.getRanks().remove(activityType);
+                AbsRankActivityService.loadActRankAct(activityBase, gActDate);
+            }
         }
     }
 

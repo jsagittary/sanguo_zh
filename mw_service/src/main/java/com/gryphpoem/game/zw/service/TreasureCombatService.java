@@ -154,6 +154,9 @@ public class TreasureCombatService implements GmCmdService {
                 DataResource.getBean(ActivityTriggerService.class).doTreasureCombat(player, combatId);
                 taskDataManager.updTask(player,TaskType.COND_525,1);
                 taskDataManager.updTask(player,TaskType.COND_531,1,combatId);
+
+                // 宝具征程活动任务
+                TaskService.processTask(player, ETask.PASS_TREASURE_WARE_COMBAT_ID, combatId);
             } else {
                 // do nothing
             }
