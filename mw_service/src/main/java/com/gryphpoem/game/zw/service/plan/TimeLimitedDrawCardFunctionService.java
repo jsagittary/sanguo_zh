@@ -279,7 +279,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
             drawCardData.clearHeroDrawCount();
             staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
-            LogUtil.debug(String.format("player:%d, 限时橙色武将保底：%s", roleId, staticData));
+            LogUtil.debug(String.format("drawAcrCard===player:%d, 限时橙色武将保底：%s", roleId, staticData));
             return staticData;
         }
         // 碎片保底
@@ -287,7 +287,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
             drawCardData.clearFragmentDrawCount();
             drawCardData.addHeroDrawCount();
             staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
-            LogUtil.debug(String.format("player:%d, 限时碎片保底：%s", roleId, staticData));
+            LogUtil.debug(String.format("drawAcrCard===player:%d, 限时碎片保底：%s", roleId, staticData));
             return staticData;
         }
 
@@ -296,7 +296,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         drawCardData.addFragmentDrawCount();
         // 随机奖励
         staticData = dataMgr.randomReward(configList);
-        LogUtil.debug(String.format("player:%d, 限时随机抽卡：%s", roleId, staticData));
+        LogUtil.debug(String.format("drawAcrCard===player:%d, 限时随机抽卡：%s", roleId, staticData));
         return staticData;
     }
 }

@@ -548,6 +548,7 @@ public class PbHelper {
                         data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
                     }
                 }
+                data.setIndex(awakenData.getIndex());
                 builder.addAwakendata(data.build());
                 data.clear();
             });
@@ -645,6 +646,7 @@ public class PbHelper {
                         data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
                     }
                 }
+                data.setIndex(awakenData.getIndex());
                 builder.addAwakendata(data.build());
                 data.clear();
             });
