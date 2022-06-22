@@ -68,9 +68,8 @@ public class HeroUpgradeService implements GmCmdService {
         hero.setGradeKeyId(staticData.getKeyId());
         CalculateUtil.processAttr(player, hero);
 
-        StaticHeroUpgrade nextStaticData = StaticHeroDataMgr.getNextLvHeroUpgrade(heroId, hero.getGradeKeyId());
         // 若武将升级到满阶, 发送跑马灯
-        if (Objects.nonNull(nextStaticData) && nextStaticData.getKeyId() == hero.getGradeKeyId()) {
+        if (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= staticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= staticData.getLevel()) {
             chatDataManager.sendSysChat(ChatConst.CHAT_HERO_FULL_GRADE, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), heroId);
         }
         taskDataManager.updTask(player, TaskType.COND_998, hero.getGradeKeyId());
@@ -279,7 +278,7 @@ public class HeroUpgradeService implements GmCmdService {
      * @throws MwException
      */
     public void checkConsume(Player player, List<List<Integer>> configList, int gradeKeyId) throws MwException {
-        rewardDataManager.checkPlayerResIsEnough(player, configList, 1, String.valueOf(gradeKeyId));
+        rewardDataManager.checkAndSubPlayerRes(player, configList, 1, AwardFrom.UPGRADE_HERO, String.valueOf(gradeKeyId));
     }
 
     @Override
