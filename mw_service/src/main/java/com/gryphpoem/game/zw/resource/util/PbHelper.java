@@ -569,6 +569,7 @@ public class PbHelper {
         if (Objects.nonNull(hero.getTreasureWare())) {
             builder.setTreasureWare(hero.getTreasureWare());
         }
+        builder.setGrade(hero.getGradeKeyId());
         return builder.build();
     }
 
@@ -1207,7 +1208,7 @@ public class PbHelper {
     }
 
     public static CommonPb.RptHero createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
-                                                 int addExp, int lost, int heroDecorated) {
+                                                 int addExp, int lost, Hero hero) {
         CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
         builder.setType(type);
         builder.setKill(kill);
@@ -1225,13 +1226,22 @@ public class PbHelper {
         if (addExp > 0) {
             builder.setExp(addExp);
         }
-        builder.setHeroDecorated(heroDecorated);
+        builder.setHeroDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        if (Objects.nonNull(hero)) {
+            builder.setGradeKeyId(hero.getGradeKeyId());
+        }
         return builder.build();
     }
 
-    public static CommonPb.RptHero createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
+    public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,
                                                  int addExp, int lost) {
-        return createRptHero(type, kill, award, heroId, owner, lv, addExp, lost, 0);
+        if (hero instanceof Integer) {
+            Integer heroId = (Integer) hero;
+            return createRptHero(type, kill, award, CheckNull.isNull(heroId) ? 0 : heroId, owner, lv, addExp, lost, null);
+        } else {
+            Hero hero_ = (Hero) hero;
+            return createRptHero(type, kill, award, CheckNull.isNull(hero_) ? 0 : hero_.getHeroId(), owner, lv, addExp, lost, hero_);
+        }
     }
 
     public static CommonPb.Mail saveMailPb(Mail mail, Player player) {

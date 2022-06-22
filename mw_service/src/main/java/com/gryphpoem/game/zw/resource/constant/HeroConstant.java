@@ -116,6 +116,10 @@ public class HeroConstant {
      * 英雄合成所需碎片数量
      */
     public static int NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS;
+    /**
+     * 全部英雄品阶等级上限
+     */
+    public static List<Integer> ALL_HERO_GRADE_CAPS;
 
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
@@ -146,6 +150,7 @@ public class HeroConstant {
         DRAW_CARD_WISH_VALUE_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_CARD_WISH_VALUE_LIMIT, 100);
         TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES, "[]");
         NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS = SystemTabLoader.getIntegerSystemValue(SystemId.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, 80);
+        ALL_HERO_GRADE_CAPS = SystemTabLoader.getListIntSystemValue(SystemId.ALL_HERO_GRADE_CAPS, "[]");
     }
 
     /**

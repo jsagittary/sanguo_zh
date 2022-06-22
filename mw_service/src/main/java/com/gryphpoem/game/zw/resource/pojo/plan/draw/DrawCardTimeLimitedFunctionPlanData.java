@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,10 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
     private static final int RECEIVED_STATUS_INDEX = -1001;
     /** 免费次数下标*/
     private static final int FREE_NUM_INDEX = -1002;
+    /** 抽出英雄次数下标*/
+    private static final int HERO_DRAW_COUNT_INDEX = -1003;
+    /** 抽出英雄碎片次数下标*/
+    private static final int HERO_FRAGMENT_DRAW_COUNT_INDEX = -1004;
 
     /**
      * 存储任务完成进度
@@ -74,6 +79,30 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
         }
         this.saveMap.remove(PROGRESS_INDEX);
         this.saveMap.remove(RECEIVED_STATUS_INDEX);
+    }
+
+    public int getHeroDrawCount() {
+        return this.saveMap.getOrDefault(HERO_DRAW_COUNT_INDEX, 0);
+    }
+
+    public void clearHeroDrawCount() {
+        this.saveMap.put(HERO_DRAW_COUNT_INDEX, 0);
+    }
+
+    public int getFragmentDrawCount() {
+        return this.saveMap.getOrDefault(HERO_FRAGMENT_DRAW_COUNT_INDEX, 0);
+    }
+
+    public void clearFragmentDrawCount() {
+        this.saveMap.put(HERO_FRAGMENT_DRAW_COUNT_INDEX, 0);
+    }
+
+    public void addHeroDrawCount() {
+        this.saveMap.merge(HERO_DRAW_COUNT_INDEX, 1, Integer::sum);
+    }
+
+    public void addFragmentDrawCount() {
+        this.saveMap.merge(HERO_FRAGMENT_DRAW_COUNT_INDEX, 1, Integer::sum);
     }
 
     @Override

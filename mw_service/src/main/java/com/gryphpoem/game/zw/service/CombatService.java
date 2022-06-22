@@ -1044,7 +1044,7 @@ public class CombatService {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
                     builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero.getDecorated()));
+                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }
@@ -1214,7 +1214,7 @@ public class CombatService {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
                     builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero.getDecorated()));
+                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }

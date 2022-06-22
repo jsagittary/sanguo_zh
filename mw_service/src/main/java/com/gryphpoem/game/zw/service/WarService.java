@@ -836,12 +836,7 @@ public class WarService {
                 addBattleHeroExp(defender.forces, AwardFrom.CAMP_BATTLE_DEFEND, rpt, false, false,
                         battle.isCityBattle(), changeMap, true, exploitAwardMap);
             } else {
-                for (Force force : defender.forces) {
-                    // npc也要加上军工
-                    int award = (int) (force.killed * 0.8f + force.totalLost * 0.2f);// npc军工的计算
-                    rpt.addDefHero(PbHelper.createRptHero(Constant.Role.CITY, force.killed, award, force.id,
-                            playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
-                }
+                DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.CITY, true);
             }
         }
 
@@ -2310,6 +2305,7 @@ public class WarService {
             int addExp = 0;// 将领经验
             int lost = force.lost;
             int heroDecorated = 0;
+            Hero hero = null;
             if (force.roleType == Constant.Role.CITY) {
 
             } else if (force.roleType == Constant.Role.WALL) {
@@ -2324,7 +2320,7 @@ public class WarService {
                 if (player == null) {
                     continue;
                 }
-                Hero hero = player.heros.get(heroId);
+                hero = player.heros.get(heroId);
                 if (hero == null) {
                     continue;
                 }
@@ -2349,7 +2345,7 @@ public class WarService {
                     }
                 }
             }
-            RptHero rptHero = PbHelper.createRptHero(type, kill, award, heroId, owner, lv, addExp, lost, heroDecorated);
+            RptHero rptHero = PbHelper.createRptHero(type, kill, award, heroId, owner, lv, addExp, lost, hero);
             if (isAttacker) {
                 rpt.addAtkHero(rptHero);
             } else {

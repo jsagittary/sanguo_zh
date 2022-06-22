@@ -87,23 +87,23 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
     }
 
     /**
-     * 扣除免费次数
+     * 扣除免费次数,
      *
      * @param count
+     * @return 返回是否使用活动次数
      */
-    public void subFreeCount(int count) {
+    public boolean subFreeCount(int count) {
         int preFreeCount = freeCount;
         try {
             if (freeCount >= count) {
                 freeCount -= count;
-                return;
+                return false;
             }
 
             count -= freeCount;
             freeCount = 0;
             otherFreeCount -= count;
-            // 增加活动抽取次数
-            this.activeDrawsUsedCount += count;
+            return true;
         } finally {
             // 系统免费次数使用完, 进入cd时间
             if (preFreeCount > freeCount && freeCount == 0)
@@ -198,6 +198,13 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
     }
 
     /**
+     * 增加活动抽取次数
+     */
+    public void addActiveDrawsUsedCount() {
+        this.activeDrawsUsedCount++;
+    }
+
+    /**
      * 记录抽取次数
      *
      * @param now
@@ -228,7 +235,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     public List<Integer> getNextRewardList() {
         List<Integer> nextRewardList = HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
-                filter(list -> CheckNull.nonEmpty(list) && list.get(0) == this.activeDrawsUsedCount).findFirst().orElse(null);
+                filter(list -> CheckNull.nonEmpty(list) && list.get(0) <= this.activeDrawsUsedCount + 1).findFirst().orElse(null);
         if (CheckNull.isEmpty(nextRewardList))
             return null;
 
@@ -327,5 +334,24 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
             this.fragmentData.entrySet().forEach(entry -> builder.addFragmentData(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
         }
         return builder.build();
+    }
+
+    @Override
+    public String toString() {
+        return "DrawCardData{" +
+                "firstFinish=" + firstFinish +
+                ", freeCount=" + freeCount +
+                ", cdFreeTime=" + cdFreeTime +
+                ", otherFreeCount=" + otherFreeCount +
+                ", wishHero=" + wishHero +
+                ", firstCostMoneyDailyDate=" + firstCostMoneyDailyDate +
+                ", specifyRewardList=" + specifyRewardList +
+                ", activeDrawsUsedCount=" + activeDrawsUsedCount +
+                ", heroDrawCount=" + heroDrawCount +
+                ", fragmentDrawCount=" + fragmentDrawCount +
+                ", todayDrawCount=" + todayDrawCount +
+                ", lastDrawCardDate=" + lastDrawCardDate +
+                ", fragmentData=" + fragmentData +
+                '}';
     }
 }

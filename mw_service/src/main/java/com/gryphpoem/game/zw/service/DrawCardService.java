@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -46,6 +47,8 @@ public class DrawCardService implements GmCmdService {
     private HeroService heroService;
     @Autowired
     private ChatDataManager chatDataManager;
+    @Autowired
+    private TaskDataManager taskDataManager;
 
     /**
      * 获取抽卡详情
@@ -104,6 +107,7 @@ public class DrawCardService implements GmCmdService {
         }
 
         // 对应抽卡消耗类型扣除资源
+        boolean activeDraw = false;
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         switch (drawCardCostType) {
             case FREE:
@@ -112,8 +116,11 @@ public class DrawCardService implements GmCmdService {
                     throw new MwException(GameError.FREE_DRAW_CARD_COUNT_NOT_ENOUGH.getCode(), "免费次数不足, roleId:", player.roleId,
                             ", totalFreeCount:", totalFreeCount, ", now:", now);
                 }
+                if (drawCardData.getFreeCount() > 0 && !DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount)) {
+                    throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
+                }
                 // 扣除次数
-                drawCardData.subFreeCount(drawCardCount.getCount());
+                activeDraw = drawCardData.subFreeCount(drawCardCount.getCount());
                 break;
             case MONEY:
                 Integer goldNum = HeroConstant.PERMANENT_QUEST_GOLD_CONSUMPTION.get(drawCardCount.getType() - 1);
@@ -139,12 +146,13 @@ public class DrawCardService implements GmCmdService {
         GamePb5.DrawHeroCardRs.Builder builder = GamePb5.DrawHeroCardRs.newBuilder();
         // 执行将领寻访逻辑
         for (int i = 0; i < drawCardCount.getCount(); i++) {
-            CommonPb.SearchHero sh = onceDraw(player, 0, drawCardCount, drawCardCostType, configList, now);
+            CommonPb.SearchHero sh = onceDraw(player, 0, drawCardCount, drawCardCostType, configList, now, activeDraw);
             if (null != sh) {
                 builder.addHero(sh);
             }
         }
 
+        taskDataManager.updTask(player, TaskType.COND_997, drawCardCount.getCount());
         builder.setCount(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - drawCardData.getHeroDrawCount());
         builder.setCdTime((int) (drawCardData.getCdFreeTime() / 1000l));
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
@@ -161,9 +169,9 @@ public class DrawCardService implements GmCmdService {
      * @throws MwException
      */
     public CommonPb.SearchHero onceDraw(Player player, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
-                                         DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now) throws MwException {
+                                         DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now, boolean activeDraw) throws MwException {
         // 记录随机到的奖励信息
-        StaticHeroSearch shs = randomPriorityReward(player.roleId, player.getDrawCardData(), now, configList);
+        StaticHeroSearch shs = randomPriorityReward(player.roleId, player.getDrawCardData(), now, configList, activeDraw);
         if (CheckNull.isNull(shs) || CheckNull.isEmpty(shs.getRewardList())) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType);
         }
@@ -219,7 +227,7 @@ public class DrawCardService implements GmCmdService {
      * @return
      * @throws MwException
      */
-    private StaticHeroSearch randomPriorityReward(long roleId, DrawCardData drawCardData, Date now, List<StaticDrawCardWeight> configList) throws MwException {
+    private StaticHeroSearch randomPriorityReward(long roleId, DrawCardData drawCardData, Date now, List<StaticDrawCardWeight> configList, boolean activeDraw) throws MwException {
         StaticHeroSearch staticData;
         try {
             // 首次抽取必出奖励
@@ -228,32 +236,34 @@ public class DrawCardService implements GmCmdService {
                 drawCardData.addHeroDrawCount();
                 drawCardData.addFragmentDrawCount();
                 staticData = dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
-                LogUtil.debug(String.format("player:%d, 首次抽卡：%s", roleId, staticData));
+                LogUtil.debug(String.format("player:%d, 首次抽卡：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
                 return staticData;
             }
             // 当前次数到必出武将次数
             if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.setHeroDrawCount(0);
                 staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
-                LogUtil.debug(String.format("player:%d, 橙色武将保底：%s", roleId, staticData));
+                LogUtil.debug(String.format("player:%d, 橙色武将保底：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
                 return staticData;
             }
             // 免费活动次数保底
-            List<Integer> nextRewardList = drawCardData.getNextRewardList();
-            if (CheckNull.nonEmpty(nextRewardList)) {
-                drawCardData.addHeroDrawCount();
-                drawCardData.addFragmentDrawCount();
-                drawCardData.getSpecifyRewardList().add(nextRewardList.get(0));
-                staticData = dataMgr.getHeroSearchMap().get(nextRewardList.get(1));
-                LogUtil.debug(String.format("player:%d, 活动次数保底：%s", roleId, staticData));
-                return staticData;
+            if (activeDraw) {
+                List<Integer> nextRewardList = drawCardData.getNextRewardList();
+                if (CheckNull.nonEmpty(nextRewardList)) {
+                    drawCardData.addHeroDrawCount();
+                    drawCardData.addFragmentDrawCount();
+                    drawCardData.getSpecifyRewardList().add(nextRewardList.get(0));
+                    staticData = dataMgr.getHeroSearchMap().get(nextRewardList.get(1));
+                    LogUtil.debug(String.format("player:%d, 活动次数保底：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
+                    return staticData;
+                }
             }
             // 碎片保底
             if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
                 drawCardData.setFragmentDrawCount(0);
                 drawCardData.addHeroDrawCount();
                 staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
-                LogUtil.debug(String.format("player:%d, 碎片保底：%s", roleId, staticData));
+                LogUtil.debug(String.format("player:%d, 碎片保底：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
                 return staticData;
             }
 
@@ -262,11 +272,14 @@ public class DrawCardService implements GmCmdService {
             drawCardData.addFragmentDrawCount();
             // 随机奖励
             staticData = dataMgr.randomReward(configList);
-            LogUtil.debug(String.format("player:%d, 随机抽卡：%s", roleId, staticData));
+            LogUtil.debug(String.format("player:%d, 随机抽卡：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
             return staticData;
         } catch (Exception e) {
             throw e;
         } finally {
+            // 若是活动抽卡, 则增加活动抽卡次数
+            if (activeDraw)
+                drawCardData.addActiveDrawsUsedCount();
             // 记录玩家抽卡次数
             drawCardData.addDrawCount(now);
         }
@@ -365,23 +378,30 @@ public class DrawCardService implements GmCmdService {
         if (CheckNull.isEmpty(req.getConsumeItemsList())) {
             throw new MwException(GameError.PARAM_ERROR, String.format("exchange Item consume list is empty"));
         }
-
-        List<List<Integer>> awardList = new ArrayList<>();
         List<List<Integer>> consumeList = PbHelper.convertTo(req.getConsumeItemsList());
+        if (CheckNull.isEmpty(consumeList)) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("exchange Item consume list is empty"));
+        }
+
         rewardDataManager.checkPlayerResIsEnough(player, consumeList);
+        List<List<Integer>> awardList = new ArrayList<>();
         Hero hero = player.heros.get(Integer.parseInt(req.getExtData()));
         if (CheckNull.isNull(hero)) {
             throw new MwException(GameError.MUST_OWN_THIS_HERO_BEFORE_REDEMPTION, String.format("roleId:%d, must own this hero before redemption, heroId:%s", req, req.getExtData()));
         }
         for (List<Integer> list : consumeList) {
             List<Integer> config = Constant.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT.stream().filter(configList ->
-                    CheckNull.nonEmpty(configList) && configList.get(1) == list.get(1)).findFirst().orElse(null);
+                    CheckNull.nonEmpty(configList) && configList.get(1).intValue() == list.get(1).intValue()).findFirst().orElse(null);
             if (CheckNull.isEmpty(config)) {
                 continue;
             }
-            if (hero.getQuality() != list.get(0)) {
+            if (hero.getQuality() != config.get(0)) {
                 throw new MwException(GameError.PARAM_ERROR, String.format("quality mismatch, player:%d, req.consumeList:%s", roleId, Arrays.toString(list.toArray())));
             }
+            awardList.add(Arrays.asList(AwardType.HERO_FRAGMENT, Integer.parseInt(req.getExtData()), list.get(2)));
+        }
+        if (CheckNull.isEmpty(awardList)) {
+            throw new MwException(GameError.NO_CONFIG, String.format("config not found, player:%d, req.consume:%s", roleId, Arrays.toString(req.getConsumeItemsList().toArray())));
         }
 
         rewardDataManager.subPlayerResHasChecked(player, consumeList, true, AwardFrom.EXCHANGE_ITEM_CONSUMPTION);
@@ -401,11 +421,15 @@ public class DrawCardService implements GmCmdService {
      */
     public GamePb5.SynthesizingHeroFragmentsRs synthesizingHeroFragments(long roleId, int heroId) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+        if (CheckNull.isNull(staticHero) || staticHero.getChips() <= 0) {
+            throw new MwException(GameError.NO_CONFIG, String.format("player:%d, send not found hero config, heroId:%d", roleId, heroId));
+        }
         Hero hero = player.heros.get(heroId);
         if (Objects.nonNull(hero)) {
             throw new MwException(GameError.HERO_EXISTS, String.format("player:%d, has owned this hero:%d", roleId, heroId));
         }
-        rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.HERO_FRAGMENT, heroId, HeroConstant.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, AwardFrom.SYNTHETIC_HERO);
+        rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.HERO_FRAGMENT, heroId, staticHero.getChips(), AwardFrom.SYNTHETIC_HERO);
         rewardDataManager.sendRewardSignle(player, AwardType.HERO, heroId, 1, AwardFrom.SYNTHETIC_HERO);
         GamePb5.SynthesizingHeroFragmentsRs.Builder builder = GamePb5.SynthesizingHeroFragmentsRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(player.heros.get(heroId), player));
@@ -432,6 +456,21 @@ public class DrawCardService implements GmCmdService {
     @GmCmd("drawCard")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
-
+        String cmd = params[0];
+        if ("testPro".equalsIgnoreCase(cmd)) {
+            Integer count = Integer.parseInt(params[1]);
+            if (count <= 0)
+                return;
+            Date now = new Date();
+            List<StaticDrawCardWeight> configList = dataMgr.getPermanentDrawCardWeightList(now);
+            if (CheckNull.isEmpty(configList)) {
+                return;
+            }
+            for (int i = 0; i < count; i++) {
+                LogUtil.getLogThread().addCommand(() -> {
+                    LogUtil.common(String.format("player:%d, has random reward:%s", dataMgr.randomReward(configList)));
+                });
+            }
+        }
     }
 }

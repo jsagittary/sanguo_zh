@@ -507,10 +507,7 @@ public class MarchService {
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, 0, null, -1, -1));
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
         rpt.setRecord(record);
 
         // 邮件参数
@@ -1244,10 +1241,7 @@ public class MarchService {
 
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
         rpt.setRecord(record);
 
         // 邮件标题参数
@@ -1772,10 +1766,7 @@ public class MarchService {
                 rpt.addAtkHero(rptHero);
             }
         }
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
         CommonPb.Record record = fightLogic.generateRecord();
         rpt.setRecord(record);
         return rpt;

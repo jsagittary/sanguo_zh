@@ -117,7 +117,10 @@ public class StaticHeroDataMgr {
         TreeMap<Integer, StaticHeroUpgrade> map = (TreeMap<Integer, StaticHeroUpgrade>) dataMap.get(gradeKey);
         if (CheckNull.isEmpty(map))
             return null;
-        return map.get(map.firstKey());
+        Integer resultKey = map.firstKey();
+        if (CheckNull.isNull(resultKey))
+            return null;
+        return map.get(resultKey);
     }
 
     /**
@@ -132,10 +135,10 @@ public class StaticHeroDataMgr {
         Map<Integer, Map<Integer, StaticHeroUpgrade>> dataMap = heroUpgradeMap.get(heroId);
         if (CheckNull.isEmpty(dataMap))
             return null;
-        Map<Integer, StaticHeroUpgrade> dataMap_ = dataMap.get(grade);
-        if (CheckNull.isEmpty(dataMap_) || !dataMap_.containsKey(level))
+        Map<Integer, StaticHeroUpgrade> heroDataMap = dataMap.get(grade);
+        if (CheckNull.isEmpty(heroDataMap) || !heroDataMap.containsKey(level))
             return null;
-        return (TreeMap<Integer, StaticHeroUpgrade>) dataMap_;
+        return (TreeMap<Integer, StaticHeroUpgrade>) heroDataMap;
     }
 
     public static StaticHeroUpgrade getStaticHeroUpgrade(int keyId) {
@@ -157,17 +160,20 @@ public class StaticHeroDataMgr {
         TreeMap<Integer, StaticHeroUpgrade> dataMap = getStaticHeroUpgrade(heroId, staticData.getGrade(), staticData.getLevel());
         if (CheckNull.isNull(dataMap))
             return null;
-        Integer nextLvDataLvId = dataMap.ceilingKey(staticData.getLevel());
-        if (Objects.nonNull(nextLvDataLvId))
+        Integer nextLvDataLvId = dataMap.higherKey(staticData.getLevel());
+        if (Objects.nonNull(nextLvDataLvId) && nextLvDataLvId.intValue() > staticData.getLevel())
             return dataMap.get(nextLvDataLvId);
-        TreeMap<Integer, Map<Integer, StaticHeroUpgrade>> dataMap_ = (TreeMap<Integer, Map<Integer, StaticHeroUpgrade>>) heroUpgradeMap.get(heroId);
-        Integer nextGradeKeyId = dataMap_.ceilingKey(staticData.getGrade());
+        TreeMap<Integer, Map<Integer, StaticHeroUpgrade>> heroDataMap = (TreeMap<Integer, Map<Integer, StaticHeroUpgrade>>) heroUpgradeMap.get(heroId);
+        Integer nextGradeKeyId = heroDataMap.higherKey(staticData.getGrade());
         if (CheckNull.isNull(nextGradeKeyId))
             return null;
-        TreeMap<Integer, StaticHeroUpgrade> dataMap__ = (TreeMap<Integer, StaticHeroUpgrade>) dataMap_.get(nextGradeKeyId);
-        if (CheckNull.isEmpty(dataMap__))
+        TreeMap<Integer, StaticHeroUpgrade> levelDataMap = (TreeMap<Integer, StaticHeroUpgrade>) heroDataMap.get(nextGradeKeyId);
+        if (CheckNull.isEmpty(levelDataMap))
             return null;
-        return dataMap__.get(dataMap__.firstKey());
+        Integer resultKeyId = levelDataMap.firstKey();
+        if (CheckNull.isNull(resultKeyId))
+            return null;
+        return levelDataMap.get(resultKeyId);
     }
 
     public static StaticHeroSearchExtAward getSearchHeroExtAwardById(int id) {

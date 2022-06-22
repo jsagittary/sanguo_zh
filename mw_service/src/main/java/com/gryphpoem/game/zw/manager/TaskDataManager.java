@@ -293,6 +293,8 @@ public class TaskDataManager {
             case TaskType.COND_531:
             case TaskType.COND_532:
             case TaskType.COND_533:
+            case TaskType.COND_997:
+            case TaskType.COND_998:
                 int paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId == 0 || sCondId == paramId) {
                     task.setSchedule(task.getSchedule() + schedule);

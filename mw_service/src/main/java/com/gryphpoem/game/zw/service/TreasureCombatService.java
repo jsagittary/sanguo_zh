@@ -409,13 +409,19 @@ public class TreasureCombatService implements GmCmdService {
             multiple = awardTime.get(2) / Constant.TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
             if (multiple <= 0)
                 continue;
-            multiple *= propCount;
+
+            if (Objects.nonNull(staticTmp))
+                multiple *= propCount;
 
             if (Objects.nonNull(staticTmp)) {
                 singleStaticAward = Arrays.asList(staticTmp.get(0), staticTmp.get(1), staticTmp.get(2) * multiple);
             }
             if (Objects.nonNull(randomTmp)) {
-                singleRandomAward = Arrays.asList(randomTmp.get(0), randomTmp.get(1), randomTmp.get(2) * multiple);
+                int count = (int) (randomTmp.get(2) * multiple * randomTmp.get(3) / Constant.TEN_THROUSAND);
+                if (count == 0)
+                    count = 1;
+                count *= propCount;
+                singleRandomAward = Arrays.asList(randomTmp.get(0), randomTmp.get(1), count);
             }
 
             singleAward = CheckNull.isNull(singleAward) ? new ArrayList<>() : singleAward;

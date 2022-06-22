@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;

@@ -41,6 +41,8 @@ public class StaticHero {
     private Map<Integer, Integer> activateAttr;// 激活加成属性
     private List<Integer> evolveGroup;// 技能组，链接到 hero_evolve表格中的group字段
     private List<List<Integer>> recombination;// 重组的消耗
+    /** 合成英雄需要的碎片数量*/
+    private int chips;
 
     public int getHeroType() {
         return heroType;
@@ -284,6 +286,14 @@ public class StaticHero {
 
     public void setEvolveGroup(List<Integer> evolveGroup) {
         this.evolveGroup = evolveGroup;
+    }
+
+    public int getChips() {
+        return chips;
+    }
+
+    public void setChips(int chips) {
+        this.chips = chips;
     }
 
     /**

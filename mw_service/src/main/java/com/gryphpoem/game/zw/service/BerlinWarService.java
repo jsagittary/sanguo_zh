@@ -2301,20 +2301,17 @@ public class BerlinWarService {
             // 军工计算 军工 = (损兵数 / 损兵基数) * 获得军功基数
             int award = (fighter.lost / WorldConstant.BERLIN_LOST_EXPLOIT_NUM.get(0))
                     * WorldConstant.BERLIN_LOST_EXPLOIT_NUM.get(1);
-            int heroDecorated = 0;
+            Hero hero = null;
             if (!CheckNull.isNull(player)) {
                 BerlinRecord record = BerlinWar.getInstance().getBerlinRecord(roleId);
                 award = warService.addExploit(player, award, null, AwardFrom.BERLIN_WAR_ATTACK); // 加军工
                 if (award > 0) { // 记录军工
                     record.addExploit(award);
                 }
-                Hero hero = player.heros.get(force.id);
-                if (Objects.nonNull(hero)) {
-                    heroDecorated = hero.getDecorated();
-                }
+                hero = player.heros.get(force.id);
             }
             String owner = playerDataManager.getNickByLordId(force.ownerId);
-            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force.id, owner, 0, 0, force.lost, heroDecorated);
+            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force.id, owner, 0, 0, force.lost, hero);
             if (isAttacker) {
                 rpt.addAtkHero(rptHero);
             } else {

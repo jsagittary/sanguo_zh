@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -39,6 +40,8 @@ public class HeroUpgradeService implements GmCmdService {
     private HeroService heroService;
     @Autowired
     private ChatDataManager chatDataManager;
+    @Autowired
+    private TaskDataManager taskDataManager;
 
     /**
      * 升级英雄品阶
@@ -53,6 +56,9 @@ public class HeroUpgradeService implements GmCmdService {
         if (CheckNull.isNull(hero)) {
             throw new MwException(GameError.HERO_NOT_FOUND, String.format("player:%d, not own this hero, heroId:%d", roleId, heroId));
         }
+        StaticHeroUpgrade preStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+        if (CheckNull.isNull(preStaticData) || (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= preStaticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= preStaticData.getLevel()))
+            throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
         StaticHeroUpgrade staticData = StaticHeroDataMgr.getNextLvHeroUpgrade(heroId, hero.getGradeKeyId());
         if (CheckNull.isNull(staticData) || staticData.getKeyId() == hero.getGradeKeyId()) {
             throw new MwException(GameError.NO_CONFIG, String.format("player:%d, no next level config, heroId:%d, keyId:%d", roleId, heroId, hero.getGradeKeyId()));
@@ -67,6 +73,7 @@ public class HeroUpgradeService implements GmCmdService {
         if (Objects.nonNull(nextStaticData) && nextStaticData.getKeyId() == hero.getGradeKeyId()) {
             chatDataManager.sendSysChat(ChatConst.CHAT_HERO_FULL_GRADE, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), heroId);
         }
+        taskDataManager.updTask(player, TaskType.COND_998, hero.getGradeKeyId());
         GamePb5.UpgradeHeroRs.Builder builder = GamePb5.UpgradeHeroRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(hero, player));
         return builder.build();

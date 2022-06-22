@@ -33,7 +33,8 @@ import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.DrawCardService;
 import com.gryphpoem.game.zw.service.PlayerService;
-import com.gryphpoem.game.zw.service.plan.abs.AbsFunctionPlanService;
+import com.gryphpoem.game.zw.service.plan.abs.AbsDrawCardPlanService;
+import com.gryphpoem.game.zw.service.plan.abs.AbsDrawCardPlanService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,15 +58,13 @@ public class DrawCardPlanTemplateService {
     @Autowired
     private FunctionPlanDataManager functionPlanDataManager;
     @Autowired
-    private List<AbsFunctionPlanService> functionServiceList;
+    private List<AbsDrawCardPlanService> functionServiceList;
     @Autowired
     private StaticDrawHeroDataMgr staticDrawHeroDataMgr;
     @Autowired
     private PlayerService playerService;
     @Autowired
     private RewardDataManager rewardDataManager;
-    @Autowired
-    private DrawCardService drawCardService;
 
     /**
      * 获取所有plan信息
@@ -92,7 +91,7 @@ public class DrawCardPlanTemplateService {
      */
     public GamePb5.GetDrawHeroCardActInfoRs getDrawHeroCardActInfo(long roleId, GamePb5.GetDrawHeroCardActInfoRq req) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        AbsFunctionPlanService service = getFunctionService(req.getFunctionId());
+        AbsDrawCardPlanService service = getFunctionService(req.getFunctionId());
         if (CheckNull.isNull(service)) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, keyId:%d, function:%d", roleId, req.getKeyId(), req.getFunctionId()));
         }
@@ -117,7 +116,7 @@ public class DrawCardPlanTemplateService {
      */
     public GamePb5.DrawActHeroCardRs drawActHeroCard(long roleId, GamePb5.DrawActHeroCardRq req) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        AbsFunctionPlanService service = getFunctionService(req.getFunctionId());
+        AbsDrawCardPlanService service = getFunctionService(req.getFunctionId());
         if (CheckNull.isNull(service)) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
         }
@@ -152,7 +151,7 @@ public class DrawCardPlanTemplateService {
         GamePb5.DrawActHeroCardRs.Builder builder = GamePb5.DrawActHeroCardRs.newBuilder();
         // 执行将领寻访逻辑
         for (int i = 0; i < drawCardCount.getCount(); i++) {
-            CommonPb.SearchHero sh = drawCardService.onceDraw(player, 0, drawCardCount, drawCardCostType, configList, now);
+            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, 0, drawCardCount, drawCardCostType, configList, now);
             if (null != sh) {
                 builder.addHero(sh);
             }
@@ -180,7 +179,7 @@ public class DrawCardPlanTemplateService {
             builder.setPlan(plan.createPb(false));
         if (Objects.nonNull(data))
             builder.setData((ActivityPb.TimeLimitedDrawCardActData) data.createPb(false));
-        if (state == AbsFunctionPlanService.ACT_DELETE) {
+        if (state == AbsDrawCardPlanService.ACT_DELETE) {
             // 若活动结束, 则更新常驻抽卡池
             List<StaticDrawHeoPlan> planList = staticDrawHeroDataMgr.getPlanList(now, PlanFunction.PlanStatus.OVER);
             if (CheckNull.nonEmpty(planList))
@@ -227,7 +226,7 @@ public class DrawCardPlanTemplateService {
      * @param keyId
      */
     public void execFunctionPreview(int functionId, int keyId) {
-        AbsFunctionPlanService service = getFunctionService(functionId);
+        AbsDrawCardPlanService service = getFunctionService(functionId);
         if (Objects.nonNull(service)) {
             service.handleOnPreviewTime(keyId);
         }
@@ -240,7 +239,7 @@ public class DrawCardPlanTemplateService {
      * @param keyId
      */
     public void execFunctionBegin(int functionId, int keyId) {
-        AbsFunctionPlanService service = getFunctionService(functionId);
+        AbsDrawCardPlanService service = getFunctionService(functionId);
         if (Objects.nonNull(service)) {
             service.handleOnBeginTime(keyId);
         }
@@ -253,7 +252,7 @@ public class DrawCardPlanTemplateService {
      * @param planKeyId
      */
     public void execActivityEnd(int functionId, int planKeyId) {
-        AbsFunctionPlanService service = getFunctionService(functionId);
+        AbsDrawCardPlanService service = getFunctionService(functionId);
         if (Objects.nonNull(service)) {
             service.handleOnEndTime(planKeyId);
         }
@@ -265,12 +264,12 @@ public class DrawCardPlanTemplateService {
      * @param functionId
      * @return
      */
-    public AbsFunctionPlanService getFunctionService(int functionId) {
+    public AbsDrawCardPlanService getFunctionService(int functionId) {
         PlanFunction planFunction = PlanFunction.convertTo(functionId);
         if (CheckNull.isNull(planFunction))
             return null;
 
-        for (AbsFunctionPlanService service : functionServiceList) {
+        for (AbsDrawCardPlanService service : functionServiceList) {
             PlanFunction[] functions = service.functionId();
             if (ArrayUtils.contains(functions, planFunction)) {
                 return service;

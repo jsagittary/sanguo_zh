@@ -1784,6 +1784,10 @@ public class SystemId {
     public static int TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = 661;
 
     /**
+     * 全部英雄品阶等级上限
+     */
+    public static int ALL_HERO_GRADE_CAPS = 1103;
+    /**
      * 默认铭牌id
      */
     public static final int DEFAULT_NAME_PLATE_ID = 1070;

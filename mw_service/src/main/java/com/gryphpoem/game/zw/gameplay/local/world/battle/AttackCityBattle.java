@@ -336,12 +336,7 @@ public class AttackCityBattle extends AbsCommonBattle {
             warService.addBattleHeroExp(defender.forces, AwardFrom.CAMP_BATTLE_DEFEND, rpt, false, false,
                     battle.isCityBattle(), changeMap, true, exploitAwardMap);
         } else {
-            for (Force force : defender.forces) {
-                // npc也要加上军工
-                int award = (int) (force.killed * 0.8f + force.totalLost * 0.2f);
-                rpt.addDefHero(PbHelper.createRptHero(Constant.Role.CITY, force.killed, award, force.id,
-                        playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
-            }
+            DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.CITY, true);
         }
         report.setRptPlayer(rpt);
         // 军团礼包消息推送

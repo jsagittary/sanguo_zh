@@ -3,16 +3,27 @@ package com.gryphpoem.game.zw.service.plan;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticDrawHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.FunctionPlanDataManager;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.plan.draw.DrawCardTimeLimitedFunctionPlanData;
+import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.service.HeroService;
+import com.gryphpoem.game.zw.service.plan.abs.AbsDrawCardPlanService;
 import com.gryphpoem.game.zw.service.plan.abs.AbsFunctionPlanService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +32,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description:
@@ -28,7 +40,7 @@ import java.util.List;
  * createTime: 2022-06-16 11:45
  */
 @Component
-public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
+public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
 
     @Autowired
     private DrawCardPlanTemplateService drawCardPlanTemplateService;
@@ -36,6 +48,12 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
     private FunctionPlanDataManager functionPlanDataManager;
     @Autowired
     private StaticDrawHeroDataMgr staticDrawHeroDataMgr;
+    @Autowired
+    private HeroService heroService;
+    @Autowired
+    private ChatDataManager chatDataManager;
+    @Autowired
+    private StaticDrawHeroDataMgr dataMgr;
 
     /**
      * 领取免费抽取次数
@@ -200,5 +218,85 @@ public class TimeLimitedDrawCardFunctionService extends AbsFunctionPlanService {
             }
             drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, plan, ACT_UPDATE, now);
         });
+    }
+
+    @Override
+    public CommonPb.SearchHero onceDraw(Player player, FunctionPlanData drawCardData, int costCount, DrawCardOperation.DrawCardCount drawCardCount, DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now) throws MwException {
+        // 记录随机到的奖励信息
+        StaticHeroSearch shs = randomPriorityReward(player.roleId, drawCardData, now, configList);
+        if (CheckNull.isNull(shs) || CheckNull.isEmpty(shs.getRewardList())) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType);
+        }
+
+        DrawCardRewardType rewardType = DrawCardRewardType.convertTo(shs.getRewardType());
+        if (CheckNull.isNull(rewardType)) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType, ", reward:", shs);
+        }
+
+        CommonPb.SearchHero.Builder builder = CommonPb.SearchHero.newBuilder().setSearchId(shs.getAutoId());
+        switch (rewardType) {
+            case ORANGE_HERO:
+            case PURPLE_HERO:
+                int heroId = shs.getRewardList().get(0).get(1);
+                StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                if (null == staticHero) {
+                    LogUtil.error("将领寻访，寻访到的将领未找到配置信息, heroId:", heroId);
+                    return null;
+                }
+
+                // 查找玩家是否拥有此英雄
+                Hero hero_ = heroService.hasOwnedHero(player, heroId, staticHero);
+                if (Objects.nonNull(hero_)) {
+                    // 拥有英雄转为碎片
+                    rewardDataManager.sendRewardSignle(player, AwardType.HERO_FRAGMENT, heroId,
+                            HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.HERO_NORMAL_SEARCH);
+                } else {
+                    rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
+                    // 返回新得到的将领信息
+                    Hero hero = player.heros.get(staticHero.getHeroId());
+                    builder.setHero(PbHelper.createHeroPb(hero, player));
+                    if (staticHero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO) {
+                        chatDataManager.sendSysChat(ChatConst.CHAT_RECRUIT_HERO, player.lord.getCamp(), 0,
+                                player.lord.getNick(), heroId);
+                    }
+                }
+                break;
+            case PROP_REWARD:
+            case ORANGE_HERO_FRAGMENT:
+            case PURPLE_HERO_FRAGMENT:
+                rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
+                break;
+        }
+
+        return builder.build();
+    }
+
+    @Override
+    public StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData functionPlanData, Date now, List<StaticDrawCardWeight> configList) throws MwException {
+        StaticHeroSearch staticData;
+        // 当前次数到必出武将次数
+        DrawCardTimeLimitedFunctionPlanData drawCardData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
+        if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
+            drawCardData.clearHeroDrawCount();
+            staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
+            LogUtil.debug(String.format("player:%d, 限时橙色武将保底：%s", roleId, staticData));
+            return staticData;
+        }
+        // 碎片保底
+        if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
+            drawCardData.clearFragmentDrawCount();
+            drawCardData.addHeroDrawCount();
+            staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
+            LogUtil.debug(String.format("player:%d, 限时碎片保底：%s", roleId, staticData));
+            return staticData;
+        }
+
+        // 记录抽取次数
+        drawCardData.addHeroDrawCount();
+        drawCardData.addFragmentDrawCount();
+        // 随机奖励
+        staticData = dataMgr.randomReward(configList);
+        LogUtil.debug(String.format("player:%d, 限时随机抽卡：%s", roleId, staticData));
+        return staticData;
     }
 }

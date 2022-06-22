@@ -856,10 +856,7 @@ public class WorldScheduleService {
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, 0, null, -1, -1));
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        worldService.buildRptHeroData(defender, rpt, false);
         rpt.setRecord(record);
         return rpt;
     }

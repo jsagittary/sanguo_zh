@@ -196,6 +196,8 @@ public class TaskType {
     public static final int COND_994 = 994;//打造x品质装备x件
     public static final int COND_995 = 995;//累计挑战或扫荡战役x次
     public static final int COND_996 = 996;//累计参与阵营战x次
+    public static final int COND_997 = 997;//累计完成x次常驻寻访
+    public static final int COND_998 = 998;//将某个武将升阶至某个品阶等级
 
     // 世界任务
     public static final int WORLD_TASK_TYPE_BANDIT = 1; // 打流寇
