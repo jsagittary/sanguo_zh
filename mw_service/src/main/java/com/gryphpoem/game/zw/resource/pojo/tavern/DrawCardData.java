@@ -336,6 +336,20 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         return builder.build();
     }
 
+    /**
+     * 生成debug字符串
+     *
+     * @return
+     */
+    public String toDebugString() {
+        return "DrawCardData{" +
+                "activeDrawsUsedCount=" + activeDrawsUsedCount +
+                ", heroDrawCount=" + heroDrawCount +
+                ", fragmentDrawCount=" + fragmentDrawCount +
+                ", todayDrawCount=" + todayDrawCount +
+                '}';
+    }
+
     @Override
     public String toString() {
         return "DrawCardData{" +

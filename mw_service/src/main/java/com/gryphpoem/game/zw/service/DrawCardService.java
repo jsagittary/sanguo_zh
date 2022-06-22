@@ -169,7 +169,7 @@ public class DrawCardService implements GmCmdService {
      * @throws MwException
      */
     public CommonPb.SearchHero onceDraw(Player player, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
-                                         DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now, boolean activeDraw) throws MwException {
+                                        DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now, boolean activeDraw) throws MwException {
         // 记录随机到的奖励信息
         StaticHeroSearch shs = randomPriorityReward(player.roleId, player.getDrawCardData(), now, configList, activeDraw);
         if (CheckNull.isNull(shs) || CheckNull.isEmpty(shs.getRewardList())) {
@@ -205,7 +205,7 @@ public class DrawCardService implements GmCmdService {
                     builder.setHero(PbHelper.createHeroPb(hero, player));
                     if (staticHero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO) {
                         chatDataManager.sendSysChat(ChatConst.CHAT_RECRUIT_HERO, player.lord.getCamp(), 0,
-                                    player.lord.getNick(), heroId);
+                                player.lord.getNick(), heroId);
                     }
                 }
                 break;
@@ -236,14 +236,14 @@ public class DrawCardService implements GmCmdService {
                 drawCardData.addHeroDrawCount();
                 drawCardData.addFragmentDrawCount();
                 staticData = dataMgr.getHeroSearchMap().get(HeroConstant.FIRST_DRAW_CARD_HERO_REWARD);
-                LogUtil.debug(String.format("player:%d, 首次抽卡：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
+                LogUtil.debug(String.format("player:%d, 首次抽卡：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
                 return staticData;
             }
             // 当前次数到必出武将次数
             if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.setHeroDrawCount(0);
                 staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
-                LogUtil.debug(String.format("player:%d, 橙色武将保底：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
+                LogUtil.debug(String.format("player:%d, 橙色武将保底：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
                 return staticData;
             }
             // 免费活动次数保底
@@ -254,7 +254,7 @@ public class DrawCardService implements GmCmdService {
                     drawCardData.addFragmentDrawCount();
                     drawCardData.getSpecifyRewardList().add(nextRewardList.get(0));
                     staticData = dataMgr.getHeroSearchMap().get(nextRewardList.get(1));
-                    LogUtil.debug(String.format("player:%d, 活动次数保底：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
+                    LogUtil.debug(String.format("player:%d, 活动次数保底：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
                     return staticData;
                 }
             }
@@ -263,7 +263,7 @@ public class DrawCardService implements GmCmdService {
                 drawCardData.setFragmentDrawCount(0);
                 drawCardData.addHeroDrawCount();
                 staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
-                LogUtil.debug(String.format("player:%d, 碎片保底：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
+                LogUtil.debug(String.format("player:%d, 碎片保底：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
                 return staticData;
             }
 
@@ -272,7 +272,7 @@ public class DrawCardService implements GmCmdService {
             drawCardData.addFragmentDrawCount();
             // 随机奖励
             staticData = dataMgr.randomReward(configList);
-            LogUtil.debug(String.format("player:%d, 随机抽卡：%s, 玩家抽卡信息：%s", roleId, staticData, drawCardData));
+            LogUtil.debug(String.format("player:%d, 随机抽卡：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
             return staticData;
         } catch (Exception e) {
             throw e;
@@ -466,11 +466,18 @@ public class DrawCardService implements GmCmdService {
             if (CheckNull.isEmpty(configList)) {
                 return;
             }
-            for (int i = 0; i < count; i++) {
-                LogUtil.getLogThread().addCommand(() -> {
-                    LogUtil.common(String.format("player:%d, has random reward:%s", dataMgr.randomReward(configList)));
-                });
-            }
+
+            LogUtil.getLogThread().addCommand(() -> {
+                Map<Integer, Integer> countMap = new HashMap<>();
+                for (int i = 0; i < count; i++) {
+                    int type = dataMgr.randomReward(configList).getRewardType();
+                    countMap.merge(type, 1, Integer::sum);
+                }
+                LogUtil.common(String.format("drawCard random ----------- player:%d, has random countMap:%s", player.roleId, countMap));
+            });
+        }
+        if ("addActiveCount".equalsIgnoreCase(cmd)) {
+            player.getDrawCardData().setOtherFreeCount(Integer.parseInt(params[1]));
         }
     }
 }
