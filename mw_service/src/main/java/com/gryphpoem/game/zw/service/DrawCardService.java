@@ -431,6 +431,10 @@ public class DrawCardService implements GmCmdService {
         }
         rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.HERO_FRAGMENT, heroId, staticHero.getChips(), AwardFrom.SYNTHETIC_HERO);
         rewardDataManager.sendRewardSignle(player, AwardType.HERO, heroId, 1, AwardFrom.SYNTHETIC_HERO);
+        if (staticHero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO) {
+            chatDataManager.sendSysChat(ChatConst.CHAT_RECRUIT_HERO, player.lord.getCamp(), 0,
+                    player.lord.getNick(), heroId);
+        }
         GamePb5.SynthesizingHeroFragmentsRs.Builder builder = GamePb5.SynthesizingHeroFragmentsRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(player.heros.get(heroId), player));
         return builder.build();
@@ -480,6 +484,9 @@ public class DrawCardService implements GmCmdService {
         }
         if ("addActiveCount".equalsIgnoreCase(cmd)) {
             player.getDrawCardData().setOtherFreeCount(Integer.parseInt(params[1]));
+        }
+        if ("addFragment".equalsIgnoreCase(cmd)) {
+            rewardDataManager.sendRewardSignle(player, AwardType.HERO_FRAGMENT, Integer.parseInt(params[1]), Integer.parseInt(params[2]), AwardFrom.DO_SOME);
         }
     }
 }
