@@ -1175,7 +1175,6 @@ public class EquipService {
         }
 
         rewardDataManager.checkAndSubPlayerRes(player, staticSuperEquip.getMaterial(), AwardFrom.SUPER_EQUIP_CREATE);
-        taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
         // 向客户端同步玩家资源数据
         rewardDataManager.syncRoleResChanged(player, change);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_EQUIP_BUILD);
@@ -1187,6 +1186,7 @@ public class EquipService {
         SuperEquipForgeRs.Builder builder = SuperEquipForgeRs.newBuilder();
         builder.setQue(que);
         builder.setResource(PbHelper.createCombatPb(player.resource));
+        taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
         return builder.build();
     }
 
@@ -1260,12 +1260,12 @@ public class EquipService {
                         type);
             }
         }
-        taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_SUPER_EQUIP);
         UpSuperEquipRs.Builder builder = UpSuperEquipRs.newBuilder();
         builder.setEquip(PbHelper.createSuperEquipPb(superEquip));
         builder.setResource(PbHelper.createResourcePb(player.resource));
         // taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, superEquip.getLv(), type);
+        taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
 
         return builder.build();
     }
