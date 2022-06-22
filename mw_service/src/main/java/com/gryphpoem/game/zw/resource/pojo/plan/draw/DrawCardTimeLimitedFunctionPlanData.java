@@ -105,6 +105,10 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
         this.saveMap.merge(HERO_FRAGMENT_DRAW_COUNT_INDEX, 1, Integer::sum);
     }
 
+    public String toDebugStr() {
+        return "[hero_fragment_draw_count:" + getFragmentDrawCount() + ", hero_draw_count:" + getHeroDrawCount() + "]";
+    }
+
     @Override
     public PlanFunction[] functionId() {
         return new PlanFunction[]{PlanFunction.DRAW_CARD};
