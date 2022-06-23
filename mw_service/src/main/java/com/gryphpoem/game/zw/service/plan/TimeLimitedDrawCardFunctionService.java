@@ -129,8 +129,8 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
 
     @Override
     public void handleOnEndTime(int keyId) {
-        Collection<Player> onlinePlayer = playerDataManager.getAllOnlinePlayer().values();
-        if (CheckNull.isEmpty(onlinePlayer))
+        Collection<Player> allPlayers = playerDataManager.getAllPlayer().values();
+        if (CheckNull.isEmpty(allPlayers))
             return;
         StaticDrawHeoPlan staticPlan = staticDrawHeroDataMgr.getDrawHeoPlanMap().get(keyId);
         if (CheckNull.isNull(staticPlan)) {
@@ -143,9 +143,12 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         }
 
         Date now = new Date();
-        onlinePlayer.forEach(player -> {
-            FunctionPlanData planData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, keyId, false);
-            drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, staticPlan, ACT_DELETE, now);
+        allPlayers.forEach(player -> {
+            if (Objects.nonNull(player.ctx) && player.isLogin) {
+                FunctionPlanData planData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, keyId, false);
+                drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, staticPlan, ACT_DELETE, now);
+            }
+            functionPlanDataManager.removeFunctionPlanData(player.getFunctionPlanData(), keyId);
         });
     }
 

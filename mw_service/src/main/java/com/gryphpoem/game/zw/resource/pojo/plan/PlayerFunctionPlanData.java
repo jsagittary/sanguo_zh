@@ -32,6 +32,10 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
         return functionPlanDataMap.get(planKeyId);
     }
 
+    public void removeData(int planKeyId) {
+        this.functionPlanDataMap.remove(planKeyId);
+    }
+
     public FunctionPlanData updateData(FunctionPlanData data) {
         if (CheckNull.isNull(data))
             return null;
