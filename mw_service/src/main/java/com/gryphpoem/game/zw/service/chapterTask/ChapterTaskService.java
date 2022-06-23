@@ -221,6 +221,13 @@ public class ChapterTaskService implements GmCmdService {
                 task.setSchedule(staticTask.getSchedule());
                 chapterTaskDataManager.synTaskInfo(player, Lists.newArrayList(PbHelper.createTaskPb(task, staticTask.getType())));
                 break;
+            case "allSetId": {
+                param = Integer.parseInt(params[1]);
+                playerDataManager.getAllPlayer().values().stream().filter(Objects::nonNull).forEach(e -> {
+                    gmSetPlayerChapter(e, param);
+                });
+                break;
+            }
             default:
                 break;
         }
