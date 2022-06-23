@@ -1283,29 +1283,24 @@ public class ActivityDataManager {
                 }
                 break;
             case ActivityConst.ACT_TASK_HERO_WASH://
-                staticHero = null;
+                if (CheckNull.isEmpty(staticDay7Act.getParam()))
+                    break;
                 it = player.heros.values().iterator();
                 while (it.hasNext()) {
                     Hero hero = it.next();
-                    if (hero.getWash() != null && hero.getWash().length > 0) {
-                        if (staticDay7Act.getParam() != null && !staticDay7Act.getParam().isEmpty()) {
-                            staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                            if (staticHero.getQuality() != staticDay7Act.getParam().get(0)) {
-                                continue;
-                            }
-                        }
-                        staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                        if (staticHero.getQuality() <= 1) {
-                            continue;
-                        }
-                        int totalMax = staticHero.getTotalMax();// 将领总资质上限
-                        int total = 0;
-                        for (int i = 0; i < hero.getWash().length; i++) {
-                            total += hero.getWash()[i];
-                        }
-                        if (total >= totalMax) {
-                            lvMax++;
-                        }
+                    if (CheckNull.isNull(hero))
+                        continue;
+                    staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                    if (CheckNull.isNull(staticHero))
+                        continue;
+                    StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+                    if (CheckNull.isNull(staticHeroUpgrade))
+                        continue;
+                    if (staticDay7Act.getParam().size() == 1 && staticDay7Act.getParam().get(0) <= staticHeroUpgrade.getGrade()) {
+                        lvMax++;
+                    } else if (staticDay7Act.getParam().size() == 2 && staticDay7Act.getParam().get(0) <=
+                            staticHeroUpgrade.getGrade() && staticDay7Act.getParam().get(1) == staticHero.getQuality()) {
+                        lvMax++;
                     }
                 }
                 break;
