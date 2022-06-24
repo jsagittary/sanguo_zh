@@ -836,6 +836,9 @@ public class CombatService {
         LogLordHelper.commonLog("combatFight", AwardFrom.COMBAT_FIGHT, player, player.lord.getFight()
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
+        //更新任务
+        taskDataManager.updTask(player,TaskType.COND_995,1);
+
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,

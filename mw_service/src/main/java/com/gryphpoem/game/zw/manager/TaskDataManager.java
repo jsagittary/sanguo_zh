@@ -269,7 +269,6 @@ public class TaskDataManager {
             case TaskType.COND_MENTOR_UPLV_CNT:
             case TaskType.COND_SCORPION_ACTIVATE_PREPOSITION:
             case TaskType.COND_SCORPION_ACTIVATE:
-            case TaskType.COND_UNLOCK_AGENT:
             case TaskType.COND_APPOINTMENT_AGENT:
             case TaskType.COND_INTERACTION_AGENT:
             case TaskType.COND_PRESENT_GIFT_AGENT:
@@ -306,6 +305,17 @@ public class TaskDataManager {
                     Optional.ofNullable(player.supEquips.get(sCondId)).ifPresent(superEquip -> {
                         task.setSchedule(superEquip.getLv());
                     });
+                }
+                break;
+            case TaskType.COND_UNLOCK_AGENT:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId == paramId) {
+                    if (Objects.nonNull(player.getCia())) {
+                        FemaleAgent femaleAgent = player.getCia().getFemaleAngets().get(paramId);
+                        if (Objects.nonNull(femaleAgent) && CiaConstant.AGENT_UNLOCK_STATUS_2 == femaleAgent.getStatus()) {
+                            task.setSchedule(sSchedule);
+                        }
+                    }
                 }
                 break;
             case TaskType.COND_BUILDING_TYPE_LV:
@@ -809,6 +819,14 @@ public class TaskDataManager {
                 break;
             case TaskType.COND_28:
                 schedule = player.getAllOnBattleHeros().stream().filter(e -> e.getType() == condId).count();
+                break;
+            case TaskType.COND_UNLOCK_AGENT:
+                if (Objects.nonNull(player.getCia())) {
+                    FemaleAgent femaleAgent = player.getCia().getFemaleAngets().get(condId);
+                    if (Objects.nonNull(femaleAgent) && CiaConstant.AGENT_UNLOCK_STATUS_2 == femaleAgent.getStatus()) {
+                        schedule = sSchedule;
+                    }
+                }
                 break;
             default:
                 break;

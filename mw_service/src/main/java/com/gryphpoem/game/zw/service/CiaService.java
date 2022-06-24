@@ -165,7 +165,7 @@ public class CiaService {
         }
         femaleAgent.setStatus(CiaConstant.AGENT_UNLOCK_STATUS_2);
         femaleAgent.setAppointmentCnt(Constant.CIA_APPOINTMENT_MAX_CNT);
-        taskDataManager.updTask(player, TaskType.COND_UNLOCK_AGENT, 1);
+        taskDataManager.updTask(player, TaskType.COND_UNLOCK_AGENT, 1,agentId);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_AGENT_STAR_CNT);
 
         //貂蝉任务-拥有佳人X个X星
