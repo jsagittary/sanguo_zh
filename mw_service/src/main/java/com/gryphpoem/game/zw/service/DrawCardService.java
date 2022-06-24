@@ -157,6 +157,7 @@ public class DrawCardService implements GmCmdService {
         builder.setCdTime((int) (drawCardData.getCdFreeTime() / 1000l));
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
         builder.setTodayDiscount(!drawCardData.isTodayFirst(now));
+        builder.setOtherFreeNum(drawCardData.getOtherFreeCount());
         return builder.build();
     }
 
