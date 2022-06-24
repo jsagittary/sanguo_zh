@@ -512,9 +512,6 @@ public class RewardDataManager {
             case AwardType.HERO_FRAGMENT:
                 operationHeroFragment(player, id, count, from, true, param);
                 break;
-            case AwardType.SYSTEM_COUNT:
-                operationSystemCount(player, id, count, from, true, param);
-                break;
             default:
                 break;
         }
@@ -541,7 +538,7 @@ public class RewardDataManager {
             return;
 
         switch (id) {
-            case AwardType.SystemCount.DRAW_PERMANENT_CARD_COUNT:
+            case AwardType.Special.DRAW_PERMANENT_CARD_COUNT:
                 operationDrawPermanentCardCount(player, id, count, from, operation, param);
                 break;
             default:
@@ -714,9 +711,6 @@ public class RewardDataManager {
                 break;
             case AwardType.HERO_FRAGMENT:
                 operationHeroFragment(player, id, count, from, true, param);
-                break;
-            case AwardType.SYSTEM_COUNT:
-                operationSystemCount(player, id, count, from, true, param);
                 break;
             default:
                 break;
@@ -1224,6 +1218,9 @@ public class RewardDataManager {
                 case AwardType.Special.SHENG_WU:
                     player.addMilitaryExpenditure(count);
                     LogLordHelper.commonLog("expenditure", from, player.account, player.lord, player.getMilitaryExpenditure(), count);
+                    break;
+                case AwardType.Special.DRAW_PERMANENT_CARD_COUNT:
+                    operationSystemCount(player, id, count, from, true, param);
                     break;
                 default:
             }
@@ -3288,9 +3285,6 @@ public class RewardDataManager {
             case AwardType.HERO_FRAGMENT:
                 operationHeroFragment(player, id, num, from, false, param);
                 break;
-            case AwardType.SYSTEM_COUNT:
-                operationSystemCount(player, id, num, from, false, param);
-                break;
             default:
                 break;
         }
@@ -3315,6 +3309,9 @@ public class RewardDataManager {
         switch (specialType) {
             case AwardType.Special.SEASON_TALENT_STONE:
                 subSeasonTalentStone(player, (int) count, from, param);
+                break;
+            case AwardType.Special.DRAW_PERMANENT_CARD_COUNT:
+                operationSystemCount(player, specialType, (int) count, from, false, param);
                 break;
             default:
                 throw new MwException(GameError.NO_CONFIG.getCode(), String.format("roleId :%d, specialType :%d not found !!!", player.getLordId(), specialType));
