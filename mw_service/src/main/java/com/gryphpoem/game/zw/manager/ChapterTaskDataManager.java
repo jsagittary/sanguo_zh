@@ -244,7 +244,7 @@ public class ChapterTaskDataManager {
      * 获取玩家所有英雄指定位置、某一品质装备的个数
      */
     public long getHeroQualityEquipCount(Player player, int sCondId, int quality) {
-        return player.heros.values().stream()
+        return player.getAllOnBattleHeros().stream()
                 .filter(hero -> {
                     if (sCondId <= hero.getEquip().length) {
                         Equip equip = player.equips.get(hero.getEquip()[sCondId]);

@@ -264,6 +264,8 @@ public class StoneService {
             CalculateUtil.reCalcAllHeroAttr(player); // 重新计算战斗力
             builder.setStoneHole(PbHelper.createStoneHolePb(stoneHole));
 
+            taskDataManager.updTask(player, TaskType.COND_STONE_HOLE_49, 1);
+
             //貂蝉任务-配饰合成
             ActivityDiaoChanService.completeTask(player, ETask.ORNAMENT_COUNT);
             TaskService.processTask(player, ETask.ORNAMENT_COUNT);
