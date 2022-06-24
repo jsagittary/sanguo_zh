@@ -72,7 +72,7 @@ public class HeroUpgradeService implements GmCmdService {
         if (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= staticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= staticData.getLevel()) {
             chatDataManager.sendSysChat(ChatConst.CHAT_HERO_FULL_GRADE, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), heroId);
         }
-        taskDataManager.updTask(player, TaskType.COND_998, hero.getGradeKeyId());
+        taskDataManager.updTask(player, TaskType.COND_998, 1, hero.getGradeKeyId());
         GamePb5.UpgradeHeroRs.Builder builder = GamePb5.UpgradeHeroRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(hero, player));
         return builder.build();
