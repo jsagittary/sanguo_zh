@@ -183,11 +183,11 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
      * @param list
      * @return
      */
-    public StaticHeroSearch randomSpecifyType(List<StaticDrawCardWeight> list, DrawCardRewardType type) {
+    public StaticHeroSearch randomSpecifyType(List<StaticDrawCardWeight> list, DrawCardRewardType type, boolean permanent) {
         if (CheckNull.isEmpty(list) || CheckNull.isNull(type))
             return null;
 
-        return randomPoolReward(list, type);
+        return randomPoolReward(list, type, permanent);
     }
 
     /**
@@ -196,11 +196,11 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
      * @param list
      * @return
      */
-    public StaticHeroSearch randomReward(List<StaticDrawCardWeight> list) {
+    public StaticHeroSearch randomReward(List<StaticDrawCardWeight> list, boolean permanent) {
         if (CheckNull.isEmpty(list))
             return null;
 
-        return randomPoolReward(list, randomAwardPool(list));
+        return randomPoolReward(list, randomAwardPool(list), permanent);
     }
 
     /**
@@ -247,27 +247,38 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
      * @param type
      * @return
      */
-    private StaticHeroSearch randomPoolReward(List<StaticDrawCardWeight> awardPoolConfig, DrawCardRewardType type) {
+    private StaticHeroSearch randomPoolReward(List<StaticDrawCardWeight> awardPoolConfig, DrawCardRewardType type, boolean permanent) {
         if (CheckNull.isEmpty(awardPoolConfig) || CheckNull.isNull(type) || CheckNull.isEmpty(poolHeroSearchMap))
             return null;
 
         int totalWeight = 0;
         List<StaticHeroSearch> list = new ArrayList<>();
-        for (StaticDrawCardWeight config : awardPoolConfig) {
-            Map<Integer, List<StaticHeroSearch>> configMap = poolHeroSearchMap.get(config.getSearchTypeId());
-            if (CheckNull.isEmpty(configMap))
-                continue;
-            List<StaticHeroSearch> configList = configMap.get(type.getType());
-            if (CheckNull.isEmpty(configList))
-                continue;
-            list.addAll(configList);
+        if (permanent && DrawCardRewardType.PROP_REWARD.equals(type)) {
+            // 若为常驻抽卡, 则道具奖励不与限时奖池融合
+            Map<Integer, List<StaticHeroSearch>> configMap = poolHeroSearchMap.get(RESIDENT_CARD_DRAW_POOL_ID);
+            if (CheckNull.nonEmpty(configMap)) {
+                list = configMap.get(type);
+                totalWeight = totalWeightMap.get(RESIDENT_CARD_DRAW_POOL_ID).get(type.getType());
+            }
+        } else {
+            for (StaticDrawCardWeight config : awardPoolConfig) {
+                Map<Integer, List<StaticHeroSearch>> configMap = poolHeroSearchMap.get(config.getSearchTypeId());
+                if (CheckNull.isEmpty(configMap))
+                    continue;
+                List<StaticHeroSearch> configList = configMap.get(type.getType());
+                if (CheckNull.isEmpty(configList))
+                    continue;
+                list.addAll(configList);
 
-            // 若总奖池都可以找到配置, 则总权重也是有的
-            Integer typeTotalWeight = totalWeightMap.get(config.getSearchTypeId()).get(type.getType());
-            if (Objects.nonNull(typeTotalWeight)) {
-                totalWeight += typeTotalWeight;
+                // 若总奖池都可以找到配置, 则总权重也是有的
+                Integer typeTotalWeight = totalWeightMap.get(config.getSearchTypeId()).get(type.getType());
+                if (Objects.nonNull(typeTotalWeight)) {
+                    totalWeight += typeTotalWeight;
+                }
             }
         }
+        if (CheckNull.isEmpty(list))
+            return null;
 
         int temp = 0;
         int random = RandomHelper.randomInSize(totalWeight);

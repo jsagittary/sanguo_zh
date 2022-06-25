@@ -281,7 +281,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         DrawCardTimeLimitedFunctionPlanData drawCardData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
         if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
             drawCardData.clearHeroDrawCount();
-            staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
+            staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO, false);
             LogUtil.debug(String.format("drawAcrCard===player:%d, 限时橙色武将保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
             return staticData;
         }
@@ -289,7 +289,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
             drawCardData.clearFragmentDrawCount();
             drawCardData.addHeroDrawCount();
-            staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
+            staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT, false);
             LogUtil.debug(String.format("drawAcrCard===player:%d, 限时碎片保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
             return staticData;
         }
@@ -298,7 +298,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         drawCardData.addHeroDrawCount();
         drawCardData.addFragmentDrawCount();
         // 随机奖励
-        staticData = dataMgr.randomReward(configList);
+        staticData = dataMgr.randomReward(configList, false);
         LogUtil.debug(String.format("drawAcrCard===player:%d, 限时随机抽卡：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
         return staticData;
     }

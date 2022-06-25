@@ -243,7 +243,7 @@ public class DrawCardService implements GmCmdService {
             // 当前次数到必出武将次数
             if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.setHeroDrawCount(0);
-                staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO);
+                staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO, true);
                 LogUtil.debug(String.format("drawCard===player:%d, 橙色武将保底：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
                 return staticData;
             }
@@ -263,7 +263,7 @@ public class DrawCardService implements GmCmdService {
             if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
                 drawCardData.setFragmentDrawCount(0);
                 drawCardData.addHeroDrawCount();
-                staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT);
+                staticData = dataMgr.randomSpecifyType(configList, DrawCardRewardType.ORANGE_HERO_FRAGMENT, true);
                 LogUtil.debug(String.format("drawCard===player:%d, 碎片保底：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
                 return staticData;
             }
@@ -272,7 +272,7 @@ public class DrawCardService implements GmCmdService {
             drawCardData.addHeroDrawCount();
             drawCardData.addFragmentDrawCount();
             // 随机奖励
-            staticData = dataMgr.randomReward(configList);
+            staticData = dataMgr.randomReward(configList, true);
             LogUtil.debug(String.format("drawCard===player:%d, 随机抽卡：%s, 玩家抽卡信息：%s", roleId, staticData.getRewardList(), drawCardData.toDebugString()));
             return staticData;
         } catch (Exception e) {
@@ -476,7 +476,7 @@ public class DrawCardService implements GmCmdService {
                 Map<Integer, Integer> awardCount = new HashMap<>();
                 Map<Integer, Integer> countMap = new HashMap<>();
                 for (int i = 0; i < count; i++) {
-                    StaticHeroSearch staticHeroSearch = dataMgr.randomReward(configList);
+                    StaticHeroSearch staticHeroSearch = dataMgr.randomReward(configList, true);
                     countMap.merge(staticHeroSearch.getRewardType(), 1, Integer::sum);
                     awardCount.merge(staticHeroSearch.getAutoId(), 1, Integer::sum);
                 }
