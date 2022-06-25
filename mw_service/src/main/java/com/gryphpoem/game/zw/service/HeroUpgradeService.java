@@ -63,8 +63,8 @@ public class HeroUpgradeService implements GmCmdService {
         if (CheckNull.isNull(staticData) || staticData.getKeyId() == hero.getGradeKeyId()) {
             throw new MwException(GameError.NO_CONFIG, String.format("player:%d, no next level config, heroId:%d, keyId:%d", roleId, heroId, hero.getGradeKeyId()));
         }
-        checkCondition(player, staticData.getCondition(), staticData.getKeyId(), hero);
-        checkConsume(player, staticData.getConsume(), staticData.getKeyId());
+        checkCondition(player, preStaticData.getCondition(), staticData.getKeyId(), hero);
+        checkConsume(player, preStaticData.getConsume(), staticData.getKeyId());
         hero.setGradeKeyId(staticData.getKeyId());
         CalculateUtil.processAttr(player, hero);
 
