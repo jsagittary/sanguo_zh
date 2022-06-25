@@ -39,7 +39,7 @@ import java.util.Map.Entry;
  * @date 创建时间：2017年3月27日 下午8:31:45
  */
 @Service
-public class EquipService {
+public class EquipService implements GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -1813,6 +1813,30 @@ public class EquipService {
             if (equip.getEquipLocked() == 2) {
                 throw new MwException(GameError.EQUIP_LOCKED.getCode(), "当前装备已上锁, roleId:", player.roleId, ", keyId:", equip.getKeyId());
             }
+        }
+    }
+
+    @GmCmd("equipGm")
+    @Override
+    public void handleGmCmd(Player player, String... params) throws Exception {
+        String cmd = params[0];
+        if ("upSuperEq".equalsIgnoreCase(cmd)) {
+            Integer type = Integer.parseInt(params[1]);
+            Integer lv = Integer.parseInt(params[2]);
+            StaticSuperEquipLv staticData = StaticPropDataMgr.getSuperEquipLv(type, lv);
+            if (CheckNull.isNull(staticData)) {
+                LogUtil.error(String.format("type:%d, lv:%d is bigger than max level", type, lv));
+                return;
+            }
+            SuperEquip superEquip = player.supEquips.get(type);
+            if (CheckNull.isNull(superEquip)) {
+                LogUtil.error(String.format("not found this super equip, type:%d", type));
+                return;
+            }
+            int preLv = superEquip.getLv();
+            superEquip.setLv(lv);
+            if (preLv != lv)
+                CalculateUtil.reCalcAllHeroAttr(player);
         }
     }
 }
