@@ -935,9 +935,6 @@ public class TreasureWareService implements GmCmdService {
         //强化触发礼包
         activityTriggerService.strengthTreasureWare(player, treasureWare.getQuality(), treasureWare.getLevel());
 
-        taskDataManager.updTask(player, TaskType.COND_528, 1);
-        taskDataManager.updTask(player, TaskType.COND_532, 1, nextLevel);
-
         taskDataManager.updTask(player,TaskType.COND_528,1);
         taskDataManager.updTask(player,TaskType.COND_532,1,nextLevel);
 
