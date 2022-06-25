@@ -66,6 +66,7 @@ public class DrawCardService implements GmCmdService {
         player.getDrawCardData().refreshData();
 
         Date now = new Date();
+        builder.setOpen(true);
         builder.setCdTime((int) (player.getDrawCardData().getCdFreeTime() / 1000l));
         if (Objects.nonNull(player.getDrawCardData().getWishHero()))
             builder.setWishHero(PbHelper.createTwoIntPb(player.getDrawCardData().getWishHero().getA(), player.getDrawCardData().getWishHero().getB()));
