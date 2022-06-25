@@ -59,6 +59,8 @@ public class HeroUpgradeService implements GmCmdService {
         StaticHeroUpgrade preStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
         if (CheckNull.isNull(preStaticData) || (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= preStaticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= preStaticData.getLevel()))
             throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
+        if (CheckNull.isEmpty(preStaticData.getConsume()))
+            throw new MwException(GameError.CONFIG_FORMAT_ERROR, String.format("player:%d upgrade hero, consume list is empty, curKeyId:%d", roleId, preStaticData.getKeyId()));
         StaticHeroUpgrade staticData = StaticHeroDataMgr.getNextLvHeroUpgrade(heroId, hero.getGradeKeyId());
         if (CheckNull.isNull(staticData) || staticData.getKeyId() == hero.getGradeKeyId()) {
             throw new MwException(GameError.NO_CONFIG, String.format("player:%d, no next level config, heroId:%d, keyId:%d", roleId, heroId, hero.getGradeKeyId()));

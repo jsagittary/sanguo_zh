@@ -1264,7 +1264,7 @@ public class LogLordHelper {
     }
 
     /**
-     * 记录玩家战斗力 @link(CalculateUtil.reCalcFight)
+     * 记录玩家战斗力 {@link CalculateUtil}
      *
      * @param type
      * @param player
