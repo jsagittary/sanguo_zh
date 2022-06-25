@@ -546,7 +546,7 @@ public class SystemId {
     public static final int K5 = 137;
     public static final int K6 = 138;
     public static final int K7 = 139;
-    public static final int K0 = 140;
+//    public static final int K0 = 140;
     /**
      * 低级重建家园基数
      */

@@ -2230,17 +2230,15 @@ public class HeroService implements GmCmdService {
             return null;
 
         // 查找玩家是否拥有此英雄
-        Hero hero_ = player.heros.get(heroId);
-        if (CheckNull.isNull(hero_)) {
-            hero_ = player.heros.values().stream().filter(v -> {
-                StaticHero staticData = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
-                if (CheckNull.isNull(staticData))
-                    return false;
-                return staticData.getHeroType() == staticHero.getHeroType();
-            }).findFirst().orElse(null);
-        }
-
-        return hero_;
+        return player.heros.get(heroId);
+//        if (CheckNull.isNull(hero_)) {
+//            hero_ = player.heros.values().stream().filter(v -> {
+//                StaticHero staticData = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
+//                if (CheckNull.isNull(staticData))
+//                    return false;
+//                return staticData.getHeroType() == staticHero.getHeroType();
+//            }).findFirst().orElse(null);
+//        }
     }
 
     /**

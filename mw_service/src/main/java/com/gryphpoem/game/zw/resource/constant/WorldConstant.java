@@ -554,7 +554,7 @@ public class WorldConstant {
         return (int) one.toEpochSecond(ZoneOffset.of("+8"));
     }
 
-    public static float K0;
+//    public static float K0;
     public static float K1;
     public static float K2;
     public static float K3;
@@ -615,7 +615,6 @@ public class WorldConstant {
         BERLIN_OVERLORD_COMPENSATION_AWARD = SystemTabLoader
                 .getListListIntSystemValue(SystemId.BERLIN_OVERLORD_COMPENSATION_AWARD, "[[4,5044,1]]");
 
-        K0 = SystemTabLoader.getFloatSystemValue(SystemId.K0, 1);
         K1 = SystemTabLoader.getFloatSystemValue(SystemId.K1, 1);
         K2 = SystemTabLoader.getFloatSystemValue(SystemId.K2, 1);
         K3 = SystemTabLoader.getFloatSystemValue(SystemId.K3, 1);

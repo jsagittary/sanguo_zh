@@ -510,7 +510,7 @@ public class RewardDataManager {
                 break;
             // 添加英雄碎片
             case AwardType.HERO_FRAGMENT:
-                operationHeroFragment(player, id, count, from, true, param);
+                operationHeroFragment(player, id, count, from, true, false, param);
                 break;
             default:
                 break;
@@ -574,13 +574,18 @@ public class RewardDataManager {
      * @param operation
      * @param param
      */
-    private void operationHeroFragment(Player player, int id, int count, AwardFrom from, boolean operation, Object... param) {
+    private void operationHeroFragment(Player player, int id, int count, AwardFrom from, boolean operation, boolean sync, Object... param) {
         if (count == 0)
             return;
 
         count = Math.abs(count);
         count = operation ? count : -count;
         player.getDrawCardData().getFragmentData().merge(id, count, Integer::sum);
+        if (sync) {
+            ChangeInfo changeInfo = ChangeInfo.newIns();
+            changeInfo.addChangeType(AwardType.HERO_FRAGMENT, id);
+            syncRoleResChanged(player, changeInfo);
+        }
     }
 
     /**
@@ -710,7 +715,7 @@ public class RewardDataManager {
                 addTitle(player, id, count, convert, from, param);
                 break;
             case AwardType.HERO_FRAGMENT:
-                operationHeroFragment(player, id, count, from, true, param);
+                operationHeroFragment(player, id, count, from, true, false, param);
                 break;
             default:
                 break;
@@ -2369,7 +2374,7 @@ public class RewardDataManager {
             staticHeroOld = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
             if (staticHeroOld.getHeroType() == staticHero.getHeroType()) {
                 // 重复英雄转化为碎片
-                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, param);
+                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
                 LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
                 return null;
             }
@@ -3283,7 +3288,7 @@ public class RewardDataManager {
                 break;
             // 减少英雄碎片
             case AwardType.HERO_FRAGMENT:
-                operationHeroFragment(player, id, num, from, false, param);
+                operationHeroFragment(player, id, num, from, false, false, param);
                 break;
             default:
                 break;
