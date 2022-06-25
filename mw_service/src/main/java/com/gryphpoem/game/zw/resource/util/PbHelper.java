@@ -1016,6 +1016,7 @@ public class PbHelper {
             Hero h = guard.getPlayer().heros.get(guard.getHeroId());
             if (h != null) {
                 collect.setHeroDecorated(h.getDecorated());
+                collect.setHeroGradeKeyId(h.getGradeKeyId());
             }
         }
         return collect;
@@ -1351,6 +1352,7 @@ public class PbHelper {
         builder.setHeroId(hero.getHeroId());
         builder.setHeroLv(hero.getLevel());
         builder.setHeroDecorated(hero.getDecorated());
+        builder.setGradeKeyId(hero.getGradeKeyId());
         builder.setExp(exp);
         builder.addAllGrab(grab);
         builder.setEffect(effect);
@@ -1385,6 +1387,7 @@ public class PbHelper {
         builder.setLevel(hero.getLevel());
         builder.setCount(hero.getCount());
         builder.setHeroDecorated(hero.getDecorated());
+        builder.setGradeKeyId(hero.getGradeKeyId());
         builder.setSource(source);
         builder.setState(state);
         List<Integer> warPlanes = hero.getWarPlanes();
@@ -1926,6 +1929,7 @@ public class PbHelper {
             }
         }
         builder.setDecorated(hero.getDecorated());
+        builder.setGradeKeyId(hero.getGradeKeyId());
         return builder.build();
     }
 
@@ -2588,6 +2592,7 @@ public class PbHelper {
         builder.setCanMaxCollectTime(sg.getCanMaxCollectTime());
         builder.setHeroTotalCnt(hero.getAttr()[3]);// 总兵力
         builder.setHeroDecorated(hero.getDecorated());
+        builder.setHeroGradeKeyId(hero.getGradeKeyId());
         return builder.build();
     }
 
