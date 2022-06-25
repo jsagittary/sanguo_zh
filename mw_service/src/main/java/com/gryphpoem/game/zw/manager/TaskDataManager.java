@@ -585,6 +585,9 @@ public class TaskDataManager {
                 schedule = techDataManager.getTechLv(player, condId);
                 break;
             }
+            case TaskType.COND_532:
+                schedule = player.treasureWares.values().stream().filter(e -> e.getLevel() >= condId).count();
+                break;
             case TaskType.COND_18: {
                 schedule = BuildingDataManager.getBuildingTopLv(player, condId);
                 // 判断该建筑是否在升级
