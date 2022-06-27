@@ -5,7 +5,9 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
+import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSearch;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
@@ -66,13 +68,13 @@ public abstract class AbsDrawCardPlanService extends AbsFunctionPlanService{
      * @param costCount
      * @param drawCardCount
      * @param drawCardCostType
-     * @param configList
+     * @param config
      * @param now
      * @return
      * @throws MwException
      */
-    public abstract CommonPb.SearchHero onceDraw(Player player, FunctionPlanData drawCardData, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
-                                        DrawCardOperation.DrawCardCostType drawCardCostType, List<StaticDrawCardWeight> configList, Date now) throws MwException;
+    public abstract CommonPb.SearchHero onceDraw(Player player, FunctionPlanData drawCardData,  StaticDrawHeoPlan planData, int costCount, DrawCardOperation.DrawCardCount drawCardCount,
+                                        DrawCardOperation.DrawCardCostType drawCardCostType, StaticDrawCardWeight config, Date now) throws MwException;
 
     /**
      * 随机奖励
@@ -80,9 +82,9 @@ public abstract class AbsDrawCardPlanService extends AbsFunctionPlanService{
      * @param roleId
      * @param drawCardData
      * @param now
-     * @param configList
+     * @param config
      * @return
      * @throws MwException
      */
-    public abstract StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData drawCardData, Date now, List<StaticDrawCardWeight> configList) throws MwException;
+    public abstract StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData drawCardData, StaticDrawHeoPlan planData, Date now, StaticDrawCardWeight config) throws MwException;
 }

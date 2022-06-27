@@ -127,8 +127,8 @@ public class DrawCardPlanTemplateService {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, no player plan data, keyId:%d", player.lord.getLordId(), req.getKeyId()));
         }
 
-        List<StaticDrawCardWeight> configList = staticDrawHeroDataMgr.getSpecifyPool(planFunction.getB().getSearchTypeId());
-        if (CheckNull.isEmpty(configList)) {
+        StaticDrawCardWeight weightConfig = staticDrawHeroDataMgr.checkConfigEmpty(planFunction.getB().getSearchTypeId());
+        if (CheckNull.isNull(weightConfig)) {
             throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, no plan config, keyId:%d", player.lord.getLordId(), req.getKeyId()));
         }
         DrawCardOperation.DrawCardCount drawCardCount = DrawCardOperation.DrawCardCount.convertTo(req.getCountType());
@@ -151,7 +151,7 @@ public class DrawCardPlanTemplateService {
         GamePb5.DrawActHeroCardRs.Builder builder = GamePb5.DrawActHeroCardRs.newBuilder();
         // 执行将领寻访逻辑
         for (int i = 0; i < drawCardCount.getCount(); i++) {
-            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, 0, drawCardCount, drawCardCostType, configList, now);
+            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, planFunction.getB(), 0, drawCardCount, drawCardCostType, weightConfig, now);
             if (null != sh) {
                 builder.addHero(sh);
             }
