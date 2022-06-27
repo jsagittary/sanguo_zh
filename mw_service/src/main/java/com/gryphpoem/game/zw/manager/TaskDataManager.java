@@ -686,6 +686,9 @@ public class TaskDataManager {
                 schedule = mentorSkill == null ? 0 : mentorSkill.getLv();
                 break;
             }
+            case TaskType.COND_998:
+                schedule = player.heros.values().stream().filter(e -> e.getGradeKeyId() == condId).count();
+                break;
             case TaskType.COND_MENTOR_UPLV: {// 升级教官等级至XX级
                 MentorInfo mentorInfo = player.getMentorInfo();
                 Mentor mentor = mentorInfo.getMentors().get(condId);
