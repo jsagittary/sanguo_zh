@@ -2764,7 +2764,8 @@ public class PbHelper {
         basicReport.setCamp(defLord.getCamp());
         basicReport.setNick(defLord.getNick());
         basicReport.setDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
-        basicReport.setGradeKeyId(CheckNull.isNull(hero) ? 0 : hero.getGradeKeyId());
+        if (Objects.nonNull(hero))
+            basicReport.setGradeKeyId(hero.getGradeKeyId());
         return basicReport.build();
     }
 

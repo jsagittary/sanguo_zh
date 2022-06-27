@@ -1741,7 +1741,8 @@ public class BerlinWarService {
         builder.setRoleId(atkLord.getLordId());
         builder.addAllReports(reportRs);
         builder.setDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
-        builder.setGradeKeyId(CheckNull.isNull(hero) ? 0 : hero.getGradeKeyId());
+        if (Objects.nonNull(hero))
+            builder.setGradeKeyId(hero.getGradeKeyId());
         Player player = playerDataManager.checkPlayerIsExist(atkLord.getLordId());
 
         // 同步立即出击战报
