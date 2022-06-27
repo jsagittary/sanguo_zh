@@ -2754,7 +2754,7 @@ public class PbHelper {
     }
 
     public static BerlinBasicReport createBerlinBasicReport(boolean atkSuccess, Fighter attacker, Fighter defender,
-                                                            Lord defLord, int heroId, int decorated) {
+                                                            Lord defLord, int heroId, Hero hero) {
         CommonPb.BerlinBasicReport.Builder basicReport = CommonPb.BerlinBasicReport.newBuilder();
         basicReport.setIsWin(atkSuccess);
         basicReport.setAtkLost(attacker.lost);
@@ -2763,7 +2763,8 @@ public class PbHelper {
         basicReport.setHeroId(heroId);
         basicReport.setCamp(defLord.getCamp());
         basicReport.setNick(defLord.getNick());
-        basicReport.setDecorated(decorated);
+        basicReport.setDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        basicReport.setGradeKeyId(CheckNull.isNull(hero) ? 0 : hero.getGradeKeyId());
         return basicReport.build();
     }
 
