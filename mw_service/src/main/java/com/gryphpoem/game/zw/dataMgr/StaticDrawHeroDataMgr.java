@@ -325,7 +325,7 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
             // 若为常驻抽卡, 则道具奖励不与限时奖池融合
             Map<Integer, List<StaticHeroSearch>> configMap = poolHeroSearchMap.get(RESIDENT_CARD_DRAW_POOL_ID);
             if (CheckNull.nonEmpty(configMap)) {
-                list = configMap.get(type);
+                list = configMap.get(type.getType());
                 totalWeight = totalWeightMap.get(RESIDENT_CARD_DRAW_POOL_ID).get(type.getType());
             }
         } else {
