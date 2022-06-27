@@ -320,7 +320,7 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
             return null;
 
         int totalWeight = 0;
-        List<StaticHeroSearch> list = new ArrayList<>();
+        List<StaticHeroSearch> list = null;
         if (permanent && DrawCardRewardType.PROP_REWARD.equals(type)) {
             // 若为常驻抽卡, 则道具奖励不与限时奖池融合
             Map<Integer, List<StaticHeroSearch>> configMap = poolHeroSearchMap.get(RESIDENT_CARD_DRAW_POOL_ID);
@@ -338,6 +338,8 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
                 List<StaticHeroSearch> configList = configMap.get(type.getType());
                 if (CheckNull.isEmpty(configList))
                     continue;
+                if (CheckNull.isNull(list))
+                    list = new ArrayList<>();
                 list.addAll(configList);
 
                 // 若总奖池都可以找到配置, 则总权重也是有的
