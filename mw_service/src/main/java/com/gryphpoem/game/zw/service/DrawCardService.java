@@ -116,7 +116,8 @@ public class DrawCardService implements GmCmdService {
                     throw new MwException(GameError.FREE_DRAW_CARD_COUNT_NOT_ENOUGH.getCode(), "免费次数不足, roleId:", player.roleId,
                             ", totalFreeCount:", totalFreeCount, ", now:", now);
                 }
-                if (drawCardData.getFreeCount() > 0 && !DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount)) {
+                // 若玩家点击十连且是免费操作, 则活动任务次数必须足够
+                if (DrawCardOperation.DrawCardCount.TEN.equals(drawCardCount) && drawCardData.getOtherFreeCount() < drawCardCount.getCount()) {
                     throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
                 }
                 // 扣除次数
