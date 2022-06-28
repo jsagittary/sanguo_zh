@@ -399,6 +399,8 @@ public class CiaService {
         LogLordHelper.commonLog("femaleAgentAddExp", AwardFrom.COMMON, player, femaleAgent.getId(),
                 femaleAgent.getStar(), femaleAgent.getExp() - val,femaleAgent.getExp());
         taskDataManager.updTask(player, TaskType.COND_INTERACTION_AGENT, 1);
+        // 累计互动次数
+        taskDataManager.updTask(player, TaskType.COND_999, 1);
 
         InteractionRs.Builder builder = InteractionRs.newBuilder();
         builder.setInteractionCnt(cia.getInteractionCnt());

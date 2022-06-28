@@ -19,10 +19,7 @@ import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -301,7 +298,12 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.setResult(winState);
         builder.setRecord(fightLogic.generateRecord());
         builder.addAllAtkHero(fightSettleLogic.stoneCombatCreateRptHero(player, attacker.forces));
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> {
+            Hero hero = challengingPlayer.heros.get(force.id);
+            if (CheckNull.isNull(hero))
+                return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost);
+            return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, hero, null, 0, 0, force.totalLost);
+        }).collect(Collectors.toList()));
         if (Objects.nonNull(awards)) {
             builder.addAllAward(awards);
         }

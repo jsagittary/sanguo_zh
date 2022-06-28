@@ -153,6 +153,7 @@ public class DrawCardService implements GmCmdService {
         }
 
         taskDataManager.updTask(player, TaskType.COND_997, drawCardCount.getCount());
+        taskDataManager.updTask(player, TaskType.COND_1000, drawCardCount.getCount());
         builder.setCount(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - drawCardData.getHeroDrawCount());
         builder.setCdTime((int) (drawCardData.getCdFreeTime() / 1000l));
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
