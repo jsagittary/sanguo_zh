@@ -1232,6 +1232,9 @@ public class PbHelper {
         builder.setHeroDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
         if (Objects.nonNull(hero)) {
             builder.setGradeKeyId(hero.getGradeKeyId());
+            if (!ObjectUtils.isEmpty(hero.getAttr())) {
+                builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
+            }
         }
         return builder.build();
     }
