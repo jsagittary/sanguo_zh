@@ -489,5 +489,12 @@ public class DrawCardService implements GmCmdService {
         if ("addFragment".equalsIgnoreCase(cmd)) {
             rewardDataManager.sendRewardSignle(player, AwardType.HERO_FRAGMENT, Integer.parseInt(params[1]), Integer.parseInt(params[2]), AwardFrom.DO_SOME);
         }
+        if ("clearFragment".equalsIgnoreCase(cmd)) {
+            if (CheckNull.nonEmpty(player.getDrawCardData().getFragmentData())) {
+                for (Map.Entry<Integer, Integer> entry : player.getDrawCardData().getFragmentData().entrySet()) {
+                    rewardDataManager.subAndSyncProp(player, AwardType.HERO_FRAGMENT, entry.getKey(), entry.getValue(), AwardFrom.DO_SOME);
+                }
+            }
+        }
     }
 }
