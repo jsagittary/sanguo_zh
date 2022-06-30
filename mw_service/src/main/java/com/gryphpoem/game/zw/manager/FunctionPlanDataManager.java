@@ -1,19 +1,20 @@
 package com.gryphpoem.game.zw.manager;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.FunctionPlan;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.ClassUtil;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Description:

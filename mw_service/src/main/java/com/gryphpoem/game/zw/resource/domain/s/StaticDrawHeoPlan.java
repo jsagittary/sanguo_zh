@@ -1,12 +1,18 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description:
@@ -22,6 +28,18 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
     private int searchTypeId;
     private List<List<Integer>> serverIdList;
     private int functionId;
+    /**
+     * 预显示时间天数(与开服时间间隔)
+     */
+    private int previewDays;
+    /**
+     * 开始时间天数(与开服时间间隔)
+     */
+    private int openBeginDays;
+    /**
+     * 活动开放时间天数(与开服时间间隔)
+     */
+    private int openDuration;
 
     public int getId() {
         return id;
@@ -88,6 +106,33 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
     }
 
     /**
+     * 初始化数据
+     *
+     * @return
+     */
+    public boolean initPlan() {
+        if (openBeginDays > 0) {
+            if (Objects.nonNull(this.beginTime)) {
+                LogUtil.error(String.format("check draw hero plan data, plan:%s", this));
+            }
+            if (openDuration <= 0)
+                return false;
+            Date openTime = DateHelper.parseDate(DataResource.ac.getBean(ServerSetting.class).getOpenTime());
+            if (CheckNull.isNull(openTime))
+                return false;
+            // 获取活动预显示时间
+            this.previewTime = TimeHelper.getSomeDayAfterOrBerfore(openTime, previewDays - 1, 0, 0, 0);
+            // 获取活动开启时间   = （开服后的天数-1） + 开服时间
+            this.beginTime = TimeHelper.getSomeDayAfterOrBerfore(openTime, openBeginDays - 1, 0, 0, 0);
+            // 活动结束时间  = 开始时间 + （活动时长 - 1）
+            this.endTime = TimeHelper.getSomeDayAfterOrBerfore(beginTime, openDuration - 1, 23, 59, 59);
+        } else {
+            return Objects.nonNull(beginTime) && Objects.nonNull(endTime);
+        }
+        return true;
+    }
+
+    /**
      * 获取活动状态
      *
      * @param now
@@ -104,6 +149,23 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
         if (now.after(beginTime) && now.before(endTime))
             return PlanFunction.PlanStatus.OPEN;
         return PlanFunction.PlanStatus.OVER;
+    }
+
+    @Override
+    public String toString() {
+        return "StaticDrawHeoPlan{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", previewTime=" + previewTime +
+                ", beginTime=" + beginTime +
+                ", endTime=" + endTime +
+                ", searchTypeId=" + searchTypeId +
+                ", serverIdList=" + serverIdList +
+                ", functionId=" + functionId +
+                ", previewDays=" + previewDays +
+                ", openBeginDays=" + openBeginDays +
+                ", openDuration=" + openDuration +
+                '}';
     }
 
     @Override

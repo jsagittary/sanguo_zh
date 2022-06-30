@@ -33,7 +33,6 @@ import com.gryphpoem.game.zw.resource.util.random.RewardRandomUtil;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
-import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.activity.MusicFestivalCreativeService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -2365,20 +2364,22 @@ public class RewardDataManager {
 
         Hero hero = player.heros.get(heroId);
         if (null != hero) {
-            LogUtil.error("玩家已有该将领，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+            // 重复英雄转化为碎片
+            operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
+            LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
             return null;
         }
 
-        StaticHero staticHeroOld;
-        for (Hero v : player.heros.values()) {
-            staticHeroOld = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
-            if (staticHeroOld.getHeroType() == staticHero.getHeroType()) {
-                // 重复英雄转化为碎片
-                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
-                LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
-                return null;
-            }
-        }
+//        StaticHero staticHeroOld;
+//        for (Hero v : player.heros.values()) {
+//            staticHeroOld = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
+//            if (staticHeroOld.getHeroType() == staticHero.getHeroType()) {
+//                // 重复英雄转化为碎片
+//                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
+//                LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+//                return null;
+//            }
+//        }
 
         hero = new Hero();
         hero.setHeroId(heroId);

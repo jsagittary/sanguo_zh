@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.dataMgr;
 
-import com.google.common.collect.Lists;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -71,7 +70,7 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
         Map<Integer, StaticDrawHeoPlan> drawHeoPlanMap = staticIniDao.selectStaticDrawHeoPlanMap();
         if (CheckNull.nonEmpty(drawHeoPlanMap)) {
             this.drawHeoPlanMap = drawHeoPlanMap.values().stream().filter(staticData -> Objects.nonNull(staticData) && CheckNull.nonEmpty(staticData.getServerIdList()) &&
-                    checkServerId(serverId, staticData.getServerIdList())).collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
+                    checkServerId(serverId, staticData.getServerIdList()) && staticData.initPlan()).collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
         }
 
         List<StaticDrawCardWeight> drawCardWeightList_ = staticIniDao.selectStaticDrawCardWeightList();
