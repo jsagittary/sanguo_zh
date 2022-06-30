@@ -234,14 +234,8 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * @return
      */
     public List<Integer> getNextRewardList() {
-        List<Integer> nextRewardList = HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
-                filter(list -> CheckNull.nonEmpty(list) && list.get(0) <= this.activeDrawsUsedCount + 1).findFirst().orElse(null);
-        if (CheckNull.isEmpty(nextRewardList))
-            return null;
-
-        if (this.specifyRewardList.contains(nextRewardList.get(0)))
-            return null;
-        return nextRewardList;
+        return HeroConstant.ACTIVE_DRAWS_USED_COUNT_HERO_REWARD.stream().
+                filter(list -> CheckNull.nonEmpty(list) && !this.specifyRewardList.contains(list.get(0)) && list.get(0) <= this.activeDrawsUsedCount + 1).findFirst().orElse(null);
     }
 
     public Date getLastDrawCardDate() {
