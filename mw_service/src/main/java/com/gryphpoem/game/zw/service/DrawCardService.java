@@ -494,7 +494,7 @@ public class DrawCardService implements GmCmdService {
      * @return
      */
     public void addHeroHasCheck(Player player, Hero hero, AwardFrom from) {
-        if (CheckNull.isNull(from) || CheckNull.isNull(hero))
+        if (CheckNull.isNull(from) || CheckNull.isNull(hero) || !hero.isShowClient())
             return;
         if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
             hero.setShowClient(false);
