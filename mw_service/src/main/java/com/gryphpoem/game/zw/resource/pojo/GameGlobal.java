@@ -59,7 +59,7 @@ public class GameGlobal {
     private Map<Integer, Battle> battleMap = new ConcurrentHashMap<>();
     private Map<Integer, Battle> specialBattleMap = new ConcurrentHashMap<>();
     private Map<Integer, Integer> sendChatCnt = new ConcurrentHashMap<>();
-    private WorldTask worldTask; // 世界任务
+    private volatile WorldTask worldTask; // 世界任务
     private Trophy trophy;// 全服成就
     private Map<Integer, CabinetLead> cabinetLeadMap = new ConcurrentHashMap<>();// 点兵统领
     private Map<Integer, Gestapo> gestapoMap = new ConcurrentHashMap<>();// 盖世太保
@@ -209,6 +209,8 @@ public class GameGlobal {
     }
 
     public WorldTask getWorldTask() {
+        if (CheckNull.isNull(worldTask))
+            worldTask = new WorldTask(StaticWorldDataMgr.getWorldTask(2));
         return worldTask;
     }
 
