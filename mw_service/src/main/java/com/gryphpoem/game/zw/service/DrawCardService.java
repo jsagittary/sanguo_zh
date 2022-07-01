@@ -1,14 +1,13 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticDrawHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -20,9 +19,9 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +48,8 @@ public class DrawCardService implements GmCmdService {
     private ChatDataManager chatDataManager;
     @Autowired
     private TaskDataManager taskDataManager;
+    @Autowired
+    private MailDataManager mailDataManager;
 
     /**
      * 获取抽卡详情
@@ -458,6 +459,71 @@ public class DrawCardService implements GmCmdService {
         }
 
         return true;
+    }
+
+    /** 只可获取数组中一次英雄奖励*/
+    private AwardFrom[] GOT_ONCE_HERO_AWARD = new AwardFrom[]{AwardFrom.ALICE_AWARD, AwardFrom.RECV_DAY_7_ACT_AWARD};
+
+    /**
+     * 校验武将是否可以再获取
+     *
+     * @param player
+     * @param hero
+     * @param from
+     * @return
+     */
+    public boolean checkHero(Player player, Hero hero, AwardFrom from) {
+        if (CheckNull.isNull(from) || CheckNull.isNull(hero))
+            return true;
+        if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
+            if (!hero.isShowClient()) {
+                // 若已获得此英雄, 从活动或任务再次活动此英雄, 则不发送
+                LogUtil.error(String.format("has got this hero from others reward, roleId:%d, heroId:%d", player.roleId, hero.getHeroId()));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 通过不同途径添加玩家英雄
+     *
+     * @param player
+     * @param hero
+     * @param from
+     * @return
+     */
+    public void addHeroHasCheck(Player player, Hero hero, AwardFrom from) {
+        if (CheckNull.isNull(from) || CheckNull.isNull(hero))
+            return;
+        if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
+            hero.setShowClient(false);
+            // 同步英雄获取变更
+            GamePb5.SyncHeroShowStatusRs.Builder builder = GamePb5.SyncHeroShowStatusRs.newBuilder();
+            builder.setHero(PbHelper.createHeroPb(hero, player));
+            BasePb.Base base = PbHelper.createSynBase(GamePb5.SyncHeroShowStatusRs.EXT_FIELD_NUMBER, GamePb5.SyncHeroShowStatusRs.ext, builder.build()).build();
+            DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, player);
+        }
+    }
+
+    /**
+     * 处理关平(救援奖励)
+     *
+     * @param player
+     * @param hero
+     * @param from
+     */
+    public void handleRescueAward(Player player, Hero hero, AwardFrom from) {
+        if (CheckNull.isNull(from) || CheckNull.isNull(hero))
+            return;
+        if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
+            // 获取这个特殊将领就发送邮件
+            if (Constant.ALICE_RESCUE_MISSION_TASK.get(1) == hero.getHeroId()) {
+                List<CommonPb.Award> awardsPb = PbHelper.createAwardsPb(Constant.ALICE_RESCUE_MISSION_MAIL_AWARD);
+                // 发送救援奖励邮件
+                mailDataManager.sendAttachMail(player, awardsPb, MailConstant.MOLD_ALICE_AWARD, AwardFrom.ALICE_AWARD, TimeHelper.getCurrentSecond());
+            }
+        }
     }
 
     @GmCmd("drawCard")

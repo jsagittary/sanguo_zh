@@ -58,6 +58,8 @@ public class Hero {
     private Integer treasureWare;//宝具
     /** 英雄品阶keyId*/
     private int gradeKeyId;
+    /** 是否在主界面显示英雄奖励*/
+    private boolean showClient;
 
     public Hero() {
         attr = new int[4];// 三种属性，对应1-3位，0位为补位，不用
@@ -80,6 +82,7 @@ public class Hero {
         initMedalKeys();
         totem = new int[9];
         awaken = new TreeMap<>(Integer::compareTo);
+        showClient = true;
     }
 
     /**
@@ -186,6 +189,7 @@ public class Hero {
             setTreasureWare(hero.getTreasureWare());
         }
         setGradeKeyId(hero.getGrade());
+        this.setShowClient(hero.getShowClient());
     }
 
     public int getHeroType() {
@@ -357,6 +361,14 @@ public class Hero {
 
     public void setTreasureWare(Integer treasureWare) {
         this.treasureWare = treasureWare;
+    }
+
+    public boolean isShowClient() {
+        return showClient;
+    }
+
+    public void setShowClient(boolean showClient) {
+        this.showClient = showClient;
     }
 
     /**

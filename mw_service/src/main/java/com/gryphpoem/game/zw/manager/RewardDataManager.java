@@ -115,6 +115,8 @@ public class RewardDataManager {
     private MusicFestivalCreativeService musicFestivalCreativeService;
     @Autowired
     private TitleService titleService;
+    @Autowired
+    private DrawCardService drawCardService;
 
     /**
      * 合并奖励
@@ -2363,6 +2365,10 @@ public class RewardDataManager {
         }
 
         Hero hero = player.heros.get(heroId);
+        if (!drawCardService.checkHero(player, hero, from)) {
+            return null;
+        }
+
         if (null != hero) {
             // 重复英雄转化为碎片
             operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
@@ -2409,6 +2415,7 @@ public class RewardDataManager {
         }
         CalculateUtil.processAttr(player, hero);
         player.heros.put(heroId, hero);
+        drawCardService.addHeroHasCheck(player, hero, from);
 
         // 记录玩家获得新将领
         LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);
@@ -2432,13 +2439,8 @@ public class RewardDataManager {
         }
         //触发获得某英雄后相关礼包
         activityTriggerService.getAnyHero(player, staticHero.getHeroType());
-        // 获取这个特殊将领就发送邮件
-        if (Constant.ALICE_RESCUE_MISSION_TASK.get(1) == heroId) {
-            List<Award> awardsPb = PbHelper.createAwardsPb(Constant.ALICE_RESCUE_MISSION_MAIL_AWARD);
-            // 发送救援奖励邮件
-            mailDataManager.sendAttachMail(player, awardsPb, MailConstant.MOLD_ALICE_AWARD, AwardFrom.ALICE_AWARD, TimeHelper.getCurrentSecond());
-        }
-
+        // 获取没有的武将, 处理救援奖励邮件
+        drawCardService.handleRescueAward(player, hero, from);
         return hero;
 
         // 触发剧情章节,2018/3/14 去掉将领获取触发剧情任务

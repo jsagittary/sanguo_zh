@@ -68,7 +68,6 @@ import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySuperSupply;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySupply;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
-import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.Area;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinRoleInfo;
@@ -571,6 +570,7 @@ public class PbHelper {
             builder.setTreasureWare(hero.getTreasureWare());
         }
         builder.setGrade(hero.getGradeKeyId());
+        builder.setShowClient(hero.isShowClient());
         return builder.build();
     }
 
@@ -669,6 +669,7 @@ public class PbHelper {
             builder.setTreasureWare(hero.getTreasureWare());
         }
         builder.setGrade(hero.getGradeKeyId());
+        builder.setShowClient(hero.isShowClient());
         return builder.build();
     }
 
