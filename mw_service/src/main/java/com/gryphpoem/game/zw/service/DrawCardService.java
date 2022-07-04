@@ -462,7 +462,7 @@ public class DrawCardService implements GmCmdService {
     }
 
     /** 只可获取数组中一次英雄奖励*/
-    private AwardFrom[] GOT_ONCE_HERO_AWARD = new AwardFrom[]{AwardFrom.ALICE_AWARD, AwardFrom.RECV_DAY_7_ACT_AWARD};
+    private AwardFrom[] GOT_ONCE_HERO_AWARD = new AwardFrom[]{AwardFrom.ALICE_AWARD, AwardFrom.SIGN_IN_REWARD};
 
     /**
      * 校验武将是否可以再获取
