@@ -2364,89 +2364,77 @@ public class RewardDataManager {
             return null;
         }
 
+        // 校验玩家是否还可以获得此英雄或英雄碎片
         Hero hero = player.heros.get(heroId);
         if (!drawCardService.checkHero(player, hero, from)) {
             return null;
         }
 
-        if (null != hero) {
-            // 重复英雄转化为碎片
-            operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
-            LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
-            return null;
-        }
-
-//        StaticHero staticHeroOld;
-//        for (Hero v : player.heros.values()) {
-//            staticHeroOld = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
-//            if (staticHeroOld.getHeroType() == staticHero.getHeroType()) {
-//                // 重复英雄转化为碎片
-//                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
-//                LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
-//                return null;
-//            }
-//        }
-
-        hero = new Hero();
-        hero.setHeroId(heroId);
-        hero.setHeroType(staticHero.getHeroType());
-        hero.setQuality(staticHero.getQuality());
-        // 初始化将领属性
-//        hero.getWash()[HeroConstant.ATTR_ATTACK] = staticHero.getAttack();
-//        hero.getWash()[HeroConstant.ATTR_DEFEND] = staticHero.getDefend();
-//        hero.getWash()[HeroConstant.ATTR_LEAD] = staticHero.getLead();
-        // 初始化将领品阶数据
-        hero.initHeroGrade();
-        //如果是赛季英雄则初始化英雄技能
-        if (staticHero.getSeason() > 0) {
-            Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
-            if (Objects.nonNull(skillMap)) {
-                for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
-                    int skillId = entry.getKey();
-                    int initLv = entry.getValue().firstKey();
-                    hero.getSkillLevels().put(skillId, initLv);
-                }
+        try {
+            if (null != hero) {
+                // 重复英雄转化为碎片
+                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
+                LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+                return null;
             }
-            hero.setCgyStage(1);
-            hero.setCgyLv(0);
 
-            //获得英雄发聊天公告
-            chatDataManager.sendSysChat(ChatConst.SEASON_GET_HERO, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), hero.getHeroId());
+            hero = new Hero();
+            hero.setHeroId(heroId);
+            hero.setHeroType(staticHero.getHeroType());
+            hero.setQuality(staticHero.getQuality());
+            // 初始化将领品阶数据
+            hero.initHeroGrade();
+            //如果是赛季英雄则初始化英雄技能
+            if (staticHero.getSeason() > 0) {
+                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+                if (Objects.nonNull(skillMap)) {
+                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+                        int skillId = entry.getKey();
+                        int initLv = entry.getValue().firstKey();
+                        hero.getSkillLevels().put(skillId, initLv);
+                    }
+                }
+                hero.setCgyStage(1);
+                hero.setCgyLv(0);
+
+                //获得英雄发聊天公告
+                chatDataManager.sendSysChat(ChatConst.SEASON_GET_HERO, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), hero.getHeroId());
+            }
+            CalculateUtil.processAttr(player, hero);
+            player.heros.put(heroId, hero);
+            drawCardService.addHeroHasCheck(player, hero, from);
+
+            // 记录玩家获得新将领
+            LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);
+
+            //貂蝉任务-拥有英雄X个X品质
+            ActivityDiaoChanService.completeTask(player, ETask.OWN_HERO);
+            TaskService.processTask(player, ETask.OWN_HERO);
+            //任务 - 获得指定英雄
+            TaskService.handleTask(player, ETask.GET_HERO);
+            ActivityDiaoChanService.completeTask(player, ETask.GET_HERO);
+            TaskService.processTask(player, ETask.GET_HERO);
+
+            activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO);
+            activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
+            taskDataManager.updTask(player, TaskType.COND_26, 1, hero.getHeroId());
+            taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getType());
+            taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
+            if (!ActParamConstant.ACT_TRIGGER_HERO_IGNORE.contains(staticHero.getHeroId())) {
+                // 触发第一次增加紫橙将领
+                activityTriggerService.awardHeroTriggerGift(player, hero.getQuality());
+            }
+            //触发获得某英雄后相关礼包
+            activityTriggerService.getAnyHero(player, staticHero.getHeroType());
+
+            return hero;
+        } catch (Exception e) {
+            LogUtil.error(String.format("add hero error, player:%d, heroId:%d, e:%s", player.roleId, heroId, e));
+            return hero;
+        } finally {
+            // 获取没有的武将, 处理救援奖励邮件
+            drawCardService.handleRescueAward(player, hero, from);
         }
-        CalculateUtil.processAttr(player, hero);
-        player.heros.put(heroId, hero);
-        drawCardService.addHeroHasCheck(player, hero, from);
-
-        // 记录玩家获得新将领
-        LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);
-
-        //貂蝉任务-拥有英雄X个X品质
-        ActivityDiaoChanService.completeTask(player, ETask.OWN_HERO);
-        TaskService.processTask(player, ETask.OWN_HERO);
-        //任务 - 获得指定英雄
-        TaskService.handleTask(player, ETask.GET_HERO);
-        ActivityDiaoChanService.completeTask(player, ETask.GET_HERO);
-        TaskService.processTask(player, ETask.GET_HERO);
-
-        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO);
-        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
-        taskDataManager.updTask(player, TaskType.COND_26, 1, hero.getHeroId());
-        taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getType());
-        taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
-        if (!ActParamConstant.ACT_TRIGGER_HERO_IGNORE.contains(staticHero.getHeroId())) {
-            // 触发第一次增加紫橙将领
-            activityTriggerService.awardHeroTriggerGift(player, hero.getQuality());
-        }
-        //触发获得某英雄后相关礼包
-        activityTriggerService.getAnyHero(player, staticHero.getHeroType());
-        // 获取没有的武将, 处理救援奖励邮件
-        drawCardService.handleRescueAward(player, hero, from);
-        return hero;
-
-        // 触发剧情章节,2018/3/14 去掉将领获取触发剧情任务
-        // if (heroId == Constant.SECTIONTASK_BEGIN_HERO_ID) {
-        // taskDataManager.triggerSectiontask(player);
-        // }
     }
 
     /**
