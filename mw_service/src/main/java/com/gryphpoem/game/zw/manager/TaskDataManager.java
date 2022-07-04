@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.manager;
 
-import com.google.common.collect.Lists;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
@@ -12,18 +11,19 @@ import com.gryphpoem.game.zw.pb.GamePb3.SyncDailyTaskRs;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncPartyFinishRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.constant.task.CommandMultType;
-import com.gryphpoem.game.zw.resource.constant.task.TaskCone517Type;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCommandMult;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPartyTask;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.FactoryService;
 import com.gryphpoem.game.zw.service.HeroService;
 import com.gryphpoem.game.zw.service.StoneService;
@@ -294,6 +294,8 @@ public class TaskDataManager {
             case TaskType.COND_533:
             case TaskType.COND_997:
             case TaskType.COND_998:
+            case TaskType.COND_999:
+            case TaskType.COND_1000:
                 int paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId == 0 || sCondId == paramId) {
                     task.setSchedule(task.getSchedule() + schedule);
