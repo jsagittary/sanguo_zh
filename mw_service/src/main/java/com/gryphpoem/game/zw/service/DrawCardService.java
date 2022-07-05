@@ -25,6 +25,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -547,6 +548,12 @@ public class DrawCardService implements GmCmdService {
                     rewardDataManager.subAndSyncProp(player, AwardType.HERO_FRAGMENT, entry.getKey(), entry.getValue(), AwardFrom.DO_SOME);
                 }
             }
+        }
+        if ("clearDrawData".equalsIgnoreCase(cmd)) {
+            String fileGm = params[1];
+            Field field = player.getDrawCardData().getClass().getDeclaredField(fileGm);
+            field.setAccessible(true);
+            field.set(player.getDrawCardData(), 0);
         }
     }
 }
