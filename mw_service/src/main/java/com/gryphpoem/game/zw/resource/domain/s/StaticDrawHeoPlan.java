@@ -19,7 +19,7 @@ import java.util.Objects;
  * Author: zhangpeng
  * createTime: 2022-06-13 18:25
  */
-public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
+public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan.Builder> {
     private int id;
     private String name;
     private Date previewTime;
@@ -169,7 +169,7 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
     }
 
     @Override
-    public CommonPb.DrawCardPlan createPb(boolean isSaveDb) {
+    public CommonPb.DrawCardPlan.Builder createPb(boolean isSaveDb) {
         CommonPb.DrawCardPlan.Builder builder = CommonPb.DrawCardPlan.newBuilder();
         builder.setFunctionId(functionId);
         builder.setName(name);
@@ -179,6 +179,6 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan> {
         builder.setKeyId(id);
         builder.setPreviewTime(CheckNull.isNull(previewTime) ? 0 : (int) (previewTime.getTime() / 1000l));
         builder.setSearchTypeId(searchTypeId);
-        return builder.build();
+        return builder;
     }
 }

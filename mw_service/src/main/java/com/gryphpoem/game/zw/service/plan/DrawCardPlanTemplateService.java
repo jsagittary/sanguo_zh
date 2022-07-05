@@ -11,16 +11,11 @@ import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
-import com.gryphpoem.game.zw.quartz.jobs.ActEndJob;
-import com.gryphpoem.game.zw.quartz.jobs.ActJob;
-import com.gryphpoem.game.zw.quartz.jobs.ActOverJob;
 import com.gryphpoem.game.zw.quartz.jobs.FunctionJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionEndJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionPreviewJob;
-import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
 import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
@@ -31,9 +26,7 @@ import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
-import com.gryphpoem.game.zw.service.DrawCardService;
 import com.gryphpoem.game.zw.service.PlayerService;
-import com.gryphpoem.game.zw.service.plan.abs.AbsDrawCardPlanService;
 import com.gryphpoem.game.zw.service.plan.abs.AbsDrawCardPlanService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.quartz.Scheduler;
@@ -79,7 +72,12 @@ public class DrawCardPlanTemplateService {
         if (CheckNull.isEmpty(planList)) {
             return GamePb5.GetDrawHeroCardPlanRs.newBuilder().build();
         }
-        return GamePb5.GetDrawHeroCardPlanRs.newBuilder().addAllPlanList(planList.stream().map(plan -> plan.createPb(false)).collect(Collectors.toList())).build();
+        return GamePb5.GetDrawHeroCardPlanRs.newBuilder().addAllPlanList(planList.stream().map(plan -> {
+            CommonPb.DrawCardPlan.Builder builder = plan.createPb(false);
+            StaticDrawCardWeight weightConfig = staticDrawHeroDataMgr.checkConfigEmpty(plan.getSearchTypeId());
+            builder.setWeightId(CheckNull.isNull(weightConfig) ? 0 : weightConfig.getId());
+            return builder.build();
+        }).collect(Collectors.toList())).build();
     }
 
     /**
