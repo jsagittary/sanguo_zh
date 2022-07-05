@@ -8,7 +8,6 @@ import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -139,6 +138,7 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
     @Override
     public ActivityPb.TimeLimitedDrawCardActData createPb(boolean isSaveDb) {
         ActivityPb.TimeLimitedDrawCardActData.Builder builder = ActivityPb.TimeLimitedDrawCardActData.newBuilder();
+        builder.setHeroDrawCount(getHeroDrawCount());
         builder.setFunctionId(PlanFunction.DRAW_CARD.getFunctionId());
         builder.setExtNum(getProgress());
         builder.setKeyId(getKeyId());
