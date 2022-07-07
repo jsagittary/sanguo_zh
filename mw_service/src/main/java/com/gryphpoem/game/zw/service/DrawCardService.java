@@ -555,5 +555,8 @@ public class DrawCardService implements GmCmdService {
             field.setAccessible(true);
             field.set(player.getDrawCardData(), 0);
         }
+        if ("setWishCount".equalsIgnoreCase(cmd)) {
+            player.getDrawCardData().getWishHero().setB(Integer.parseInt(params[1]));
+        }
     }
 }
