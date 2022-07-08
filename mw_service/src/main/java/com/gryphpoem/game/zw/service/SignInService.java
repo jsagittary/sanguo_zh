@@ -299,7 +299,7 @@ public class SignInService {
             if (sActLogin != null) {
                 List<List<Integer>> signInAward = sActLogin.getAwardList();
                 if (CheckNull.isEmpty(signInAward) || CheckNull.isEmpty(signInAward.get(0))) return false;
-                if (signInAward.get(0).get(0) == AwardType.HERO) return false;
+                if (signInAward.get(0).get(0) != AwardType.HERO) return false;
                 Hero hero = player.heros.get(signInAward.get(0).get(1));
                 if (CheckNull.isNull(hero)) return false;
                 return !hero.isShowClient();
