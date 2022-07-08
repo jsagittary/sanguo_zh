@@ -77,7 +77,7 @@ public class DrawCardService implements GmCmdService {
         List<StaticDrawCardWeight> drawCardPollList = dataMgr.getPermanentDrawCardWeightList(now);
         if (CheckNull.nonEmpty(drawCardPollList))
             builder.addAllSearchTypeIds(drawCardPollList.stream().map(StaticDrawCardWeight::getId).collect(Collectors.toSet()));
-        builder.setTodayDiscount(!player.getDrawCardData().isTodayFirst(now));
+        builder.setTodayDiscount(player.getDrawCardData().isDiscountPrice());
         return builder.build();
     }
 
@@ -132,13 +132,15 @@ public class DrawCardService implements GmCmdService {
                             ", costType:", drawCardCostType, ", drawCount:", drawCardCount.getCount());
                 }
                 // 若是今日首次花钱单抽, 则有折扣
-                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && !drawCardData.isTodayFirst(now)) {
+                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && drawCardData.isDiscountPrice()) {
                     goldNum = HeroConstant.DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE;
                 }
 
                 rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, goldNum, "draw permanent card");
                 rewardDataManager.subGold(player, goldNum, AwardFrom.HERO_SUPER_SEARCH);
-                drawCardData.setFirstCostMoneyDailyDate(now);
+                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && drawCardData.isDiscountPrice()) {
+                    drawCardData.setDiscountPrice(false);
+                }
                 change.addChangeType(AwardType.MONEY, AwardType.Money.GOLD);
                 break;
         }
@@ -160,7 +162,7 @@ public class DrawCardService implements GmCmdService {
         builder.setCount(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - drawCardData.getHeroDrawCount());
         builder.setCdTime((int) (drawCardData.getCdFreeTime() / 1000l));
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
-        builder.setTodayDiscount(!drawCardData.isTodayFirst(now));
+        builder.setTodayDiscount(drawCardData.isDiscountPrice());
         builder.setOtherFreeNum(drawCardData.getOtherFreeCount());
         return builder.build();
     }

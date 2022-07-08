@@ -38,9 +38,9 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     private Turple<Integer, Integer> wishHero = new Turple<>(0, 0);
     /**
-     * 每日使用折扣寻访时间
+     * 下次单抽是否包含折扣
      */
-    private Date firstCostMoneyDailyDate;
+    private boolean discountPrice;
     /**
      * 已经领取的次数下标
      */
@@ -106,8 +106,9 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
             return true;
         } finally {
             // 系统免费次数使用完, 进入cd时间
-            if (preFreeCount > freeCount && freeCount == 0)
+            if (preFreeCount > freeCount && freeCount == 0) {
                 cdFreeTime = System.currentTimeMillis() + HeroConstant.DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL * 1000l;
+            }
         }
     }
 
@@ -133,14 +134,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
 
     public void setOtherFreeCount(int otherFreeCount) {
         this.otherFreeCount = otherFreeCount;
-    }
-
-    public Date getFirstCostMoneyDailyDate() {
-        return firstCostMoneyDailyDate;
-    }
-
-    public void setFirstCostMoneyDailyDate(Date firstCostMoneyDailyDate) {
-        this.firstCostMoneyDailyDate = firstCostMoneyDailyDate;
     }
 
     public int getActiveDrawsUsedCount() {
@@ -183,12 +176,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         this.specifyRewardList = specifyRewardList;
     }
 
-    public boolean isTodayFirst(Date now) {
-        if (this.firstCostMoneyDailyDate == null)
-            return false;
-        return DateHelper.isSameDate(now, this.firstCostMoneyDailyDate);
-    }
-
     public void addHeroDrawCount() {
         this.heroDrawCount++;
     }
@@ -202,6 +189,14 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     public void addActiveDrawsUsedCount() {
         this.activeDrawsUsedCount++;
+    }
+
+    public boolean isDiscountPrice() {
+        return discountPrice;
+    }
+
+    public void setDiscountPrice(boolean discountPrice) {
+        this.discountPrice = discountPrice;
     }
 
     /**
@@ -262,6 +257,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (freeCount == 0) {
             if (System.currentTimeMillis() >= cdFreeTime) {
                 freeCount++;
+                discountPrice = true;
             }
         }
     }
@@ -284,10 +280,10 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         }
 
         Calendar calendar = Calendar.getInstance();
-        if (pb.hasFirstCostMoneyDailyDate()) {
-            calendar.setTimeInMillis(pb.getFirstCostMoneyDailyDate());
-            this.firstCostMoneyDailyDate = calendar.getTime();
-        }
+//        if (pb.hasFirstCostMoneyDailyDate()) {
+//            calendar.setTimeInMillis(pb.getFirstCostMoneyDailyDate());
+//            this.firstCostMoneyDailyDate = calendar.getTime();
+//        }
         if (CheckNull.nonEmpty(pb.getSpecifyRewardListList())) {
             this.specifyRewardList.addAll(pb.getSpecifyRewardListList());
         }
@@ -312,8 +308,8 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         builder.setCdFreeTime(cdFreeTime);
         builder.setOtherFreeCount(otherFreeCount);
         builder.setWishHero(PbHelper.createTwoIntPb(this.wishHero.getA(), this.wishHero.getB()));
-        if (Objects.nonNull(firstCostMoneyDailyDate))
-            builder.setFirstCostMoneyDailyDate(firstCostMoneyDailyDate.getTime());
+//        if (Objects.nonNull(firstCostMoneyDailyDate))
+//            builder.setFirstCostMoneyDailyDate(firstCostMoneyDailyDate.getTime());
         if (CheckNull.nonEmpty(specifyRewardList)) {
             builder.addAllSpecifyRewardList(this.specifyRewardList);
         }
@@ -352,7 +348,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
                 ", cdFreeTime=" + cdFreeTime +
                 ", otherFreeCount=" + otherFreeCount +
                 ", wishHero=" + wishHero +
-                ", firstCostMoneyDailyDate=" + firstCostMoneyDailyDate +
+                ", discountPrice=" + discountPrice +
                 ", specifyRewardList=" + specifyRewardList +
                 ", activeDrawsUsedCount=" + activeDrawsUsedCount +
                 ", heroDrawCount=" + heroDrawCount +
