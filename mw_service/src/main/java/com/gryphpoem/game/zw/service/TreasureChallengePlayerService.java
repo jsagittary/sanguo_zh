@@ -212,6 +212,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.setCount(hero.getAttr()[Constant.AttrId.LEAD]);
         builder.setPos(hero.getPos());
         builder.setGradeKeyId(hero.getGradeKeyId());
+        builder.setDecorated(hero.getDecorated());
         return builder.build();
     }
 
