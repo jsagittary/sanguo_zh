@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.service;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
@@ -210,7 +209,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
         CommonPb.ChallengeHero.Builder builder = CommonPb.ChallengeHero.newBuilder();
         builder.setHeroId(hero.getHeroId());
         builder.setLevel(hero.getLevel());
-        builder.setCount(hero.getCount());
+        builder.setCount(hero.getAttr()[Constant.AttrId.LEAD]);
         builder.setPos(hero.getPos());
         builder.setGradeKeyId(hero.getGradeKeyId());
         return builder.build();
