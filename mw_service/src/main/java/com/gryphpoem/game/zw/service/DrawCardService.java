@@ -514,7 +514,7 @@ public class DrawCardService implements GmCmdService {
      * @param from
      */
     public void handleRescueAward(Player player, Hero hero, AwardFrom from) {
-        if (CheckNull.isNull(from) || CheckNull.isNull(hero))
+        if (CheckNull.isNull(from) || CheckNull.isNull(hero) || !hero.isShowClient())
             return;
         if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
             // 获取这个特殊将领就发送邮件
