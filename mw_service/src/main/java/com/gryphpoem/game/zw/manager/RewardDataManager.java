@@ -2373,8 +2373,7 @@ public class RewardDataManager {
         try {
             if (null != hero) {
                 // 获取没有的武将, 处理救援奖励邮件
-                drawCardService.handleRescueAward(player, hero, from);
-                drawCardService.addHeroHasCheck(player, hero, from);
+                drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
                 // 重复英雄转化为碎片
                 operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
                 LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
@@ -2406,8 +2405,7 @@ public class RewardDataManager {
             CalculateUtil.processAttr(player, hero);
             player.heros.put(heroId, hero);
             // 获取没有的武将, 处理救援奖励邮件
-            drawCardService.handleRescueAward(player, hero, from);
-            drawCardService.addHeroHasCheck(player, hero, from);
+            drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
 
             // 记录玩家获得新将领
             LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);

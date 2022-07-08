@@ -486,34 +486,13 @@ public class DrawCardService implements GmCmdService {
     }
 
     /**
-     * 通过不同途径添加玩家英雄
-     *
-     * @param player
-     * @param hero
-     * @param from
-     * @return
-     */
-    public void addHeroHasCheck(Player player, Hero hero, AwardFrom from) {
-        if (CheckNull.isNull(from) || CheckNull.isNull(hero) || !hero.isShowClient())
-            return;
-        if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
-            hero.setShowClient(false);
-            // 同步英雄获取变更
-            GamePb5.SyncHeroShowStatusRs.Builder builder = GamePb5.SyncHeroShowStatusRs.newBuilder();
-            builder.setHero(PbHelper.createHeroPb(hero, player));
-            BasePb.Base base = PbHelper.createSynBase(GamePb5.SyncHeroShowStatusRs.EXT_FIELD_NUMBER, GamePb5.SyncHeroShowStatusRs.ext, builder.build()).build();
-            DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, player);
-        }
-    }
-
-    /**
-     * 处理关平(救援奖励)
+     * 处理不同来源相同武将问题以及处理关平(救援奖励)
      *
      * @param player
      * @param hero
      * @param from
      */
-    public void handleRescueAward(Player player, Hero hero, AwardFrom from) {
+    public void handleRepeatedHeroAndRescueAward(Player player, Hero hero, AwardFrom from) {
         if (CheckNull.isNull(from) || CheckNull.isNull(hero) || !hero.isShowClient())
             return;
         if (ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from)) {
@@ -523,6 +502,13 @@ public class DrawCardService implements GmCmdService {
                 // 发送救援奖励邮件
                 mailDataManager.sendAttachMail(player, awardsPb, MailConstant.MOLD_ALICE_AWARD, AwardFrom.ALICE_AWARD, TimeHelper.getCurrentSecond());
             }
+
+            hero.setShowClient(false);
+            // 同步英雄获取变更
+            GamePb5.SyncHeroShowStatusRs.Builder builder = GamePb5.SyncHeroShowStatusRs.newBuilder();
+            builder.setHero(PbHelper.createHeroPb(hero, player));
+            BasePb.Base base = PbHelper.createSynBase(GamePb5.SyncHeroShowStatusRs.EXT_FIELD_NUMBER, GamePb5.SyncHeroShowStatusRs.ext, builder.build()).build();
+            DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, player);
         }
     }
 
