@@ -4,13 +4,13 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
-import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -35,6 +35,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWeightBoxProp;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -178,6 +179,9 @@ public class PropService {
         if (staticProp.getPropType() == PropConstant.PropType.CHOOSE_PROP_TYPE) {
             //自选宝箱跑马灯判断
             useChoosePropTreasure(count, staticProp, player, prop, params, roleId, propId, listAward, change);
+        } else if (staticProp.getPropType() == PropConstant.PropType.CHOOSE_HERO_FRAGMENT_LIMIT_HAVE) {
+            // 自选已拥有的武将碎片
+            useChooseHeroFragment(count, staticProp, player, prop, params, roleId, propId, listAward, change);
         } else if (staticProp.getPropType() == PropConstant.PropType.ADD_TREASURE_WARE_PROP) {
             DataResource.getBean(TreasureCombatService.class).useProp(count, player, staticProp.getRewardList(), propId, listAward, change);
         } else {
@@ -321,6 +325,72 @@ public class PropService {
                     "usedCount", prop.getCount(), ", params=" + params);
         }
 
+        if (CheckNull.isEmpty(staticProp.getRewardList())) {
+            throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
+        }
+
+        List<Integer> reward = null;
+        List<List<Integer>> rewardArr;
+        for (List<Integer> tmp : staticProp.getRewardList()) {
+            if (CheckNull.isEmpty(tmp) || tmp.size() < 3) {
+                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
+            }
+            if (tmp.get(1) == choosePropId.intValue()) {
+                reward = tmp;
+                break;
+            }
+        }
+        if (ObjectUtils.isEmpty(reward)) {
+            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(roleId, propId));
+        }
+
+        rewardArr = new ArrayList<>();
+        rewardArr.add(reward);
+        listAward.addAll(rewardDataManager.addAwardDelaySync(player, rewardArr, change,
+                AwardFrom.USE_PROP));
+    }
+
+    /**
+     * 选择武将碎片自选箱
+     *
+     * @param count
+     * @param staticProp
+     * @param player
+     * @param prop
+     * @param params
+     * @param roleId
+     * @param propId
+     * @param listAward
+     * @param change
+     * @throws MwException
+     */
+    private void useChooseHeroFragment(int count, StaticProp staticProp, Player player, Prop prop,
+                                       String params, long roleId, int propId, List<CommonPb.Award> listAward,
+                                       ChangeInfo change) throws MwException {
+        //因跑马灯在此判断，因此将判断加在这里
+        if (count != 1) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
+                    "usedCount: ", prop.getCount(), ", count = ", count);
+        }
+
+        Integer choosePropId;
+        try {
+            choosePropId = Integer.parseInt(params);
+        } catch (Exception e) {
+            LogUtil.error(e.getMessage(), e);
+            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱参数错误, roleId:", player.roleId,
+                    "usedCount", prop.getCount(), ", params=" + params);
+        }
+        if (ObjectUtils.isEmpty(choosePropId)) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱参数错误, roleId:", player.roleId,
+                    "usedCount", prop.getCount(), ", params=" + params);
+        }
+
+        // 必须拥有此武将才可以领取碎片
+        Hero hero = player.heros.get(choosePropId);
+        if (CheckNull.isNull(hero)) {
+            throw new MwException(GameError.HERO_NOT_FOUND, String.format("hero not found, heroId:%d, roleId:%d", choosePropId, player.roleId));
+        }
         if (CheckNull.isEmpty(staticProp.getRewardList())) {
             throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
         }

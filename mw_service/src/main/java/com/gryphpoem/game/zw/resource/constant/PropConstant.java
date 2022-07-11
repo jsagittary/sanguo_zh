@@ -163,6 +163,8 @@ public class PropConstant {
         int CHOOSE_PROP_TYPE = 8;
         /** 增加宝具相关资源道具*/
         int ADD_TREASURE_WARE_PROP = 14;
+        /** 选择武将碎片(检验武将是否拥有)*/
+        int CHOOSE_HERO_FRAGMENT_LIMIT_HAVE = 15;
     }
 
 }

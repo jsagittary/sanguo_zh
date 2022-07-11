@@ -5,7 +5,6 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.resource.dao.impl.s.StaticDataDao;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.random.HeroSearchRandom;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -121,6 +120,38 @@ public class StaticHeroDataMgr {
         if (CheckNull.isNull(resultKey))
             return null;
         return map.get(resultKey);
+    }
+
+    /**
+     * 获取最大英雄拼接
+     *
+     * @param heroId
+     * @return
+     */
+    public static StaticHeroUpgrade getMaxHeroUpgrade(int heroId) {
+        TreeMap<Integer, Map<Integer, StaticHeroUpgrade>> dataMap = (TreeMap<Integer, Map<Integer, StaticHeroUpgrade>>) heroUpgradeMap.get(heroId);
+        if (CheckNull.isEmpty(dataMap))
+            return null;
+        Integer gradeKey = dataMap.lastKey();
+        if (CheckNull.isNull(gradeKey))
+            return null;
+        TreeMap<Integer, StaticHeroUpgrade> map = (TreeMap<Integer, StaticHeroUpgrade>) dataMap.get(gradeKey);
+        if (CheckNull.isEmpty(map))
+            return null;
+        Integer resultKey = map.lastKey();
+        if (CheckNull.isNull(resultKey))
+            return null;
+        return map.get(resultKey);
+    }
+
+    public static int[] getHeroUpgradeScope(int heroId) {
+        StaticHeroUpgrade minGrade = getInitHeroUpgrade(heroId);
+        if (CheckNull.isNull(minGrade))
+            return null;
+        StaticHeroUpgrade maxGrade = getMaxHeroUpgrade(heroId);
+        if (CheckNull.isNull(maxGrade))
+            return null;
+        return new int[]{minGrade.getKeyId(), maxGrade.getKeyId()};
     }
 
     /**

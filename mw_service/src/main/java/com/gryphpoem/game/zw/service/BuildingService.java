@@ -22,7 +22,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -392,9 +391,9 @@ public class BuildingService {
         // 检测科研所是否在研究
         if (buildingId == BuildingType.TECH) {
             if (player.tech != null && player.tech.getQue() != null && player.tech.getQue().getId() > 0) {// 正在升级
-                if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
-                    throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
-                }
+//                if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
+//                    throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
+//                }
                 if (!techDataManager.isAdvanceTechGain(player)) {
                     throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
                 }
@@ -2351,7 +2350,9 @@ public class BuildingService {
                     return false;
                 } else {
                     // 购买vip5礼包,同时雇佣了高级研究院
-                    if (!(player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG) && techDataManager
+                    if (!(
+//                            player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG) &&
+                            techDataManager
                             .isAdvanceTechGain(player))) {
                         LogUtil.debug("科研所正在研究,不能升级  roleId:" + roleId);
                         return false;

@@ -1134,7 +1134,7 @@ public final class Constant {
         MAIL_FOR_CREATE_ROLE = SystemTabLoader.getListListIntSystemValue(SystemId.MAIL_FOR_CREATE_ROLE, "[[]]");
         PAY_VIP_COEFF = SystemTabLoader.getIntegerSystemValue(SystemId.PAY_VIP_COEFF, 10);
         BUY_BUILD_GAIN_GOLD = SystemTabLoader.getListIntSystemValue(SystemId.BUY_BUILD_GAIN_GOLD, "[]");
-        TECH_QUICK_VIP_BAG = SystemTabLoader.getIntegerSystemValue(SystemId.TECH_QUICK_VIP_BAG, 5);
+//        TECH_QUICK_VIP_BAG = SystemTabLoader.getIntegerSystemValue(SystemId.TECH_QUICK_VIP_BAG, 5);
         PRIVATE_CHAT_COST_GOLD = SystemTabLoader.getIntegerSystemValue(SystemId.PRIVATE_CHAT_COST_GOLD, 2);
         PRIVATE_CHAT_INTERVAL = SystemTabLoader.getIntegerSystemValue(SystemId.PRIVATE_CHAT_INTERVAL, 60);
         ACT_DOUBLE_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.ACT_DOUBLE_NUM, 2);

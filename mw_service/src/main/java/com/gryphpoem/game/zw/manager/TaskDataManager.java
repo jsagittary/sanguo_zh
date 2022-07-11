@@ -14,10 +14,7 @@ import com.gryphpoem.game.zw.resource.constant.task.CommandMultType;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCommandMult;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPartyTask;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
+import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
@@ -31,6 +28,7 @@ import com.gryphpoem.game.zw.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -178,7 +176,7 @@ public class TaskDataManager {
         for (Task task : player.partyTask.values()) {
             StaticPartyTask stask = StaticTaskDataMgr.getPartyTask(task.getTaskId());
             if (stask != null) {
-                currentTask(player, task, stask.getCond(), stask.getCond(), stask.getSchedule());
+                currentTask(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule());
                 if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
                     task.setStatus(TaskType.TYPE_STATUS_FINISH);
                 }
@@ -293,7 +291,6 @@ public class TaskDataManager {
             case TaskType.COND_532:
             case TaskType.COND_533:
             case TaskType.COND_997:
-            case TaskType.COND_998:
             case TaskType.COND_999:
             case TaskType.COND_1000:
                 int paramId = param.length > 0 ? param[0] : 0;
@@ -540,6 +537,18 @@ public class TaskDataManager {
                 }).count();
                 task.setSchedule(count);
                 break;
+            case TaskType.COND_998:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (paramId == 0)
+                    break;
+                StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(sCondId);
+                if (CheckNull.isNull(staticData))
+                    break;
+                int[] scope = StaticHeroDataMgr.getHeroUpgradeScope(staticData.getHeroId());
+                if (CheckNull.isNull(scope) || scope.length != 2 || scope[0] > paramId || scope[1] < paramId)
+                    break;
+                task.setSchedule(task.getSchedule() + schedule);
+                break;
             default:
         }
         return oldSchedule != task.getSchedule();
@@ -689,7 +698,14 @@ public class TaskDataManager {
                 break;
             }
             case TaskType.COND_998:
-                schedule = player.heros.values().stream().filter(e -> e.getGradeKeyId() == condId).count();
+                schedule = player.heros.values().stream().filter(e -> {
+                    StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(condId);
+                    if (CheckNull.isNull(staticData))
+                        return false;
+                    int[] scope = StaticHeroDataMgr.getHeroUpgradeScope(staticData.getHeroId());
+                    return !ObjectUtils.isEmpty(scope) && scope.length >= 2 &&
+                            scope[0] <= e.getGradeKeyId() && scope[1] >= e.getGradeKeyId();
+                }).count();
                 break;
             case TaskType.COND_MENTOR_UPLV: {// 升级教官等级至XX级
                 MentorInfo mentorInfo = player.getMentorInfo();

@@ -4,16 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
-import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mill;
-import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
 import com.gryphpoem.game.zw.pb.GamePb1.SynGainResRs;
 import com.gryphpoem.game.zw.pb.GamePb3.*;
 import com.gryphpoem.game.zw.pb.GamePb4;
@@ -22,15 +17,13 @@ import com.gryphpoem.game.zw.resource.constant.task.TaskCategory;
 import com.gryphpoem.game.zw.resource.constant.task.TaskCone513Type;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.CampMember;
-import com.gryphpoem.game.zw.resource.domain.p.Sectiontask;
-import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticDailyTaskAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPartyTask;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.Task;
-import com.gryphpoem.game.zw.resource.pojo.WorldTask;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -159,7 +152,7 @@ public class TaskService {
             throw new MwException(GameError.TASK_NO_FINISH.getCode(),
                     "领取任务奖励时,任务未完成, roleId:" + roleId + ",taskId=" + taskId);
         }
-        taskDataManager.currentTask(player, task, stask.getCond(), stask.getCond(), stask.getSchedule());
+        taskDataManager.currentTask(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule());
         int finishValue = stask.getSchedule();
         if (task.getSchedule() < finishValue) {
             throw new MwException(GameError.TASK_NO_FINISH.getCode(),
