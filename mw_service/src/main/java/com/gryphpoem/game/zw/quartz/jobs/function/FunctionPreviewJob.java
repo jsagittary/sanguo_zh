@@ -18,7 +18,7 @@ public class FunctionPreviewJob extends AbsMainLogicThreadJob {
         DrawCardPlanTemplateService service = DataResource.ac.getBean(DrawCardPlanTemplateService.class);
         try {
             String[] strArr = jobKeyName.split("_");
-            service.execFunctionPreview(Integer.parseInt(strArr[0]), Integer.parseInt(strArr[2]));
+            service.execFunctionPreview(Integer.parseInt(strArr[0]), Integer.parseInt(strArr[1]));
             LogUtil.error(String.format("功能PreviewTime执行job, jobKeyName=%s", jobKeyName));
         } catch (Exception e) {
             LogUtil.error("ACTIVITY END JOB, ", e);

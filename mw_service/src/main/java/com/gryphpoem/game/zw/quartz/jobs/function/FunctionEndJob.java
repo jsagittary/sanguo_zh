@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.quartz.jobs.function;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.quartz.jobs.AbsMainLogicThreadJob;
-import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import org.quartz.JobExecutionContext;
 
@@ -20,10 +19,10 @@ public class FunctionEndJob extends AbsMainLogicThreadJob {
         DrawCardPlanTemplateService service = DataResource.ac.getBean(DrawCardPlanTemplateService.class);
         try {
             String[] strArr = jobKeyName.split("_");
-            service.execActivityEnd(Integer.parseInt(strArr[0]), Integer.parseInt(strArr[2]));
+            service.execActivityEnd(Integer.parseInt(strArr[0]), Integer.parseInt(strArr[1]));
             LogUtil.error(String.format("功能EndTime执行job, jobKeyName=%s", jobKeyName));
         } catch (Exception e) {
-            LogUtil.error("ACTIVITY END JOB, ", e);
+            LogUtil.error("FUNCTION END JOB, ", e);
         }
     }
 }

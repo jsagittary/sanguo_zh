@@ -1000,6 +1000,11 @@ public final class Constant {
      * 品质与万能碎片的兑换
      */
     public static List<List<Integer>> EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT;
+
+    /**
+     * 征战自选箱掉落上限
+     */
+    public static List<List<Integer>> BATTLE_PICK_BOX_DROP_CAP;
     /**
      * s_system表中定义的常量初始化
      */
@@ -1300,6 +1305,7 @@ public final class Constant {
         TREASURE_WARE_RES_OUTPUT_TIME_UNIT = SystemTabLoader.getIntegerSystemValue(SystemId.TREASURE_WARE_RES_OUTPUT_TIME_UNIT, 60);
         CROSS_WAR_FIRE_WINNER_PORTRAIT = SystemTabLoader.getListIntSystemValue(SystemId.CROSS_WAR_FIRE_WINNER_PORTRAIT, "[9,20,2592000]");
         EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = SystemTabLoader.getListListIntSystemValue(SystemId.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT, "[[]]");
+        BATTLE_PICK_BOX_DROP_CAP = SystemTabLoader.getListListIntSystemValue(SystemId.BATTLE_PICK_BOX_DROP_CAP, "[[]]");
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

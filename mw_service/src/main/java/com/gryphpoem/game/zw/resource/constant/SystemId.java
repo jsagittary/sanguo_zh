@@ -1,7 +1,5 @@
 package com.gryphpoem.game.zw.resource.constant;
 
-import java.util.List;
-
 /**
  * @author TanDonghai
  * @ClassName SystemId.java
@@ -1544,6 +1542,11 @@ public class SystemId {
      * 心愿英雄获取次数
      */
     public static final int WISH_HERO_COUNT = 1101;
+
+    /**
+     * 征战自选箱掉落上限
+     */
+    public static final int BATTLE_PICK_BOX_DROP_CAP = 1102;
 
 
     // ========================机器人相关配置begin===========================

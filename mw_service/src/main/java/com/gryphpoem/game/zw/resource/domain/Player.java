@@ -168,6 +168,10 @@ public class Player {
      */
     public HashMap<Integer, Combat> combats = new HashMap<>();
     /**
+     * 普通副本掉落详情
+     */
+    public CombatInfo combatInfo = new CombatInfo();
+    /**
      * 高级副本(combatId,Obj)
      */
     public HashMap<Integer, CombatFb> combatFb = new HashMap<>();
@@ -2141,6 +2145,7 @@ public class Player {
         for (Entry<Integer, Combat> kv : combats.entrySet()) {
             ser.addCombat(PbHelper.createCombatPb(kv.getValue()));
         }
+        ser.setCombatInfo(this.combatInfo.createPb(true));
         return ser.build().toByteArray();
     }
 
@@ -2770,6 +2775,7 @@ public class Player {
         for (CommonPb.Combat pb : ser.getCombatList()) {
             this.combats.put(pb.getCombatId(), new Combat(pb.getCombatId(), pb.getStar()));
         }
+        this.combatInfo.dseCombatInfoPb(ser.getCombatInfo());
     }
 
     private void dserMills(SerMill ser) {

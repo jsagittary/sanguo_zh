@@ -19,13 +19,13 @@ import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
 import com.gryphpoem.game.zw.resource.domain.p.PitchCombat;
 import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
 import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -368,8 +368,10 @@ public class CombatService {
             }
 
             //处理随机奖励
-            if(ListUtils.isNotBlank(staticCombat.getRandomAward())){
-                builder.addAllAward(rewardDataManager.sendReward(player, staticCombat.getRandomAward(), num, AwardFrom.GAIN_COMBAT));
+            List<CommonPb.Award> randomAwardList = getRandomAward(player, staticCombat.getRandomAward());
+            if (ListUtils.isNotBlank(randomAwardList)) {
+                rewardDataManager.sendRewardByAwardList(player, randomAwardList, AwardFrom.GAIN_COMBAT);
+                builder.addAllAward(randomAwardList);
             }
 
             if (!CheckNull.isEmpty(staticCombat.getTitanDrop()) && player.lord.getLevel() >= Constant.RED_DROP_AWARD_LV) {
@@ -443,6 +445,62 @@ public class CombatService {
         builder.setRecord(record);
 
         return builder.build();
+    }
+
+    /**
+     * 获取staticCombat randomAward字段信息
+     *
+     * @param player
+     * @param rewardList
+     * @return
+     */
+    private List<CommonPb.Award> getRandomAward(Player player, List<List<Integer>> rewardList) {
+        if (CheckNull.isEmpty(rewardList))
+            return null;
+        List<CommonPb.Award> resultList = null;
+        List<CommonPb.Award> awardList_ = null;
+        for (List<Integer> award : rewardList) {
+            if (CheckNull.isEmpty(award))
+                continue;
+            if (award.get(0) == AwardType.RANDOM) {
+                awardList_ = rewardDataManager.getRandomAward(player, award.get(1), award.get(2));
+                if (CheckNull.nonEmpty(awardList_)) {
+                    Iterator<CommonPb.Award> awardIterator = awardList_.iterator();
+                    while (awardIterator.hasNext()) {
+                        CommonPb.Award awardPb_ = awardIterator.next();
+                        List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == awardPb_.getType()
+                                && list.get(1) == awardPb_.getId()).findFirst().orElse(null);
+                        if (CheckNull.isEmpty(dropList))
+                            continue;
+                        int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
+                        if (dropCount >= dropList.get(2)) {
+                            awardIterator.remove();
+                        }
+                        player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
+                    }
+                }
+            } else {
+                List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == award.get(0)
+                        && list.get(1) == award.get(1)).findFirst().orElse(null);
+                if (CheckNull.nonEmpty(dropList)) {
+                    int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
+                    if (dropCount >= dropList.get(2))
+                        continue;
+                    player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
+                }
+                if (CheckNull.isNull(awardList_)) {
+                    awardList_ = new ArrayList<>();
+                }
+                awardList_.add(PbHelper.createAwardPb(award.get(0), award.get(1), award.get(2)));
+            }
+
+            if (CheckNull.nonEmpty(awardList_)) {
+                if (CheckNull.isNull(resultList)) resultList = new ArrayList<>();
+                resultList.addAll(awardList_);
+            }
+        }
+
+        return resultList;
     }
 
     /**
@@ -1196,6 +1254,24 @@ public class CombatService {
 
         // 玩家经验或者友谊积分奖励
         builder.addAllAward(expExchangeCredit(player, staticCombat, cnt, num));
+        // 只处理普通副本随机掉落
+        if (staticCombat.getType() == Constant.CombatType.type_1) {
+            if (CheckNull.nonEmpty(staticCombat.getRandomAward())) {
+                List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward());
+                for (List<Integer> award : randomList) {
+                    if (CheckNull.isEmpty(award))
+                        continue;
+                    int oldCount = award.get(2);
+                    award.set(2, oldCount * cnt);
+                }
+
+                List<CommonPb.Award> randomAwardList = getRandomAward(player, randomList);
+                if (ListUtils.isNotBlank(randomAwardList)) {
+                    rewardDataManager.sendRewardByAwardList(player, randomAwardList, AwardFrom.GAIN_COMBAT);
+                    builder.addAllAward(randomAwardList);
+                }
+            }
+        }
 
         // 副本掉落活动
         List<List<Integer>> actCombatDropAward = activityDataManager.getActCombatDrop(player, cnt);
