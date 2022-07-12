@@ -476,11 +476,18 @@ public class CombatService {
                             int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
                             if (dropCount >= dropList.get(2)) {
                                 awardIterator.remove();
+                                continue;
                             }
                             player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
                         }
+                        if (CheckNull.nonEmpty(awardList_)) {
+                            if (CheckNull.isNull(resultList)) resultList = new ArrayList<>();
+                            resultList.addAll(awardList_);
+                        }
                     }
                 }
+
+                awardList_ = null;
             } else {
                 List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == award.get(0)
                         && list.get(1) == award.get(1)).findFirst().orElse(null);
