@@ -545,7 +545,7 @@ public class TaskDataManager {
                 if (CheckNull.isNull(staticData))
                     break;
                 int[] scope = StaticHeroDataMgr.getHeroUpgradeScope(staticData.getHeroId());
-                if (CheckNull.isNull(scope) || scope.length != 2 || scope[0] > paramId || scope[1] < paramId)
+                if (CheckNull.isNull(scope) || scope.length != 2 || scope[0] > paramId || scope[1] < paramId || paramId < sCondId)
                     break;
                 task.setSchedule(task.getSchedule() + schedule);
                 break;
@@ -704,7 +704,8 @@ public class TaskDataManager {
                         return false;
                     int[] scope = StaticHeroDataMgr.getHeroUpgradeScope(staticData.getHeroId());
                     return !ObjectUtils.isEmpty(scope) && scope.length >= 2 &&
-                            scope[0] <= e.getGradeKeyId() && scope[1] >= e.getGradeKeyId();
+                            scope[1] <= e.getGradeKeyId() && scope[1] >= e.getGradeKeyId() &&
+                            condId <= e.getGradeKeyId();
                 }).count();
                 break;
             case TaskType.COND_MENTOR_UPLV: {// 升级教官等级至XX级
