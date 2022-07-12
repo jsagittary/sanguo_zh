@@ -3,8 +3,8 @@ package com.gryphpoem.game.zw.resource.domain.p;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import org.apache.commons.lang3.time.DateUtils;
 
 import java.util.*;
 
@@ -45,9 +45,10 @@ public class CombatInfo implements GamePb<CommonPb.CombatInfoPb> {
 
     public void resetDaily() {
         if (CheckNull.isNull(updateDate)) return;
-        if (!DateHelper.isToday(updateDate)) {
+        Date now = new Date();
+        if (!DateUtils.isSameDay(updateDate, now)) {
             this.countMap.clear();
-            this.updateDate = new Date();
+            this.updateDate = now;
         }
     }
 
