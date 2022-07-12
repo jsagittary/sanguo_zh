@@ -463,20 +463,22 @@ public class CombatService {
             if (CheckNull.isEmpty(award))
                 continue;
             if (award.get(0) == AwardType.RANDOM) {
-                awardList_ = rewardDataManager.getRandomAward(player, award.get(1), award.get(2));
-                if (CheckNull.nonEmpty(awardList_)) {
-                    Iterator<CommonPb.Award> awardIterator = awardList_.iterator();
-                    while (awardIterator.hasNext()) {
-                        CommonPb.Award awardPb_ = awardIterator.next();
-                        List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == awardPb_.getType()
-                                && list.get(1) == awardPb_.getId()).findFirst().orElse(null);
-                        if (CheckNull.isEmpty(dropList))
-                            continue;
-                        int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
-                        if (dropCount >= dropList.get(2)) {
-                            awardIterator.remove();
+                for (int i = 0; i < award.get(2); i++) {
+                    awardList_ = rewardDataManager.getRandomAward(player, award.get(1), award.get(2));
+                    if (CheckNull.nonEmpty(awardList_)) {
+                        Iterator<CommonPb.Award> awardIterator = awardList_.iterator();
+                        while (awardIterator.hasNext()) {
+                            CommonPb.Award awardPb_ = awardIterator.next();
+                            List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == awardPb_.getType()
+                                    && list.get(1) == awardPb_.getId()).findFirst().orElse(null);
+                            if (CheckNull.isEmpty(dropList))
+                                continue;
+                            int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
+                            if (dropCount >= dropList.get(2)) {
+                                awardIterator.remove();
+                            }
+                            player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
                         }
-                        player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
                     }
                 }
             } else {
@@ -1077,6 +1079,27 @@ public class CombatService {
         // 玩家经验或者友谊积分奖励
         builder.addAllAward(expExchangeCredit(player, staticCombat, cnt, num));
 
+        // 只处理普通副本随机掉落
+        if (staticCombat.getType() == Constant.CombatType.type_1) {
+            if (CheckNull.nonEmpty(staticCombat.getRandomAward())) {
+                List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward().size());
+                for (List<Integer> award : staticCombat.getRandomAward()) {
+                    if (CheckNull.isEmpty(award))
+                        continue;
+                    List<Integer> award_ = new ArrayList<>(award);
+                    randomList.add(award_);
+                    int oldCount = award_.get(2);
+                    award_.set(2, oldCount * cnt);
+                }
+
+                List<CommonPb.Award> randomAwardList = getRandomAward(player, randomList);
+                if (ListUtils.isNotBlank(randomAwardList)) {
+                    rewardDataManager.sendRewardByAwardList(player, randomAwardList, AwardFrom.GAIN_COMBAT);
+                    builder.addAllAward(randomAwardList);
+                }
+            }
+        }
+
         //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_BARRIER, cnt);
 
@@ -1257,12 +1280,14 @@ public class CombatService {
         // 只处理普通副本随机掉落
         if (staticCombat.getType() == Constant.CombatType.type_1) {
             if (CheckNull.nonEmpty(staticCombat.getRandomAward())) {
-                List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward());
+                List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward().size());
                 for (List<Integer> award : randomList) {
                     if (CheckNull.isEmpty(award))
                         continue;
-                    int oldCount = award.get(2);
-                    award.set(2, oldCount * cnt);
+                    List<Integer> award_ = new ArrayList<>(award);
+                    randomList.add(award_);
+                    int oldCount = award_.get(2);
+                    award_.set(2, oldCount * cnt);
                 }
 
                 List<CommonPb.Award> randomAwardList = getRandomAward(player, randomList);
