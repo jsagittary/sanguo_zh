@@ -39,6 +39,8 @@ public class CombatInfo implements GamePb<CommonPb.CombatInfoPb> {
             countMap.put(awardType, awardCountMap);
         }
         awardCountMap.merge(id, count, Integer::sum);
+        if (CheckNull.isNull(updateDate))
+            updateDate = new Date();
     }
 
     public void resetDaily() {
