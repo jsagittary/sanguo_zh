@@ -473,12 +473,12 @@ public class CombatService {
                                     && list.get(1) == awardPb_.getId()).findFirst().orElse(null);
                             if (CheckNull.isEmpty(dropList))
                                 continue;
-                            int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
+                            int dropCount = player.combatInfo.getCount(awardPb_.getType(), awardPb_.getId());
                             if (dropCount >= dropList.get(2)) {
                                 awardIterator.remove();
                                 continue;
                             }
-                            player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
+                            player.combatInfo.updateCount(awardPb_.getType(), awardPb_.getId(), awardPb_.getCount());
                         }
                         if (CheckNull.nonEmpty(awardList_)) {
                             if (CheckNull.isNull(resultList)) resultList = new ArrayList<>();
