@@ -1288,7 +1288,7 @@ public class CombatService {
         if (staticCombat.getType() == Constant.CombatType.type_1) {
             if (CheckNull.nonEmpty(staticCombat.getRandomAward())) {
                 List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward().size());
-                for (List<Integer> award : randomList) {
+                for (List<Integer> award : staticCombat.getRandomAward()) {
                     if (CheckNull.isEmpty(award))
                         continue;
                     List<Integer> award_ = new ArrayList<>(award);
