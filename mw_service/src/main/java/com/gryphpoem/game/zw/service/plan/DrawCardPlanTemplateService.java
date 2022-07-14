@@ -180,8 +180,13 @@ public class DrawCardPlanTemplateService {
         if (state == AbsDrawCardPlanService.ACT_DELETE) {
             // 若活动结束, 则更新常驻抽卡池
             List<StaticDrawHeoPlan> planList = staticDrawHeroDataMgr.getPlanList(now, PlanFunction.PlanStatus.OVER);
-            if (CheckNull.nonEmpty(planList))
-                builder.addAllSearchTypeIds(planList.stream().map(StaticDrawHeoPlan::getId).collect(Collectors.toList()));
+            if (CheckNull.nonEmpty(planList)) {
+                builder.addAllSearchTypeIds(planList.stream().map(plan_ -> {
+                    StaticDrawCardWeight staticData = staticDrawHeroDataMgr.checkConfigEmpty(plan_.getSearchTypeId());
+                    if (CheckNull.isNull(staticData)) return 0;
+                    return staticData.getId();
+                }).filter(id -> id > 0).collect(Collectors.toList()));
+            }
         }
         BasePb.Base.Builder basePb = PbHelper.createSynBase(GamePb5.SyncChangeDrawCardActPlanRs.EXT_FIELD_NUMBER, GamePb5.SyncChangeDrawCardActPlanRs.ext, builder.build());
         playerService.syncMsgToPlayer(basePb.build(), player);
