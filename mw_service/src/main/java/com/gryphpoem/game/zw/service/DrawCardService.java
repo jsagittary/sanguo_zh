@@ -489,6 +489,18 @@ public class DrawCardService implements GmCmdService {
     }
 
     /**
+     * 校验from是否包含在 {@link this#GOT_ONCE_HERO_AWARD}
+     *
+     * @param from
+     * @return
+     */
+    public boolean containAwardFrom(AwardFrom from) {
+        if (CheckNull.isNull(from))
+            return false;
+        return ArrayUtils.contains(GOT_ONCE_HERO_AWARD, from);
+    }
+
+    /**
      * 处理不同来源相同武将问题以及处理关平(救援奖励)
      *
      * @param player

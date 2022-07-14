@@ -2377,7 +2377,7 @@ public class RewardDataManager {
                 // 重复英雄转化为碎片
                 operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
                 LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
-                return null;
+                return drawCardService.containAwardFrom(from) ? hero : null;
             }
 
             hero = new Hero();
