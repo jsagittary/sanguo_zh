@@ -254,9 +254,8 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     public void refreshData() {
         // 只记录系统免费次数，因此大于0不再增加次数
-        long nowMills = System.currentTimeMillis();
         if (freeCount == 0) {
-            if (nowMills >= cdFreeTime) {
+            if (System.currentTimeMillis() >= cdFreeTime) {
                 freeCount++;
             }
         }
