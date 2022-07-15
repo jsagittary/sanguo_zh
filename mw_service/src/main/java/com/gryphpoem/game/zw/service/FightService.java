@@ -26,7 +26,6 @@ import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinForce;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.util.*;
-import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -1400,7 +1399,7 @@ public class FightService {
                 rpt.addAtkHero(rptHero);
             }
         }
-        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(attacker, rpt, false);
         // 回合信息
         CommonPb.Record record = fightLogic.generateRecord();
         rpt.setRecord(record);

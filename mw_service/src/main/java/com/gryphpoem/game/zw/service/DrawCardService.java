@@ -164,6 +164,8 @@ public class DrawCardService implements GmCmdService {
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
         builder.setTodayDiscount(drawCardData.isDiscountPrice());
         builder.setOtherFreeNum(drawCardData.getOtherFreeCount());
+//        LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.DRAW_HERO_CARD_LOG, player,
+//                AwardFrom.DRAW_HERO_CARD_NEW, drawCardCount.getType(), 1, ));
         return builder.build();
     }
 

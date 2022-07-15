@@ -25,4 +25,5 @@ public class LogParamConstant {
     public static final String TURNTABLE_ACT = "turntable";
     public static final String POINT = "point";
     public static final String FIGHTING_CHANGE = "fightingChangeNew";
+    public static final String DRAW_HERO_CARD_LOG = "drawHeroCard";
 }
