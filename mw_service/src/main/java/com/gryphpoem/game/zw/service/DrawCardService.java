@@ -139,7 +139,7 @@ public class DrawCardService implements GmCmdService {
                 rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, goldNum, "draw permanent card");
                 rewardDataManager.subGold(player, goldNum, AwardFrom.HERO_SUPER_SEARCH);
                 if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && drawCardData.isDiscountPrice()) {
-                    drawCardData.setDiscountPrice(false);
+                    drawCardData.updateDiscountPriceCdTime();
                 }
                 change.addChangeType(AwardType.MONEY, AwardType.Money.GOLD);
                 break;
