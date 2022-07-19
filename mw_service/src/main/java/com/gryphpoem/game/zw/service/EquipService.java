@@ -1267,6 +1267,11 @@ public class EquipService implements GmCmdService {
         // taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, superEquip.getLv(), type);
         taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
 
+        LogUtil.getLogThread().addCommand(() -> {
+            LogLordHelper.gameLog(LogParamConstant.UPGRADE_SUPER_EQUIP, player,
+                    AwardFrom.SUPER_EQUIP_LV, type, superEquip.getLv());
+        });
+
         return builder.build();
     }
 

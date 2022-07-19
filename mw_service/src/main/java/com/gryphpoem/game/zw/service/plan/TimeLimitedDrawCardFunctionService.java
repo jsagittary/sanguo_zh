@@ -19,12 +19,11 @@ import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.plan.draw.DrawCardTimeLimitedFunctionPlanData;
-import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.HeroService;
 import com.gryphpoem.game.zw.service.plan.abs.AbsDrawCardPlanService;
-import com.gryphpoem.game.zw.service.plan.abs.AbsFunctionPlanService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -236,11 +235,13 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
             throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType, ", reward:", shs);
         }
 
+        int heroLogId = 0;
+        String awardLogStr = "";
         CommonPb.SearchHero.Builder builder = CommonPb.SearchHero.newBuilder().setSearchId(shs.getAutoId());
         switch (rewardType) {
             case ORANGE_HERO:
             case PURPLE_HERO:
-                int heroId = shs.getRewardList().get(0).get(1);
+                int heroId = heroLogId = shs.getRewardList().get(0).get(1);
                 StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
                 if (null == staticHero) {
                     LogUtil.error("将领寻访，寻访到的将领未找到配置信息, heroId:", heroId);
@@ -250,9 +251,11 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                 // 查找玩家是否拥有此英雄
                 Hero hero_ = heroService.hasOwnedHero(player, heroId, staticHero);
                 if (Objects.nonNull(hero_)) {
+                    heroLogId = 0;
                     // 拥有英雄转为碎片
                     rewardDataManager.sendRewardSignle(player, AwardType.HERO_FRAGMENT, heroId,
                             HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.HERO_NORMAL_SEARCH);
+                    awardLogStr = AwardType.HERO_FRAGMENT + "," + heroId + "," + HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS;
                 } else {
                     rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
                     // 返回新得到的将领信息
@@ -271,6 +274,13 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                 break;
         }
 
+        int finalHeroLogId = heroLogId;
+        String finalAwardLogStr = awardLogStr;
+        DrawCardTimeLimitedFunctionPlanData functionPlanData = (DrawCardTimeLimitedFunctionPlanData) drawCardData;
+        int totalDrawCount = functionPlanData.getTotalDrawHeroCount();
+        LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.DRAW_HERO_CARD_LOG, player,
+                AwardFrom.DRAW_HERO_CARD_NEW, drawCardCount.getType(), LogParamConstant.TIME_LIMITED_DRAW_CARD_TYPE,
+                finalHeroLogId, finalAwardLogStr, costCount, totalDrawCount));
         return builder.build();
     }
 
@@ -279,27 +289,31 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         StaticHeroSearch staticData;
         // 当前次数到必出武将次数
         DrawCardTimeLimitedFunctionPlanData drawCardData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
-        if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
-            drawCardData.clearHeroDrawCount();
-            staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO, now);
-            LogUtil.debug(String.format("drawAcrCard===player:%d, 限时橙色武将保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
-            return staticData;
-        }
-        // 碎片保底
-        if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
-            drawCardData.clearFragmentDrawCount();
-            drawCardData.addHeroDrawCount();
-            staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO_FRAGMENT, now);
-            LogUtil.debug(String.format("drawAcrCard===player:%d, 限时碎片保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
-            return staticData;
-        }
+        try {
+            if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
+                drawCardData.clearHeroDrawCount();
+                staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO, now);
+                LogUtil.debug(String.format("drawAcrCard===player:%d, 限时橙色武将保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
+                return staticData;
+            }
+            // 碎片保底
+            if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
+                drawCardData.clearFragmentDrawCount();
+                drawCardData.addHeroDrawCount();
+                staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO_FRAGMENT, now);
+                LogUtil.debug(String.format("drawAcrCard===player:%d, 限时碎片保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
+                return staticData;
+            }
 
-        // 记录抽取次数
-        drawCardData.addHeroDrawCount();
-        drawCardData.addFragmentDrawCount();
-        // 随机奖励
-        staticData = dataMgr.randomReward(config, now);
-        LogUtil.debug(String.format("drawAcrCard===player:%d, 限时随机抽卡：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
-        return staticData;
+            // 记录抽取次数
+            drawCardData.addHeroDrawCount();
+            drawCardData.addFragmentDrawCount();
+            // 随机奖励
+            staticData = dataMgr.randomReward(config, now);
+            LogUtil.debug(String.format("drawAcrCard===player:%d, 限时随机抽卡：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
+            return staticData;
+        } finally {
+            drawCardData.addTotalDrawHeroCount();
+        }
     }
 }

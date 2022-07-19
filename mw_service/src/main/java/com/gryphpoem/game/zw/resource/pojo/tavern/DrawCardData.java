@@ -38,9 +38,9 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      */
     private Turple<Integer, Integer> wishHero = new Turple<>(0, 0);
     /**
-     * 折扣cd时间
+     * 下次单抽是否包含折扣
      */
-    private long discountPriceCdTime;
+    private boolean discountPrice;
     /**
      * 已经领取的次数下标
      */
@@ -69,6 +69,10 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
      * 存储武将碎片信息
      */
     private Map<Integer, Integer> fragmentData = new ConcurrentHashMap<>();
+    /**
+     * 总共抽卡次数
+     */
+    private int totalDrawCount;
 
     public boolean isFirstFinish() {
         return firstFinish;
@@ -84,6 +88,14 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
 
     public void setFreeCount(int freeCount) {
         this.freeCount = freeCount;
+    }
+
+    public int getTotalDrawCount() {
+        return totalDrawCount;
+    }
+
+    public void setTotalDrawCount(int totalDrawCount) {
+        this.totalDrawCount = totalDrawCount;
     }
 
     /**
@@ -191,20 +203,13 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         this.activeDrawsUsedCount++;
     }
 
-    public long getDiscountPriceCdTime() {
-        return discountPriceCdTime;
-    }
-
-    public void setDiscountPriceCdTime(long discountPriceCdTime) {
-        this.discountPriceCdTime = discountPriceCdTime;
-    }
-
     /**
      * 记录抽取次数
      *
      * @param now
      */
     public void addDrawCount(Date now) {
+        this.totalDrawCount++;
         // 先重置数据
         if (CheckNull.isNull(this.lastDrawCardDate) || !DateHelper.isSameDate(now, lastDrawCardDate)) {
             this.todayDrawCount = 0;
@@ -249,6 +254,15 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         this.fragmentData = fragmentData;
     }
 
+    public boolean isDiscountPrice() {
+        return discountPrice;
+    }
+
+    public void setDiscountPrice(boolean discountPrice) {
+        this.discountPrice = discountPrice;
+    }
+
+
     /**
      * 刷新免费次数
      */
@@ -257,24 +271,9 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (freeCount == 0) {
             if (System.currentTimeMillis() >= cdFreeTime) {
                 freeCount++;
+                discountPrice = true;
             }
         }
-    }
-
-    /**
-     * 更新折扣cd时间
-     */
-    public void updateDiscountPriceCdTime() {
-        this.discountPriceCdTime = System.currentTimeMillis() + HeroConstant.DRAW_HERO_CARD_FREE_TIMES_TIME_INTERVAL * 1000l;
-    }
-
-    /**
-     * 是否折扣价
-     *
-     * @return
-     */
-    public boolean isDiscountPrice() {
-        return System.currentTimeMillis() >= this.discountPriceCdTime;
     }
 
     /**
@@ -287,6 +286,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         this.freeCount = pb.hasFreeCount() ? pb.getFreeCount() : 0;
         this.cdFreeTime = pb.hasCdFreeTime() ? pb.getCdFreeTime() : 0l;
         this.otherFreeCount = pb.hasOtherFreeCount() ? pb.getOtherFreeCount() : 0;
+        this.discountPrice = pb.hasDiscountPrice() ? pb.getDiscountPrice() : false;
         if (pb.hasWishHero()) {
             this.wishHero.setA(pb.getWishHero().getV1());
             this.wishHero.setB(pb.getWishHero().getV2());
@@ -295,9 +295,6 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         }
 
         Calendar calendar = Calendar.getInstance();
-        if (pb.hasDiscountPriceCdTime()) {
-            this.discountPriceCdTime = pb.getDiscountPriceCdTime();
-        }
         if (CheckNull.nonEmpty(pb.getSpecifyRewardListList())) {
             this.specifyRewardList.addAll(pb.getSpecifyRewardListList());
         }
@@ -322,7 +319,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         builder.setCdFreeTime(cdFreeTime);
         builder.setOtherFreeCount(otherFreeCount);
         builder.setWishHero(PbHelper.createTwoIntPb(this.wishHero.getA(), this.wishHero.getB()));
-        builder.setDiscountPriceCdTime(this.discountPriceCdTime);
+        builder.setDiscountPrice(this.isDiscountPrice());
         if (CheckNull.nonEmpty(specifyRewardList)) {
             builder.addAllSpecifyRewardList(this.specifyRewardList);
         }
@@ -361,7 +358,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
                 ", cdFreeTime=" + cdFreeTime +
                 ", otherFreeCount=" + otherFreeCount +
                 ", wishHero=" + wishHero +
-                ", discountPriceCdTime=" + discountPriceCdTime +
+                ", discountPrice=" + discountPrice +
                 ", specifyRewardList=" + specifyRewardList +
                 ", activeDrawsUsedCount=" + activeDrawsUsedCount +
                 ", heroDrawCount=" + heroDrawCount +

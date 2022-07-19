@@ -1,12 +1,12 @@
 package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -17,11 +17,14 @@ import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,6 +80,10 @@ public class HeroUpgradeService implements GmCmdService {
         taskDataManager.updTask(player, TaskType.COND_998, 1, hero.getGradeKeyId());
         GamePb5.UpgradeHeroRs.Builder builder = GamePb5.UpgradeHeroRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(hero, player));
+
+        // 添加升阶日志埋点打印
+        LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.HERO_UPGRADE, player,
+                AwardFrom.UPGRADE_HERO, heroId, preStaticData.getGrade(), staticData.getGrade()));
         return builder.build();
     }
 

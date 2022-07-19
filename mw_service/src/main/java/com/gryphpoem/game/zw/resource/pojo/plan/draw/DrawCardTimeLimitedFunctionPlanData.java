@@ -30,6 +30,8 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
     private static final int HERO_DRAW_COUNT_INDEX = -1003;
     /** 抽出英雄碎片次数下标*/
     private static final int HERO_FRAGMENT_DRAW_COUNT_INDEX = -1004;
+    /** 总共抽卡次数*/
+    private static final int TOTAL_HERO_DRAW_COUNT_INDEX = -1005;
 
     /**
      * 存储任务完成进度
@@ -102,6 +104,14 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
 
     public void addFragmentDrawCount() {
         this.saveMap.merge(HERO_FRAGMENT_DRAW_COUNT_INDEX, 1, Integer::sum);
+    }
+
+    public int getTotalDrawHeroCount() {
+        return this.saveMap.getOrDefault(TOTAL_HERO_DRAW_COUNT_INDEX, 0);
+    }
+
+    public void addTotalDrawHeroCount() {
+        this.saveMap.merge(TOTAL_HERO_DRAW_COUNT_INDEX, 1, Integer::sum);
     }
 
     public String toDebugStr() {

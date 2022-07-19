@@ -18,9 +18,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -109,6 +107,7 @@ public class DrawCardService implements GmCmdService {
         }
 
         // 对应抽卡消耗类型扣除资源
+        int costGoldCnt = 0;
         boolean activeDraw = false;
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         switch (drawCardCostType) {
@@ -139,8 +138,9 @@ public class DrawCardService implements GmCmdService {
                 rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, goldNum, "draw permanent card");
                 rewardDataManager.subGold(player, goldNum, AwardFrom.HERO_SUPER_SEARCH);
                 if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && drawCardData.isDiscountPrice()) {
-                    drawCardData.updateDiscountPriceCdTime();
+                    drawCardData.setDiscountPrice(false);
                 }
+                costGoldCnt = goldNum;
                 change.addChangeType(AwardType.MONEY, AwardType.Money.GOLD);
                 break;
         }
@@ -151,7 +151,7 @@ public class DrawCardService implements GmCmdService {
         GamePb5.DrawHeroCardRs.Builder builder = GamePb5.DrawHeroCardRs.newBuilder();
         // 执行将领寻访逻辑
         for (int i = 0; i < drawCardCount.getCount(); i++) {
-            CommonPb.SearchHero sh = onceDraw(player, 0, drawCardCount, drawCardCostType, weightConfig, now, activeDraw);
+            CommonPb.SearchHero sh = onceDraw(player, costGoldCnt, drawCardCount, drawCardCostType, weightConfig, now, activeDraw);
             if (null != sh) {
                 builder.addHero(sh);
             }
@@ -164,8 +164,6 @@ public class DrawCardService implements GmCmdService {
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
         builder.setTodayDiscount(drawCardData.isDiscountPrice());
         builder.setOtherFreeNum(drawCardData.getOtherFreeCount());
-//        LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.DRAW_HERO_CARD_LOG, player,
-//                AwardFrom.DRAW_HERO_CARD_NEW, drawCardCount.getType(), 1, ));
         return builder.build();
     }
 
@@ -190,11 +188,13 @@ public class DrawCardService implements GmCmdService {
             throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType, ", reward:", shs);
         }
 
+        int heroLogId = 0;
+        String awardLogStr = "";
         CommonPb.SearchHero.Builder builder = CommonPb.SearchHero.newBuilder().setSearchId(shs.getAutoId());
         switch (rewardType) {
             case ORANGE_HERO:
             case PURPLE_HERO:
-                int heroId = shs.getRewardList().get(0).get(1);
+                int heroId = heroLogId = shs.getRewardList().get(0).get(1);
                 StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
                 if (null == staticHero) {
                     LogUtil.error("将领寻访，寻访到的将领未找到配置信息, heroId:", heroId);
@@ -204,9 +204,11 @@ public class DrawCardService implements GmCmdService {
                 // 查找玩家是否拥有此英雄
                 Hero hero_ = heroService.hasOwnedHero(player, heroId, staticHero);
                 if (Objects.nonNull(hero_)) {
+                    heroLogId = 0;
                     // 拥有英雄转为碎片
                     rewardDataManager.sendRewardSignle(player, AwardType.HERO_FRAGMENT, heroId,
                             HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.HERO_NORMAL_SEARCH);
+                    awardLogStr = AwardType.HERO_FRAGMENT + "," + heroId + HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS;
                 } else {
                     rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
                     // 返回新得到的将领信息
@@ -223,9 +225,18 @@ public class DrawCardService implements GmCmdService {
             case ORANGE_HERO_FRAGMENT:
             case PURPLE_HERO_FRAGMENT:
                 rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
+                awardLogStr = ListUtils.toString(shs.getRewardList());
                 break;
         }
 
+        int finalHeroId = heroLogId;
+        String finalAwardListStr = awardLogStr;
+        int wishNum = player.getDrawCardData().getWishHero().getB();
+        int wishHeroId = player.getDrawCardData().getWishHero().getA();
+        int totalDrawCount = player.getDrawCardData().getTotalDrawCount();
+        LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.DRAW_HERO_CARD_LOG, player,
+                AwardFrom.DRAW_HERO_CARD_NEW, drawCardCount.getType(), LogParamConstant.PERMANENT_DRAW_CARD_TYPE,
+                finalHeroId, finalAwardListStr, costCount, totalDrawCount, wishNum, wishHeroId));
         return builder.build();
     }
 
