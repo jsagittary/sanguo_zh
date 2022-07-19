@@ -303,7 +303,7 @@ public class DrawCardService implements GmCmdService {
                 drawCardData.addActiveDrawsUsedCount();
             // 记录玩家抽卡次数
             drawCardData.addDrawCount(now);
-            LogUtil.debug(String.format("drawCard=== player:%d, 玩家抽卡信息：%s", roleId, drawCardData.toDebugString()));
+            LogUtil.debug(String.format("drawCard===player:%d, 玩家抽卡信息：%s", roleId, drawCardData.toDebugString()));
         }
     }
 
