@@ -261,7 +261,7 @@ public class DrawCardService implements GmCmdService {
                 return staticData;
             }
             // 当前次数到必出武将次数
-            if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
+            if (drawCardData.getHeroDrawCount() + 1 >= HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.setHeroDrawCount(0);
                 staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO, now);
                 LogUtil.debug(String.format("drawCard===player:%d, 橙色武将保底：%s", roleId, staticData.getRewardList()));
