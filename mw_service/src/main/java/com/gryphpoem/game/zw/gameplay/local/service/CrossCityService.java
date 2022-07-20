@@ -146,9 +146,14 @@ public class CrossCityService {
 
         // 随机奖励结果并发送奖励
         int rewardNum = 1;// 奖励次数
+        List<Integer> otherRandomAward;
         List<List<Integer>> rewardList = new ArrayList<>();
         for (int i = 0; i < rewardNum; i++) {
             rewardList.add(staticCity.randomDropReward());
+            otherRandomAward = staticCity.randomOtherReward();
+            if (CheckNull.nonEmpty(otherRandomAward)) {
+                rewardList.add(staticCity.randomOtherReward());
+            }
         }
         // 获取活动翻倍
         int num = activityDataManager.getActDoubleNum(player);

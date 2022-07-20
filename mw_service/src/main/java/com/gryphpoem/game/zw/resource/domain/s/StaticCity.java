@@ -95,6 +95,11 @@ public class StaticCity {
     private List<List<Integer>> dropList = new ArrayList<>();
     private int dropTotalWeight;
     /**
+     * 其他随机产出
+     */
+    private List<List<Integer>> otherAward;
+    private int otherAwardTotalWeight;
+    /**
      * 征收消耗
      */
     private List<List<Integer>> levy;
@@ -275,6 +280,22 @@ public class StaticCity {
         return list;
     }
 
+    public List<List<Integer>> getOtherAward() {
+        return otherAward;
+    }
+
+    public void setOtherAward(List<List<Integer>> otherAward) {
+        this.otherAward = otherAward;
+    }
+
+    public int getOtherAwardTotalWeight() {
+        return otherAwardTotalWeight;
+    }
+
+    public void setOtherAwardTotalWeight(int otherAwardTotalWeight) {
+        this.otherAwardTotalWeight = otherAwardTotalWeight;
+    }
+
     public void calcWeight(String operation) {
         if (!dropList.isEmpty()) {
             if (dropTotalWeight != 0) {
@@ -285,6 +306,18 @@ public class StaticCity {
             for (List<Integer> list : dropList) {
                 if (list.size() > 2) {
                     dropTotalWeight += list.get(3);
+                }
+            }
+        }
+        if (CheckNull.nonEmpty(this.otherAward)) {
+            if (this.otherAwardTotalWeight != 0) {
+                LogUtil.error("城池其他随机奖励权重数据错误!, StaticCity:", this.toString(), ", operation:", operation);
+                return;
+            }
+
+            for (List<Integer> list : otherAward) {
+                if (list.size() > 2) {
+                    otherAwardTotalWeight += list.get(3);
                 }
             }
         }
@@ -310,6 +343,39 @@ public class StaticCity {
                     if (temp >= random) {
                         LogUtil.debug(
                                 "城池获得奖励dropTotalWeight=" + dropTotalWeight + ",random=" + random + ",temp=" + temp);
+                        randomList.addAll(list.subList(0, 3));
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (randomList.isEmpty()) {
+            LogUtil.error("城池随机奖励失败!, StaticCity:", this.toString(), ", random:", random);
+        }
+        return randomList;
+    }
+
+    /**
+     * 随机征收额外奖励
+     *
+     * @return
+     */
+    public List<Integer> randomOtherReward() {
+        // 如果总权重为0, 就重新计算一下总权重
+        if (!otherAward.isEmpty() && otherAwardTotalWeight == 0) {
+            calcWeight("runtime");
+        }
+        int random = RandomHelper.randomInSize(otherAwardTotalWeight);
+        List<Integer> randomList = new ArrayList<>();
+        int temp = 0;
+        if (otherAward != null) {
+            for (List<Integer> list : otherAward) {
+                if (list.size() > 2) {
+                    temp += list.get(3);
+                    if (temp >= random) {
+                        LogUtil.debug(
+                                "城池获得奖励otherAwardTotalWeight=" + otherAwardTotalWeight + ",random=" + random + ",temp=" + temp);
                         randomList.addAll(list.subList(0, 3));
                         break;
                     }
