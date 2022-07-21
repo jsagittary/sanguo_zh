@@ -134,6 +134,8 @@
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 		<result column="form_13first" property="form_13first"
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="otherAward" property="otherAward"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 	</resultMap>
 
 	<select id="selectCityMap" resultMap="cityMap">

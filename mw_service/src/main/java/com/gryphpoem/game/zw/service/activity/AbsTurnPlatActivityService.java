@@ -22,10 +22,7 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface AbsTurnPlatActivityService {
@@ -200,22 +197,9 @@ public interface AbsTurnPlatActivityService {
      */
     default List<Integer> checkAwardList(List<Integer> awardList, ActivityService activityService, Player player, ActTurnplat turntable) {
         if (awardList.size() > 1 && awardList.get(0) == AwardType.HERO) {
-            List<Integer> list = new ArrayList<Integer>();
             if (activityService.checkAwardHasHero(awardList, player)) {
-                if (!CheckNull.isEmpty(Constant.FAMOUS_GENERAL_EXCHANGE_PROP)) {
-                    for (List<Integer> exchangeProp : Constant.FAMOUS_GENERAL_EXCHANGE_PROP) {
-                        if (exchangeProp.get(3) == turntable.getActivityId()) {
-                            list.add(exchangeProp.get(0));
-                            list.add(exchangeProp.get(1));
-                            list.add(exchangeProp.get(2));
-                        }
-                    }
-                } else {
-                    list.add(4);
-                    list.add(3001);
-                    list.add(6);
-                }
-                return list;
+                awardList.clear();
+                awardList.addAll(Arrays.asList(AwardType.HERO_FRAGMENT, awardList.get(1), HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS));
             }
         }
         return awardList;

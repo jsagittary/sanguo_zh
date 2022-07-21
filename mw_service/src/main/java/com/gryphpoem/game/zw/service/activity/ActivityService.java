@@ -2726,23 +2726,9 @@ public class ActivityService {
 
         // 如果抽到的奖励是将领 且玩家已有该将领 则奖励给6张劵
         if (awardList.size() > 1 && awardList.get(0) == AwardType.HERO) {
-            List<Integer> list = new ArrayList<Integer>();
             if (checkAwardHasHero(awardList, player)) {
-                if (!CheckNull.isEmpty(Constant.FAMOUS_GENERAL_EXCHANGE_PROP)) {
-                    for (List<Integer> exchangeProp : Constant.FAMOUS_GENERAL_EXCHANGE_PROP) {
-                        if (exchangeProp.get(3) == turnplat.getActivityId()) {
-                            list.add(exchangeProp.get(0));
-                            list.add(exchangeProp.get(1));
-                            list.add(exchangeProp.get(2));
-                            // list.add(6);// 劝过策划做配置 不过策划执意说写死就好
-                        }
-                    }
-                } else {// 配置异常，劝过策划做配置 不过策划执意说写死就好
-                    list.add(4);
-                    list.add(3001);
-                    list.add(6);
-                }
-                awardList = list;
+                awardList.clear();
+                awardList.addAll(Arrays.asList(AwardType.HERO_FRAGMENT, awardList.get(1), HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS));
             }
         }
 
