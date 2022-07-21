@@ -1522,6 +1522,16 @@ public class ActivityService {
                             prop.get(2), ", have:", schedule);
                 }
             }
+
+            if (activity.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
+                GlobalActivityData gActDate = activityDataManager.getGlobalActivity(activity.getActivityType());
+                // 此处返回的是排行榜的，名次
+                ActRank rank = gActDate.getPlayerRank(player, activity.getActivityType(), player.roleId);
+                if (CheckNull.isNull(rank) || rank.getRankValue() < actExchange.getNeedPoint()) {
+                    throw new MwException(GameError.FAMOUS_GENERAL_TURNTABLE_EXCHANGE_NEED_POINT_NOT_ENOUGH, "名将转盘兑换所需积分不足, roleId: ", roleId,
+                            ", minScore: ", actExchange.getNeedPoint(), ", playerScore: ", CheckNull.isNull(rank) ? 0 : rank.getRankValue());
+                }
+            }
         }
 
         int cnt = activity.getStatusCnt().get(keyId) == null ? 0
@@ -2455,6 +2465,9 @@ public class ActivityService {
                 }
             }
             // 记录累计抽取次数
+            if (activityType == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
+                turnplat.getStatusMap().merge(ActTurnplat.TURNTABLE_BOTTOM_GUARANTEE_INDEX, 1, Integer::sum);
+            }
             turnplat.setCnt(turnplat.getCnt() + 1);
             awards.add(doSweepstakes(costType, turnplat, turnplateConf, player, integral));
         }
@@ -2825,17 +2838,35 @@ public class ActivityService {
      */
     public List<Integer> doSweepstakesAwards(StaticTurnplateConf conf, Player player, ActTurnplat turnplat) {
         List<Integer> awardList = null;
-        boolean falg = true;
-        while (falg) {
+        boolean flag = true;
+        while (flag) {
+            if (ActivityConst.FAMOUS_GENERAL_TURNPLATE == turnplat.getActivityType()) {
+                int guaranteeCnt = turnplat.getStatusMap().getOrDefault(ActTurnplat.TURNTABLE_BOTTOM_GUARANTEE_INDEX, 0);
+                if (CheckNull.nonEmpty(ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE) && ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE.size() >= 4) {
+                    if (guaranteeCnt >= ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE.get(3)) {
+                        flag = false;
+                        awardList = ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE.subList(0, 3);
+                        // 清除保底次数
+                        turnplat.getStatusMap().put(ActTurnplat.TURNTABLE_BOTTOM_GUARANTEE_INDEX, 0);
+                        continue;
+                    }
+                }
+            }
             // 金币普通抽奖
             awardList = RandomUtil.getRandomByWeight(conf.getAwardList(), 3, false);
             if (checkSpecialOnlyAward(awardList, turnplat, conf)) { // 唯一道具
                 if (!player.checkHaveSpecial(awardList.get(0), awardList.get(1))) { // 如果未拥有
                     player.upSpecialProp(awardList.get(0), awardList.get(1));
-                    falg = false;
+                    flag = false;
                 }
             } else { // 普通道具
-                falg = false;
+                flag = false;
+                if (ActivityConst.FAMOUS_GENERAL_TURNPLATE == turnplat.getActivityType() && CheckNull.nonEmpty(ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE) &&
+                        ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE.size() >= 2 && ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE.get(0) ==
+                        awardList.get(0) && ActParamConstant.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE.get(1) == awardList.get(1)) {
+                    // 清除保底次数
+                    turnplat.getStatusMap().put(ActTurnplat.TURNTABLE_BOTTOM_GUARANTEE_INDEX, 0);
+                }
             }
         }
         return awardList;

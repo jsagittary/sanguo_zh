@@ -1,12 +1,8 @@
 package com.gryphpoem.game.zw.resource.constant;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.resource.util.ActParamTabLoader;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
-import com.gryphpoem.game.zw.service.activity.ActivityQuestionnaireService;
-import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 
@@ -541,6 +537,10 @@ public final class ActParamConstant {
      * 宝具打造增加宝具排行分数
      */
     public static List<List<Integer>> ACT_MAGIC_TREASURE_WARE_RANK_SCORE;
+    /**
+     * 张飞转盘道具保底规则
+     */
+    public static List<Integer> ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE;
 
     /*-------------------------------load数据-------------------------------------*/
     public static void loadSystem() {
@@ -742,6 +742,7 @@ public final class ActParamConstant {
         ACT_GOLDEN_AUTUMN_AWARD_SOWING = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_AWARD_SOWING, 100);
         ACT_GOLDEN_AUTUMN_RANDOM_AWARD_LIBRARY = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_random_AWARD_Library, "[[]]");
         ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION, "[[]]");
+        ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE = ActParamTabLoader.getListIntSystemValue(ActParamId.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE, "[]");
     }
 
     /*-------------------------------id值-------------------------------------*/
@@ -1243,6 +1244,11 @@ public final class ActParamConstant {
          * 神兵宝具广播
          */
         public static final int ACT_MAGIC_PROP_IDS_IN_CHAT = 378;
+
+        /**
+         * 张飞转盘道具保底规则
+         */
+        public static int ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE = 379;
     }
 
 }

@@ -7,14 +7,12 @@ import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
-import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTurnplateConf;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,6 +62,10 @@ public class ActTurnplat extends Activity {
      * 特殊道具存在StatusCnt中的999索引位置
      */
     public static final int SPECIAL_SORT = 999;
+    /**
+     * 207保底下标
+     */
+    public static final int TURNTABLE_BOTTOM_GUARANTEE_INDEX = -1000;
 
     public ActTurnplat(ActivityBase activityBase, int begin, Player player) {
         super(activityBase, begin);
