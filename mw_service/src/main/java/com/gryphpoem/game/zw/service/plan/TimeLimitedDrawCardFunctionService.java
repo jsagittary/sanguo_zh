@@ -261,10 +261,11 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                     // 返回新得到的将领信息
                     Hero hero = player.heros.get(staticHero.getHeroId());
                     builder.setHero(PbHelper.createHeroPb(hero, player));
-                    if (staticHero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO) {
-                        chatDataManager.sendSysChat(ChatConst.CHAT_RECRUIT_HERO, player.lord.getCamp(), 0,
-                                player.lord.getNick(), heroId);
-                    }
+                }
+
+                if (staticHero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO) {
+                    chatDataManager.sendSysChat(ChatConst.CHAT_RECRUIT_HERO, player.lord.getCamp(), 0,
+                            player.lord.getNick(), heroId);
                 }
                 break;
             case PROP_REWARD:
@@ -290,14 +291,14 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         // 当前次数到必出武将次数
         DrawCardTimeLimitedFunctionPlanData drawCardData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
         try {
-            if (drawCardData.getHeroDrawCount() + 1 == HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
+            if (drawCardData.getHeroDrawCount() + 1 >= HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.clearHeroDrawCount();
                 staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO, now);
                 LogUtil.debug(String.format("drawAcrCard===player:%d, 限时橙色武将保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
                 return staticData;
             }
             // 碎片保底
-            if (drawCardData.getFragmentDrawCount() + 1 == HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
+            if (drawCardData.getFragmentDrawCount() + 1 >= HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
                 drawCardData.clearFragmentDrawCount();
                 drawCardData.addHeroDrawCount();
                 staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO_FRAGMENT, now);
