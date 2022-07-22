@@ -146,13 +146,13 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
         // 随机奖励结果并发送奖励
         int rewardNum = 1;// 奖励次数
-        List<Integer> otherRandomAward;
+        List<List<Integer>> otherRandomAward;
         List<List<Integer>> rewardList = new ArrayList<>();
         for (int i = 0; i < rewardNum; i++) {
             rewardList.add(staticCity.randomDropReward());
             otherRandomAward = staticCity.randomOtherReward();
             if (CheckNull.nonEmpty(otherRandomAward)) {
-                rewardList.add(staticCity.randomOtherReward());
+                rewardList.addAll(staticCity.randomOtherReward());
             }
         }
         // 获取活动翻倍
@@ -788,13 +788,13 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(city.getCityId());
         int rewardNum = WorldConstant.CITY_EXTRA_REWARD_NUM;
 
-        List<Integer> otherRandomAward;
+        List<List<Integer>> otherRandomAward;
         List<List<Integer>> rewardList = new ArrayList<>();
         for (int i = 0; i < rewardNum; i++) {
             rewardList.add(staticCity.randomDropReward());
             otherRandomAward = staticCity.randomOtherReward();
             if (CheckNull.nonEmpty(otherRandomAward)) {
-                rewardList.add(otherRandomAward);
+                rewardList.addAll(otherRandomAward);
             }
         }
 
