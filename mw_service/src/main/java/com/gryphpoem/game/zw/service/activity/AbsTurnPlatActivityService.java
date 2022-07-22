@@ -198,8 +198,9 @@ public interface AbsTurnPlatActivityService {
     default List<Integer> checkAwardList(List<Integer> awardList, ActivityService activityService, Player player, ActTurnplat turntable) {
         if (awardList.size() > 1 && awardList.get(0) == AwardType.HERO) {
             if (activityService.checkAwardHasHero(awardList, player)) {
+                int heroId = awardList.get(1);
                 awardList.clear();
-                awardList.addAll(Arrays.asList(AwardType.HERO_FRAGMENT, awardList.get(1), HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS));
+                awardList.addAll(Arrays.asList(AwardType.HERO_FRAGMENT, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS));
             }
         }
         return awardList;

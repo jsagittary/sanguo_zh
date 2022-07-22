@@ -2740,8 +2740,9 @@ public class ActivityService {
         // 如果抽到的奖励是将领 且玩家已有该将领 则奖励给6张劵
         if (awardList.size() > 1 && awardList.get(0) == AwardType.HERO) {
             if (checkAwardHasHero(awardList, player)) {
+                int heroId = awardList.get(1);
                 awardList.clear();
-                awardList.addAll(Arrays.asList(AwardType.HERO_FRAGMENT, awardList.get(1), HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS));
+                awardList.addAll(Arrays.asList(AwardType.HERO_FRAGMENT, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS));
             }
         }
 
