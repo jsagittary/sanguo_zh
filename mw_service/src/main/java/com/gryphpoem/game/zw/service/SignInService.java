@@ -307,4 +307,16 @@ public class SignInService {
         }
         return false;
     }
+
+    /**
+     * 领取救援关平后更新玩家数据
+     *
+     * @param player
+     */
+    public void updateSignIn(Player player) {
+        Activity activity = activityDataManager.getActivityInfo(player, ActivityConst.ACT_SIGN_IN_NEW);
+        if (CheckNull.isNull(activity))
+            return;
+        clearInitData(player, activity);
+    }
 }

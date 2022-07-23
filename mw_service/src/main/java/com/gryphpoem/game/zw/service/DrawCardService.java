@@ -539,6 +539,11 @@ public class DrawCardService implements GmCmdService {
             builder.setHero(PbHelper.createHeroPb(hero, player));
             BasePb.Base base = PbHelper.createSynBase(GamePb5.SyncHeroShowStatusRs.EXT_FIELD_NUMBER, GamePb5.SyncHeroShowStatusRs.ext, builder.build()).build();
             DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, player);
+
+            // 领完关平救援, 更新签到数据
+            if (AwardFrom.ALICE_AWARD.equals(from)) {
+                DataResource.ac.getBean(SignInService.class).updateSignIn(player);
+            }
         }
     }
 
