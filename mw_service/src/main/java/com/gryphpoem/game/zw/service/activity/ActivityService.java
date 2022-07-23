@@ -1524,12 +1524,11 @@ public class ActivityService {
             }
 
             if (activity.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
-                GlobalActivityData gActDate = activityDataManager.getGlobalActivity(activity.getActivityType());
                 // 此处返回的是排行榜的，名次
-                ActRank rank = gActDate.getPlayerRank(player, activity.getActivityType(), player.roleId);
-                if (CheckNull.isNull(rank) || rank.getRankValue() < actExchange.getNeedPoint()) {
+                long playerPoint = activity.getStatusCnt().getOrDefault(0, 0l);
+                if (playerPoint < actExchange.getNeedPoint()) {
                     throw new MwException(GameError.FAMOUS_GENERAL_TURNTABLE_EXCHANGE_NEED_POINT_NOT_ENOUGH, "名将转盘兑换所需积分不足, roleId: ", roleId,
-                            ", minScore: ", actExchange.getNeedPoint(), ", playerScore: ", CheckNull.isNull(rank) ? 0 : rank.getRankValue());
+                            ", minScore: ", actExchange.getNeedPoint(), ", playerScore: ", playerPoint);
                 }
             }
         }
