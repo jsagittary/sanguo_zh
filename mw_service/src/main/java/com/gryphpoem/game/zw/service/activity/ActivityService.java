@@ -2620,9 +2620,12 @@ public class ActivityService {
             List<Integer> listChange = new ArrayList<>();
             indexList.remove(0);
             for (Integer index : indexList) {
-                listChange.add(Constant.FAMOUS_GENERAL_EXCHANGE_PROP.get(0).get(0));
-                listChange.add(Constant.FAMOUS_GENERAL_EXCHANGE_PROP.get(0).get(1));
-                listChange.add(6);// 劝过策划做配置 不过策划执意说写死就好
+                List<Integer> heroList = awards.get(index);
+                if (CheckNull.isEmpty(heroList))
+                    continue;
+                listChange.add(AwardType.HERO_FRAGMENT);
+                listChange.add(heroList.get(1));
+                listChange.add(HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS);
                 awards.set(index, listChange);
             }
         }
