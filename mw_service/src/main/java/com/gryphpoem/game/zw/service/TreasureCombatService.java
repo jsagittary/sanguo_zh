@@ -279,6 +279,9 @@ public class TreasureCombatService implements GmCmdService {
         if (!battleHeroId.containsAll(heroList)) {
             throw new MwException(GameError.PARAM_ERROR, "宝具副本挑战关卡 - 上阵英雄错误; roleId = " + player.getLordId() + "heroIdList = " + heroIds);
         }
+
+        TreasureChallengePlayer treasureChallengePlayer = treasureChallengePlayerService.getAndRefreshChallengePlayerData(player);
+        treasureChallengePlayer.setBattleHeroList(battleHeroId);
     }
 
     /**

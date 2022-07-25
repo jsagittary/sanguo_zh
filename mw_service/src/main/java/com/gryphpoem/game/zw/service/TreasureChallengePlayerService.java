@@ -70,7 +70,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
     /**
      * 获取并刷新挑战玩家的数据, 刷新时间 -> 初始化时、零点刷新时
      */
-    private TreasureChallengePlayer getAndRefreshChallengePlayerData(Player player) {
+    public TreasureChallengePlayer getAndRefreshChallengePlayerData(Player player) {
         TreasureChallengePlayer challengePlayer = player.getTreasureChallengePlayer();
 
         // 初始化要挑战的玩家, 第一次进入宝具副本、合服后、清理小号后导致玩家不存在
