@@ -152,7 +152,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             rewardList.add(staticCity.randomDropReward());
             otherRandomAward = staticCity.randomOtherReward();
             if (CheckNull.nonEmpty(otherRandomAward)) {
-                rewardList.addAll(staticCity.randomOtherReward());
+                rewardList.addAll(otherRandomAward);
             }
         }
         // 获取活动翻倍
