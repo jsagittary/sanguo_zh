@@ -10,8 +10,8 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
-import org.springframework.util.ObjectUtils;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -340,13 +340,14 @@ public class StaticCity {
      *
      * @return
      */
-    public List<List<Integer>> randomOtherReward() {
+    public List<List<Integer>> randomOtherReward(Object... objects) {
         // 如果总权重为0, 就重新计算一下总权重
         List<List<Integer>> randomList = null;
         if (otherAward != null) {
             for (List<Integer> list : otherAward) {
                 if (list.size() > 3) {
                     int random = RandomHelper.randomInSize((int) Constant.TEN_THROUSAND);
+                    LogUtil.common(String.format("player:%d, cityLevy, cur randomValue:%d, need probValue:%d", !ObjectUtils.isEmpty(objects) ? objects[0] : 0, random, list.get(3)));
                     if (list.get(3) >= random) {
                         if (randomList == null)
                             randomList = new ArrayList<>();

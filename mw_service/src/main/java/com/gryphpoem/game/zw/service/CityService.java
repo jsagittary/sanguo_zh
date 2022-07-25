@@ -150,7 +150,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         List<List<Integer>> rewardList = new ArrayList<>();
         for (int i = 0; i < rewardNum; i++) {
             rewardList.add(staticCity.randomDropReward());
-            otherRandomAward = staticCity.randomOtherReward();
+            otherRandomAward = staticCity.randomOtherReward(roleId);
             if (CheckNull.nonEmpty(otherRandomAward)) {
                 rewardList.addAll(otherRandomAward);
             }
