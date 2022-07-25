@@ -281,7 +281,7 @@ public class TreasureCombatService implements GmCmdService {
         }
 
         TreasureChallengePlayer treasureChallengePlayer = treasureChallengePlayerService.getAndRefreshChallengePlayerData(player);
-        treasureChallengePlayer.setBattleHeroList(battleHeroId);
+        treasureChallengePlayer.setBattleHeroList(heroList);
     }
 
     /**
