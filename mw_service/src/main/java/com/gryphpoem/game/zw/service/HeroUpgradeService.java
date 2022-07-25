@@ -59,6 +59,12 @@ public class HeroUpgradeService implements GmCmdService {
         if (CheckNull.isNull(hero)) {
             throw new MwException(GameError.HERO_NOT_FOUND, String.format("player:%d, not own this hero, heroId:%d", roleId, heroId));
         }
+        // 非空闲状态
+        if (!hero.isIdle() && hero.getState() != ArmyConstant.ARMY_STATE_RETREAT) {
+            throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "heroUpgrade，将领不在空闲中, roleId:", roleId, ", heroId:",
+                    heroId, ", state:", hero.getState());
+        }
+
         StaticHeroUpgrade preStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
         if (CheckNull.isNull(preStaticData) || (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= preStaticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= preStaticData.getLevel()))
             throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));

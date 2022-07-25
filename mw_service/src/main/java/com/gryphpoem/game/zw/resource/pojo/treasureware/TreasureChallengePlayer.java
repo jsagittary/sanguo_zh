@@ -34,6 +34,8 @@ public class TreasureChallengePlayer {
 
     /** 今日已刷新出来的玩家, 用于控制一天内避免刷新到重复对手 */
     private List<Long> refreshedRecord = new ArrayList<>();
+    /** 副本上阵阵容 */
+    private List<Integer> battleHeroList = new ArrayList<>();
 
     /**
      * 序列化
@@ -47,6 +49,7 @@ public class TreasureChallengePlayer {
         builder.setCDStartTime(CDStartTime);
         builder.setWin(win);
         builder.setFailRefreshNum(failRefreshNum);
+        builder.addAllBattleHero(this.battleHeroList);
         return builder.build();
     }
 
@@ -61,6 +64,7 @@ public class TreasureChallengePlayer {
         CDStartTime = ser.getCDStartTime();
         win = ser.getWin();
         failRefreshNum = ser.getFailRefreshNum();
+        this.battleHeroList = ser.getBattleHeroList();
     }
 
     /**
@@ -182,5 +186,12 @@ public class TreasureChallengePlayer {
         return refreshedRecord;
     }
 
-    //endregion =================================== Getter and Setter end ========================================
+    public List<Integer> getBattleHeroList() {
+        return battleHeroList;
+    }
+
+    public void setBattleHeroList(List<Integer> battleHeroList) {
+        this.battleHeroList = battleHeroList;
+    }
+//endregion =================================== Getter and Setter end ========================================
 }
