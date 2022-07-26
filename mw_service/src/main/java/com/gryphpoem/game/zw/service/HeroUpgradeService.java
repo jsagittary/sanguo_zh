@@ -60,7 +60,7 @@ public class HeroUpgradeService implements GmCmdService {
             throw new MwException(GameError.HERO_NOT_FOUND, String.format("player:%d, not own this hero, heroId:%d", roleId, heroId));
         }
         // 非空闲状态
-        if (!hero.isIdle() && hero.getState() != ArmyConstant.ARMY_STATE_RETREAT) {
+        if (!hero.isIdle()) {
             throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "heroUpgrade，将领不在空闲中, roleId:", roleId, ", heroId:",
                     heroId, ", state:", hero.getState());
         }
