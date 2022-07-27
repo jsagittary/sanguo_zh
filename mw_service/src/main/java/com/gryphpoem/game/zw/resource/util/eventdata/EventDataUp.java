@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.resource.util.eventdata;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gryphpoem.game.zw.core.common.DataResource;
@@ -20,14 +19,13 @@ import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWallHeroLv;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.StringUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
@@ -771,6 +769,9 @@ public class EventDataUp {
             common.put("herotype", hero.getHeroType());
             common.put("hero_level", newLv);
             common.put("hero_military_appointment", hero.getCgyStage());
+            StaticHeroUpgrade upgradeStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+            common.put("hero_quality", Objects.nonNull(upgradeStaticData) ? upgradeStaticData.getGrade() * 1000 + upgradeStaticData.getLevel() : 0);
+            common.put("hero_awaken_times", hero.getDecorated());
             Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
             common.put("hero_skill", Objects.nonNull(skillLvMap) ? skillLvMap.getValue() : 0);
             Map<String, Object> propertyMap = new HashMap<>(); //固定格式，只改name
