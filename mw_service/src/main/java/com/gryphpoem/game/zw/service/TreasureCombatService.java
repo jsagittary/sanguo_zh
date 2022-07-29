@@ -329,12 +329,15 @@ public class TreasureCombatService implements GmCmdService {
         // 间隔时间 / 15 秒 = 挂机奖励次数
         int count = interval / Constant.TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
         GamePb4.TreasureOnHookAwardRs.Builder builder = GamePb4.TreasureOnHookAwardRs.newBuilder();
+        List<List<Integer>> randomAwardList = null;
         if (count > 0) {
-            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, addNaturalAward(player, sCombat, count), null, AwardFrom.TREASURE_ON_HOOK_AWARD, interval, treasureCombat.getCurCombatId()));
+            randomAwardList = addNaturalAward(player, sCombat, count);
+            builder.addAllAward(rewardDataManager.addAwardDelaySync(player, randomAwardList, null, AwardFrom.TREASURE_ON_HOOK_AWARD, interval, treasureCombat.getCurCombatId()));
             onHook.setStartTime(TimeHelper.getCurrentSecond());
         }
 
-        taskDataManager.updTask(player, TaskType.COND_GET_TREASURE_WARE_HOOK_AWARD, 1);
+        if (CheckNull.nonEmpty(randomAwardList))
+            taskDataManager.updTask(player, TaskType.COND_GET_TREASURE_WARE_HOOK_AWARD, 1);
         return builder.setHook(onHook.ser()).build();
     }
 
