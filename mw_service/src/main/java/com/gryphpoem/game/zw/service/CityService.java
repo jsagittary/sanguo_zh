@@ -198,11 +198,19 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         }
 
         if (CheckNull.nonEmpty(sendChatRewardList)) {
-            String chatStr = rewardList.stream().map(list -> {
+            // 翻倍处理
+            sendChatRewardList = sendChatRewardList.stream().map(list -> {
+                int count = list.remove(2);
+                list.add(2, count * sum);
+                return list;
+            }).collect(Collectors.toList());
+            // 跑马灯奖励拼接
+            String chatStr = sendChatRewardList.stream().map(list -> {
                 if (CheckNull.isEmpty(list))
                     return "";
                 return list.stream().map(i -> String.valueOf(i)).collect(Collectors.joining("_"));
             }).filter(s -> StringUtils.isNotBlank(s)).collect(Collectors.joining("|"));
+
             // 发系统消息
             if (StringUtils.isNotBlank(chatStr)) {
                 if (cost == 1) {
