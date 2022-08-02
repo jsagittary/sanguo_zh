@@ -1188,7 +1188,7 @@ public class RewardDataManager {
                     addArmSpeed(player, count, from);
                     break;
                 case AwardType.Special.BAPTIZE:
-                    addBaptizeCnt(player, count, from);
+                    addBaptizeCnt(player, count, from, param);
                     break;
                 case AwardType.Special.HERO_WASH:
                     addHeroWashCnt(player, count, from);
@@ -1269,9 +1269,9 @@ public class RewardDataManager {
      * @param count
      * @param from
      */
-    private void addBaptizeCnt(Player player, int count, AwardFrom from) {
+    private void addBaptizeCnt(Player player, int count, AwardFrom from, Object... params) {
         player.common.setBaptizeCnt(player.common.getBaptizeCnt() + count);
-        LogLordHelper.commonLog("addBaptizeCnt", from, player, count);
+        LogLordHelper.equipBaptizeNew(from, player, count, Constant.ACTION_ADD, "addBaptizeCnt", params);
     }
 
     /**

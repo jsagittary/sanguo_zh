@@ -22,6 +22,7 @@ import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -488,9 +489,10 @@ public class EquipService implements GmCmdService {
                 && now >= player.common.getBaptizeTime() + Constant.EQUIP_BAPTIZECNT_TIME) {
             int cnt = (now - player.common.getBaptizeTime()) / Constant.EQUIP_BAPTIZECNT_TIME;
             int baptizeCnt = Math.min(Constant.EQUIP_MAX_BAPTIZECNT, player.common.getBaptizeCnt() + cnt);
-            LogLordHelper.commonLog("addBaptizeCnt", AwardFrom.BAPTIZE_CNT, player, baptizeCnt - player.common.getBaptizeCnt(), player.common.getBaptizeCnt());
+            int count = baptizeCnt - player.common.getBaptizeCnt();
             player.common.setBaptizeCnt(baptizeCnt);
             player.common.setBaptizeTime(player.common.getBaptizeTime() + (cnt * Constant.EQUIP_BAPTIZECNT_TIME));
+            LogLordHelper.equipBaptizeNew(AwardFrom.EQUIP_BAPTIZE_RESET, player, count, Constant.ACTION_ADD, "addBaptizeCnt");
         }
         if (player.common != null && player.common.getBaptizeCnt() >= Constant.EQUIP_MAX_BAPTIZECNT) {
             player.common.setBaptizeTime(now);
@@ -687,7 +689,7 @@ public class EquipService implements GmCmdService {
                                 ", keyId:", keyId);
                     }
                     player.common.setBaptizeCnt(player.common.getBaptizeCnt() - 1);
-                    LogLordHelper.commonLog("subBaptizeCnt", AwardFrom.BAPTIZE_CNT, player, 1, player.common.getBaptizeCnt());
+                    LogLordHelper.equipBaptizeNew(AwardFrom.BAPTIZE_CNT, player, 1, Constant.ACTION_SUB, "subBaptizeCnt");
                     // 免费改造次数减为0
                     if (player.common.getBaptizeCnt() == 0) {
                         activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_EQUIP_BAPTIZE, player);
@@ -724,12 +726,14 @@ public class EquipService implements GmCmdService {
                     minLv.setB(minLv.getB() + 1);
                     // 保底清零
                     equip.setNotUpLvCnt(0);
+                    EventDataUp.equipAdvanced(player, equip);
                 } else {
                     boolean isUpLv = RandomHelper.isHitRangeIn10000(probability);
                     if (isUpLv) {
                         minLv.setB(minLv.getB() + 1);
                         // 保底清零
                         equip.setNotUpLvCnt(0);
+                        EventDataUp.equipAdvanced(player, equip);
                     } else {
                         equip.setNotUpLvCnt(equip.getNotUpLvCnt() + 1);
                     }

@@ -2220,6 +2220,9 @@ public class PbHelper {
             if (staticPay.getUsd() != 0.0) {
                 builder.setUsd(staticPay.getUsd());
             }
+            if (staticPay.getExtraGold2() > 0) {
+                builder.setExtraGold2(staticPay.getExtraGold2());
+            }
             list.add(builder.build());
         }
         return list;

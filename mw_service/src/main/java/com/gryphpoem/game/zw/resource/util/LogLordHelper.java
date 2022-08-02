@@ -16,17 +16,16 @@ import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
-import com.gryphpoem.game.zw.service.LoginService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.ObjectUtils;
 
-import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class LogLordHelper {
@@ -412,7 +411,7 @@ public class LogLordHelper {
                 .append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, heroId, AwardType.HERO, 1, action, heroId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, heroId, AwardType.HERO, 1, action, heroId, Arrays.toString(params), 1);
     }
 
     /**
@@ -434,7 +433,7 @@ public class LogLordHelper {
                 .append(equipKeyId).append("|").append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, equipId, AwardType.EQUIP, 1, action, equipKeyId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, equipId, AwardType.EQUIP, 1, action, equipKeyId, Arrays.toString(params), action == Constant.ACTION_SUB ? 0 : 1);
     }
 
     /**
@@ -483,6 +482,38 @@ public class LogLordHelper {
         EventDataUp.prop(from, account, lord, equipId, AwardType.EQUIP, 1, action, equipKeyId, Arrays.toString(params));
     }
 
+    /**
+     * 装备洗脸次数变更
+     *
+     * @param from
+     * @param player
+     * @param count
+     * @param action
+     * @param params
+     */
+    public static void equipBaptizeNew(AwardFrom from, Player player, int count, int action, String method, Object... params) {
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            if (player.account == null || player.lord == null) {
+                return;
+            }
+            // 若方法名为空, 则不打印埋点
+            if (StringUtils.isNotBlank(method))
+                commonLog(method, from, player, count, player.common.getBaptizeCnt());
+            EventDataUp.prop(from, player.account, player.lord, AwardType.Special.BAPTIZE,
+                    AwardType.SPECIAL, count, action, 0, Arrays.toString(params), player.common.getBaptizeCnt());
+        });
+    }
+
+    public static void equipBaptizeLevelUp(AwardFrom from, Player player, int count, int action, String method, Object... params) {
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            if (player.account == null || player.lord == null) {
+                return;
+            }
+            EventDataUp.prop(from, player.account, player.lord, AwardType.Special.BAPTIZE,
+                    AwardType.SPECIAL, count, action, 0, Arrays.toString(params), player.common.getBaptizeCnt());
+        });
+    }
+
 
     /**
      * 宝具变更
@@ -504,7 +535,7 @@ public class LogLordHelper {
                 .append(keyId).append("|").append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, treasureWareId, AwardType.TREASURE_WARE, 1, action, keyId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, treasureWareId, AwardType.TREASURE_WARE, 1, action, keyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
     }
 
     /**
@@ -528,7 +559,7 @@ public class LogLordHelper {
                 .append(medalKeyId).append("|").append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, medalId, AwardType.MEDAL, 1, action, medalKeyId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, medalId, AwardType.MEDAL, 1, action, medalKeyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
     }
 
     /**
@@ -550,7 +581,7 @@ public class LogLordHelper {
                 .append("|").append(keyId).append("|").append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, stoneImproveId, AwardType.STONE, 1, action, keyId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, stoneImproveId, AwardType.STONE, 1, action, keyId, Arrays.toString(params), Constant.ACTION_ADD == action ? 1 : 0);
     }
 
     /**
@@ -573,7 +604,7 @@ public class LogLordHelper {
                 .append(curCount).append("|").append(count).append("|").append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, propId, AwardType.PROP, count, action, propId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, propId, AwardType.PROP, count, action, propId, Arrays.toString(params), curCount);
     }
 
     /**
@@ -597,7 +628,7 @@ public class LogLordHelper {
             message.append("|").append(Arrays.toString(params));
         }
         GAME_LOGGER.info(message);
-        EventDataUp.prop(awardFrom, player.account, player.lord, id, AwardType.TOTEM, 1, action, keyId, Arrays.toString(params));
+        EventDataUp.prop(awardFrom, player.account, player.lord, id, AwardType.TOTEM, 1, action, keyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
     }
 
 
@@ -639,7 +670,7 @@ public class LogLordHelper {
                 .append(curCount).append("|").append(count).append("|").append(action);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, stoneId, AwardType.STONE, count, action, stoneId, Arrays.toString(params));
+        EventDataUp.prop(from, account, lord, stoneId, AwardType.STONE, count, action, stoneId, Arrays.toString(params), curCount);
     }
 
     /**
@@ -1203,7 +1234,8 @@ public class LogLordHelper {
                 .append("|").append(entity.getType()).append("|").append(entity.getId()).append("|").append(entity.isPermanentHas()).append("|").append(entity.getDuration());
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, player.account, player.lord, entity.getId(), entity.getType(), 1, Constant.ACTION_ADD, entity.getId(), Arrays.toString(params));
+        EventDataUp.prop(from, player.account, player.lord, entity.getId(), entity.getType(), 1, Constant.ACTION_ADD, entity.getId(), Arrays.toString(params),
+                StringUtils.isNotBlank(action) && action.startsWith("clear") ? 0 : 1);
     }
 
     /**
