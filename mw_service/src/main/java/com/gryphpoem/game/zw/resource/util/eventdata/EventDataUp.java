@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.resource.util.eventdata;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gryphpoem.game.zw.core.common.DataResource;
@@ -25,9 +24,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWallHeroLv;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.StringUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
@@ -760,10 +757,14 @@ public class EventDataUp {
     public static void heroLevelUp(Player player, int heroId, int newLv) {
         if (CheckNull.isNull(player.lord) || CheckNull.isNull(player.account))
             return;
+        // 检测数数上报的功能
+        if (functionUnlock(player.account)) {
+            return;
+        }
+
         Hero hero = player.heros.get(heroId);
         if (CheckNull.isNull(hero))
             return;
-
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(player.account, player.lord);
             common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
