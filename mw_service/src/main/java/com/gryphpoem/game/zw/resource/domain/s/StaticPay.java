@@ -49,6 +49,10 @@ public class StaticPay {
      * 美金价格
      */
     private float usd;
+    /**
+     * 非首充额外充值赠送
+     */
+    private int extraGold2;
 
     public int getPayId() {
         return payId;
@@ -136,5 +140,13 @@ public class StaticPay {
 
     public void setUsd(float usd) {
         this.usd = usd;
+    }
+
+    public int getExtraGold2() {
+        return extraGold2;
+    }
+
+    public void setExtraGold2(int extraGold2) {
+        this.extraGold2 = extraGold2;
     }
 }
