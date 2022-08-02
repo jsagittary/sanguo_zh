@@ -758,6 +758,11 @@ public class EventDataUp {
     public static void heroLevelUp(Player player, int heroId, int newLv) {
         if (CheckNull.isNull(player.lord) || CheckNull.isNull(player.account))
             return;
+        // 检测数数上报的功能
+        if (functionUnlock(player.account)) {
+            return;
+        }
+
         Hero hero = player.heros.get(heroId);
         if (CheckNull.isNull(hero))
             return;

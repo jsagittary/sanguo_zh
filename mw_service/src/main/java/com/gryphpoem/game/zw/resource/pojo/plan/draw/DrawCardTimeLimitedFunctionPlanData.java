@@ -154,6 +154,7 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
         builder.setKeyId(getKeyId());
         builder.setStatus(getReceiveStatus());
         builder.setFreeNum(getFreeNum());
+        builder.setTotalDrawCount(getTotalDrawHeroCount());
         return builder.build();
     }
 }
