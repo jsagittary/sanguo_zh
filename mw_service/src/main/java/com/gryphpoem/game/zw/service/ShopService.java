@@ -375,9 +375,9 @@ public class ShopService {
 
         int chatId = 0;
         // 购买VIP6-VIP13礼包 招募紫色坦克将领-招募橙色火箭将领 发送世界消息
-        if ((staticVip.getVipLv() == VipConstant.VIP_SIX || staticVip.getVipLv() == VipConstant.VIP_EIGHT)
+        if ((staticVip.getVipLv() == VipConstant.VIP_FIVE || staticVip.getVipLv() == VipConstant.VIP_EIGHT)
                 && !CheckNull.isEmpty(staticVip.getReward())) {
-            chatId = staticVip.getVipLv() == VipConstant.VIP_SIX ? ChatConst.CHAT_BUY_VIP6 : ChatConst.CHAT_BUY_VIP8;
+            chatId = staticVip.getVipLv() == VipConstant.VIP_FIVE ? ChatConst.CHAT_BUY_VIP6 : ChatConst.CHAT_BUY_VIP8;
             if (chatId > 0) {
                 for (List<Integer> list : staticVip.getReward()) {
                     if (CheckNull.isEmpty(list) || list.size() < 3) {
