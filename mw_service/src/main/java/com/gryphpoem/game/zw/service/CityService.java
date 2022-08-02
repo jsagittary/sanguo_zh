@@ -200,9 +200,10 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         if (CheckNull.nonEmpty(sendChatRewardList)) {
             // 翻倍处理
             sendChatRewardList = sendChatRewardList.stream().map(list -> {
-                int count = list.remove(2);
-                list.add(2, count * sum);
-                return list;
+                List<Integer> tmp = new ArrayList<>(list);
+                int count = tmp.remove(2);
+                tmp.add(2, count * sum);
+                return tmp;
             }).collect(Collectors.toList());
             // 跑马灯奖励拼接
             String chatStr = sendChatRewardList.stream().map(list -> {
