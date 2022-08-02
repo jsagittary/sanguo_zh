@@ -19,6 +19,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSchedule;
 import com.gryphpoem.game.zw.resource.domain.s.StaticScheduleGoal;
+import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.pojo.WorldTask;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
@@ -196,10 +197,15 @@ public class WorldScheduleService {
         ssgList.forEach(sSchedGoal -> {
             int scheduleId = sSchedGoal.getScheduleId();
             WorldSchedule worldSchedule = globalSchedule.getWorldSchedule(scheduleId);
-            if (CheckNull.isNull(worldSchedule)
-                    || worldSchedule.getStatus() == ScheduleConstant.SCHEDULE_STATUS_NOT_YET_BEGIN) {
+            if (CheckNull.isNull(worldSchedule) || worldSchedule.getStatus() == ScheduleConstant.SCHEDULE_STATUS_NOT_YET_BEGIN) {
+                // 即时未配置世界进程, 但是若被调用, 则说明存在过condId, 仍然记录进度, 以免后续增加此condId, 但进度从0开始
+                if (condId == ScheduleConstant.GOAL_COND_CONQUER_CITY) {
+                    // 若任务为攻克城池, 且当前世界进程未开启则仍然增加城池攻破记录
+                    WorldSchedule.updateWorldScheduleGoalCondConquerCity(param);
+                }
                 return;
             }
+
             // 达成目标同步可领取信息
             if (worldSchedule.updateScheduleGoal(player, sSchedGoal, param)) {
                 hasChange.set(true);
@@ -996,12 +1002,13 @@ public class WorldScheduleService {
      * @return
      */
     private int achieveGoalConquerCity(StaticScheduleGoal ssg) {
+        GlobalDataManager globalDataManager = DataResource.ac.getBean(GlobalDataManager.class);
+        GameGlobal gameGlobal = globalDataManager.getGameGlobal();
+        Map<Integer, Integer> cityMap = gameGlobal.getMixtureDataById(GlobalConstant.WORLD_SCHEDULE_GOAL_COND_CONQUER_CITY);
+        if (CheckNull.isEmpty(cityMap))
+            return 0;
         int cityType = ssg.getCondId();
-        return (int) worldDataManager.getCityMap().values().stream()
-                .filter(city -> !city.isNpcCity())
-                .map(city -> StaticWorldDataMgr.getCityMap().get(city.getCityId()))
-                .filter(city -> !CheckNull.isNull(city) && city.getType() == cityType)
-                .distinct().count();
+        return (int) cityMap.keySet().stream().map(cityId -> StaticWorldDataMgr.getCityMap().get(cityId)).filter(city -> Objects.nonNull(city) && city.getType() == cityType).count();
     }
 
     /**
