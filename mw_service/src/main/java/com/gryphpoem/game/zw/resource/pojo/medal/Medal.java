@@ -263,6 +263,11 @@ public class Medal {
         return medalAttr;
     }
 
+    public String getMedalAttrLogStr() {
+        if (CheckNull.isNull(medalAttr)) return "";
+        return medalAttr.getA() + "," + medalAttr.getB();
+    }
+
     public void setMedalAttr(Turple<Integer, Integer> medalAttr) {
         this.medalAttr = medalAttr;
     }

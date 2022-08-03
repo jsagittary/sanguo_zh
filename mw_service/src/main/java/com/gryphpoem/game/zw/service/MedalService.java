@@ -526,8 +526,9 @@ public class MedalService {
             Turple<Integer, Integer> skill3 = medal.getGeneralSkillIdLv(3);
             LogLordHelper.gameLog(LogParamConstant.MEDAL_STRENGTHEN, player,
                     AwardFrom.MEDAL_INTENSIFY, medal.getMedalId(), medal.getKeyId(), medal.getLevel(),
-                    medal.getMedalAttr(), medal.getGeneralSkillId(), skill1.getA(), skill1.getB(), skill2.getA(), skill2.getB(),
-                    skill3.getA(), skill3.getB(), medal.getSpecialSkillId(), medal.getAuraSkillId());
+                    medal.getMedalAttrLogStr(), medal.getGeneralSkillId(), skill1.getA(), skill1.getB(), skill2.getA(), skill2.getB(),
+                    skill3.getA(), skill3.getB(), CheckNull.isNull(medal.getSpecialSkillId()) ? 0 : medal.getSpecialSkillId(),
+                    CheckNull.isNull(medal.getSpecialSkillId()) ? 0 : medal.getAuraSkillId());
         });
 
         GamePb1.IntensifyMedalRs.Builder builder = GamePb1.IntensifyMedalRs.newBuilder();

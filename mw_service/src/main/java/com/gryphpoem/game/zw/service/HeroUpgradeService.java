@@ -89,7 +89,7 @@ public class HeroUpgradeService implements GmCmdService {
 
         // 添加升阶日志埋点打印
         LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.HERO_UPGRADE, player,
-                AwardFrom.UPGRADE_HERO, heroId, preStaticData.getGrade(), staticData.getGrade()));
+                AwardFrom.UPGRADE_HERO, heroId, preStaticData.getGrade(), preStaticData.getLevel(), staticData.getGrade(), staticData.getLevel()));
         return builder.build();
     }
 

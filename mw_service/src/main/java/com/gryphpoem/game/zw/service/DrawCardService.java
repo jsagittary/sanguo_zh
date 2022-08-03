@@ -209,7 +209,7 @@ public class DrawCardService implements GmCmdService {
                     // 拥有英雄转为碎片
                     rewardDataManager.sendRewardSignle(player, AwardType.HERO_FRAGMENT, heroId,
                             HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.HERO_NORMAL_SEARCH);
-                    awardLogStr = AwardType.HERO_FRAGMENT + "," + heroId + HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS;
+                    awardLogStr = "[[" + AwardType.HERO_FRAGMENT + ", " + heroId + ", " + HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS + "]]";
                 } else {
                     rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
                     // 返回新得到的将领信息
