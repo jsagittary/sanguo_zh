@@ -173,8 +173,12 @@ public class DrawCardPlanTemplateService {
 
         GamePb5.SyncChangeDrawCardActPlanRs.Builder builder = GamePb5.SyncChangeDrawCardActPlanRs.newBuilder();
         builder.setState(state);
-        if (Objects.nonNull(plan))
-            builder.setPlan(plan.createPb(false));
+        if (Objects.nonNull(plan)) {
+            CommonPb.DrawCardPlan.Builder drawPlanPb = plan.createPb(false);
+            StaticDrawCardWeight weightConfig = staticDrawHeroDataMgr.checkConfigEmpty(plan.getSearchTypeId());
+            drawPlanPb.setWeightId(CheckNull.isNull(weightConfig) ? 0 : weightConfig.getId());
+            builder.setPlan(drawPlanPb);
+        }
         if (Objects.nonNull(data))
             builder.setData((ActivityPb.TimeLimitedDrawCardActData) data.createPb(false));
         if (state == AbsDrawCardPlanService.ACT_DELETE) {
