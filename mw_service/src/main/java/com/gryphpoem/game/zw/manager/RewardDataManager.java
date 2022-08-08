@@ -4178,13 +4178,10 @@ public class RewardDataManager {
             case AwardType.SANDTABLE_SCORE:
                 count = player.getSandTableScore();
                 break;
-//            case AwardType.TOTEM_CHIP:
-//                TotemChip totemChip = player.getTotemData().getTotemChip(id);
-//                count = Objects.isNull(totemChip) ? 0 : totemChip.getCount();
-//                break;
+            case AwardType.HERO_FRAGMENT:
+                count = player.getDrawCardData().getFragmentData().getOrDefault(id, 0);
             default:
                 break;
-
         }
         return count;
     }
