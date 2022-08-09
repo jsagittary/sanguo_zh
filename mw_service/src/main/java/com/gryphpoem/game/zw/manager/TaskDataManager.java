@@ -104,15 +104,20 @@ public class TaskDataManager {
 
         // 军团任务
         if (!TimeHelper.isFriday()) {// 周五无军团任务
+            List<Integer> taskIds = null;
             int partyLv = campDataManager.getCampMember(player.lord.getLordId()).getTaskLv();
             for (StaticPartyTask next : StaticTaskDataMgr.getPartyTaskMap().values()) {
                 if (partyLv != next.getLv() || next.getCond() != cond) {
                     continue;
                 }
                 Task task = player.partyTask.computeIfAbsent(next.getId(), x -> new Task(next.getId()));
-                modifyTaskSchedule(player, task, next.getCond(), next.getCondId(), next.getSchedule(), schedule, param);
+                if (modifyTaskSchedule(player, task, next.getCond(), next.getCondId(), next.getSchedule(), schedule, param)) {
+                    if (CheckNull.isNull(taskIds))
+                        taskIds = new ArrayList<>();
+                    taskIds.add(next.getId());
+                }
             }
-            checkPartyTaskFinishAndNotice(player);
+            checkPartyTaskFinishAndNotice(player, taskIds);
         }
 
         // 个人目标任务
@@ -171,21 +176,21 @@ public class TaskDataManager {
      *
      * @param player
      */
-    private void checkPartyTaskFinishAndNotice(Player player) {
-        List<Integer> taskIds = new ArrayList<>();
-        for (Task task : player.partyTask.values()) {
-            StaticPartyTask stask = StaticTaskDataMgr.getPartyTask(task.getTaskId());
-            if (stask != null) {
-                currentTask(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule());
-                if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
-                    task.setStatus(TaskType.TYPE_STATUS_FINISH);
-                }
-                if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {// 完成发送通知
-                    taskIds.add(stask.getId());
-                }
-            }
-        }
-        if (!CheckNull.isEmpty(taskIds)) {
+    private void checkPartyTaskFinishAndNotice(Player player, List<Integer> taskIds) {
+//        List<Integer> taskIds = new ArrayList<>();
+//        for (Task task : player.partyTask.values()) {
+//            StaticPartyTask stask = StaticTaskDataMgr.getPartyTask(task.getTaskId());
+//            if (stask != null) {
+//                currentTask(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule());
+//                if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
+//                    task.setStatus(TaskType.TYPE_STATUS_FINISH);
+//                }
+//                if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {// 完成发送通知
+//                    taskIds.add(stask.getId());
+//                }
+//            }
+//        }
+        if (CheckNull.nonEmpty(taskIds)) {
             syncPartyFinish(player, taskIds);
         }
     }
