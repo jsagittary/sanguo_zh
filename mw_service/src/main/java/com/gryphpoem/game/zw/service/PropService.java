@@ -368,10 +368,10 @@ public class PropService {
                                        String params, long roleId, int propId, List<CommonPb.Award> listAward,
                                        ChangeInfo change) throws MwException {
         //因跑马灯在此判断，因此将判断加在这里
-        if (count != 1) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
-                    "usedCount: ", prop.getCount(), ", count = ", count);
-        }
+//        if (count != 1) {
+//            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
+//                    "usedCount: ", prop.getCount(), ", count = ", count);
+//        }
 
         Integer choosePropId;
         try {
@@ -412,8 +412,7 @@ public class PropService {
 
         rewardArr = new ArrayList<>();
         rewardArr.add(reward);
-        listAward.addAll(rewardDataManager.addAwardDelaySync(player, rewardArr, change,
-                AwardFrom.USE_PROP));
+        listAward.addAll(rewardDataManager.sendReward(player, rewardArr, count, AwardFrom.USE_PROP));
     }
 
     private void checkAndSubTreasureBox(Player player, StaticProp sProp, Prop prop, int useCount) throws MwException {
