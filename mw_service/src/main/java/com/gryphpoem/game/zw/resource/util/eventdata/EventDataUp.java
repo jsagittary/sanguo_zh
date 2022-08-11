@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -18,14 +19,14 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
-import com.gryphpoem.game.zw.resource.domain.s.StaticWallHeroLv;
+import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
 import org.springframework.util.ObjectUtils;
@@ -210,7 +211,7 @@ public class EventDataUp {
      * @param action
      * @propType 3将领, 4道具, 5装备, 10宝石, 9头像, 11聊天气泡, 14勋章, 19皮肤, 27图腾, 29宝具
      */
-    public static void prop(AwardFrom from, Account account, Lord lord, int propId, int propType, int count, int action, int keyId, String info) {
+    public static void prop(AwardFrom from, Account account, Lord lord, int propId, int propType, int count, int action, int keyId, String info, Object... params) {
         if (account == null || lord == null) {
             return;
         }
@@ -232,6 +233,7 @@ public class EventDataUp {
             common.put("props_keyid", keyId);
             common.put("props_info", info);
             common.put("props_reason", CheckNull.isNull(from) ? "" : from.getCode());
+            common.put("props_after_num", ObjectUtils.isEmpty(params) ? 0 : params[0]);
 
             Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "props");
             Map<String, Object> properties = new HashMap<>();
@@ -772,6 +774,9 @@ public class EventDataUp {
             common.put("herotype", hero.getHeroType());
             common.put("hero_level", newLv);
             common.put("hero_military_appointment", hero.getCgyStage());
+            StaticHeroUpgrade upgradeStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+            common.put("hero_quality", Objects.nonNull(upgradeStaticData) ? upgradeStaticData.getGrade() * 1000 + upgradeStaticData.getLevel() : 0);
+            common.put("hero_awaken_times", hero.getDecorated());
             Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
             common.put("hero_skill", Objects.nonNull(skillLvMap) ? skillLvMap.getValue() : 0);
             Map<String, Object> propertyMap = new HashMap<>(); //固定格式，只改name
@@ -780,6 +785,55 @@ public class EventDataUp {
             propertyMap.put("account_id", player.lord.getLordId());
             propertyMap.put("data", common);
 
+            Map<String, Object> properties = new HashMap<>(); //固定格式
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
+    }
+
+    /**
+     * 装备洗练等级有变化时上报
+     *
+     * @param player
+     * @param equip
+     */
+    public static void equipAdvanced(Player player, Equip equip) {
+        if (CheckNull.isNull(player.lord) || CheckNull.isNull(player.account) || CheckNull.isNull(equip))
+            return;
+        // 检测数数上报的功能
+        if (functionUnlock(player.account)) {
+            return;
+        }
+        StaticEquip staticEquip = StaticPropDataMgr.getEquip(equip.getEquipId());
+        if (CheckNull.isNull(staticEquip)) {
+            return;
+        }
+
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(player.account, player.lord);
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
+            common.put("@public_data", "");
+            common.put("equip_id", String.valueOf(equip.getEquipId()));
+            common.put("equip_keyid", String.valueOf(equip.getKeyId()));
+            common.put("equip_quality", String.valueOf(staticEquip.getQuality()));
+            // 记录装备洗练升级时上报
+            StringBuilder sb = null;
+            if (CheckNull.nonEmpty(equip.getAttrAndLv())) {
+                sb = new StringBuilder();
+                for (int i = 1; i <= equip.getAttrAndLv().size(); i++) {
+                    Turple<Integer, Integer> equipAttr = equip.getAttrAndLv().get(i - 1);
+                    if (CheckNull.isNull(equipAttr))
+                        continue;
+                    sb.append(i).append("_").append(equipAttr.getB());
+                    if (i < equip.getAttrAndLv().size())
+                        sb.append(",");
+                }
+            }
+            String sbStr = sb.toString();
+            common.put("equip_stars", Objects.nonNull(sb) && org.apache.commons.lang3.StringUtils.isNotBlank(sbStr) ? sbStr : "");
+
+            Map<String, Object> propertyMap = getPropertyParams(player.account, player.lord, common, "equip_advanced");
             Map<String, Object> properties = new HashMap<>(); //固定格式
             properties.put("type", "track");
             properties.put("data", propertyMap);

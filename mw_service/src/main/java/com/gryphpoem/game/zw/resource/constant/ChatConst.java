@@ -397,6 +397,12 @@ public class ChatConst {
      */
     public static final int CHAT_TREASURE_WARE_SHARE = 140;
 
+    /**
+     * [["恭喜",0],["%s"],["主公",0],["%s"],["的",0],["%s"],["已提升至满阶！",0]
+     *
+     */
+    public static final int CHAT_HERO_FULL_GRADE = 141;
+
     public static final int FIREWORKS_PREVIEW = 200;//烟花活动开始前的跑马灯
     public static final int FIREWORKS_LETOFF = 201;//系统放烟花的跑马灯
     public static final int YEARFISH_LONG = 202;//年年有鱼活动捕到龙鱼

@@ -71,6 +71,39 @@ public enum ETask {
      * 累计登陆天数
      */
     LOGIN_DAYS_SUM(51, true),
+
+    /**
+     * 通关某关卡
+     */
+    PASS_THE_COMBAT(63, true),
+    /**
+     * 通过宝具副本指定关卡
+     */
+    PASS_TREASURE_WARE_COMBAT_ID(64, true),
+    /**
+     * 解锁宝具征程第x个位置
+     */
+    UNLOCK_TREASURE_WARE_COPY_HERO_INDEX(65, true),//"解锁宝具副本将领上阵位"此功能已删除
+    /**
+     * 打造x个x品质的宝具
+     */
+    MAKE_QUALITY_AND_COUNT_TREASURE_WARE(66, true),
+    /**
+     * 打造x个x品质且带专属属性的宝具
+     */
+    MAKE_QUALITY_AND_COUNT_AND_SPECIAL_TREASURE_WARE(67, true),
+    /**
+     * 强化x个x品质宝具到x级
+     */
+    STRENGTH_QUALITY_AND_COUNT_TREASURE_WARE(68, true),
+    /**
+     * 累计洗炼x次x品质的宝具
+     */
+    TRAIN_QUALITY_AND_COUNT_TREASURE_WARE(69, true),
+    /**
+     * 洗炼出x个带两条相同属性x品质的宝具(属性不限)
+     */
+    TRAIN_QUALITY_AND_2SAME_ANY_ATTR_TREASURE_WARE(70, true),
     ;
     private int taskType;
     private boolean handle;

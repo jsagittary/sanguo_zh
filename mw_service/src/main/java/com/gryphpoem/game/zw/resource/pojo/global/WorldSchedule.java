@@ -281,26 +281,26 @@ public class WorldSchedule {
      * @return sync 同步目标达成
      */
     public boolean updateScheduleGoal(Player player, StaticScheduleGoal ssg, int param) {
-        boolean sync = false;
         if (CheckNull.isNull(this.goal)) {
             LogUtil.error("更新目标进度, goalMap目标bean未初始化, worldScheduleId:", this.id);
-            return sync;
+            return false;
         }
         int goalId = ssg.getId();
         ScheduleGoal goal = this.goal.get(goalId);
         if (CheckNull.isNull(goal)) {
             LogUtil.error("更新目标进度, goal目标bean未初始化, worldScheduleId:", this.id, ", goalId:", goalId);
-            return sync;
+            return false;
         }
         // 进度足够了
         if (enoughSchedule(player, ssg)) {
-            return sync;
+            return false;
         }
         // 已经领取的目标不再更新
         if (alreadyReward(player, goal)) {
-            return sync;
+            return false;
         }
         // 可以更新目标进度
+        boolean sync = false;
         if (canUpdateSched(ssg, param)) {
             // 更新目标的进度
             updateSchedule(player, ssg, param);
@@ -371,6 +371,19 @@ public class WorldSchedule {
         } else {
             this.statusCnt.put(condId, schedule + 1);
         }
+    }
+
+    /**
+     * 不管当前世界进程有没有攻克城池的任务, 一定记录当前城池被攻克
+     *
+     * @param cityId
+     */
+    public static void updateWorldScheduleGoalCondConquerCity(int cityId) {
+        GlobalDataManager globalDataManager = DataResource.ac.getBean(GlobalDataManager.class);
+        GameGlobal gameGlobal = globalDataManager.getGameGlobal();
+        Map<Integer, Integer> cityMap = gameGlobal.getMixtureDataById(GlobalConstant.WORLD_SCHEDULE_GOAL_COND_CONQUER_CITY);
+        cityMap.put(cityId, 1);
+        gameGlobal.setMixtureData(GlobalConstant.WORLD_SCHEDULE_GOAL_COND_CONQUER_CITY, cityMap);
     }
 
     /**

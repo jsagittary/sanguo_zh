@@ -11,6 +11,6 @@ public class HeroTimer extends TimerEvent {
 
 	@Override
 	public void action() {
-		AppGameServer.ac.getBean(HeroService.class).heroTimeLogic();
+//		AppGameServer.ac.getBean(HeroService.class).heroTimeLogic();
 	}
 }

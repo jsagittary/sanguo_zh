@@ -18,6 +18,7 @@ public class StaticPromotion {
     private int price;                  // 购买价格
     private int count;                  // 购买次数
     private int cond;                   // 获得积分
+    private int payId;                  // 购买id
 
     public int getPromotionId() {
         return promotionId;
@@ -81,5 +82,13 @@ public class StaticPromotion {
 
     public void setActivityId(int activityId) {
         this.activityId = activityId;
+    }
+
+    public int getPayId() {
+        return payId;
+    }
+
+    public void setPayId(int payId) {
+        this.payId = payId;
     }
 }

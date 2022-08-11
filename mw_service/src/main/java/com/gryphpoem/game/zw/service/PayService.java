@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.service.activity.AbsGiftBagActivityService;
 import com.gryphpoem.game.zw.service.activity.ActivityBoxOfficeService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -101,6 +102,11 @@ public class PayService {
      * 音乐活动解锁售票处
      */
     public static final int FLAG_UNLOCK_BOX_OFFICE = 14;
+
+    /**
+     * 神兵宝具礼包
+     */
+    public static final int MAGIC_TREASURE_WARE_GIFT_BAG = 15;
 
 
     @Autowired
@@ -349,8 +355,34 @@ public class PayService {
             rs = processPaySkinEncoreActivity(player, pay, sPay);
         } else if (FLAG_UNLOCK_BOX_OFFICE == banFlag) {
             rs = processPayBoxOfficeActivity(player, pay, sPay);
+        } else if (MAGIC_TREASURE_WARE_GIFT_BAG == banFlag) {
+            rs = processActGiftBgActivity(player, pay, sPay);
         }
         return rs;
+    }
+
+    /**
+     * 购买活动礼包
+     *
+     * @param player
+     * @param pay
+     * @param sPay
+     * @return
+     */
+    private PayConfirmRq processActGiftBgActivity(Player player, Pay pay, StaticPay sPay) {
+//        //充值获得钻石处理
+//        if (sPay.getTopup() > 0) {
+//            rewardDataManager.sendRewardSignle(player, AwardType.MONEY, AwardType.Money.GOLD, sPay.getTopup(),
+//                    AwardFrom.ANNIVERSARY_SKIN_ENCORE_RECHARGE, pay.getSerialId(), sPay.getPayId(), pay.getAmount());
+//        }
+        // vip处理
+        if (sPay.getVipexp() > 0) {
+            vipProcess(player, sPay);
+        }
+        AbsGiftBagActivityService.buyActGiftBag(player, sPay);
+        // 充值成功的同步数据(礼包购买成功)
+        syncPaybackSuc(player, pay.getSerialId(), pay.getAmount(), sPay.getBanFlag(), sPay.getTopup(), sPay.getPayId());
+        return payBackReturn(player, pay, sPay, sPay.getTopup());
     }
 
     private PayConfirmRq processPayBoxOfficeActivity(Player player, Pay pay, StaticPay sPay) {
@@ -1121,20 +1153,24 @@ public class PayService {
      * @return
      */
     private PayConfirmRq processPayGold(Player player, Pay pay, StaticPay sPay, int platType) {
-        int topup = sPay.getTopup();
-        int extraGold = (sPay.getExtraGold() * topup) / 100;
+        int topUp = sPay.getTopup();
+        int extraGold = (sPay.getExtraGold() * topUp) / 100;
         int price = sPay.getEventpts();
 
         // 档位首充翻倍判断
         String firstDouble = platType + "_" + sPay.getPayId();
-        if (sPay.getBanFlag() == 0) {// 只有金币充值才会有首充翻倍
-            // 平台类型_payId
+        if (sPay.getBanFlag() == 0) {
+            // 只有金币充值才会有首充翻倍, 平台类型_payId
             if (!player.firstPayDouble.contains(firstDouble)) {
-                extraGold += topup;
+                extraGold += topUp;
                 LogUtil.debug("roleId:", player.roleId, ", 享受了首充翻倍,", firstDouble);
+            } else {
+                extraGold += sPay.getExtraGold2();
+                LogUtil.debug("roleId:", player.roleId, ", 享受了额外玉璧赠送, ", sPay.getPayId());
             }
         }
-        if (addPayGold(player, topup, extraGold, pay.getSerialId(), price, AwardFrom.PAY)) {
+
+        if (addPayGold(player, topUp, extraGold, pay.getSerialId(), price, AwardFrom.PAY)) {
             // vip处理
             vipProcess(player, sPay);
             int maillMoldId = MailConstant.MOLD_PAY_DONE;
@@ -1145,19 +1181,19 @@ public class PayService {
             }
             // 发邮件
             mailDataManager.sendNormalMail(player, maillMoldId, TimeHelper.getCurrentSecond(),
-                    String.valueOf(topup + extraGold), String.valueOf(topup + extraGold));
+                    String.valueOf(topUp + extraGold), String.valueOf(topUp + extraGold));
 
             // 充值成功的同步数据
-            syncPaybackSuc(player, pay.getSerialId(), pay.getAmount(), sPay.getBanFlag(), topup + extraGold,
+            syncPaybackSuc(player, pay.getSerialId(), pay.getAmount(), sPay.getBanFlag(), topUp + extraGold,
                     sPay.getPayId());
 
-            activityDataManager.updActivity(player, ActivityConst.ACT_MONOPOLY, topup, 0, true);// 大富翁进度更新
+            activityDataManager.updActivity(player, ActivityConst.ACT_MONOPOLY, topUp, 0, true);// 大富翁进度更新
 
             //貂蝉任务-充值钻石
-            ActivityDiaoChanService.completeTask(player, ETask.RECHARGE_DIAMOND, topup);
-            TaskService.processTask(player, ETask.RECHARGE_DIAMOND, topup);
+            ActivityDiaoChanService.completeTask(player, ETask.RECHARGE_DIAMOND, topUp);
+            TaskService.processTask(player, ETask.RECHARGE_DIAMOND, topUp);
 
-            return payBackReturn(player, pay, sPay, topup + extraGold);
+            return payBackReturn(player, pay, sPay, topUp + extraGold);
         }
         return null;
     }

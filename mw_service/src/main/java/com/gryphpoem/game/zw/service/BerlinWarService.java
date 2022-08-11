@@ -126,6 +126,9 @@ public class BerlinWarService {
     @Autowired
     private HelpShengYuService helpShengYuService;
 
+    @Autowired
+    private TaskDataManager taskDataManager;
+
     /**
      * 获取柏林会战信息
      *
@@ -762,7 +765,8 @@ public class BerlinWarService {
         TaskService.handleTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.BERLIN.getCategory());
         ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.BERLIN.getCategory());
         TaskService.processTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.BERLIN.getCategory());
-
+        Optional.ofNullable(StaticWorldDataMgr.getCityByPos(cityInfo.getPos()))
+                .ifPresent(staticCity -> taskDataManager.updTask(player, TaskType.COND_521, 1, staticCity.getType()));
         return builder.build();
     }
 
@@ -1660,14 +1664,13 @@ public class BerlinWarService {
             // 记录战况
             berlinWar.getReports().addFirst(report.build());
 
-            int decorated = 0;
+            Hero hero = null;
             if (defPlayer.heros.containsKey(def.id)) {
-                Hero hero = defPlayer.heros.get(def.id);
-                decorated = hero.getDecorated();
+                hero = defPlayer.heros.get(def.id);
             }
 
             // 立即出击战报
-            reportRs.add(PbHelper.createBerlinBasicReport(atkSuccess, attacker, defender, defLord, def.id, decorated));
+            reportRs.add(PbHelper.createBerlinBasicReport(atkSuccess, attacker, defender, defLord, def.id, hero));
 
             // 战斗日志
             String sb = "立即战斗日志, " + berlinWarLog(atkLord.getLordId(), attacker, true) + ", " +
@@ -1699,13 +1702,12 @@ public class BerlinWarService {
         }
 
         if (!reportRs.isEmpty()) {
-            int decorated = 0;
+            Hero hero = null;
             if (atkPlayer.heros.containsKey(atk.id)) {
-                Hero hero = atkPlayer.heros.get(atk.id);
-                decorated = hero.getDecorated();
+                hero = atkPlayer.heros.get(atk.id);
             }
             // 同步立即出击战报
-            syncBasicReport(berlinInfo, now, builder, atk, atkLord, reportRs, decorated);
+            syncBasicReport(berlinInfo, now, builder, atk, atkLord, reportRs, hero);
         }
 
     }
@@ -1719,11 +1721,11 @@ public class BerlinWarService {
      * @param atk        进攻军队
      * @param atkLord    进攻Lord
      * @param reportRs   战报
-     * @param decorated  授勋
+     * @param hero  授勋
      * @throws MwException 自定义异常
      */
     private void syncBasicReport(BerlinCityInfo berlinInfo, int now, SyncBasicReportRs.Builder builder, BerlinForce atk,
-                                 Lord atkLord, List<CommonPb.BerlinBasicReport> reportRs, int decorated) throws MwException {
+                                 Lord atkLord, List<CommonPb.BerlinBasicReport> reportRs, Hero hero) throws MwException {
         builder.setHeroId(atk.id);
         BerlinForce force = berlinInfo.getRoleQueue().stream().filter(Force::alive)
                 .filter(f -> f.ownerId == atkLord.getLordId() && f.id == atk.id).findFirst().orElse(null);
@@ -1738,7 +1740,9 @@ public class BerlinWarService {
         builder.setCamp(atkLord.getCamp());
         builder.setRoleId(atkLord.getLordId());
         builder.addAllReports(reportRs);
-        builder.setDecorated(decorated);
+        builder.setDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        if (Objects.nonNull(hero))
+            builder.setGradeKeyId(hero.getGradeKeyId());
         Player player = playerDataManager.checkPlayerIsExist(atkLord.getLordId());
 
         // 同步立即出击战报
@@ -2297,20 +2301,17 @@ public class BerlinWarService {
             // 军工计算 军工 = (损兵数 / 损兵基数) * 获得军功基数
             int award = (fighter.lost / WorldConstant.BERLIN_LOST_EXPLOIT_NUM.get(0))
                     * WorldConstant.BERLIN_LOST_EXPLOIT_NUM.get(1);
-            int heroDecorated = 0;
+            Hero hero = null;
             if (!CheckNull.isNull(player)) {
                 BerlinRecord record = BerlinWar.getInstance().getBerlinRecord(roleId);
                 award = warService.addExploit(player, award, null, AwardFrom.BERLIN_WAR_ATTACK); // 加军工
                 if (award > 0) { // 记录军工
                     record.addExploit(award);
                 }
-                Hero hero = player.heros.get(force.id);
-                if (Objects.nonNull(hero)) {
-                    heroDecorated = hero.getDecorated();
-                }
+                hero = player.heros.get(force.id);
             }
             String owner = playerDataManager.getNickByLordId(force.ownerId);
-            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force.id, owner, 0, 0, force.lost, heroDecorated);
+            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force.id, owner, 0, 0, force.lost, hero);
             if (isAttacker) {
                 rpt.addAtkHero(rptHero);
             } else {

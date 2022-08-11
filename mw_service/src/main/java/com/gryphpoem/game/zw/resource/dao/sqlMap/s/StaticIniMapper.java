@@ -212,7 +212,7 @@ public interface StaticIniMapper {
     @Select("select * from s_treasure_level")
     @Results({
             @Result(column = "consume", property = "consume", typeHandler = ListListTypeHandler.class),
-            @Result(column = "attr", property = "attr", typeHandler = ListListTypeHandler.class),
+            @Result(column = "attr", property = "attr", typeHandler = MapIntTypeHandler.class),
             @Result(column = "resolve", property = "resolve", typeHandler = ListListTypeHandler.class)
     })
     List<StaticTreasureWareLevel> selectStaticTreasureWareLevel();
@@ -283,4 +283,25 @@ public interface StaticIniMapper {
     @MapKey("diff")
     @Select("select * from s_pvp_battle")
     Map<Integer, StaticBattlePvp> selectStaticBattlePvpMap();
+
+    @MapKey("id")
+    @Results({
+            @Result(column = "serverIdList", property = "serverIdList", typeHandler = ListListTypeHandler.class)
+    })
+    @Select("select * from s_hero_search_plan")
+    Map<Integer, StaticDrawHeoPlan> selectStaticDrawHeoPlanMap();
+
+    @Results({
+            @Result(column = "weight", property = "weight", typeHandler = ListListTypeHandler.class),
+            @Result(column = "serverId", property = "serverIdList", typeHandler = ListListTypeHandler.class)
+    })
+    @Select("select * from s_hero_search_weight")
+    List<StaticDrawCardWeight> selectStaticDrawCardWeightList();
+
+    @Select("select * from s_act_treasure_ware_journey")
+    @Results({
+            @Result(column = "awardList",property = "awardList",typeHandler = ListListTypeHandler.class),
+            @Result(column = "param",property = "params",typeHandler = ListIntTypeHandler.class)
+    })
+    List<StaticActTreasureWareJourney> selectStaticActTreasureWareJourney();
 }

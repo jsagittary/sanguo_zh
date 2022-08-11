@@ -3,35 +3,39 @@ package com.gryphpoem.game.zw.resource.pojo.treasureware;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
+import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
+import com.gryphpoem.game.zw.resource.util.pb.TreasureWarePbUtil;
 import org.springframework.util.ObjectUtils;
-import java.util.List;
-import java.util.Objects;
+
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare> {
-    /** 专属属性配置表id*/
+    /** 专属属性配置表id */
     private Integer specialId;
-    /** 品质*/
+    /** 品质 */
     private int quality;
-    /** 等级*/
+    /** 等级 */
     private int level;
-    /** 获取时间*/
+    /** 获取时间 */
     private int getTime;
-    /** 级别(最高，高，中。。。)*/
+    /** 级别(最高，高，中。。。) */
     private int rank;
-    /** 基本属性百分比*/
-    private int attrPercentage;
-    /** 宝具获取状态*/
+    /** 宝具获取状态 */
     private int status;
-    /** 宝具分解时间*/
+    /** 宝具分解时间 */
     private int decomposeTime;
-    /** 宝具名id*/
+    /** 宝具名id */
     private int profileId;
-
+    /** KEY: 属性栏目位置 */
+    private final Map<Integer, TreasureWareAttrItem> attrs = new TreeMap<>();
     private List<Turple<Integer, Integer>> specialAttr;
+
+    //临时洗练属性
+    private TreasureWareAttrItem trainAttr;
 
     public Integer getSpecialId() {
         return specialId;
@@ -81,14 +85,6 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
         this.rank = rank;
     }
 
-    public int getAttrPercentage() {
-        return attrPercentage;
-    }
-
-    public void setAttrPercentage(int attrPercentage) {
-        this.attrPercentage = attrPercentage;
-    }
-
     public int getStatus() {
         return status;
     }
@@ -113,6 +109,18 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
         this.profileId = profileId;
     }
 
+    public Map<Integer, TreasureWareAttrItem> getAttrs() {
+        return attrs;
+    }
+
+    public TreasureWareAttrItem getTrainAttr() {
+        return trainAttr;
+    }
+
+    public void setTrainAttr(TreasureWareAttrItem trainAttr) {
+        this.trainAttr = trainAttr;
+    }
+
     public TreasureWare() {
         super();
         this.specialAttr = new CopyOnWriteArrayList<>();
@@ -122,9 +130,11 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
         this();
         setKeyId(treasureWare.getKeyId());
         setEquipId(treasureWare.getTreasureWareId());
-        for (CommonPb.TwoInt twoInt : treasureWare.getAttrList()) {
-            super.getAttrAndLv().add(new Turple<>(twoInt.getV1(), twoInt.getV2()));
-        }
+        //基础属性
+        treasureWare.getAttrList().forEach(attrItem -> {
+            attrs.put(attrItem.getAttr().getIndex(), new TreasureWareAttrItem(attrItem));
+        });
+
         if (treasureWare.hasHeroId()) {
             setHeroId(treasureWare.getHeroId());
         }
@@ -144,9 +154,6 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
                 specialAttr.add(new Turple<>(twoInt.getV1(), twoInt.getV2()));
             }
         }
-        if (treasureWare.hasAttrPercentage()) {
-            setAttrPercentage(treasureWare.getAttrPercentage());
-        }
         if (treasureWare.hasStatus()) {
             setStatus(treasureWare.getStatus());
         }
@@ -159,16 +166,20 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
         if (treasureWare.hasDecomposeTime()) {
             setDecomposeTime(treasureWare.getDecomposeTime());
         }
+
+        if (treasureWare.hasTrainAttr()) {
+            setTrainAttr(new TreasureWareAttrItem(treasureWare.getTrainAttr()));
+        }
+        if (treasureWare.hasProfileId()) {
+            setProfileId(treasureWare.getProfileId());
+        }
     }
 
     @Override
     public CommonPb.TreasureWare createPb(boolean isSaveDb) {
         CommonPb.TreasureWare.Builder builder = CommonPb.TreasureWare.newBuilder();
         //基本属性
-        for (int i = 0; i < this.getAttrAndLv().size(); i++) {
-            Turple<Integer, Integer> attrLv = this.getAttrAndLv().get(i);
-            builder.addAttr(PbHelper.createTwoIntPb(attrLv.getA(), attrLv.getB()));
-        }
+        attrs.forEach((k, v) -> builder.addAttr(TreasureWarePbUtil.createTreasureWareAttrItemPb(v)));
 
         //专属属性
         if (!ObjectUtils.isEmpty(this.getSpecialAttr())) {
@@ -176,6 +187,11 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
                 Turple<Integer, Integer> attrArr = this.getSpecialAttr().get(i);
                 builder.addAttrSpecial(PbHelper.createTwoIntPb(attrArr.getA(), attrArr.getB()));
             }
+        }
+
+        //洗练临时属性
+        if (Objects.nonNull(trainAttr)) {
+            builder.setTrainAttr(TreasureWarePbUtil.createTreasureWareAttrItemPb(trainAttr));
         }
 
         builder.setKeyId(this.getKeyId());
@@ -186,11 +202,11 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
         builder.setTreasureWareLocked(this.getEquipLocked());
         builder.setGetTime(this.getGetTime());
         builder.setRank(this.getRank());
+        builder.setProfileId(this.getProfileId());
         if (Objects.nonNull(specialId))
             builder.setSpecialId(this.getSpecialId());
 
         if (isSaveDb) {
-            builder.setAttrPercentage(this.getAttrPercentage());
             builder.setStatus(this.getStatus());
             builder.setDecomposeTime(this.getDecomposeTime());
         }
@@ -206,6 +222,41 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
         return builder.build();
     }
 
+    public String logAttrs() {
+        if (CheckNull.isEmpty(attrs))
+            return "";
+
+        StringBuilder sb = new StringBuilder();
+        attrs.values().forEach(attrItem -> {
+            if (CheckNull.isNull(attrItem)) return;
+            sb.append(attrItem.logAttr());
+        });
+        return sb.toString();
+    }
+
+    /**
+     * 获取属性相同条数
+     *
+     * @param attrId
+     * @param cnt
+     * @return
+     */
+    public boolean getSameAttrCnt(int attrId, int cnt, int quality) {
+        if (CheckNull.isEmpty(attrs) || this.quality != quality)
+            return false;
+
+        Map<Integer, Integer> cntMap = new HashMap<>(attrs.size());
+        attrs.values().forEach(attr -> {
+            cntMap.merge(attr.getAttrId(), 1, Integer::sum);
+        });
+
+        if (attrId == 0) {
+            return Objects.nonNull(cntMap.values().stream().filter(count -> count >= cnt).findFirst().orElse(null));
+        } else {
+            return cntMap.getOrDefault(attrId, 0) >= cnt;
+        }
+    }
+
     @Override
     public String toString() {
         return "TreasureWare{" +
@@ -214,7 +265,6 @@ public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare>
                 ", level=" + level +
                 ", getTime=" + getTime +
                 ", rank=" + rank +
-                ", attrPercentage=" + attrPercentage +
                 ", status=" + status +
                 ", decomposeTime=" + decomposeTime +
                 ", profileId=" + profileId +

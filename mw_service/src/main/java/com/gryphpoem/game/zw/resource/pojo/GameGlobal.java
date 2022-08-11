@@ -59,7 +59,7 @@ public class GameGlobal {
     private Map<Integer, Battle> battleMap = new ConcurrentHashMap<>();
     private Map<Integer, Battle> specialBattleMap = new ConcurrentHashMap<>();
     private Map<Integer, Integer> sendChatCnt = new ConcurrentHashMap<>();
-    private WorldTask worldTask; // 世界任务
+    private volatile WorldTask worldTask; // 世界任务
     private Trophy trophy;// 全服成就
     private Map<Integer, CabinetLead> cabinetLeadMap = new ConcurrentHashMap<>();// 点兵统领
     private Map<Integer, Gestapo> gestapoMap = new ConcurrentHashMap<>();// 盖世太保
@@ -106,6 +106,7 @@ public class GameGlobal {
     public static boolean needInitMineData = false;
     //开启或关闭战报处理
     public static boolean closeExpiredReport = false;
+    public Set<Integer> removedActData = new HashSet<>();
     //开启或关闭数数上报打印
     public static boolean openEventDebug = false;
 
@@ -208,6 +209,8 @@ public class GameGlobal {
     }
 
     public WorldTask getWorldTask() {
+        if (CheckNull.isNull(worldTask))
+            worldTask = new WorldTask(StaticWorldDataMgr.getWorldTask(2));
         return worldTask;
     }
 
@@ -475,6 +478,9 @@ public class GameGlobal {
         if(Objects.nonNull(globalSeasonData)){
             ser.setSerSeasonGlobalData(globalSeasonData.ser());
         }
+        if (CheckNull.nonEmpty(removedActData)) {
+            ser.addAllRemovedActData(this.removedActData);
+        }
         return ser.build().toByteArray();
     }
 
@@ -713,6 +719,9 @@ public class GameGlobal {
         }
         if(ser.hasSerSeasonGlobalData()){
             globalSeasonData.deser(ser.getSerSeasonGlobalData());
+        }
+        if (CheckNull.nonEmpty(ser.getRemovedActDataList())) {
+            removedActData.addAll(ser.getRemovedActDataList());
         }
     }
 

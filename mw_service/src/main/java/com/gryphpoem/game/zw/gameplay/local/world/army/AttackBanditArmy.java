@@ -24,6 +24,7 @@ import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
@@ -33,10 +34,7 @@ import com.gryphpoem.game.zw.service.WorldService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author QiuKun
@@ -162,10 +160,7 @@ public class AttackBanditArmy extends BaseArmy {
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, 0, null, -1, -1));
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(armyPlayer, attacker.forces));
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        worldService.buildRptHeroData(defender, rpt, false);
         rpt.setRecord(record);
         // 战斗结果处理
         fightResultLogic(now, armyPlayer, cMap, targetPos, staticBandit, attacker, recoverArmyAward, isSuccess, rpt);
@@ -294,7 +289,7 @@ public class AttackBanditArmy extends BaseArmy {
             // 流寇上限++
             armyPlayer.setBanditCnt(armyPlayer.getBanditCnt() + 1);
             // 任务
-            taskDataManager.updTask(armyPlayer.roleId, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
+            taskDataManager.updTask(armyPlayer, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
             // 荣耀日报 打匪军成功更新
             honorDailyService.addAndCheckHonorReport2s(armyPlayer, HonorDailyConstant.COND_ID_3);
             // 世界争霸攻打匪军完成记录

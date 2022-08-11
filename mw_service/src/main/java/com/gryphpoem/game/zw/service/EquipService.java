@@ -22,6 +22,7 @@ import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -39,7 +40,7 @@ import java.util.Map.Entry;
  * @date 创建时间：2017年3月27日 下午8:31:45
  */
 @Service
-public class EquipService {
+public class EquipService implements GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -156,8 +157,9 @@ public class EquipService {
         // 返回协议
         GamePb1.EquipForgeRs.Builder builder = GamePb1.EquipForgeRs.newBuilder();
         builder.setQue(PbHelper.createEquipQuePb(equipQue));
-        taskDataManager.updTask(player.roleId, TaskType.COND_29, 1, equipId);
+        taskDataManager.updTask(player, TaskType.COND_29, 1, equipId);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_HERO_EQUIPID_QUALITY, 1, staticEquip.getQuality());
+        taskDataManager.updTask(player,TaskType.COND_994,1,staticEquip.getQuality());
         return builder.build();
     }
 
@@ -385,6 +387,13 @@ public class EquipService {
                     staticEquip.getEquipPart());
             // 这里的schedule不传部位了
             taskDataManager.updTask(player, TaskType.COND_HERO_EQUIPID, 1, staticEquip.getEquipId());
+            taskDataManager.updTask(player, TaskType.COND_501, 1, pos);
+            taskDataManager.updTask(player, TaskType.COND_32, 1, pos);
+            taskDataManager.updTask(player, TaskType.COND_519, 1, pos);
+            taskDataManager.updTask(player, TaskType.COND_502, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
+            taskDataManager.updTask(player, TaskType.COND_503, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
+            taskDataManager.updTask(player, TaskType.COND_504, 1, staticEquip.getQuality());
+            taskDataManager.updTask(player, TaskType.COND_505, 1, staticEquip.getQuality());
         }
     }
 
@@ -480,9 +489,10 @@ public class EquipService {
                 && now >= player.common.getBaptizeTime() + Constant.EQUIP_BAPTIZECNT_TIME) {
             int cnt = (now - player.common.getBaptizeTime()) / Constant.EQUIP_BAPTIZECNT_TIME;
             int baptizeCnt = Math.min(Constant.EQUIP_MAX_BAPTIZECNT, player.common.getBaptizeCnt() + cnt);
-            LogLordHelper.commonLog("addBaptizeCnt", AwardFrom.BAPTIZE_CNT, player, baptizeCnt - player.common.getBaptizeCnt(), player.common.getBaptizeCnt());
+            int count = baptizeCnt - player.common.getBaptizeCnt();
             player.common.setBaptizeCnt(baptizeCnt);
             player.common.setBaptizeTime(player.common.getBaptizeTime() + (cnt * Constant.EQUIP_BAPTIZECNT_TIME));
+            LogLordHelper.equipBaptizeNew(AwardFrom.EQUIP_BAPTIZE_RESET, player, count, Constant.ACTION_ADD, "addBaptizeCnt");
         }
         if (player.common != null && player.common.getBaptizeCnt() >= Constant.EQUIP_MAX_BAPTIZECNT) {
             player.common.setBaptizeTime(now);
@@ -679,7 +689,7 @@ public class EquipService {
                                 ", keyId:", keyId);
                     }
                     player.common.setBaptizeCnt(player.common.getBaptizeCnt() - 1);
-                    LogLordHelper.commonLog("subBaptizeCnt", AwardFrom.BAPTIZE_CNT, player, 1, player.common.getBaptizeCnt());
+                    LogLordHelper.equipBaptizeNew(AwardFrom.BAPTIZE_CNT, player, 1, Constant.ACTION_SUB, "subBaptizeCnt");
                     // 免费改造次数减为0
                     if (player.common.getBaptizeCnt() == 0) {
                         activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_EQUIP_BAPTIZE, player);
@@ -716,12 +726,14 @@ public class EquipService {
                     minLv.setB(minLv.getB() + 1);
                     // 保底清零
                     equip.setNotUpLvCnt(0);
+                    EventDataUp.equipAdvanced(player, equip);
                 } else {
                     boolean isUpLv = RandomHelper.isHitRangeIn10000(probability);
                     if (isUpLv) {
                         minLv.setB(minLv.getB() + 1);
                         // 保底清零
                         equip.setNotUpLvCnt(0);
+                        EventDataUp.equipAdvanced(player, equip);
                     } else {
                         equip.setNotUpLvCnt(equip.getNotUpLvCnt() + 1);
                     }
@@ -767,6 +779,8 @@ public class EquipService {
             }
         }
         taskDataManager.updTask(player, TaskType.COND_EQUIP_BAPTIZE, 1);
+        taskDataManager.updTask(player, TaskType.COND_502, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
+        taskDataManager.updTask(player, TaskType.COND_503, 1, equip.getAttrAndLv().stream().mapToInt(Turple::getB).max().orElse(0));
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_EQUIP_BAPTIZE, 1);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_EQUIP_BAPTIZE, 1);
         return builder.build();
@@ -1165,7 +1179,6 @@ public class EquipService {
         }
 
         rewardDataManager.checkAndSubPlayerRes(player, staticSuperEquip.getMaterial(), AwardFrom.SUPER_EQUIP_CREATE);
-
         // 向客户端同步玩家资源数据
         rewardDataManager.syncRoleResChanged(player, change);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_EQUIP_BUILD);
@@ -1177,6 +1190,7 @@ public class EquipService {
         SuperEquipForgeRs.Builder builder = SuperEquipForgeRs.newBuilder();
         builder.setQue(que);
         builder.setResource(PbHelper.createCombatPb(player.resource));
+        taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
         return builder.build();
     }
 
@@ -1255,6 +1269,12 @@ public class EquipService {
         builder.setEquip(PbHelper.createSuperEquipPb(superEquip));
         builder.setResource(PbHelper.createResourcePb(player.resource));
         // taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, superEquip.getLv(), type);
+        taskDataManager.updTask(player, TaskType.COND_SUPER_EQUIP, 1, type);
+
+        LogUtil.getLogThread().addCommand(() -> {
+            LogLordHelper.gameLog(LogParamConstant.UPGRADE_SUPER_EQUIP, player,
+                    AwardFrom.SUPER_EQUIP_LV, type, superEquip.getLv());
+        });
 
         return builder.build();
     }
@@ -1802,6 +1822,30 @@ public class EquipService {
             if (equip.getEquipLocked() == 2) {
                 throw new MwException(GameError.EQUIP_LOCKED.getCode(), "当前装备已上锁, roleId:", player.roleId, ", keyId:", equip.getKeyId());
             }
+        }
+    }
+
+    @GmCmd("equipGm")
+    @Override
+    public void handleGmCmd(Player player, String... params) throws Exception {
+        String cmd = params[0];
+        if ("upSuperEq".equalsIgnoreCase(cmd)) {
+            Integer type = Integer.parseInt(params[1]);
+            Integer lv = Integer.parseInt(params[2]);
+            StaticSuperEquipLv staticData = StaticPropDataMgr.getSuperEquipLv(type, lv);
+            if (CheckNull.isNull(staticData)) {
+                LogUtil.error(String.format("type:%d, lv:%d is bigger than max level", type, lv));
+                return;
+            }
+            SuperEquip superEquip = player.supEquips.get(type);
+            if (CheckNull.isNull(superEquip)) {
+                LogUtil.error(String.format("not found this super equip, type:%d", type));
+                return;
+            }
+            int preLv = superEquip.getLv();
+            superEquip.setLv(lv);
+            if (preLv != lv)
+                CalculateUtil.reCalcAllHeroAttr(player);
         }
     }
 }

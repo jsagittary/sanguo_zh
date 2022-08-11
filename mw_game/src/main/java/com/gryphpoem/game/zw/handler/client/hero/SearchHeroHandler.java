@@ -16,13 +16,13 @@ public class SearchHeroHandler extends ClientHandler {
 
 	@Override
 	public void action() throws MwException {
-		SearchHeroRq req = msg.getExtension(SearchHeroRq.ext);
-		HeroService heroService = getService(HeroService.class);
-		SearchHeroRs resp = heroService.searchHero(getRoleId(), req);
-
-		if (null != resp) {
-			sendMsgToPlayer(SearchHeroRs.ext, resp);
-		}
+//		SearchHeroRq req = msg.getExtension(SearchHeroRq.ext);
+//		HeroService heroService = getService(HeroService.class);
+//		SearchHeroRs resp = heroService.searchHero(getRoleId(), req);
+//
+//		if (null != resp) {
+//			sendMsgToPlayer(SearchHeroRs.ext, resp);
+//		}
 	}
 
 }

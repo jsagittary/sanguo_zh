@@ -32,10 +32,7 @@ import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.totem.Totem;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
-import com.gryphpoem.game.zw.service.TaskService;
-import com.gryphpoem.game.zw.service.TitleService;
-import com.gryphpoem.game.zw.service.TreasureWareService;
-import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.util.ObjectUtils;
@@ -530,6 +527,7 @@ public class CalculateUtil {
                 hero.getExtAttrs().put(attr, attrVal);
             }
         }
+        DataResource.ac.getBean(TaskDataManager.class).updTask(player, TaskType.COND_516,1, hero.getShowFight().values().stream().mapToInt(Integer::intValue).sum());
         return attrMap;
     }
 
@@ -610,11 +608,12 @@ public class CalculateUtil {
         Map<Integer, Integer> attrMutMap = new HashMap<>();// 万分比属性
         // 基础属性
         tempMap.put(HeroConstant.ATTR_ATTACK, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.ATTACK,
-                hero.getWash()[HeroConstant.ATTR_ATTACK], hero.getLevel()));
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.ATTACK), hero.getLevel()));
         tempMap.put(HeroConstant.ATTR_DEFEND, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.DEFEND,
-                hero.getWash()[HeroConstant.ATTR_DEFEND], hero.getLevel()));
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.DEFEND), hero.getLevel()));
         tempMap.put(HeroConstant.ATTR_LEAD, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.LEAD,
-                hero.getWash()[HeroConstant.ATTR_LEAD], hero.getLevel()));
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.LEAD), hero.getLevel()));
+
 
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "base tempMap=" + tempMap);
 
@@ -1649,26 +1648,34 @@ public class CalculateUtil {
      */
     private static void addAwakenEffect(StaticHero sHero, Hero hero, Map<Integer, Integer> attrMap) {
         if (hero.getDecorated() > 0) {
-            AwakenData awaken = hero.getAwaken();
+            Map<Integer, AwakenData> awakenMap = hero.getAwaken();
             // 激活了
-            if (awaken.isActivate()) {
-                for (Entry<Integer, Integer> en : sHero.getActivateAttr().entrySet()) {
-                    addAttrValue(attrMap, en.getKey(), en.getValue());
-                }
-                List<StaticHeroEvolve> heroEvolve = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup());
-                if (!CheckNull.isEmpty(heroEvolve) && !CheckNull.isEmpty(awaken.getEvolutionGene())) {
-                    // 目前进化到哪个部位
-                    int lastPart = awaken.lastPart();
-                    if (lastPart == 0) {
+            if (CheckNull.nonEmpty(awakenMap)) {
+                awakenMap.values().forEach(awakenData -> {
+                    if (CheckNull.isNull(awakenData))
                         return;
-                    }
-                    // 哪些部位
-                    heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart).forEach(she -> {
-                        for (Entry<Integer, Integer> en : she.getAttr().entrySet()) {
+                    if (awakenData.isActivate()) {
+                        if (CheckNull.isEmpty(sHero.getEvolveGroup()) || awakenData.getIndex() > sHero.getEvolveGroup().size())
+                            return;
+                        for (Entry<Integer, Integer> en : sHero.getActivateAttr().entrySet()) {
                             addAttrValue(attrMap, en.getKey(), en.getValue());
                         }
-                    });
-                }
+                        List<StaticHeroEvolve> heroEvolve = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(awakenData.getIndex() - 1));
+                        if (!CheckNull.isEmpty(heroEvolve) && !CheckNull.isEmpty(awakenData.getEvolutionGene())) {
+                            // 目前进化到哪个部位
+                            int lastPart = awakenData.lastPart();
+                            if (lastPart == 0) {
+                                return;
+                            }
+                            // 哪些部位
+                            heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart).forEach(she -> {
+                                for (Entry<Integer, Integer> en : she.getAttr().entrySet()) {
+                                    addAttrValue(attrMap, en.getKey(), en.getValue());
+                                }
+                            });
+                        }
+                    }
+                });
             }
         }
     }

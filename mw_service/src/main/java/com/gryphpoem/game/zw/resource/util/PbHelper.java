@@ -68,7 +68,6 @@ import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySuperSupply;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySupply;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
-import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.Area;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinRoleInfo;
@@ -342,6 +341,19 @@ public class PbHelper {
         return builder.build();
     }
 
+    public static CommonPb.Task createTaskPb(Task task,Object...objs) {
+        CommonPb.Task.Builder builder = CommonPb.Task.newBuilder();
+        builder.setTaskId(task.getTaskId());
+        builder.setSchedule(task.getSchedule());
+        // builder.setAccept(task.getAccept());
+        builder.setStatus(task.getStatus());
+        if (objs.length > 0 && objs[0] instanceof Integer) {
+            int taskType = Integer.parseInt(String.valueOf(objs[0]));
+            builder.setTaskType(taskType);
+        }
+        return builder.build();
+    }
+
     public static CommonPb.Task buildTask(int taskId, long progress, int state) {
         CommonPb.Task.Builder builder = CommonPb.Task.newBuilder();
         builder.setTaskId(taskId);
@@ -475,12 +487,12 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue() + addAttrValue));
         }
         int value;
-        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-            value = hero.getWash()[i];
-            if (value > 0) {
-                builder.addWash(createTwoIntPb(i, value));
-            }
-        }
+//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
+//            value = hero.getWash()[i];
+//            if (value > 0) {
+//                builder.addWash(createTwoIntPb(i, value));
+//            }
+//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -522,18 +534,25 @@ public class PbHelper {
             }
         }
         builder.setComandoPos(hero.getCommandoPos());
-        AwakenData awaken = hero.getAwaken();
-        if (!CheckNull.isNull(awaken)) {
+        Map<Integer, AwakenData> awakenMap = hero.getAwaken();
+        if (!CheckNull.isEmpty(awakenMap)) {
             CommonPb.AwakenData.Builder data = CommonPb.AwakenData.newBuilder();
-            data.setStatus(awaken.getStatus());
-            Map<Integer, Integer> evolutionGene = awaken.getEvolutionGene();
-            if (!CheckNull.isEmpty(evolutionGene)) {
-                for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
-                    data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+            awakenMap.values().forEach(awakenData -> {
+                if (CheckNull.isNull(awakenData))
+                    return;
+                data.setStatus(awakenData.getStatus());
+                Map<Integer, Integer> evolutionGene = awakenData.getEvolutionGene();
+                if (!CheckNull.isEmpty(evolutionGene)) {
+                    for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
+                        data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
                 }
-            }
-            builder.setAwakendata(data);
+                data.setIndex(awakenData.getIndex());
+                builder.addAwakendata(data.build());
+                data.clear();
+            });
         }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
@@ -550,6 +569,8 @@ public class PbHelper {
         if (Objects.nonNull(hero.getTreasureWare())) {
             builder.setTreasureWare(hero.getTreasureWare());
         }
+        builder.setGrade(hero.getGradeKeyId());
+        builder.setShowClient(hero.isShowClient());
         return builder.build();
     }
 
@@ -565,12 +586,12 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         int value;
-        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-            value = hero.getWash()[i];
-            if (value > 0) {
-                builder.addWash(createTwoIntPb(i, value));
-            }
-        }
+//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
+//            value = hero.getWash()[i];
+//            if (value > 0) {
+//                builder.addWash(createTwoIntPb(i, value));
+//            }
+//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -612,18 +633,25 @@ public class PbHelper {
             }
         }
         builder.setComandoPos(hero.getCommandoPos());
-        AwakenData awaken = hero.getAwaken();
-        if (!CheckNull.isNull(awaken)) {
+        Map<Integer, AwakenData> awakenMap = hero.getAwaken();
+        if (!CheckNull.isEmpty(awakenMap)) {
             CommonPb.AwakenData.Builder data = CommonPb.AwakenData.newBuilder();
-            data.setStatus(awaken.getStatus());
-            Map<Integer, Integer> evolutionGene = awaken.getEvolutionGene();
-            if (!CheckNull.isEmpty(evolutionGene)) {
-                for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
-                    data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+            awakenMap.values().forEach(awakenData -> {
+                if (CheckNull.isNull(awakenData))
+                    return;
+                data.setStatus(awakenData.getStatus());
+                Map<Integer, Integer> evolutionGene = awakenData.getEvolutionGene();
+                if (!CheckNull.isEmpty(evolutionGene)) {
+                    for (Entry<Integer, Integer> en : evolutionGene.entrySet()) {
+                        data.addEvolutionGene(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
                 }
-            }
-            builder.setAwakendata(data);
+                data.setIndex(awakenData.getIndex());
+                builder.addAwakendata(data.build());
+                data.clear();
+            });
         }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
@@ -640,6 +668,8 @@ public class PbHelper {
         if (Objects.nonNull(hero.getTreasureWare())) {
             builder.setTreasureWare(hero.getTreasureWare());
         }
+        builder.setGrade(hero.getGradeKeyId());
+        builder.setShowClient(hero.isShowClient());
         return builder.build();
     }
 
@@ -987,6 +1017,7 @@ public class PbHelper {
             Hero h = guard.getPlayer().heros.get(guard.getHeroId());
             if (h != null) {
                 collect.setHeroDecorated(h.getDecorated());
+                collect.setHeroGradeKeyId(h.getGradeKeyId());
             }
         }
         return collect;
@@ -1181,7 +1212,7 @@ public class PbHelper {
     }
 
     public static CommonPb.RptHero createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
-                                                 int addExp, int lost, int heroDecorated) {
+                                                 int addExp, int lost, Hero hero) {
         CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
         builder.setType(type);
         builder.setKill(kill);
@@ -1199,13 +1230,25 @@ public class PbHelper {
         if (addExp > 0) {
             builder.setExp(addExp);
         }
-        builder.setHeroDecorated(heroDecorated);
+        builder.setHeroDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        if (Objects.nonNull(hero)) {
+            builder.setGradeKeyId(hero.getGradeKeyId());
+            if (!ObjectUtils.isEmpty(hero.getAttr())) {
+                builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
+            }
+        }
         return builder.build();
     }
 
-    public static CommonPb.RptHero createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
+    public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,
                                                  int addExp, int lost) {
-        return createRptHero(type, kill, award, heroId, owner, lv, addExp, lost, 0);
+        if (hero instanceof Integer) {
+            Integer heroId = (Integer) hero;
+            return createRptHero(type, kill, award, CheckNull.isNull(heroId) ? 0 : heroId, owner, lv, addExp, lost, null);
+        } else {
+            Hero hero_ = (Hero) hero;
+            return createRptHero(type, kill, award, CheckNull.isNull(hero_) ? 0 : hero_.getHeroId(), owner, lv, addExp, lost, hero_);
+        }
     }
 
     public static CommonPb.Mail saveMailPb(Mail mail, Player player) {
@@ -1313,6 +1356,7 @@ public class PbHelper {
         builder.setHeroId(hero.getHeroId());
         builder.setHeroLv(hero.getLevel());
         builder.setHeroDecorated(hero.getDecorated());
+        builder.setGradeKeyId(hero.getGradeKeyId());
         builder.setExp(exp);
         builder.addAllGrab(grab);
         builder.setEffect(effect);
@@ -1347,6 +1391,7 @@ public class PbHelper {
         builder.setLevel(hero.getLevel());
         builder.setCount(hero.getCount());
         builder.setHeroDecorated(hero.getDecorated());
+        builder.setGradeKeyId(hero.getGradeKeyId());
         builder.setSource(source);
         builder.setState(state);
         List<Integer> warPlanes = hero.getWarPlanes();
@@ -1888,6 +1933,7 @@ public class PbHelper {
             }
         }
         builder.setDecorated(hero.getDecorated());
+        builder.setGradeKeyId(hero.getGradeKeyId());
         return builder.build();
     }
 
@@ -2085,7 +2131,8 @@ public class PbHelper {
                 || activity.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
                 || activity.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW
                 || activity.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR
-                || activity.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE) {
+                || activity.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE
+                || activity.getActivityType() == ActivityConst.ACT_MAGIC_TREASURE_WARE) {
             ActTurnplat actTurnplat = (ActTurnplat) activity;
             builder.setTurnplat(actTurnplat.ser());
         } else if (activity.getActivityType() == ActivityConst.ACT_EQUIP_TURNPLATE) {
@@ -2105,6 +2152,7 @@ public class PbHelper {
             Optional.ofNullable(activity.getActivityAuction()).
                     ifPresent(activityAuction -> builder.setActivityAuction(activityAuction.serialization()));
         }
+        builder.setActKeyId(activity.getActivityKeyId());
         return builder.build();
     }
 
@@ -2171,6 +2219,9 @@ public class PbHelper {
             builder.setExtraGold(staticPay.getExtraGold());
             if (staticPay.getUsd() != 0.0) {
                 builder.setUsd(staticPay.getUsd());
+            }
+            if (staticPay.getExtraGold2() > 0) {
+                builder.setExtraGold2(staticPay.getExtraGold2());
             }
             list.add(builder.build());
         }
@@ -2548,6 +2599,7 @@ public class PbHelper {
         builder.setCanMaxCollectTime(sg.getCanMaxCollectTime());
         builder.setHeroTotalCnt(hero.getAttr()[3]);// 总兵力
         builder.setHeroDecorated(hero.getDecorated());
+        builder.setHeroGradeKeyId(hero.getGradeKeyId());
         return builder.build();
     }
 
@@ -2709,7 +2761,7 @@ public class PbHelper {
     }
 
     public static BerlinBasicReport createBerlinBasicReport(boolean atkSuccess, Fighter attacker, Fighter defender,
-                                                            Lord defLord, int heroId, int decorated) {
+                                                            Lord defLord, int heroId, Hero hero) {
         CommonPb.BerlinBasicReport.Builder basicReport = CommonPb.BerlinBasicReport.newBuilder();
         basicReport.setIsWin(atkSuccess);
         basicReport.setAtkLost(attacker.lost);
@@ -2718,7 +2770,9 @@ public class PbHelper {
         basicReport.setHeroId(heroId);
         basicReport.setCamp(defLord.getCamp());
         basicReport.setNick(defLord.getNick());
-        basicReport.setDecorated(decorated);
+        basicReport.setDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        if (Objects.nonNull(hero))
+            basicReport.setGradeKeyId(hero.getGradeKeyId());
         return basicReport.build();
     }
 
@@ -3200,5 +3254,27 @@ public class PbHelper {
             }
         });
         return map.values();
+    }
+
+    public static CommonPb.ActTask createActTaskPb(ActivityTask task) {
+        CommonPb.ActTask.Builder builder = CommonPb.ActTask.newBuilder();
+        builder.setUid(task.getUid());
+        builder.setProgress(task.getProgress());
+        builder.setFinishCnt(task.getCount());
+        builder.setDrawCnt(task.getDrawCount());
+        builder.setTaskType(task.getTaskId());
+        return builder.build();
+    }
+
+    public static List<List<Integer>> convertTo(List<CommonPb.ExchangeItemConsume> subList) {
+        List<List<Integer>> consumeList = new ArrayList<>(subList.size());
+        for (CommonPb.ExchangeItemConsume tmp : subList) {
+            List<Integer> list = new ArrayList<>(3);
+            list.add(tmp.getType());
+            list.add(tmp.getId());
+            list.add(tmp.getCount());
+            consumeList.add(list);
+        }
+        return consumeList;
     }
 }

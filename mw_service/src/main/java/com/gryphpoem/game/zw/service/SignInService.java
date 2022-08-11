@@ -16,6 +16,7 @@ import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.SiginInfo;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActLogin;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActSign;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
@@ -23,7 +24,6 @@ import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -293,16 +293,30 @@ public class SignInService {
     /**
      * 检查奖励，如果是武将，且已经拥有,返回true
      */
-    private boolean checkHasPet(Player player, SiginInfo siginInfo,Activity activity){
-        if (activity.getActivityType()==ActivityConst.ACT_SIGN_IN_NEW) {
+    private boolean checkHasPet(Player player, SiginInfo siginInfo, Activity activity) {
+        if (activity.getActivityType() == ActivityConst.ACT_SIGN_IN_NEW) {
             StaticActLogin sActLogin = StaticActivityDataMgr.getActLogin(siginInfo.getActivityId(), siginInfo.getTimes() + 1);
             if (sActLogin != null) {
                 List<List<Integer>> signInAward = sActLogin.getAwardList();
-                if (signInAward.get(0).get(0) == AwardType.HERO && player.heros.get(signInAward.get(0).get(1)) != null) {
-                    return true;
-                }
+                if (CheckNull.isEmpty(signInAward) || CheckNull.isEmpty(signInAward.get(0))) return false;
+                if (signInAward.get(0).get(0) != AwardType.HERO) return false;
+                Hero hero = player.heros.get(signInAward.get(0).get(1));
+                if (CheckNull.isNull(hero)) return false;
+                return !hero.isShowClient();
             }
         }
         return false;
+    }
+
+    /**
+     * 领取救援关平后更新玩家数据
+     *
+     * @param player
+     */
+    public void updateSignIn(Player player) {
+        Activity activity = activityDataManager.getActivityInfo(player, ActivityConst.ACT_SIGN_IN_NEW);
+        if (CheckNull.isNull(activity))
+            return;
+        clearInitData(player, activity);
     }
 }

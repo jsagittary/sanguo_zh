@@ -160,7 +160,7 @@ public class AcquisitionService {
         // 流寇任务
         if (sa.getType() == 6) {
             int taskId = req.getTaskId();
-            Task task = player.majorTasks.get(taskId);
+            Task task = player.chapterTask.getOpenTasks().get(taskId);
             if (task == null) {
                 LogUtil.debug("打任务流寇,任务为null taskId:", taskId + " ,roleId:", roleId);
                 return builder.build();
@@ -173,7 +173,7 @@ public class AcquisitionService {
                 LogUtil.debug("打任务流寇,任务配置为null taskId:", taskId + " ,roleId:", roleId);
                 return builder.build();
             }
-            Task preTask = player.majorTasks.get(staticTask.getTriggerId());
+            Task preTask = player.chapterTask.getOpenTasks().get(staticTask.getTriggerId());
             if (task.getStatus() == TaskType.TYPE_STATUS_UNFINISH && (staticTask.getTriggerId() == 0
                     || (preTask != null && preTask.getStatus() > TaskType.TYPE_STATUS_UNFINISH))) {
                 worldService.attackPos4Task(roleId, pos, staticTask.getCondId(), req.getHeroIdList());

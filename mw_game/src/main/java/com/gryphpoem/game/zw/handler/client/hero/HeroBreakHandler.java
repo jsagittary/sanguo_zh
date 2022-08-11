@@ -16,13 +16,13 @@ public class HeroBreakHandler extends ClientHandler {
 
 	@Override
 	public void action() throws MwException {
-		HeroBreakRq req = msg.getExtension(HeroBreakRq.ext);
-		HeroService heroService = getService(HeroService.class);
-		HeroBreakRs resp = heroService.heroBreak(getRoleId(), req);
-
-		if (null != resp) {
-			sendMsgToPlayer(HeroBreakRs.ext, resp);
-		}
+//		HeroBreakRq req = msg.getExtension(HeroBreakRq.ext);
+//		HeroService heroService = getService(HeroService.class);
+//		HeroBreakRs resp = heroService.heroBreak(getRoleId(), req);
+//
+//		if (null != resp) {
+//			sendMsgToPlayer(HeroBreakRs.ext, resp);
+//		}
 	}
 
 }

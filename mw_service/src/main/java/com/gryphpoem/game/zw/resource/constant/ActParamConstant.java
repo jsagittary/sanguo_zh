@@ -1,12 +1,8 @@
 package com.gryphpoem.game.zw.resource.constant;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.resource.util.ActParamTabLoader;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
-import com.gryphpoem.game.zw.service.activity.ActivityQuestionnaireService;
-import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 
@@ -429,6 +425,10 @@ public final class ActParamConstant {
      * [[充值金额]]
      */
     public static List<List<Integer>> ACT_WECHAT_PAY;
+    /**
+     * 神兵宝具广播
+     */
+    public static List<List<Integer>> ACT_MAGIC_PROP_IDS_IN_CHAT;
 
     //////////////圣诞活动常量
     public static int CHRISTMAS_311;
@@ -528,8 +528,25 @@ public final class ActParamConstant {
      * KEY:难度, VALUE:数量
      */
     public static Map<Integer, Integer> MUSIC_CRT_OFFICE_TASK_COUNT_BY_DIFFICULT;
+
+    /**
+     * 宝具转盘打造增加转盘次数
+     */
+    public static List<List<Integer>> ACT_MAGIC_TREASURE_WARE_TURNTABLE_CNT;
+    /**
+     * 宝具打造增加宝具排行分数
+     */
+    public static List<List<Integer>> ACT_MAGIC_TREASURE_WARE_RANK_SCORE;
+    /**
+     * 张飞转盘道具保底规则
+     */
+    public static List<Integer> ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE;
+
     /*-------------------------------load数据-------------------------------------*/
     public static void loadSystem() {
+        ACT_MAGIC_TREASURE_WARE_TURNTABLE_CNT = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_MAGIC_TREASURE_WARE_TURNTABLE_CNT, "[[]]");
+        ACT_MAGIC_TREASURE_WARE_RANK_SCORE = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_MAGIC_TREASURE_WARE_RANK_SCORE, "[[]]");
+
         MUSIC_CRT_OFFICE_PARAMS = ActParamTabLoader.getListIntSystemValue(ActParamId.MUSIC_CRT_OFFICE_PARAMS, "[]");
         MUSIC_CRT_OFFICE_TASK_COUNT_BY_DIFFICULT = ActParamTabLoader.getMapIntSystemValue(ActParamId.MUSIC_CRT_OFFICE_TASK_COUNT_BY_DIFFICULT, "[[]]");
 
@@ -564,6 +581,7 @@ public final class ActParamConstant {
         ACT_BANDIT_ACCE = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_BANDIT_ACCE, "[[]]");
         ACT_CITY_DRAWING = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_CITY_DRAWING, 2);
         ACT_BANDIT_BADGE = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_BANDIT_BADGE, "[[]]");
+        ACT_MAGIC_PROP_IDS_IN_CHAT = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_MAGIC_PROP_IDS_IN_CHAT, "[[]]");
         if (!CheckNull.isEmpty(ACT_BANDIT_BADGE_MAP)) {
             ACT_BANDIT_BADGE_MAP.clear();
         }
@@ -724,6 +742,7 @@ public final class ActParamConstant {
         ACT_GOLDEN_AUTUMN_AWARD_SOWING = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_AWARD_SOWING, 100);
         ACT_GOLDEN_AUTUMN_RANDOM_AWARD_LIBRARY = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_random_AWARD_Library, "[[]]");
         ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_GOLDEN_AUTUMN_SEED_FRUIT_PROPORTION, "[[]]");
+        ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE = ActParamTabLoader.getListIntSystemValue(ActParamId.ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE, "[]");
     }
 
     /*-------------------------------id值-------------------------------------*/
@@ -1212,6 +1231,24 @@ public final class ActParamConstant {
          * 拍卖活动类型最高出价次数
          */
         public static final int ACT_AUCTION_TYPE_HIGHEST_COUNT = 364;
+
+        /**
+         * 宝具转盘打造增加转盘次数
+         */
+        public static final int ACT_MAGIC_TREASURE_WARE_TURNTABLE_CNT = 375;
+        /**
+         * 宝具打造增加宝具排行分数
+         */
+        public static final int ACT_MAGIC_TREASURE_WARE_RANK_SCORE = 376;
+        /**
+         * 神兵宝具广播
+         */
+        public static final int ACT_MAGIC_PROP_IDS_IN_CHAT = 378;
+
+        /**
+         * 张飞转盘道具保底规则
+         */
+        public static int ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE = 379;
     }
 
 }

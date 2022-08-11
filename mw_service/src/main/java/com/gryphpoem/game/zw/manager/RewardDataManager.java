@@ -33,7 +33,6 @@ import com.gryphpoem.game.zw.resource.util.random.RewardRandomUtil;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
-import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.activity.MusicFestivalCreativeService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -116,6 +115,8 @@ public class RewardDataManager {
     private MusicFestivalCreativeService musicFestivalCreativeService;
     @Autowired
     private TitleService titleService;
+    @Autowired
+    private DrawCardService drawCardService;
 
     /**
      * 合并奖励
@@ -508,6 +509,10 @@ public class RewardDataManager {
             case AwardType.TITLE:
                 addTitle(player, id, count, convert, from, param);
                 break;
+            // 添加英雄碎片
+            case AwardType.HERO_FRAGMENT:
+                operationHeroFragment(player, id, count, from, true, false, param);
+                break;
             default:
                 break;
         }
@@ -517,6 +522,71 @@ public class RewardDataManager {
         }
 
         return award.build();
+    }
+
+    /**
+     * 添加系统次数
+     *
+     * @param player
+     * @param id
+     * @param count
+     * @param from
+     * @param operation
+     * @param param
+     */
+    private void operationSystemCount(Player player, int id, int count, AwardFrom from, boolean operation, Object... param) {
+        if (count == 0)
+            return;
+
+        switch (id) {
+            case AwardType.Special.DRAW_PERMANENT_CARD_COUNT:
+                operationDrawPermanentCardCount(player, id, count, from, operation, param);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 添加常驻抽卡次数
+     *
+     * @param player
+     * @param id
+     * @param count
+     * @param from
+     * @param operation
+     * @param param
+     */
+    private void operationDrawPermanentCardCount(Player player, int id, int count, AwardFrom from, boolean operation, Object... param) {
+        if (count == 0)
+            return;
+        count = Math.abs(count);
+        count = operation ? count : -count;
+        player.getDrawCardData().setOtherFreeCount(player.getDrawCardData().getOtherFreeCount() + count);
+    }
+
+    /**
+     * 增加或减少武将碎片
+     *
+     * @param player
+     * @param id
+     * @param count
+     * @param from
+     * @param operation
+     * @param param
+     */
+    private void operationHeroFragment(Player player, int id, int count, AwardFrom from, boolean operation, boolean sync, Object... param) {
+        if (count == 0)
+            return;
+
+        count = Math.abs(count);
+        count = operation ? count : -count;
+        player.getDrawCardData().getFragmentData().merge(id, count, Integer::sum);
+        if (sync) {
+            ChangeInfo changeInfo = ChangeInfo.newIns();
+            changeInfo.addChangeType(AwardType.HERO_FRAGMENT, id);
+            syncRoleResChanged(player, changeInfo);
+        }
     }
 
     /**
@@ -635,7 +705,8 @@ public class RewardDataManager {
                 List<TreasureWare> treasureWareIds = addTreasureWare(player, id, count, from, param);
                 if (!CheckNull.isEmpty(treasureWareIds)) {
                     award.setKeyId(treasureWareIds.get(0).getKeyId());
-                    award.addAllParam(treasureWareIds.stream().map(treasureWare -> treasureWare.getProfileId()).collect(Collectors.toList()));
+                    award.addAllParam(treasureWareIds.stream().map(TreasureWare::getProfileId).collect(Collectors.toList()));
+                    award.addAllExtParam(treasureWareIds.stream().map(tw -> Objects.isNull(tw.getSpecialId()) ? 0 : tw.getSpecialId()).collect(Collectors.toList()));
                 }
                 break;
             case AwardType.TOTEM:
@@ -644,9 +715,9 @@ public class RewardDataManager {
             case AwardType.TITLE:
                 addTitle(player, id, count, convert, from, param);
                 break;
-//            case AwardType.TOTEM_CHIP://获得图腾碎片
-//                addTotemChip(player,id,count,from, param);
-//                break;
+            case AwardType.HERO_FRAGMENT:
+                operationHeroFragment(player, id, count, from, true, false, param);
+                break;
             default:
                 break;
         }
@@ -752,7 +823,7 @@ public class RewardDataManager {
 
         // 记录玩家获得新宝具
         LogLordHelper.treasureWare(from, player.account, player.lord, treasureWareId, keyId, Constant.ACTION_ADD,
-                param);
+                treasureWare.getQuality(), treasureWare.logAttrs(), CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
     }
 
     /**
@@ -1117,7 +1188,7 @@ public class RewardDataManager {
                     addArmSpeed(player, count, from);
                     break;
                 case AwardType.Special.BAPTIZE:
-                    addBaptizeCnt(player, count, from);
+                    addBaptizeCnt(player, count, from, param);
                     break;
                 case AwardType.Special.HERO_WASH:
                     addHeroWashCnt(player, count, from);
@@ -1154,6 +1225,9 @@ public class RewardDataManager {
                     player.addMilitaryExpenditure(count);
                     LogLordHelper.commonLog("expenditure", from, player.account, player.lord, player.getMilitaryExpenditure(), count);
                     break;
+                case AwardType.Special.DRAW_PERMANENT_CARD_COUNT:
+                    operationSystemCount(player, id, count, from, true, param);
+                    break;
                 default:
             }
         }
@@ -1184,7 +1258,7 @@ public class RewardDataManager {
      * @param from
      */
     private void addHeroWashCnt(Player player, int count, AwardFrom from) {
-        player.common.setWashCount(player.common.getWashCount() + count);
+//        player.common.setWashCount(player.common.getWashCount() + count);
         LogLordHelper.commonLog("addHeroWashCnt", from, player, count);
     }
 
@@ -1195,9 +1269,9 @@ public class RewardDataManager {
      * @param count
      * @param from
      */
-    private void addBaptizeCnt(Player player, int count, AwardFrom from) {
+    private void addBaptizeCnt(Player player, int count, AwardFrom from, Object... params) {
         player.common.setBaptizeCnt(player.common.getBaptizeCnt() + count);
-        LogLordHelper.commonLog("addBaptizeCnt", from, player, count);
+        LogLordHelper.equipBaptizeNew(from, player, count, Constant.ACTION_ADD, "addBaptizeCnt", params);
     }
 
     /**
@@ -1796,6 +1870,7 @@ public class RewardDataManager {
             }
             buildingDataManager.refreshSourceData(player);
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_LEVEL);
+            taskDataManager.updTask(player, TaskType.COND_LORD_LV, 1);
 
             activityTriggerService.roleLevelUpTriggerGift(player, lvThroughList);
 
@@ -2003,6 +2078,7 @@ public class RewardDataManager {
         // 记录玩家获得道具
         LogLordHelper.prop(from, player.account, player.lord, propId, prop.getCount(), count, Constant.ACTION_ADD,
                 param);
+        taskDataManager.updTask(player, TaskType.COND_506, count, propId);
     }
 
     /**
@@ -2288,83 +2364,76 @@ public class RewardDataManager {
             return null;
         }
 
+        // 校验玩家是否还可以获得此英雄或英雄碎片
         Hero hero = player.heros.get(heroId);
-        if (null != hero) {
-            LogUtil.error("玩家已有该将领，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+        if (!drawCardService.checkHero(player, hero, from)) {
             return null;
         }
 
-        StaticHero staticHeroOld = null;
-        for (Hero v : player.heros.values()) {
-            staticHeroOld = StaticHeroDataMgr.getHeroMap().get(v.getHeroId());
-            if (staticHeroOld.getHeroType() == staticHero.getHeroType()) {
-                addHeroToken(player, HeroConstant.NORMAL_HERO_TOKEN, AwardFrom.SAME_TYPE_HERO);
+        try {
+            if (null != hero) {
+                // 获取没有的武将, 处理救援奖励邮件
+                drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
+                // 重复英雄转化为碎片
+                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
                 LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
-                return null;
+                return drawCardService.containAwardFrom(from) ? hero : null;
             }
-        }
 
-        hero = new Hero();
-        hero.setHeroId(heroId);
-        hero.setHeroType(staticHero.getHeroType());
-        hero.setQuality(staticHero.getQuality());
-        // 初始化将领属性
-        hero.getWash()[HeroConstant.ATTR_ATTACK] = staticHero.getAttack();
-        hero.getWash()[HeroConstant.ATTR_DEFEND] = staticHero.getDefend();
-        hero.getWash()[HeroConstant.ATTR_LEAD] = staticHero.getLead();
-        //如果是赛季英雄则初始化英雄技能
-        if (staticHero.getSeason() > 0) {
-            Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
-            if (Objects.nonNull(skillMap)) {
-                for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
-                    int skillId = entry.getKey();
-                    int initLv = entry.getValue().firstKey();
-                    hero.getSkillLevels().put(skillId, initLv);
+            hero = new Hero();
+            hero.setHeroId(heroId);
+            hero.setHeroType(staticHero.getHeroType());
+            hero.setQuality(staticHero.getQuality());
+            // 初始化将领品阶数据
+            hero.initHeroGrade();
+            //如果是赛季英雄则初始化英雄技能
+            if (staticHero.getSeason() > 0) {
+                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+                if (Objects.nonNull(skillMap)) {
+                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+                        int skillId = entry.getKey();
+                        int initLv = entry.getValue().firstKey();
+                        hero.getSkillLevels().put(skillId, initLv);
+                    }
                 }
+                hero.setCgyStage(1);
+                hero.setCgyLv(0);
+
+                //获得英雄发聊天公告
+                chatDataManager.sendSysChat(ChatConst.SEASON_GET_HERO, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), hero.getHeroId());
             }
-            hero.setCgyStage(1);
-            hero.setCgyLv(0);
+            CalculateUtil.processAttr(player, hero);
+            player.heros.put(heroId, hero);
+            // 获取没有的武将, 处理救援奖励邮件
+            drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
 
-            //获得英雄发聊天公告
-            chatDataManager.sendSysChat(ChatConst.SEASON_GET_HERO, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), hero.getHeroId());
+            // 记录玩家获得新将领
+            LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);
+
+            //貂蝉任务-拥有英雄X个X品质
+            ActivityDiaoChanService.completeTask(player, ETask.OWN_HERO);
+            TaskService.processTask(player, ETask.OWN_HERO);
+            //任务 - 获得指定英雄
+            TaskService.handleTask(player, ETask.GET_HERO);
+            ActivityDiaoChanService.completeTask(player, ETask.GET_HERO);
+            TaskService.processTask(player, ETask.GET_HERO);
+
+            activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO);
+            activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
+            taskDataManager.updTask(player, TaskType.COND_26, 1, hero.getHeroId());
+            taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getType());
+            taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
+            if (!ActParamConstant.ACT_TRIGGER_HERO_IGNORE.contains(staticHero.getHeroId())) {
+                // 触发第一次增加紫橙将领
+                activityTriggerService.awardHeroTriggerGift(player, hero.getQuality());
+            }
+            //触发获得某英雄后相关礼包
+            activityTriggerService.getAnyHero(player, staticHero.getHeroType());
+            return hero;
+        } catch (Exception e) {
+            LogUtil.error(String.format("add hero error, player:%d, heroId:%d, e:%s", player.roleId, heroId, e));
+            return hero;
         }
-        CalculateUtil.processAttr(player, hero);
-        player.heros.put(heroId, hero);
-
-        // 记录玩家获得新将领
-        LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);
-
-        //貂蝉任务-拥有英雄X个X品质
-        ActivityDiaoChanService.completeTask(player, ETask.OWN_HERO);
-        TaskService.processTask(player, ETask.OWN_HERO);
-        //任务 - 获得指定英雄
-        TaskService.handleTask(player, ETask.GET_HERO);
-        ActivityDiaoChanService.completeTask(player, ETask.GET_HERO);
-        TaskService.processTask(player, ETask.GET_HERO);
-
-        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO);
-        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
-        taskDataManager.updTask(player.roleId, TaskType.COND_26, 1, hero.getHeroId());
-        taskDataManager.updTask(player.roleId, TaskType.COND_27, 1, hero.getType());
-        if (!ActParamConstant.ACT_TRIGGER_HERO_IGNORE.contains(staticHero.getHeroId())) {
-            // 触发第一次增加紫橙将领
-            activityTriggerService.awardHeroTriggerGift(player, hero.getQuality());
-        }
-        //触发获得某英雄后相关礼包
-        activityTriggerService.getAnyHero(player, staticHero.getHeroType());
-        // 获取这个特殊将领就发送邮件
-        if (Constant.ALICE_RESCUE_MISSION_TASK.get(1) == heroId) {
-            List<Award> awardsPb = PbHelper.createAwardsPb(Constant.ALICE_RESCUE_MISSION_MAIL_AWARD);
-            // 发送救援奖励邮件
-            mailDataManager.sendAttachMail(player, awardsPb, MailConstant.MOLD_ALICE_AWARD, AwardFrom.ALICE_AWARD, TimeHelper.getCurrentSecond());
-        }
-
-        return hero;
-
-        // 触发剧情章节,2018/3/14 去掉将领获取触发剧情任务
-        // if (heroId == Constant.SECTIONTASK_BEGIN_HERO_ID) {
-        // taskDataManager.triggerSectiontask(player);
-        // }
     }
 
     /**
@@ -2392,12 +2461,21 @@ public class RewardDataManager {
      * @param from
      */
     public void subTreasureWare(Player player, int keyId, AwardFrom from, Object... param) {
-        TreasureWare treasureWare = player.treasureWares.remove(keyId);
-        if (treasureWare != null) {
+        TreasureWare treasureWare = player.treasureWares.get(keyId);
+        if (CheckNull.isNull(treasureWare)) {
+            LogUtil.error(String.format("sub treasureWare is empty, lordId: %d, keyId: %d, from: %s", player.lord.getLordId(), keyId, from));
+            return;
+        }
+
+        if (treasureWare.getQuality() >= TreasureWareConst.PURPLE_QUALITY) {
+            treasureWare.setStatus(TreasureWareConst.TREASURE_HAS_DECOMPOSED);
+            treasureWare.setDecomposeTime(TimeHelper.getCurrentSecond());
+        } else {
+            player.treasureWares.remove(keyId);
             // 记录玩家减少的宝具
             LogLordHelper.treasureWare(from, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(),
-                    Constant.ACTION_SUB, param, LogUtil.obj2ShortStr(treasureWare.getAttrAndLv()),
-                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId());
+                    Constant.ACTION_SUB, treasureWare.getQuality(), treasureWare.logAttrs(),
+                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
         }
     }
 
@@ -2773,14 +2851,15 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareDust(cur);
 
-        LogLordHelper.commonLog("treasureWareDust", from, player, player.lord.getTreasureWareDust(), add ? sub : -sub, StringHelper.mergeToKey(param));
+        String paramString = Arrays.toString(param);
+        LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareDust(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
-                    Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareDust(),
+                    paramString, "");
         } else {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, add ? sub : -sub, player.lord.getTreasureWareDust(),
-                    Arrays.toString(param), "");
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareDust(),
+                    paramString, "");
         }
     }
 
@@ -2791,14 +2870,15 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareEssence(cur);
 
-        LogLordHelper.commonLog("treasureWareEssence", from, player, player.lord.getTreasureWareEssence(), add ? sub : -sub, StringHelper.mergeToKey(param));
+        String paramString = Arrays.toString(param);
+        LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_ESSENCE, sub, player.lord.getTreasureWareEssence(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
-                    Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareEssence(),
+                    paramString, "");
         } else {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, add ? sub : -sub, player.lord.getTreasureWareEssence(),
-                    Arrays.toString(param), "");
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_DUST, sub, player.lord.getTreasureWareEssence(),
+                    paramString, "");
         }
     }
 
@@ -2809,13 +2889,15 @@ public class RewardDataManager {
         cur = cur < 0 ? 0 : cur;
         player.lord.setTreasureWareGolden(cur);
 
-        LogLordHelper.commonLog("treasureWareGolden", from, player, player.lord.getTreasureWareGolden(), add ? sub : -sub, StringHelper.mergeToKey(param));
+        String paramString = Arrays.toString(param);
+        LogLordHelper.commonLog("treasureWareMaterial", from, player, AwardType.Money.TREASURE_WARE_GOLDEN, sub, player.lord.getTreasureWareGolden(), paramString);
         //上报数数
         if (ArrayUtils.contains(HAS_INFO2_AWARD_FROM, from)) {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub,
-                    player.lord.getTreasureWareGolden(), Arrays.toString(new Object[]{param[0]}), Arrays.toString(new Object[]{param[1]}));
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, sub,
+                    player.lord.getTreasureWareGolden(), paramString, "");
         } else {
-            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, add ? sub : -sub, player.lord.getTreasureWareGolden(), Arrays.toString(param), "");
+            EventDataUp.otherCurrency(from, player.account, player.lord, AwardType.Money.TREASURE_WARE_ESSENCE, sub,
+                    player.lord.getTreasureWareGolden(), paramString, "");
         }
 
     }
@@ -3194,9 +3276,10 @@ public class RewardDataManager {
             case AwardType.SPECIAL:
                 subSpecial(player, id, num, from, param);
                 break;
-//            case AwardType.TOTEM_CHIP:
-//                subTotemChip(player,id,num,from,param);
-//                break;
+            // 减少英雄碎片
+            case AwardType.HERO_FRAGMENT:
+                operationHeroFragment(player, id, num, from, false, false, param);
+                break;
             default:
                 break;
         }
@@ -3221,6 +3304,9 @@ public class RewardDataManager {
         switch (specialType) {
             case AwardType.Special.SEASON_TALENT_STONE:
                 subSeasonTalentStone(player, (int) count, from, param);
+                break;
+            case AwardType.Special.DRAW_PERMANENT_CARD_COUNT:
+                operationSystemCount(player, specialType, (int) count, from, false, param);
                 break;
             default:
                 throw new MwException(GameError.NO_CONFIG.getCode(), String.format("roleId :%d, specialType :%d not found !!!", player.getLordId(), specialType));
@@ -3580,20 +3666,30 @@ public class RewardDataManager {
             case AwardType.SPECIAL:
                 checkSpecialIsEnough(player, id, num, message);
                 break;
-//            case AwardType.TOTEM_CHIP:
-//                checkTotemChipEnough(player,id,num,message);
-//                break;
+            case AwardType.HERO_FRAGMENT:
+                checkHeroFragmentIsEnough(player, id, num, message);
+                break;
             default:
                 break;
         }
     }
 
-//    private void checkTotemChipEnough(Player player,int id,int num,String...message) throws MwException {
-//        TotemChip totemChip = player.getTotemData().getTotemChip(id);
-//        if(Objects.isNull(totemChip) || totemChip.getCount() < num){
-//            throw new MwException(GameError.TOTEM_CHIP_NOT_ENOUGH.getCode(),GameError.err(player.roleId,"检查图腾碎片不足",id,num));
-//        }
-//    }
+    /**
+     * 校验英雄碎片
+     *
+     * @param player
+     * @param heroId
+     * @param need
+     * @param message
+     * @throws MwException
+     */
+    private void checkHeroFragmentIsEnough(Player player, int heroId, long need, String... message) throws MwException {
+        Integer ownNum = player.getDrawCardData().getFragmentData().getOrDefault(heroId, 0);
+        if (CheckNull.isNull(ownNum) || ownNum < need) {
+            throw new MwException(GameError.NOT_ENOUGH_HERO_FRAGMENTS, String.format("player:%d, not enough hero fragments, ownNum:%d, need:%d, heroId:%d, message:%s",
+                    player.roleId, ownNum, need, heroId, message));
+        }
+    }
 
     /**
      * 检测特殊道具时候足够
@@ -4029,7 +4125,7 @@ public class RewardDataManager {
                         count = player.common.getBaptizeCnt();
                         break;
                     case AwardType.Special.HERO_WASH:
-                        count = player.common.getWashCount();
+//                        count = player.common.getWashCount();
                         break;
                     case AwardType.Special.TECH_SPEED:
                         count = Optional.ofNullable(player.getCanSpeedTechQue()).map(TechQue::getParam).orElse(0);
@@ -4082,13 +4178,10 @@ public class RewardDataManager {
             case AwardType.SANDTABLE_SCORE:
                 count = player.getSandTableScore();
                 break;
-//            case AwardType.TOTEM_CHIP:
-//                TotemChip totemChip = player.getTotemData().getTotemChip(id);
-//                count = Objects.isNull(totemChip) ? 0 : totemChip.getCount();
-//                break;
+            case AwardType.HERO_FRAGMENT:
+                count = player.getDrawCardData().getFragmentData().getOrDefault(id, 0);
             default:
                 break;
-
         }
         return count;
     }

@@ -18,6 +18,9 @@ public class LogParamConstant {
     public static final String IS_FIRST_KILL_CITY = "1";
     public static final String IS_NOT_FIRST_KILL_CITY = "0";
 
+    public static final int PERMANENT_DRAW_CARD_TYPE = 1;
+    public static final int TIME_LIMITED_DRAW_CARD_TYPE = 2;
+
     //=======================事件名称==========================
     public static final String LEVEL_UP = "levelUp";
     public static final String HERO_BREAK = "heroBreak";
@@ -25,4 +28,8 @@ public class LogParamConstant {
     public static final String TURNTABLE_ACT = "turntable";
     public static final String POINT = "point";
     public static final String FIGHTING_CHANGE = "fightingChangeNew";
+    public static final String DRAW_HERO_CARD_LOG = "drawHeroCard";
+    public static final String HERO_UPGRADE = "heroUpgrade";
+    public static final String MEDAL_STRENGTHEN = "medalStrengthen";
+    public static final String UPGRADE_SUPER_EQUIP = "upgradeSuperEquip";
 }

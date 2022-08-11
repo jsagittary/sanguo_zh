@@ -1136,7 +1136,7 @@ public class SuperMineService {
                 if (hero == null) continue;
                 warService.addExploit(player, exploit, info, from);// 加军工
                 RptHero rptHero = PbHelper.createRptHero(type, kill, exploit, heroId, player.lord.getNick(),
-                        hero.getLevel(), 0, force.lost, hero.getDecorated());
+                        hero.getLevel(), 0, force.lost, hero);
                 if (isAttacker) {
                     rpt.addAtkHero(rptHero);
                 } else {

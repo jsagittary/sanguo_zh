@@ -134,6 +134,8 @@
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 		<result column="form_13first" property="form_13first"
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="otherAward" property="otherAward"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 	</resultMap>
 
 	<select id="selectCityMap" resultMap="cityMap">
@@ -342,7 +344,8 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler" />
 		<result column="recombination" property="recombination"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
-
+		<result column="evolveGroup" property="evolveGroup"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 	</resultMap>
 
 	<select id="selectHeroMap" resultMap="heroMap">
@@ -496,6 +499,7 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 		<result column="firstform" property="firstform"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="randomAward" property="randomAward" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="winAward" property="winAward"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="firstAward" property="firstAward"
@@ -2611,5 +2615,37 @@
 	</resultMap>
 	<select id="selectStaticSeasonRankList" resultMap="staticSeasonRankMap">
 		SELECT * FROM s_season_rank
+	</select>
+
+	<resultMap id="taskNewMap" type="StaticTask">
+		<id column="taskId" property="taskId" />
+		<result column="awardList" property="awardList"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+	</resultMap>
+	<select id="selectTaskNewMap" resultMap="taskNewMap">
+		SELECT * FROM s_task_new
+	</select>
+
+	<resultMap id="taskChapterMap" type="StaticTaskChapter">
+		<id column="chapterId" property="chapterId" />
+		<result column="awardList" property="awardList"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+		<result column="taskId" property="taskId"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+	</resultMap>
+	<select id="selectTaskChapterMap" resultMap="taskChapterMap">
+		SELECT * FROM s_task_chapter
+	</select>
+
+	<resultMap id="staticHeroUpgrade" type="StaticHeroUpgrade">
+		<result column="attr" property="attr"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+		<result column="consume" property="consume"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+		<result column="condition" property="condition"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+	</resultMap>
+	<select id="selectHeroUpgradeList" resultMap="staticHeroUpgrade" >
+		SELECT * FROM s_hero_upgrade
 	</select>
 </mapper>

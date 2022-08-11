@@ -81,6 +81,7 @@ public class GlobalActivityData extends Activity {
         this.goal = globalActivity.getGoal();
         this.params = globalActivity.getParams();
         this.equipTurLuckNums = globalActivity.getEquipTurLuckNums();
+        this.setActivityKeyId(globalActivity.getActKeyId());
         this.setStatusMap(new HashMap<Integer, Integer>());
         this.setTopupa(new AtomicLong(globalActivity.getTopupa()));
         this.setTopupb(new AtomicLong(globalActivity.getTopupb()));
@@ -503,6 +504,8 @@ public class GlobalActivityData extends Activity {
             if(value < limit){
                 return true;
             }
+        } else if (type == ActivityConst.ACT_MAGIC_TREASURE_WARE) {
+            return false;
         }
         //最后的else是用于检查貂蝉活动的每日排行
         else if(type > 100000000){
@@ -537,7 +540,7 @@ public class GlobalActivityData extends Activity {
         entity.setTopupb(topupb.get());
         entity.setTopupc(topupc.get());
         entity.setParams(this.simpleRankPb.build().toByteArray());
-
+        entity.setActKeyId(this.getActivityKeyId());
         // LogUtil.debug("copyData GlobalActivity=" + entity);
         return entity;
     }

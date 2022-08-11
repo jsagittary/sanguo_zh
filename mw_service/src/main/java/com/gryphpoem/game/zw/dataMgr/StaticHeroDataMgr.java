@@ -4,7 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.resource.dao.impl.s.StaticDataDao;
 import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.util.random.HeroSearchRandom;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +49,9 @@ public class StaticHeroDataMgr {
     private static Map<Integer, StaticHeroSeason> seasonHeroMap = new HashMap<>();
     // 将领寻访额外奖励
     private static Map<Integer, StaticHeroSearchExtAward> searchHeroExtAward = new HashMap<>();
-
+    /** 英雄升品阶配置表 map<<<heroId, map<grade, map<level, data>>>*/
+    private static Map<Integer, Map<Integer, Map<Integer, StaticHeroUpgrade>>> heroUpgradeMap = new HashMap<>();
+    private static Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap = new TreeMap<>();
 
     public static void init() {
         Map<Integer, StaticHero> heroMap = staticDataDao.selectHeroMap();
@@ -75,8 +77,134 @@ public class StaticHeroDataMgr {
         initHeroClergy(heroClergyList);
         //初始化赛季英雄技能配置
         initSessHeroSkill();
+        //初始化英雄升阶配置数据
+        initHeroUpgrade();
+    }
 
-        StaticHeroDataMgr.searchHeroExtAward = staticDataDao.selectHeroSearchExtAward();
+    /**
+     * 初始化英雄升阶配置数据
+     */
+    public static void initHeroUpgrade() {
+        List<StaticHeroUpgrade> configList = staticDataDao.selectHeroUpgradeList();
+        if (CheckNull.nonEmpty(configList)) {
+            Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap_ = new TreeMap<>();
+            Map<Integer, Map<Integer, Map<Integer, StaticHeroUpgrade>>> dataMap = new HashMap<>();
+            configList.forEach(config -> {
+                dataMap.computeIfAbsent(config.getHeroId(), map -> new TreeMap<>(Integer::compareTo)).
+                        computeIfAbsent(config.getGrade(), map -> new TreeMap<>(Integer::compareTo)).
+                        put(config.getLevel(), config);
+                staticHeroUpgradeMap_.put(config.getKeyId(), config);
+            });
+            heroUpgradeMap = dataMap;
+            staticHeroUpgradeMap = staticHeroUpgradeMap_;
+        }
+    }
+
+    /**
+     * 返回英雄初始品阶
+     *
+     * @param heroId
+     * @return
+     */
+    public static StaticHeroUpgrade getInitHeroUpgrade(int heroId) {
+        TreeMap<Integer, Map<Integer, StaticHeroUpgrade>> dataMap = (TreeMap<Integer, Map<Integer, StaticHeroUpgrade>>) heroUpgradeMap.get(heroId);
+        if (CheckNull.isEmpty(dataMap))
+            return null;
+        Integer gradeKey = dataMap.firstKey();
+        if (CheckNull.isNull(gradeKey))
+            return null;
+        TreeMap<Integer, StaticHeroUpgrade> map = (TreeMap<Integer, StaticHeroUpgrade>) dataMap.get(gradeKey);
+        if (CheckNull.isEmpty(map))
+            return null;
+        Integer resultKey = map.firstKey();
+        if (CheckNull.isNull(resultKey))
+            return null;
+        return map.get(resultKey);
+    }
+
+    /**
+     * 获取最大英雄拼接
+     *
+     * @param heroId
+     * @return
+     */
+    public static StaticHeroUpgrade getMaxHeroUpgrade(int heroId) {
+        TreeMap<Integer, Map<Integer, StaticHeroUpgrade>> dataMap = (TreeMap<Integer, Map<Integer, StaticHeroUpgrade>>) heroUpgradeMap.get(heroId);
+        if (CheckNull.isEmpty(dataMap))
+            return null;
+        Integer gradeKey = dataMap.lastKey();
+        if (CheckNull.isNull(gradeKey))
+            return null;
+        TreeMap<Integer, StaticHeroUpgrade> map = (TreeMap<Integer, StaticHeroUpgrade>) dataMap.get(gradeKey);
+        if (CheckNull.isEmpty(map))
+            return null;
+        Integer resultKey = map.lastKey();
+        if (CheckNull.isNull(resultKey))
+            return null;
+        return map.get(resultKey);
+    }
+
+    public static int[] getHeroUpgradeScope(int heroId) {
+        StaticHeroUpgrade minGrade = getInitHeroUpgrade(heroId);
+        if (CheckNull.isNull(minGrade))
+            return null;
+        StaticHeroUpgrade maxGrade = getMaxHeroUpgrade(heroId);
+        if (CheckNull.isNull(maxGrade))
+            return null;
+        return new int[]{minGrade.getKeyId(), maxGrade.getKeyId()};
+    }
+
+    /**
+     * 获取对应升级品阶配置
+     *
+     * @param heroId
+     * @param grade
+     * @param level
+     * @return
+     */
+    public static TreeMap<Integer, StaticHeroUpgrade> getStaticHeroUpgrade(int heroId, int grade, int level) {
+        Map<Integer, Map<Integer, StaticHeroUpgrade>> dataMap = heroUpgradeMap.get(heroId);
+        if (CheckNull.isEmpty(dataMap))
+            return null;
+        Map<Integer, StaticHeroUpgrade> heroDataMap = dataMap.get(grade);
+        if (CheckNull.isEmpty(heroDataMap) || !heroDataMap.containsKey(level))
+            return null;
+        return (TreeMap<Integer, StaticHeroUpgrade>) heroDataMap;
+    }
+
+    public static StaticHeroUpgrade getStaticHeroUpgrade(int keyId) {
+        return staticHeroUpgradeMap.get(keyId);
+    }
+
+    /**
+     * 获取下一品阶或等级的英雄品阶配置数据
+     *
+     * @param heroId
+     * @param keyId
+     * @return
+     */
+    public static StaticHeroUpgrade getNextLvHeroUpgrade(int heroId, int keyId) {
+        StaticHeroUpgrade staticData = staticHeroUpgradeMap.get(keyId);
+        if (CheckNull.isNull(staticData)) {
+            return null;
+        }
+        TreeMap<Integer, StaticHeroUpgrade> dataMap = getStaticHeroUpgrade(heroId, staticData.getGrade(), staticData.getLevel());
+        if (CheckNull.isNull(dataMap))
+            return null;
+        Integer nextLvDataLvId = dataMap.higherKey(staticData.getLevel());
+        if (Objects.nonNull(nextLvDataLvId) && nextLvDataLvId.intValue() > staticData.getLevel())
+            return dataMap.get(nextLvDataLvId);
+        TreeMap<Integer, Map<Integer, StaticHeroUpgrade>> heroDataMap = (TreeMap<Integer, Map<Integer, StaticHeroUpgrade>>) heroUpgradeMap.get(heroId);
+        Integer nextGradeKeyId = heroDataMap.higherKey(staticData.getGrade());
+        if (CheckNull.isNull(nextGradeKeyId))
+            return null;
+        TreeMap<Integer, StaticHeroUpgrade> levelDataMap = (TreeMap<Integer, StaticHeroUpgrade>) heroDataMap.get(nextGradeKeyId);
+        if (CheckNull.isEmpty(levelDataMap))
+            return null;
+        Integer resultKeyId = levelDataMap.firstKey();
+        if (CheckNull.isNull(resultKeyId))
+            return null;
+        return levelDataMap.get(resultKeyId);
     }
 
     public static StaticHeroSearchExtAward getSearchHeroExtAwardById(int id) {
@@ -127,9 +255,7 @@ public class StaticHeroDataMgr {
         }
         StaticHeroDataMgr.levelMap = levelMap;
 
-        Map<Integer, StaticHeroSearch> heroSearchMap = staticDataDao.selectHeroSearchMap();
-        StaticHeroDataMgr.heroSearchMap = heroSearchMap;
-        HeroSearchRandom.init(heroSearchMap);
+//        HeroSearchRandom.init(heroSearchMap);
     }
 
     public static Map<Integer, StaticHero> getHeroMap() {

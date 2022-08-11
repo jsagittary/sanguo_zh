@@ -22,7 +22,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -392,9 +391,9 @@ public class BuildingService {
         // 检测科研所是否在研究
         if (buildingId == BuildingType.TECH) {
             if (player.tech != null && player.tech.getQue() != null && player.tech.getQue().getId() > 0) {// 正在升级
-                if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
-                    throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
-                }
+//                if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
+//                    throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
+//                }
                 if (!techDataManager.isAdvanceTechGain(player)) {
                     throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
                 }
@@ -519,8 +518,8 @@ public class BuildingService {
                 }
             }
         }*/
-        taskDataManager.updTask(player.roleId, TaskType.COND_18, 1, buildingType);
-        taskDataManager.updTask(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
+        taskDataManager.updTask(player, TaskType.COND_18, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_BUILDING_UP_43, 1);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
 
         // 立即完成不添加进入队列
@@ -1016,7 +1015,7 @@ public class BuildingService {
         // player.removePushRecord(PushConstant.ID_RESOURCE_FULL);
 
         builder.setResource(PbHelper.createCombatPb(player.resource));
-        taskDataManager.updTask(roleId, TaskType.COND_RES_AWARD, 1);
+        taskDataManager.updTask(player, TaskType.COND_RES_AWARD, 1, type);
         battlePassDataManager.updTaskSchedule(roleId, TaskType.COND_RES_AWARD, 1);
         return builder.build();
     }
@@ -1288,6 +1287,11 @@ public class BuildingService {
                 buildQue.getPos());
         LogLordHelper.build(AwardFrom.BUILD_UP_FINISH, player.account, player.lord, buildingId, buildingLv);
         EventDataUp.buildingSuccess(player, buildingId, 0, buildingLv);
+        taskDataManager.updTask(player, TaskType.COND_BUILDING_TYPE_LV, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_FOOD_CNT, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_OIL_CNT, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_ELE_CNT, 1, buildingType);
+        taskDataManager.updTask(player, TaskType.COND_RES_ORE_CNT, 1, buildingType);
         return pros;
     }
 
@@ -1426,7 +1430,6 @@ public class BuildingService {
                 building.setAir(lv);
                 break;
         }
-
         return lv;
     }
 
@@ -1984,8 +1987,8 @@ public class BuildingService {
                 LogUtil.error(e);
             }
         }*/
-        taskDataManager.updTask(player.roleId, TaskType.COND_18, 1, type);
-        taskDataManager.updTask(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
+        taskDataManager.updTask(player, TaskType.COND_18, 1, type);
+        taskDataManager.updTask(player, TaskType.COND_BUILDING_UP_43, 1);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
 
         return 0;
@@ -2033,15 +2036,14 @@ public class BuildingService {
         }
         // 获取当前任务id
         // List<Integer> curTaskIds = taskDataManager.getCurTask(player);
-        List<Integer> curTaskIds = player.curMajorTaskIds;
-        List<StaticTask> buildTask = curTaskIds.stream().map(t -> StaticTaskDataMgr.getTaskById(t))
+        List<StaticTask> buildTask =  player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
                 .filter(t -> t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
                         || t.getCond() == TaskType.COND_RES_OIL_CNT || t.getCond() == TaskType.COND_RES_ELE_CNT
                         || t.getCond() == TaskType.COND_RES_ORE_CNT)
                 // 过滤未完成的任务
                 .filter(t -> {
                     int taskId = t.getTaskId();
-                    Task task = player.majorTasks.get(taskId);
+                    Task task = player.chapterTask.getOpenTasks().get(taskId);
                     if (CheckNull.isNull(task)) {
                         return false;
                     }
@@ -2348,7 +2350,9 @@ public class BuildingService {
                     return false;
                 } else {
                     // 购买vip5礼包,同时雇佣了高级研究院
-                    if (!(player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG) && techDataManager
+                    if (!(
+//                            player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG) &&
+                            techDataManager
                             .isAdvanceTechGain(player))) {
                         LogUtil.debug("科研所正在研究,不能升级  roleId:" + roleId);
                         return false;

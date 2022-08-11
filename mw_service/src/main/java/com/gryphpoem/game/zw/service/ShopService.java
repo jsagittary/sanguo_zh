@@ -21,6 +21,7 @@ import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
+import com.gryphpoem.game.zw.service.activity.AbsGiftBagActivityService;
 import com.gryphpoem.game.zw.service.activity.ActivityHelpService;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -374,9 +375,9 @@ public class ShopService {
 
         int chatId = 0;
         // 购买VIP6-VIP13礼包 招募紫色坦克将领-招募橙色火箭将领 发送世界消息
-        if ((staticVip.getVipLv() == VipConstant.VIP_SIX || staticVip.getVipLv() == VipConstant.VIP_EIGHT)
+        if ((staticVip.getVipLv() == VipConstant.VIP_FIVE || staticVip.getVipLv() == VipConstant.VIP_EIGHT)
                 && !CheckNull.isEmpty(staticVip.getReward())) {
-            chatId = staticVip.getVipLv() == VipConstant.VIP_SIX ? ChatConst.CHAT_BUY_VIP6 : ChatConst.CHAT_BUY_VIP8;
+            chatId = staticVip.getVipLv() == VipConstant.VIP_FIVE ? ChatConst.CHAT_BUY_VIP6 : ChatConst.CHAT_BUY_VIP8;
             if (chatId > 0) {
                 for (List<Integer> list : staticVip.getReward()) {
                     if (CheckNull.isEmpty(list) || list.size() < 3) {
@@ -422,6 +423,8 @@ public class ShopService {
             return processGiftPromotion(player, promotion);// 礼包特惠
         } else if (actType == ActivityConst.ACT_MERGE_PROP_PROMOTION) {
             return processMergePromotion(player, promotion);//合服特卖
+        } else if (AbsGiftBagActivityService.isActGiftBagAct(actType)) {
+            return AbsGiftBagActivityService.buyActGiftBagByGameMoney(player, promotion);
         }
         throw new MwException(GameError.NO_CONFIG.getCode(), " 打折礼包购买配置不正确 roleId:", player.roleId, " keyId:", keyId);
 

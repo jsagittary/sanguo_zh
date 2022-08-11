@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.manager;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.NumUtils;
@@ -65,9 +66,12 @@ public class ActivityDataManager {
     // key:activityType
     private Map<Integer, GlobalActivityData> activityMap = new ConcurrentHashMap<>();
 
+    private Map<Integer, MultiHandleGlobalActProcess> multiHandleGlobalActMap = new HashMap<>();
+
     // @PostConstruct
     public void init() throws InvalidProtocolBufferException {
         iniGlobalActivity();
+        multiHandleGlobalActMap.put(ActivityConst.ACT_MAGIC_TREASURE_WARE, this::actGlobalMagicTreasureWare);
     }
 
     public void iniGlobalActivity() throws InvalidProtocolBufferException {
@@ -121,6 +125,8 @@ public class ActivityDataManager {
             initAndLoadActCampFightRank();
         } else if (actType == ActivityConst.ACT_DIAOCHAN || actType == ActivityConst.ACT_SEASON_HERO){
             this.loadRankData4DiaoChan(gAct,actType);
+        } else if (AbsRankActivityService.isActRankAct(actType)) {
+            AbsRankActivityService.loadActRankAct(e, gAct);
         } else {// 其他的排行活动
             loadNormalRank(e, gAct);
         }
@@ -586,6 +592,26 @@ public class ActivityDataManager {
         return activity;
     }
 
+    public Activity getPersonalActivityInfo(Player player, int actKeyId) {
+        ActivityBase ab = StaticActivityDataMgr.getPersonalActivityByType(actKeyId);
+        if (ab == null) {
+            return null;
+        }
+        Date beginTime = ab.getBeginTime();
+        int begin = TimeHelper.getDay(beginTime);
+        Activity activity = player.activitys.get(ab.getActivityType());
+        if (activity == null) {
+            activity = conActivity(ab, ab.getActivityType(), begin, player);
+            player.activitys.put(ab.getActivityType(), activity);
+        } else {
+            activity.isReset(begin, player);// 是否重新设置活动
+            activity.autoDayClean(ab);
+            activity.cleanActivityAuction(ab);
+        }
+        activity.setOpen(ab.getBaseOpen());
+        return activity;
+    }
+
     /**
      * 初始化Activity对象
      *
@@ -601,7 +627,9 @@ public class ActivityDataManager {
                 || activityType == ActivityConst.FAMOUS_GENERAL_TURNPLATE
                 || activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW
                 || activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR
-                || activityType == ActivityConst.ACT_SEASON_TURNPLATE) {
+                || activityType == ActivityConst.ACT_SEASON_TURNPLATE
+                || activityType == ActivityConst.ACT_MAGIC_TREASURE_WARE
+        ) {
             activity = new ActTurnplat(activityBase, begin, player);
         } else if (activityType == ActivityConst.ACT_EQUIP_TURNPLATE) {
             activity = new EquipTurnplat(activityBase, begin, player);
@@ -1255,29 +1283,24 @@ public class ActivityDataManager {
                 }
                 break;
             case ActivityConst.ACT_TASK_HERO_WASH://
-                staticHero = null;
+                if (CheckNull.isEmpty(staticDay7Act.getParam()))
+                    break;
                 it = player.heros.values().iterator();
                 while (it.hasNext()) {
                     Hero hero = it.next();
-                    if (hero.getWash() != null && hero.getWash().length > 0) {
-                        if (staticDay7Act.getParam() != null && !staticDay7Act.getParam().isEmpty()) {
-                            staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                            if (staticHero.getQuality() != staticDay7Act.getParam().get(0)) {
-                                continue;
-                            }
-                        }
-                        staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                        if (staticHero.getQuality() <= 1) {
-                            continue;
-                        }
-                        int totalMax = staticHero.getTotalMax();// 将领总资质上限
-                        int total = 0;
-                        for (int i = 0; i < hero.getWash().length; i++) {
-                            total += hero.getWash()[i];
-                        }
-                        if (total >= totalMax) {
-                            lvMax++;
-                        }
+                    if (CheckNull.isNull(hero))
+                        continue;
+                    staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                    if (CheckNull.isNull(staticHero))
+                        continue;
+                    StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+                    if (CheckNull.isNull(staticHeroUpgrade))
+                        continue;
+                    if (staticDay7Act.getParam().size() == 1 && staticDay7Act.getParam().get(0) <= staticHeroUpgrade.getGrade()) {
+                        lvMax++;
+                    } else if (staticDay7Act.getParam().size() == 2 && staticDay7Act.getParam().get(0) <=
+                            staticHeroUpgrade.getGrade() && staticDay7Act.getParam().get(1) == staticHero.getQuality()) {
+                        lvMax++;
                     }
                 }
                 break;
@@ -3273,4 +3296,32 @@ public class ActivityDataManager {
         }
     }
 
+    public void processCombineServerAct(Player player, int actType, int now) {
+        MultiHandleGlobalActProcess process = multiHandleGlobalActMap.get(actType);
+        if (CheckNull.isNull(process))
+            return;
+
+        process.process(player, actType, now);
+    }
+
+    public void actGlobalMagicTreasureWare(Player player, int actType, int now) {
+        try {
+            if (player == null) {
+                return;
+            }
+            // 此处不能使用 getActivityInfo方法,因为此时活动可能是未开启状态
+            Activity activity = player.activitys.get(actType);
+            if (CheckNull.isNull(activity))
+                return;
+            // 发送排行榜奖励
+            DataResource.ac.getBean(ActivityMagicTreasureWareService.class).sendSettleRankAward(player, actType, activity);
+        } catch (Exception e) {
+            LogUtil.error("邮件发送奖励异常", e);
+        }
+    }
+
+    @FunctionalInterface
+    interface MultiHandleGlobalActProcess {
+        void process(Player player, int actType, int now);
+    }
 }

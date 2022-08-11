@@ -7,42 +7,44 @@ public interface TreasureWareConst {
 
 
     //===============宝具类型======================
-    /** 普通宝具*/
-    public static final int ORDINARY_TREASURE_WARE = 1;
-    /** 远古宝具*/
-    public static final int ANCIENT_TREASURE_WARE = 2;
+    /** 普通宝具 */
+    int ORDINARY_TREASURE_WARE = 1;
+    /** 远古宝具 */
+    int ANCIENT_TREASURE_WARE = 2;
 
     //===============宝具上锁状态======================
-    /** 宝具上锁*/
-    public static final int TREASURE_WARE_LOCKED = 2;
-    /** 普通未上锁*/
-    public static final int TREASURE_WARE_UNLOCKED = 1;
+    /** 宝具上锁 */
+    int TREASURE_WARE_LOCKED = 2;
+    /** 普通未上锁 */
+    int TREASURE_WARE_UNLOCKED = 1;
 
     //===============宝具位置======================
-    /** 宝具已获取，可使用*/
-    public static final int TREASURE_IN_USING = 1;
-    /** 宝具未获取，不可使用*/
-    public static final int TREASURE_IN_MAIL = 2;
-    /** 宝具已分解，不可使用*/
-    public static final int TREASURE_HAS_DECOMPOSED = 3;
+    /** 宝具已获取，可使用 */
+    int TREASURE_IN_USING = 1;
+    /** 宝具未获取，不可使用 */
+    int TREASURE_IN_MAIL = 2;
+    /** 宝具已分解，不可使用 */
+    int TREASURE_HAS_DECOMPOSED = 3;
 
     //================宝具品质=====================
-    public static final int BLUE_QUALITY = 3;//蓝色品质
-    public static final int PURPLE_QUALITY = 4;//紫色色品质
-    public static final int RED_QUALITY = 6;//红色品质
-    public static final int ANCIENT_QUALITY = 7;//远古品质
+    int BLUE_QUALITY = 3;//蓝色品质
+    int PURPLE_QUALITY = 4;//紫色色品质
+    int ORANGE_QUALITY = 5;//橙色品质
+    int RED_QUALITY = 6;//红色品质
+    int ANCIENT_QUALITY = 7;//远古品质
 
     //=================宝具属性类型(决定宝具名称)=================
-    /** 攻击类型*/
-    public static final int ATTACK_TYPE = 1;
-    /** 防御类型*/
-    public static final int DEFENCE_TYPE = 2;
-    /** 任意类型*/
-    public static final int ANY_TYPE = 3;
-    /** 超过该条数为何种类型*/
-    public static final int OVER_ATTR_NUM = 2;
+    /** 攻击类型 */
+    int ATTACK_TYPE = 1;
+    /** 防御类型 */
+    int DEFENCE_TYPE = 2;
+    /** 任意类型 */
+    int ANY_TYPE = 3;
+    /** 超过该条数为何种类型 */
+    int OVER_ATTR_NUM = 2;
 
     //=================专属属性类型=================
+
     /**
      * 专属属性类型
      */
@@ -120,10 +122,10 @@ public interface TreasureWareConst {
 
     //============================穿戴状态==========================
     /** 宝具穿戴：穿上 */
-    public static final int TREASURE_WARE_ON = 1;
+    int TREASURE_WARE_ON = 1;
     /** 宝具穿戴：卸下 */
-    public static final int TREASURE_WARE_DOWN = 0;
+    int TREASURE_WARE_DOWN = 0;
     /** 宝具穿戴：替换 */
-    public static final int TREASURE_WARE_REPLACE = 2;
+    int TREASURE_WARE_REPLACE = 2;
 
 }

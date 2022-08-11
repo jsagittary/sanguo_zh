@@ -19,13 +19,13 @@ import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
 import com.gryphpoem.game.zw.resource.domain.p.PitchCombat;
 import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
 import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -366,6 +366,14 @@ public class CombatService {
                 builder.addAllAward(
                         rewardDataManager.sendReward(player, staticCombat.getWinAward(), num, AwardFrom.GAIN_COMBAT));
             }
+
+            //处理随机奖励
+            List<CommonPb.Award> randomAwardList = getRandomAward(player, staticCombat.getRandomAward());
+            if (ListUtils.isNotBlank(randomAwardList)) {
+                rewardDataManager.sendRewardByAwardList(player, randomAwardList, AwardFrom.GAIN_COMBAT);
+                builder.addAllAward(randomAwardList);
+            }
+
             if (!CheckNull.isEmpty(staticCombat.getTitanDrop()) && player.lord.getLevel() >= Constant.RED_DROP_AWARD_LV) {
                 builder.addAllAward(rewardDataManager.sendReward(player, staticCombat.getTitanDrop(), 1, AwardFrom.GAIN_COMBAT));
             }
@@ -387,7 +395,7 @@ public class CombatService {
             builder.setStar(star);
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_COMBAT);
             // activityDataManager.updActivity(player, ActivityConst.ACT_COMBAT, 1, 0);
-            taskDataManager.updTask(roleId, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
+            taskDataManager.updTask(player, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
             processNextCombat(player, combat, builder);
             taskDataManager.updTask(player, TaskType.COND_COMBAT_37, 1);
             battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_COMBAT_37, 1);
@@ -421,8 +429,8 @@ public class CombatService {
         LogLordHelper.commonLog("combatFight", AwardFrom.COMBAT_FIGHT, player, player.lord.getFight()
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
-        taskDataManager.updTask(roleId, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
-
+        taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
+        taskDataManager.updTask(player,TaskType.COND_995,1);
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
@@ -437,6 +445,71 @@ public class CombatService {
         builder.setRecord(record);
 
         return builder.build();
+    }
+
+    /**
+     * 获取staticCombat randomAward字段信息
+     *
+     * @param player
+     * @param rewardList
+     * @return
+     */
+    private List<CommonPb.Award> getRandomAward(Player player, List<List<Integer>> rewardList) {
+        if (CheckNull.isEmpty(rewardList))
+            return null;
+        List<CommonPb.Award> resultList = null;
+        List<CommonPb.Award> awardList_ = null;
+        for (List<Integer> award : rewardList) {
+            if (CheckNull.isEmpty(award))
+                continue;
+            if (award.get(0) == AwardType.RANDOM) {
+                for (int i = 0; i < award.get(2); i++) {
+                    awardList_ = rewardDataManager.getRandomAward(player, award.get(1), award.get(2));
+                    if (CheckNull.nonEmpty(awardList_)) {
+                        Iterator<CommonPb.Award> awardIterator = awardList_.iterator();
+                        while (awardIterator.hasNext()) {
+                            CommonPb.Award awardPb_ = awardIterator.next();
+                            List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == awardPb_.getType()
+                                    && list.get(1) == awardPb_.getId()).findFirst().orElse(null);
+                            if (CheckNull.isEmpty(dropList))
+                                continue;
+                            int dropCount = player.combatInfo.getCount(awardPb_.getType(), awardPb_.getId());
+                            if (dropCount >= dropList.get(2)) {
+                                awardIterator.remove();
+                                continue;
+                            }
+                            player.combatInfo.updateCount(awardPb_.getType(), awardPb_.getId(), awardPb_.getCount());
+                        }
+                        if (CheckNull.nonEmpty(awardList_)) {
+                            if (CheckNull.isNull(resultList)) resultList = new ArrayList<>();
+                            resultList.addAll(awardList_);
+                        }
+                    }
+                }
+
+                awardList_ = null;
+            } else {
+                List<Integer> dropList = Constant.BATTLE_PICK_BOX_DROP_CAP.stream().filter(list -> list.get(0) == award.get(0)
+                        && list.get(1) == award.get(1)).findFirst().orElse(null);
+                if (CheckNull.nonEmpty(dropList)) {
+                    int dropCount = player.combatInfo.getCount(award.get(0), award.get(1));
+                    if (dropCount >= dropList.get(2))
+                        continue;
+                    player.combatInfo.updateCount(award.get(0), award.get(1), award.get(2));
+                }
+                if (CheckNull.isNull(awardList_)) {
+                    awardList_ = new ArrayList<>();
+                }
+                awardList_.add(PbHelper.createAwardPb(award.get(0), award.get(1), award.get(2)));
+            }
+
+            if (CheckNull.nonEmpty(awardList_)) {
+                if (CheckNull.isNull(resultList)) resultList = new ArrayList<>();
+                resultList.addAll(awardList_);
+            }
+        }
+
+        return resultList;
     }
 
     /**
@@ -830,6 +903,9 @@ public class CombatService {
         LogLordHelper.commonLog("combatFight", AwardFrom.COMBAT_FIGHT, player, player.lord.getFight()
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
+        //更新任务
+        taskDataManager.updTask(player,TaskType.COND_995,1);
+
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
@@ -907,7 +983,7 @@ public class CombatService {
             if (!CheckNull.isEmpty(staticCombat.getTitanDrop()) && player.lord.getLevel() >= Constant.RED_DROP_AWARD_LV) {
                 builder.addAllAward(rewardDataManager.sendReward(player, staticCombat.getTitanDrop(), count, AwardFrom.GAIN_COMBAT));
             }
-            taskDataManager.updTask(roleId, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
+            taskDataManager.updTask(player, TaskType.COND_COMBAT_ID_WIN, 1, combatId);
 
             // 勋章掉落
             List<Medal> medals = medalDataManager.getMedalBydoCombat(player);
@@ -932,7 +1008,7 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
 
-        taskDataManager.updTask(roleId, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
+        taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
@@ -1010,8 +1086,31 @@ public class CombatService {
         // 玩家经验或者友谊积分奖励
         builder.addAllAward(expExchangeCredit(player, staticCombat, cnt, num));
 
+        // 只处理普通副本随机掉落
+        if (staticCombat.getType() == Constant.CombatType.type_1) {
+            if (CheckNull.nonEmpty(staticCombat.getRandomAward())) {
+                List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward().size());
+                for (List<Integer> award : staticCombat.getRandomAward()) {
+                    if (CheckNull.isEmpty(award))
+                        continue;
+                    List<Integer> award_ = new ArrayList<>(award);
+                    randomList.add(award_);
+                    int oldCount = award_.get(2);
+                    award_.set(2, oldCount * cnt);
+                }
+
+                List<CommonPb.Award> randomAwardList = getRandomAward(player, randomList);
+                if (ListUtils.isNotBlank(randomAwardList)) {
+                    rewardDataManager.sendRewardByAwardList(player, randomAwardList, AwardFrom.GAIN_COMBAT);
+                    builder.addAllAward(randomAwardList);
+                }
+            }
+        }
+
         //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_BARRIER, cnt);
+
+        taskDataManager.updTask(player, TaskType.COND_995, cnt);
 
         // 副本掉落活动
         List<List<Integer>> actCombatDropAward = activityDataManager.getActCombatDrop(player, cnt);
@@ -1036,7 +1135,7 @@ public class CombatService {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
                     builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero.getDecorated()));
+                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }
@@ -1185,6 +1284,26 @@ public class CombatService {
 
         // 玩家经验或者友谊积分奖励
         builder.addAllAward(expExchangeCredit(player, staticCombat, cnt, num));
+        // 只处理普通副本随机掉落
+        if (staticCombat.getType() == Constant.CombatType.type_1) {
+            if (CheckNull.nonEmpty(staticCombat.getRandomAward())) {
+                List<List<Integer>> randomList = new ArrayList<>(staticCombat.getRandomAward().size());
+                for (List<Integer> award : staticCombat.getRandomAward()) {
+                    if (CheckNull.isEmpty(award))
+                        continue;
+                    List<Integer> award_ = new ArrayList<>(award);
+                    randomList.add(award_);
+                    int oldCount = award_.get(2);
+                    award_.set(2, oldCount * cnt);
+                }
+
+                List<CommonPb.Award> randomAwardList = getRandomAward(player, randomList);
+                if (ListUtils.isNotBlank(randomAwardList)) {
+                    rewardDataManager.sendRewardByAwardList(player, randomAwardList, AwardFrom.GAIN_COMBAT);
+                    builder.addAllAward(randomAwardList);
+                }
+            }
+        }
 
         // 副本掉落活动
         List<List<Integer>> actCombatDropAward = activityDataManager.getActCombatDrop(player, cnt);
@@ -1206,11 +1325,12 @@ public class CombatService {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
                     builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero.getDecorated()));
+                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }
         taskDataManager.updTask(player, TaskType.COND_COMBAT_37, cnt);
+        taskDataManager.updTask(player, TaskType.COND_995, cnt);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_COMBAT_37, cnt);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_COMBAT_37, cnt);
         // 挑战战役活动

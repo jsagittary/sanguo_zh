@@ -66,6 +66,10 @@ public class GameDataManager {
 
         // 处理开服时充值足够，没有专属客服数据
         handleActDedicatedCustomer();
+
+        //处理被合服删除的活动
+        handleRemovedAct();
+
         LogUtil.start("数据处理逻辑结束");
     }
 
@@ -130,6 +134,10 @@ public class GameDataManager {
                 worldDataManager.addCollectMine(player.lord.getLordId(), army.getTarget());
             }
         }
+    }
+
+    public void handleRemovedAct() throws MwException {
+        StaticActivityDataMgr.handleRemovedAct();
     }
 
     /**

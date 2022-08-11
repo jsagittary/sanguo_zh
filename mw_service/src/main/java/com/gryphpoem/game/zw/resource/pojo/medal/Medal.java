@@ -1,6 +1,9 @@
 package com.gryphpoem.game.zw.resource.pojo.medal;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMedalGeneralSkill;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.Turple;
 
 import java.util.ArrayList;
@@ -260,6 +263,11 @@ public class Medal {
         return medalAttr;
     }
 
+    public String getMedalAttrLogStr() {
+        if (CheckNull.isNull(medalAttr)) return "";
+        return medalAttr.getA() + "," + medalAttr.getB();
+    }
+
     public void setMedalAttr(Turple<Integer, Integer> medalAttr) {
         this.medalAttr = medalAttr;
     }
@@ -286,6 +294,17 @@ public class Medal {
 
     public void setIsLock(Integer isLock) {
         this.isLock = isLock;
+    }
+
+    public Turple<Integer, Integer> getGeneralSkillIdLv(int index) {
+        if (CheckNull.isEmpty(this.generalSkillId) || this.generalSkillId.size() < index)
+            return new Turple<>(0, 0);
+        Turple<Integer, Integer> generalSkillIdLv = new Turple<>(this.generalSkillId.get(index - 1), 0);
+        StaticMedalGeneralSkill staticMedalGeneralSkill = StaticMedalDataMgr.getGeneralSkillById(generalSkillIdLv.getA());
+        if (CheckNull.isNull(staticMedalGeneralSkill))
+            return generalSkillIdLv;
+        generalSkillIdLv.setB(staticMedalGeneralSkill.getLevel());
+        return generalSkillIdLv;
     }
 
 }

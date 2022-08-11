@@ -140,6 +140,16 @@ public class FunctionConstant {
     public static final int FUNC_BUILD_GIFT = 3002;
 
     /**
+     * 宝具征程
+     */
+    public static final int ACT_TREASURE_WARE_JOURNEY = 3037;
+
+    /**
+     * 神兵宝具
+     */
+    public static final int ACT_MAGIC_TREASURE_WARE = 3038;
+
+    /**
      * 宝具
      */
     public static final int FUNC_TREASURE_WARE = 1047;
@@ -147,6 +157,10 @@ public class FunctionConstant {
      * 心愿武将
      */
     public static final int FUNC_WISH_HERO = 1050;
+    /**
+     * 常驻抽卡功能
+     */
+    public static final int FUNC_PERMANENT_DRAW_CARD = 1051;
     /**
      * 功能：进入世界争霸条件
      */

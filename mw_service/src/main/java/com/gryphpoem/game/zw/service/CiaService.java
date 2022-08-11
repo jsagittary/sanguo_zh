@@ -165,7 +165,7 @@ public class CiaService {
         }
         femaleAgent.setStatus(CiaConstant.AGENT_UNLOCK_STATUS_2);
         femaleAgent.setAppointmentCnt(Constant.CIA_APPOINTMENT_MAX_CNT);
-        taskDataManager.updTask(player, TaskType.COND_UNLOCK_AGENT, 1);
+        taskDataManager.updTask(player, TaskType.COND_UNLOCK_AGENT, 1,agentId);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_AGENT_STAR_CNT);
 
         //貂蝉任务-拥有佳人X个X星
@@ -399,6 +399,8 @@ public class CiaService {
         LogLordHelper.commonLog("femaleAgentAddExp", AwardFrom.COMMON, player, femaleAgent.getId(),
                 femaleAgent.getStar(), femaleAgent.getExp() - val,femaleAgent.getExp());
         taskDataManager.updTask(player, TaskType.COND_INTERACTION_AGENT, 1);
+        // 累计互动次数
+        taskDataManager.updTask(player, TaskType.COND_999, 1);
 
         InteractionRs.Builder builder = InteractionRs.newBuilder();
         builder.setInteractionCnt(cia.getInteractionCnt());
@@ -648,6 +650,7 @@ public class CiaService {
         //貂蝉任务-佳人好感度
         ActivityDiaoChanService.completeTask(player,ETask.BEAUTY_INTIMACY);//,femaleAgent.getId(),femaleAgent.getExp()
         TaskService.processTask(player,ETask.BEAUTY_INTIMACY);
+        taskDataManager.updTask(player,TaskType.COND_515,1,femaleAgent.getExp());
     }
 
     /**

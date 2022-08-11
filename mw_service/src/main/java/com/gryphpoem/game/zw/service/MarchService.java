@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
@@ -23,12 +24,14 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.plan.FunctionTrigger;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.RamadanVisitAltarService;
+import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import com.gryphpoem.game.zw.service.totem.TotemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -504,10 +507,7 @@ public class MarchService {
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, 0, null, -1, -1));
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
         rpt.setRecord(record);
 
         // 邮件参数
@@ -627,7 +627,7 @@ public class MarchService {
             dropList.addAll(totemService.dropTotem(player,2,AwardFrom.TOTOEM_DROP_PANJUN));
 
             // 更新任务进度
-            taskDataManager.updTask(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
+            taskDataManager.updTask(player, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
             battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
             royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
             activityDataManager.updActivity(player, ActivityConst.ACT_ELIMINATE_BANDIT, 1, staticBandit.getLv(), true);
@@ -679,6 +679,8 @@ public class MarchService {
             CommonPb.RptAtkBandit rpt_ = rpt.build();
             mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt_, now),
                     MailConstant.MOLD_ATK_BANDIT_SUCC, dropList, now, tParam, cParam, recoverArmyAward);
+            // 更新功能活动数据
+            DataResource.ac.getBean(DrawCardPlanTemplateService.class).updateFunctionData(player, FunctionTrigger.DEFEAT_THE_ROBBER, 1);
         } else {
             if (!bandit_task_999) {
                 // 荣耀日报 打匪军失败更新
@@ -692,7 +694,6 @@ public class MarchService {
         //上报数数
         EventDataUp.battle(player.account, player.lord,attacker,"atk", String.valueOf(banditId), String.valueOf(WorldConstant.BATTLE_TYPE_BANDIT),
                 String.valueOf(fightLogic.getWinState()),lord.getLordId(), rpt.getAtkHeroList());
-
         // 判断当前任务列表中是否有流寇任务
         if (worldService.checkCurTaskHasBandit(staticBandit.getLv(), historyLv) || bandit_task_999) {
             retreatArmyByMarchTime(player, army, now, Constant.ATTACK_BANDIT_MARCH_TIME);
@@ -835,7 +836,7 @@ public class MarchService {
         dropList.addAll(totemService.dropTotem(player,2,AwardFrom.TOTOEM_DROP_PANJUN));
 
         // 更新任务进度
-        taskDataManager.updTask(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
+        taskDataManager.updTask(player, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_BANDIT_LV_CNT, 1);
         activityDataManager.updActivity(player, ActivityConst.ACT_ELIMINATE_BANDIT, 1, staticBandit.getLv(), true);
@@ -1240,10 +1241,7 @@ public class MarchService {
 
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
         rpt.setRecord(record);
 
         // 邮件标题参数
@@ -1648,6 +1646,7 @@ public class MarchService {
                             if (!CheckNull.isEmpty(awards)) {
                                 drops.addAll(awards);
                             }
+                            taskDataManager.updTask(p, TaskType.COND_522, 1);
                         }
                         // 记录获取击杀奖励次数
                         p.getAndCreateAirshipPersonData().subKillAwardCnt(1);
@@ -1767,10 +1766,7 @@ public class MarchService {
                 rpt.addAtkHero(rptHero);
             }
         }
-        for (Force force : defender.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
         CommonPb.Record record = fightLogic.generateRecord();
         rpt.setRecord(record);
         return rpt;

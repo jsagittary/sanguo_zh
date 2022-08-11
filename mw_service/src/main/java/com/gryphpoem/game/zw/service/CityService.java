@@ -3,10 +3,10 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.CrossCityService;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
-import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -26,11 +26,13 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName CityService.java
@@ -146,9 +148,14 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
         // 随机奖励结果并发送奖励
         int rewardNum = 1;// 奖励次数
+        List<List<Integer>> otherRandomAward;
         List<List<Integer>> rewardList = new ArrayList<>();
         for (int i = 0; i < rewardNum; i++) {
             rewardList.add(staticCity.randomDropReward());
+            otherRandomAward = staticCity.randomOtherReward(roleId);
+            if (CheckNull.nonEmpty(otherRandomAward)) {
+                rewardList.addAll(otherRandomAward);
+            }
         }
         // 获取活动翻倍
         int num = activityDataManager.getActDoubleNum(player);
@@ -168,30 +175,52 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         }
 
         // 判断能否发送跑马灯
-        boolean sendChat = false;
-        int curSchId = worldScheduleService.getCurrentSchduleId();
-        if (curSchId >= 1 && curSchId <= 3) {
-            sendChat = true;
-        } else if (curSchId >= 4 && curSchId <= 7) {
-            sendChat = rewardList.stream()
-                    .filter(award -> award.get(0) == AwardType.PROP)
-                    .map(award -> StaticPropDataMgr.getPropMap(award.get(1)))
-                    .anyMatch(sProp -> sProp.getQuality() >= Constant.Quality.blue);
-        } else if (curSchId >= 8 && curSchId <= 10) {
-            sendChat = rewardList.stream()
-                    .filter(award -> award.get(0) == AwardType.PROP)
-                    .map(award -> StaticPropDataMgr.getPropMap(award.get(1)))
-                    .anyMatch(sProp -> sProp.getQuality() >= Constant.Quality.purple);
+        List<List<Integer>> sendChatRewardList = null;
+        if (CheckNull.nonEmpty(rewardList)) {
+            int curSchId = worldScheduleService.getCurrentSchduleId();
+            if (curSchId >= 1 && curSchId <= 3) {
+                sendChatRewardList = rewardList;
+            } else if (curSchId >= 4 && curSchId <= 7) {
+                sendChatRewardList = rewardList.stream()
+                        .filter(award -> award.get(0) == AwardType.PROP)
+                        .filter(award -> {
+                            StaticProp sProp = StaticPropDataMgr.getPropMap(award.get(1));
+                            return Objects.nonNull(sProp) && sProp.getQuality() >= Constant.Quality.blue;
+                        }).collect(Collectors.toList());
+            } else if (curSchId >= 8 && curSchId <= 10) {
+                sendChatRewardList = rewardList.stream()
+                        .filter(award -> award.get(0) == AwardType.PROP)
+                        .filter(award -> {
+                            StaticProp sProp = StaticPropDataMgr.getPropMap(award.get(1));
+                            return Objects.nonNull(sProp) && sProp.getQuality() >= Constant.Quality.purple;
+                        }).collect(Collectors.toList());
+            }
         }
 
-        if (sendChat) {
+        if (CheckNull.nonEmpty(sendChatRewardList)) {
+            // 翻倍处理
+            sendChatRewardList = sendChatRewardList.stream().map(list -> {
+                List<Integer> tmp = new ArrayList<>(list);
+                int count = tmp.remove(2);
+                tmp.add(2, count * sum);
+                return tmp;
+            }).collect(Collectors.toList());
+            // 跑马灯奖励拼接
+            String chatStr = sendChatRewardList.stream().map(list -> {
+                if (CheckNull.isEmpty(list))
+                    return "";
+                return list.stream().map(i -> String.valueOf(i)).collect(Collectors.joining("_"));
+            }).filter(s -> StringUtils.isNotBlank(s)).collect(Collectors.joining("|"));
+
             // 发系统消息
-            if (cost == 1) {
-                chatDataManager.sendSysChat(ChatConst.CHAT_CITY_LEVY, player.lord.getCamp(), 0, player.lord.getNick(),
-                        cityId, rewardList.get(0).get(1), sum);
-            } else if (cost == 2) {
-                chatDataManager.sendSysChat(ChatConst.CHAT_CITY_LEVY_DOUBLE, player.lord.getCamp(), 0,
-                        player.lord.getNick(), cityId, rewardList.get(0).get(1), sum, porpId);
+            if (StringUtils.isNotBlank(chatStr)) {
+                if (cost == 1) {
+                    chatDataManager.sendSysChat(ChatConst.CHAT_CITY_LEVY, player.lord.getCamp(), 0, player.lord.getNick(),
+                            cityId, chatStr);
+                } else if (cost == 2) {
+                    chatDataManager.sendSysChat(ChatConst.CHAT_CITY_LEVY_DOUBLE, player.lord.getCamp(), 0,
+                            player.lord.getNick(), cityId, chatStr, porpId);
+                }
             }
         }
 
@@ -202,7 +231,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         // 推送给他人
         List<Integer> posList = new ArrayList<>();
         posList.add(staticCity.getCityPos());
-        EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_TYPE));
+        EventBus.getDefault().post(new AreaChangeNoticeEvent(posList, AreaChangeNoticeEvent.MAP_TYPE));
 
         CityLevyRs.Builder builder = CityLevyRs.newBuilder();
         builder.setFinishTime(city.getFinishTime());
@@ -782,10 +811,17 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     public void cityExtraRewardHandle(City city, int now) {
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(city.getCityId());
         int rewardNum = WorldConstant.CITY_EXTRA_REWARD_NUM;
+
+        List<List<Integer>> otherRandomAward;
         List<List<Integer>> rewardList = new ArrayList<>();
         for (int i = 0; i < rewardNum; i++) {
             rewardList.add(staticCity.randomDropReward());
+            otherRandomAward = staticCity.randomOtherReward();
+            if (CheckNull.nonEmpty(otherRandomAward)) {
+                rewardList.addAll(otherRandomAward);
+            }
         }
+
         Player player = playerDataManager.getPlayer(city.getOwnerId());
         if (player != null) {
             List<Award> awards = PbHelper.createAwardsPb(rewardList);

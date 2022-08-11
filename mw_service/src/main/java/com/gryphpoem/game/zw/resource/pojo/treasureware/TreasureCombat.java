@@ -3,12 +3,13 @@ package com.gryphpoem.game.zw.resource.pojo.treasureware;
 
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -28,22 +29,6 @@ public class TreasureCombat {
      * key: combatId, value: 暂无用处
      */
     private Map<Integer, Integer> combatInfo = new HashMap<>();
-    /**
-     * 副本阵型
-     */
-    private List<Integer> combatFormation = new ArrayList<>();
-    /**
-     * 快速扫荡次数, 每日0点重置
-     */
-    private int dailyWipeCnt;
-    /**
-     * 推进副本次数, 每日0点重置
-     */
-    private int dailyPromoteCnt;
-    /**
-     * 已解锁的将领位置
-     */
-    private int unLockHeroPos;
 
     /**
      * 开启的章节id
@@ -57,6 +42,8 @@ public class TreasureCombat {
      * 宝具挂机
      */
     private TreasureOnHook onHook = new TreasureOnHook();
+    /** 道具今日产出数量 <道具id, 已获得数量>, 用于处理有产出数量限制的道具 */
+    private Map<Integer, Integer> randomPropNumMap = new HashMap<>();
 
     /**
      * 序列化
@@ -69,12 +56,7 @@ public class TreasureCombat {
                 builder.addAllCombatInfo(combatInfo.entrySet().stream().map(en -> PbHelper.createTwoIntPb(en.getKey(), en.getValue())).collect(Collectors.toList()));
             }
         }
-        if (CheckNull.nonEmpty(combatFormation)) {
-            builder.addAllCombatFormation(combatFormation);
-        }
-        builder.setDailyWipeCnt(dailyWipeCnt);
-        builder.setDailyPromoteCnt(dailyPromoteCnt);
-        builder.setUnlockHeroPos(unLockHeroPos);
+
         if (Objects.nonNull(onHook)) {
             builder.setOnHook(onHook.ser());
         }
@@ -82,30 +64,23 @@ public class TreasureCombat {
             builder.addAllSectionStatus(sectionStatus.entrySet().stream().map(en -> PbHelper.createTwoIntPb(en.getKey(), en.getValue())).collect(Collectors.toList()));
         }
         builder.setSectionId(sectionId);
+
+        if (CheckNull.nonEmpty(randomPropNumMap)) {
+            builder.addAllRandomPropNum(randomPropNumMap.entrySet().stream().map(en -> PbHelper.createTwoIntPb(en.getKey(), en.getValue())).collect(Collectors.toList()));
+        }
         return builder.build();
     }
 
     public void dSer(CommonPb.TreasureCombatPb ser) {
         this.curCombatId = ser.getCombatId();
         this.combatInfo.putAll(ser.getCombatInfoList().stream().collect(Collectors.toMap(CommonPb.TwoInt::getV1, CommonPb.TwoInt::getV2)));
-        this.combatFormation.addAll(ser.getCombatFormationList());
-        this.dailyWipeCnt = ser.getDailyWipeCnt();
-        this.dailyPromoteCnt = ser.getDailyPromoteCnt();
-        this.unLockHeroPos = ser.getUnlockHeroPos();
+
         if (ser.hasOnHook()) {
             this.onHook.dSer(ser.getOnHook());
         }
         this.sectionStatus.putAll(ser.getSectionStatusList().stream().collect(Collectors.toMap(CommonPb.TwoInt::getV1, CommonPb.TwoInt::getV2)));
         this.sectionId = ser.getSectionId();
-    }
-
-    /**
-     * 交换宝具副本将领阵型
-     *
-     * @param heroIds 将领阵型
-     */
-    public void swapHeroForm(List<Integer> heroIds) {
-        combatFormation = heroIds;
+        this.randomPropNumMap.putAll(ser.getRandomPropNumList().stream().collect(Collectors.toMap(CommonPb.TwoInt::getV1, CommonPb.TwoInt::getV2)));
     }
 
     /**
@@ -123,7 +98,6 @@ public class TreasureCombat {
                 }
             }
             curCombatId = combat;
-            dailyPromoteCnt++;
         }
     }
 
@@ -137,34 +111,6 @@ public class TreasureCombat {
 
     public Map<Integer, Integer> getCombatInfo() {
         return combatInfo;
-    }
-
-    public List<Integer> getCombatFormation() {
-        return combatFormation;
-    }
-
-    public int getDailyWipeCnt() {
-        return dailyWipeCnt;
-    }
-
-    public void setDailyWipeCnt(int dailyWipeCnt) {
-        this.dailyWipeCnt = dailyWipeCnt;
-    }
-
-    public int getDailyPromoteCnt() {
-        return dailyPromoteCnt;
-    }
-
-    public void setDailyPromoteCnt(int dailyPromoteCnt) {
-        this.dailyPromoteCnt = dailyPromoteCnt;
-    }
-
-    public int getUnLockHeroPos() {
-        return unLockHeroPos == 0 ? Constant.TREASURE_COMBAT_DEFAULT_UNLOCK : unLockHeroPos;
-    }
-
-    public void setUnLockHeroPos(int unLockHeroPos) {
-        this.unLockHeroPos = unLockHeroPos;
     }
 
     public TreasureOnHook getOnHook() {
@@ -181,6 +127,10 @@ public class TreasureCombat {
 
     public void setSectionId(int sectionId) {
         this.sectionId = sectionId;
+    }
+
+    public Map<Integer, Integer> getRandomPropNumMap() {
+        return randomPropNumMap;
     }
 
     /**

@@ -333,7 +333,7 @@ public class RobotService {
                 }
             }
         }
-        taskDataManager.updTask(robot.roleId, TaskType.COND_RES_AWARD, 1);
+        taskDataManager.updTask(robot, TaskType.COND_RES_AWARD, 1);
     }
 
     /**

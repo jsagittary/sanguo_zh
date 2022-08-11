@@ -520,11 +520,16 @@ public class MedalService {
             CalculateUtil.processAttr(player, player.heros.get(medal.getHeroId()));
         }
 
-        LogUtil.debug("勋章强化--》roleId:", player.roleId,
-                ",medalId:" + medal.getMedalId() + ",medalKeyId=" + medal.getKeyId() + ",level=" + medal.getLevel()
-                        + ",medalAttr=" + medal.getMedalAttr() + ",auraSkillId=" + medal.getAuraSkillId()
-                        + ",specialSkillId=" + medal.getSpecialSkillId() + ",generalSkillId="
-                        + medal.getGeneralSkillId());
+        LogUtil.getLogThread().addCommand(() -> {
+            Turple<Integer, Integer> skill1 = medal.getGeneralSkillIdLv(1);
+            Turple<Integer, Integer> skill2 = medal.getGeneralSkillIdLv(2);
+            Turple<Integer, Integer> skill3 = medal.getGeneralSkillIdLv(3);
+            LogLordHelper.gameLog(LogParamConstant.MEDAL_STRENGTHEN, player,
+                    AwardFrom.MEDAL_INTENSIFY, medal.getMedalId(), medal.getKeyId(), medal.getLevel(),
+                    medal.getMedalAttrLogStr(), medal.getGeneralSkillId(), skill1.getA(), skill1.getB(), skill2.getA(), skill2.getB(),
+                    skill3.getA(), skill3.getB(), CheckNull.isNull(medal.getSpecialSkillId()) ? 0 : medal.getSpecialSkillId(),
+                    CheckNull.isNull(medal.getSpecialSkillId()) ? 0 : medal.getAuraSkillId());
+        });
 
         GamePb1.IntensifyMedalRs.Builder builder = GamePb1.IntensifyMedalRs.newBuilder();
 

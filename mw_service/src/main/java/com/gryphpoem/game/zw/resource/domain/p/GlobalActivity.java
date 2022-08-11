@@ -8,6 +8,7 @@ package com.gryphpoem.game.zw.resource.domain.p;
  */
 public class GlobalActivity {
     private int activityType;
+    private int actKeyId;
     private int goal;
     private int equipTurLuckNums;//装备转盘全服抽奖次数统计
     private int sortord;
@@ -117,6 +118,14 @@ public class GlobalActivity {
 
     public void setAuction(byte[] auction) {
         this.auction = auction;
+    }
+
+    public int getActKeyId() {
+        return actKeyId;
+    }
+
+    public void setActKeyId(int actKeyId) {
+        this.actKeyId = actKeyId;
     }
 
     @Override

@@ -186,6 +186,7 @@ public class CrossEntity2Dto {
             crossHero.setHeroId(hero.getHeroId());
             crossHero.setLevel(hero.getLevel());
             crossHero.setDecorated(hero.getDecorated());
+            crossHero.setGradeKeyId(hero.getGradeKeyId());
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
             crossHero.setMaxLine(DataResource.getBean(FightService.class).calcHeroLine(player, hero, staticHero.getLine()));
             crossHero.setLead((int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / crossHero.getMaxLine()));// 当兵力不能被整除时，向上取整

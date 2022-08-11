@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.manager;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMentorDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
@@ -8,30 +9,26 @@ import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncDailyTaskRs;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncPartyFinishRs;
-import com.gryphpoem.game.zw.resource.constant.BuildingType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.task.CommandMultType;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPartyTask;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSectiontask;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
-import com.gryphpoem.game.zw.resource.pojo.FunCard;
-import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
-import com.gryphpoem.game.zw.resource.pojo.Task;
-import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.FactoryService;
+import com.gryphpoem.game.zw.service.HeroService;
+import com.gryphpoem.game.zw.service.StoneService;
 import com.gryphpoem.game.zw.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,21 +57,15 @@ public class TaskDataManager {
     @Autowired
     @Qualifier("rebelService")
     private BaseAwkwardDataManager rebelService;
+    @Autowired
+    private HeroService heroService;
+    @Autowired
+    private StoneService stoneService;
+    @Autowired
+    private ChapterTaskDataManager chapterTaskDataManager;
+    @Autowired
+    private FactoryService factoryService;
 
-    /**
-     * 更新玩家进度,通过lordId
-     *
-     * @param lordId
-     * @param cond
-     * @param schedule
-     * @param param
-     */
-    public void updTask(long lordId, int cond, int schedule, int... param) {
-        Player player = playerDataManager.getPlayer(lordId);
-        if (player != null) {
-            updTask(player, cond, schedule, param);
-        }
-    }
 
     /**
      * 更新玩家任务
@@ -85,45 +76,27 @@ public class TaskDataManager {
      * @param param
      */
     public void updTask(Player player, int cond, int schedule, int... param) {
-        if (null == player) {
+        if (null == player || cond <= 0 || schedule <= 0) {
             return;
         }
-        // activityDataManager.activityTaskUpdata(player, cond, schedule); //
-        // 活动影响
-
-        // 主线任务
-        Iterator<Task> it1 = player.majorTasks.values().iterator();
-        while (it1.hasNext()) {
-            Task next = it1.next();
-            StaticTask stask = StaticTaskDataMgr.getTaskById(next.getTaskId());
-            if (stask == null || stask.getCond() != cond) {
-                continue;
-            }
-            modifyTaskSchedule(player, next, stask, schedule, param);
+        try {
+            //章节任务
+            chapterTaskDataManager.updTask(player, cond, schedule, param);
+        } catch (Exception e) {
+            LogUtil.error("章节任务更新错误", e.toString());
         }
 
         // 日常任务
         List<Integer> chgDailyTaskId = null;
         for (StaticTask stask : StaticTaskDataMgr.getDayiyMap().values()) {
             if (stask.getCond() == cond) {
-                Task task = player.getDailyTask().get(stask.getTaskId());
-                if (task == null) {
-                    task = new Task(stask.getTaskId());
-                    player.getDailyTask().put(stask.getTaskId(), task);
-                }
+                Task task = player.getDailyTask().computeIfAbsent(stask.getTaskId(), x -> new Task(stask.getTaskId()));
                 if (task.getStatus() != TaskType.TYPE_STATUS_REWARD
-                        && modifyTaskSchedule(player, task, stask, schedule, param)) {
+                        && modifyTaskSchedule(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule(), schedule, param)) {
                     if (chgDailyTaskId == null) {
                         chgDailyTaskId = new ArrayList<>();
                     }
                     chgDailyTaskId.add(stask.getTaskId());
-                    // if (task.getSchedule() >= stask.getSchedule()) {
-                    // task.setStatus(TaskType.TYPE_STATUS_REWARD);// 自动领奖
-                    // int sch = stask.getAwardList().get(0).get(0);
-                    // player.setDailyTaskLivenss(player.getDailyTaskLivenss() + sch); // 加上活跃度
-                    // LogUtil.debug("roleId:", player.roleId, " 日常任务活跃度增加: taskId:", stask.getTaskId(), ",sch:", sch,
-                    // ",Livenss", player.getDailyTaskLivenss());
-                    // }
                 }
             }
         }
@@ -131,16 +104,20 @@ public class TaskDataManager {
 
         // 军团任务
         if (!TimeHelper.isFriday()) {// 周五无军团任务
+            List<Integer> taskIds = null;
             int partyLv = campDataManager.getCampMember(player.lord.getLordId()).getTaskLv();
-            Iterator<StaticPartyTask> it4 = StaticTaskDataMgr.getPartyTaskMap().values().iterator();
-            while (it4.hasNext()) {
-                StaticPartyTask next = it4.next();
+            for (StaticPartyTask next : StaticTaskDataMgr.getPartyTaskMap().values()) {
                 if (partyLv != next.getLv() || next.getCond() != cond) {
                     continue;
                 }
-                modifyTaskSchedule(player, next, schedule, param);
+                Task task = player.partyTask.computeIfAbsent(next.getId(), x -> new Task(next.getId()));
+                if (modifyTaskSchedule(player, task, next.getCond(), next.getCondId(), next.getSchedule(), schedule, param)) {
+                    if (CheckNull.isNull(taskIds))
+                        taskIds = new ArrayList<>();
+                    taskIds.add(next.getId());
+                }
             }
-            checkPartyTaskFinishAndNotice(player);
+            checkPartyTaskFinishAndNotice(player, taskIds);
         }
 
         // 个人目标任务
@@ -152,7 +129,7 @@ public class TaskDataManager {
                     if (Objects.isNull(sTask)) {
                         return false;
                     }
-                    return task.getStatus() != TaskType.TYPE_STATUS_REWARD && modifyTaskSchedule(player, task, sTask, schedule, param);
+                    return task.getStatus() != TaskType.TYPE_STATUS_REWARD && modifyTaskSchedule(player, task, sTask.getCond(), sTask.getCondId(), sTask.getSchedule(), schedule, param);
                 })
                 .collect(Collectors.toList());
         syncAdvanceTask(player, syncAdvTasks);
@@ -199,21 +176,21 @@ public class TaskDataManager {
      *
      * @param player
      */
-    private void checkPartyTaskFinishAndNotice(Player player) {
-        List<Integer> taskIds = new ArrayList<>();
-        for (Task task : player.partyTask.values()) {
-            StaticPartyTask stask = StaticTaskDataMgr.getPartyTask(task.getTaskId());
-            if (stask != null) {
-                currentTask(player, task, stask.getCond(), stask.getCond(), stask.getSchedule());
-                if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
-                    task.setStatus(TaskType.TYPE_STATUS_FINISH);
-                }
-                if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {// 完成发送通知
-                    taskIds.add(stask.getId());
-                }
-            }
-        }
-        if (!CheckNull.isEmpty(taskIds)) {
+    private void checkPartyTaskFinishAndNotice(Player player, List<Integer> taskIds) {
+//        List<Integer> taskIds = new ArrayList<>();
+//        for (Task task : player.partyTask.values()) {
+//            StaticPartyTask stask = StaticTaskDataMgr.getPartyTask(task.getTaskId());
+//            if (stask != null) {
+//                currentTask(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule());
+//                if (task.getSchedule() >= stask.getSchedule() && task.getStatus() == 0) {
+//                    task.setStatus(TaskType.TYPE_STATUS_FINISH);
+//                }
+//                if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {// 完成发送通知
+//                    taskIds.add(stask.getId());
+//                }
+//            }
+//        }
+        if (CheckNull.nonEmpty(taskIds)) {
             syncPartyFinish(player, taskIds);
         }
     }
@@ -233,39 +210,6 @@ public class TaskDataManager {
         }
     }
 
-    /**
-     * 任务按类型单独处理,便于后期修改维护
-     *
-     * @param task
-     * @param stask
-     * @param schedule
-     * @param param
-     * @return
-     */
-    public boolean modifyTaskSchedule(Player player, Task task, StaticTask stask, int schedule, int... param) {
-        return modifyTaskSchedule(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule(), schedule,
-                param);
-    }
-
-    /**
-     * 军团任务的处理
-     *
-     * @param player
-     * @param stask
-     * @param schedule
-     * @param param
-     * @return
-     */
-    private boolean modifyTaskSchedule(Player player, StaticPartyTask stask, int schedule, int... param) {
-        Task task = player.partyTask.get(stask.getId());
-        if (task == null) {
-            task = new Task(stask.getId());
-            player.partyTask.put(stask.getId(), task);
-        }
-        return modifyTaskSchedule(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule(), schedule,
-                param);
-    }
-
     public boolean modifyTaskSchedule(Player player, Task task, int sCond, int sCondId, int sSchedule, int schedule,
                                       int... param) {
         if (task == null) {
@@ -274,6 +218,7 @@ public class TaskDataManager {
         if (task.getSchedule() >= sSchedule) {
             return false;
         }
+        long oldSchedule = task.getSchedule();
         switch (sCond) {
             case TaskType.COND_18: {// 开始升级某个建筑,到多少级
                 int paramId = param.length > 0 ? param[0] : 0;
@@ -281,7 +226,6 @@ public class TaskDataManager {
                     // 获取该建筑当前等级
                     int lv = BuildingDataManager.getBuildingTopLv(player, paramId);
                     task.setSchedule(lv + schedule);
-                    return true;
                 }
                 break;
             }
@@ -290,7 +234,6 @@ public class TaskDataManager {
             case TaskType.COND_19:
             case TaskType.COND_BATTLE_CITY_LV_CNT:
             case TaskType.COND_BATTLE_STATE_LV_CNT:
-            case TaskType.COND_BUILDING_TYPE_LV:
             case TaskType.COND_COMBAT_ID_WIN:
             case TaskType.COND_BANDIT_LV_CNT:
             case TaskType.COND_ARM_TYPE_CNT:
@@ -329,7 +272,6 @@ public class TaskDataManager {
             case TaskType.COND_MENTOR_UPLV_CNT:
             case TaskType.COND_SCORPION_ACTIVATE_PREPOSITION:
             case TaskType.COND_SCORPION_ACTIVATE:
-            case TaskType.COND_UNLOCK_AGENT:
             case TaskType.COND_APPOINTMENT_AGENT:
             case TaskType.COND_INTERACTION_AGENT:
             case TaskType.COND_PRESENT_GIFT_AGENT:
@@ -337,27 +279,108 @@ public class TaskDataManager {
             case TaskType.COND_FISHING_MASTER://钓到一个鱼
             case TaskType.COND_TREASURE_WARE_MAKE_COUNT://打造宝具
             case TaskType.COND_GET_TREASURE_WARE_HOOK_AWARD://领取挂机奖励
+            case TaskType.COND_990:
+            case TaskType.COND_994:
+            case TaskType.COND_995:
+            case TaskType.COND_506:
+            case TaskType.COND_513:
+            case TaskType.COND_520:
+            case TaskType.COND_521:
+            case TaskType.COND_522:
+            case TaskType.COND_525:
+            case TaskType.COND_527:
+            case TaskType.COND_528:
+            case TaskType.COND_529:
+            case TaskType.COND_530:
+            case TaskType.COND_531:
+            case TaskType.COND_532:
+            case TaskType.COND_533:
+            case TaskType.COND_997:
+            case TaskType.COND_999:
+            case TaskType.COND_1000:
                 int paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId == 0 || sCondId == paramId) {
                     task.setSchedule(task.getSchedule() + schedule);
-                    return true;
+                }
+                break;
+            case TaskType.COND_SUPER_EQUIP:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId == paramId) {
+                    Optional.ofNullable(player.supEquips.get(sCondId)).ifPresent(superEquip -> {
+                        task.setSchedule(superEquip.getLv());
+                    });
+                }
+                break;
+            case TaskType.COND_UNLOCK_AGENT:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId == paramId) {
+                    if (Objects.nonNull(player.getCia())) {
+                        FemaleAgent femaleAgent = player.getCia().getFemaleAngets().get(paramId);
+                        if (Objects.nonNull(femaleAgent) && CiaConstant.AGENT_UNLOCK_STATUS_2 == femaleAgent.getStatus()) {
+                            task.setSchedule(sSchedule);
+                        }
+                    }
+                }
+                break;
+            case TaskType.COND_BUILDING_TYPE_LV:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId == paramId) {
+                    schedule = BuildingDataManager.getBuildingTopLv(player, sCondId);
+                    task.setSchedule(schedule);
+                }
+                break;
+            case TaskType.COND_RES_FOOD_CNT:
+                long count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_FOOD, sCondId);
+                task.setSchedule(count);
+                break;
+            case TaskType.COND_RES_OIL_CNT:
+                count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_OIL, sCondId);
+                task.setSchedule(count);
+                break;
+            case TaskType.COND_RES_ELE_CNT:
+                count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_ELE, sCondId);
+                task.setSchedule(count);
+                break;
+            case TaskType.COND_RES_ORE_CNT:
+                count = buildingDataManager.getBuilding4LvCnt(player, BuildingType.RES_ORE, sCondId);
+                task.setSchedule(count);
+                break;
+            case TaskType.COND_32: {
+                paramId = param.length > 0 ? param[0] : 0;
+                if (paramId == sCondId) {
+                    count = player.heros.values().stream().filter(hero -> hero.getEquip().length >= paramId && hero.getEquip()[paramId] > 0).count();
+                    task.setSchedule(count);
+                }
+                break;
+            }
+            case TaskType.COND_LORD_LV:
+                count = player.lord.getLevel();
+                task.setSchedule(count);
+                break;
+            // 单个条件 非累加
+            case TaskType.COND_500:
+            case TaskType.COND_507:
+                paramId = param.length > 0 ? param[0] : 0;
+                if ((sCondId == 0 || sCondId == paramId) && schedule > task.getSchedule()) {
+                    task.setSchedule(schedule);
                 }
                 break;
             case TaskType.COND_DESIGNATED_HERO_QUALITY_UPGRADE:
                 paramId = param.length > 0 ? param[0] : 0;
-                if ((sCondId == 0 || sCondId <= paramId) && schedule > task.getSchedule()) {
+                if (sCondId == 0 || sCondId <= paramId) {
                     task.setSchedule(schedule);
-                    return true;
                 }
                 break;
+            // 大于或等于所需条件
             case TaskType.COND_ATTCK_PLAYER_CNT:
             case TaskType.COND_30:
             case TaskType.COND_FACTORY_RECRUIT:
-            case TaskType.COND_COMMAND_ADD:// 大于或等于所需条件
+            case TaskType.COND_COMMAND_ADD:
+            case TaskType.COND_535:
+            case TaskType.COND_536:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId == 0 || sCondId <= paramId) {
                     task.setSchedule(task.getSchedule() + schedule);
-                    return true;
                 }
                 break;
             case TaskType.COND_EQUIP: // 指定将领的指定部位穿装备(双重条件)
@@ -365,7 +388,6 @@ public class TaskDataManager {
                 int param2 = param.length > 1 ? param[1] : 0;
                 if ((sCondId == 0 || sCondId == paramId) && param2 == sSchedule) {
                     task.setSchedule(sSchedule);
-                    return true;
                 }
                 break;
             case TaskType.COND_MONTH_CARD_STATE_45:// 检测是否在月卡状态
@@ -374,35 +396,167 @@ public class TaskDataManager {
                 for (FunCard fc : player.funCards.values()) {
                     if (today == fc.getLastTime() && task.getSchedule() < 1) {
                         task.setSchedule(1);
-                        return true;
                     }
                 }
-
                 break;
             case TaskType.COND_LOGIN_36: // 每日登陆
                 if (task.getSchedule() < 1) {
                     task.setSchedule(1);
-                    return true;
                 }
                 break;
-            case TaskType.COND_STONE_HOLE_49:// 宝石镶嵌个数
-                int cnt = player.getStoneInfo().getStoneHoles().size();
-                if (task.getSchedule() < cnt) {
-                    task.setSchedule(cnt);
-                    return true;
+            case TaskType.COND_STONE_HOLE_49:// 装备x个x级以上饰品
+                int cnt = stoneService.getInlaidStoneNumByStoneLv(player, sCondId);
+                task.setSchedule(cnt);
+                break;
+            case TaskType.COND_991:
+                int progress = heroService.getTaskSchedule1(player, sCondId);
+                task.setSchedule(progress);
+                break;
+            case TaskType.COND_992:
+            case TaskType.COND_993:
+                if (param[0] >= sCondId) {
+                    task.setSchedule(task.getSchedule() + schedule);
                 }
                 break;
-            // case TaskType.COND_SUPER_EQUIP:// 超级武器等级
-            // paramId = param.length > 0 ? param[0] : 0;
-            // if (sCondId == 0 || sCondId == paramId) {
-            // task.setSchedule(schedule > task.getSchedule() ? schedule : task.getSchedule());
-            // return true;
-            // }
-            // break;
+            case TaskType.COND_996:
+                int v = player.getMixtureDataById(PlayerConstant.CAMP_FIGHT_TOTAL_COUNT);
+                if (v != task.getSchedule()) {
+                    task.setSchedule(v);
+                }
+                break;
+            case TaskType.COND_501:
+            case TaskType.COND_519:
+                int quality = sCond == TaskType.COND_501 ? Constant.Quality.green : Constant.Quality.blue;
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId == paramId) {
+                    count = chapterTaskDataManager.getHeroQualityEquipCount(player, sCondId, quality);
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_502:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = chapterTaskDataManager.getHeroEquipReformAttack(player, sCondId);
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_503:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = chapterTaskDataManager.getHeroEquipReform(player, sCondId);
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_504:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = chapterTaskDataManager.battleHeroWearingEquipment(player, sCondId);
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_505:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = chapterTaskDataManager.arbitrarilyHeroWearingEquipment(player, sCondId, sSchedule);
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_508:
+                int armNum = factoryService.getAddNumByCondId(player, sCondId);
+                task.setSchedule(armNum);
+                break;
+            case TaskType.COND_509:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = player.getAllOnBattleHeros().stream().filter(hero -> hero.getQuality() >= sCondId).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_510:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = Arrays.stream(player.heroAcq).filter(heroId -> {
+                        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                        if (Objects.nonNull(staticHero)) {
+                            return staticHero.getQuality() >= sCondId;
+                        }
+                        return false;
+                    }).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_511:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && Arrays.stream(Arrays.copyOfRange(hero.getWash(), 1, hero.getWash().length)).sum() >= sCondId).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_512:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getWash()[HeroConstant.ATTR_ATTACK] >= sCondId).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_514:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getLevel() >= sCondId).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_515:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId && Objects.nonNull(player.getCia())) {
+                    count = player.getCia().getFemaleAngets().values().stream().filter(cia -> Objects.nonNull(cia) && cia.getExp() >= sCondId).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_516:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (sCondId <= paramId) {
+                    count = player.heros.values().stream().filter(e -> e.getFightVal() >= sCondId).count();
+                    task.setSchedule(count);
+                }
+                break;
+            case TaskType.COND_517:
+//                paramId = param.length > 0 ? param[0] : 0;
+//                if (sCondId == paramId) {
+//                    Turple<Integer, Integer> turple = TaskCone517Type.getQualityAndStageByCondId(sCondId);
+//                    if (Objects.nonNull(turple)) {
+//                        long count = player.heros.values().stream().filter(hero -> {
+//                            if (hero.getQuality() >= turple.getA()) {
+//                                return true;
+//                            } else return hero.getQuality() == turple.getA() && hero.getStage() >= turple.getB();
+//                        }).count();
+//                        task.setSchedule(count);
+//                        return true;
+//                    }
+//                }
+                break;
+            case TaskType.COND_534:
+                count = player.getAllOnBattleHeros().stream().filter(e -> {
+                    Integer treasureWare = e.getTreasureWare();
+                    return Objects.nonNull(treasureWare) && treasureWare > 0;
+                }).count();
+                task.setSchedule(count);
+                break;
+            case TaskType.COND_998:
+                paramId = param.length > 0 ? param[0] : 0;
+                if (paramId == 0)
+                    break;
+                StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(sCondId);
+                if (CheckNull.isNull(staticData))
+                    break;
+                int[] scope = StaticHeroDataMgr.getHeroUpgradeScope(staticData.getHeroId());
+                if (CheckNull.isNull(scope) || scope.length != 2 || scope[0] > paramId || scope[1] < paramId || paramId < sCondId)
+                    break;
+                task.setSchedule(task.getSchedule() + schedule);
+                break;
             default:
-                break;
         }
-        return false;
+        return oldSchedule != task.getSchedule();
     }
 
     /**
@@ -414,7 +568,7 @@ public class TaskDataManager {
      * @return
      */
     public Task currentMajorTask(Player player, Task task, StaticTask stask) {
-        if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {
+        if (Objects.isNull(task) || task.getStatus() == TaskType.TYPE_STATUS_FINISH) {
             return task;
         }
         return currentTask(player, task, stask.getCond(), stask.getCondId(), stask.getSchedule());
@@ -432,9 +586,9 @@ public class TaskDataManager {
      */
     public Task currentTask(Player player, Task task, int cond, int condId, int sSchedule) {
         if (task == null) {
-            return task;
+            return null;
         }
-        if (task.getStatus() == TaskType.TYPE_STATUS_FINISH) {
+        if (task.getStatus() != TaskType.TYPE_STATUS_UNFINISH) {
             return task;
         }
         long schedule = 0;
@@ -442,32 +596,14 @@ public class TaskDataManager {
             case TaskType.COND_LORD_LV:
                 schedule = player.lord.getLevel();
                 break;
-            // case TaskType.COND_CLICK:
-            // schedule = 1;
-            // break;
-            // case TaskType.COND_20:
-            // case TaskType.COND_21:
-            // case TaskType.COND_24:
-            // case TaskType.COND_25:
-            // case TaskType.COND_FIGHT_SHOW:// 直接完成
-            // schedule = 1;
-            // break;
+            case TaskType.COND_500:
             case TaskType.COND_TECH_LV: {
                 schedule = techDataManager.getTechLv(player, condId);
                 break;
             }
-            // case TaskType.COND_OTHER_TASK_CNT: {
-            //     Iterator<Task> it1 = player.majorTasks.values().iterator();
-            //     while (it1.hasNext()) {
-            //         Task next = it1.next();
-            //         StaticTask stask = StaticTaskDataMgr.getTaskById(next.getTaskId());
-            //         if (stask != null && stask.getType() == TaskType.TYPE_SUB
-            //                 && next.getStatus() == TaskType.TYPE_STATUS_REWARD) {
-            //             schedule++;
-            //         }
-            //     }
-            //     break;
-            // }
+            case TaskType.COND_532:
+                schedule = player.treasureWares.values().stream().filter(e -> e.getLevel() >= condId).count();
+                break;
             case TaskType.COND_18: {
                 schedule = BuildingDataManager.getBuildingTopLv(player, condId);
                 // 判断该建筑是否在升级
@@ -512,10 +648,6 @@ public class TaskDataManager {
                 schedule = player.heros.containsKey(condId) ? 1 : 0;
                 break;
             }
-            // case TaskType.COND_ARM_TYPE_CNT: {
-            // schedule = armyService.getArmCount(player.resource, condId);
-            // break;
-            // }
             case TaskType.COND_32: {
                 Iterator<Hero> it1 = player.heros.values().iterator();
                 while (it1.hasNext()) {
@@ -537,7 +669,7 @@ public class TaskDataManager {
                 if (sc != null) schedule = sc.getPassCnt();
                 break;
             case TaskType.COND_STONE_HOLE_49:// 宝石镶嵌个数
-                schedule = player.getStoneInfo().getStoneHoles().size();
+                schedule = stoneService.getInlaidStoneNumByStoneLv(player, condId);
                 break;
             case TaskType.COND_PITCHCOMBAT_PASS: {// 通关指定ID的荣耀演习场关卡,过关了也要算
                 PitchCombat pitchCombat = player.getPitchCombat(condId);
@@ -570,6 +702,17 @@ public class TaskDataManager {
                 schedule = mentorSkill == null ? 0 : mentorSkill.getLv();
                 break;
             }
+            case TaskType.COND_998:
+                schedule = player.heros.values().stream().filter(e -> {
+                    StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(condId);
+                    if (CheckNull.isNull(staticData))
+                        return false;
+                    int[] scope = StaticHeroDataMgr.getHeroUpgradeScope(staticData.getHeroId());
+                    return !ObjectUtils.isEmpty(scope) && scope.length >= 2 &&
+                            scope[1] <= e.getGradeKeyId() && scope[1] >= e.getGradeKeyId() &&
+                            condId <= e.getGradeKeyId();
+                }).count();
+                break;
             case TaskType.COND_MENTOR_UPLV: {// 升级教官等级至XX级
                 MentorInfo mentorInfo = player.getMentorInfo();
                 Mentor mentor = mentorInfo.getMentors().get(condId);
@@ -603,16 +746,131 @@ public class TaskDataManager {
                         .orElse(0);
                 break;
             }
+            case TaskType.COND_991:
+                schedule = heroService.getTaskSchedule1(player, condId);
+                break;
+            case TaskType.COND_27:
+                schedule = player.heros.values().stream().filter(e -> e.getType() == condId).count();
+                break;
+            case TaskType.COND_996:
+                int v = player.getMixtureDataById(PlayerConstant.CAMP_FIGHT_TOTAL_COUNT);
+                task.setSchedule(v);
+                break;
+            case TaskType.COND_501:
+            case TaskType.COND_519:
+                schedule = chapterTaskDataManager.getHeroQualityEquipCount(player, condId, cond == TaskType.COND_501 ? Constant.Quality.green : Constant.Quality.blue);
+                break;
+            case TaskType.COND_502:
+                schedule = chapterTaskDataManager.getHeroEquipReformAttack(player, condId);
+                break;
+            case TaskType.COND_503:
+                schedule = chapterTaskDataManager.getHeroEquipReform(player, condId);
+                break;
+            case TaskType.COND_504:
+                schedule = chapterTaskDataManager.battleHeroWearingEquipment(player, condId);
+                break;
+            case TaskType.COND_505:
+                schedule = chapterTaskDataManager.arbitrarilyHeroWearingEquipment(player, condId, sSchedule);
+                break;
+            case TaskType.COND_506:
+                Prop prop = player.props.get(condId);
+                if (Objects.nonNull(prop)) {
+                    schedule = prop.getCount();
+                }
+                break;
+            case TaskType.COND_508:
+                schedule = factoryService.getAddNumByCondId(player, condId);
+                break;
+            case TaskType.COND_509:
+                schedule = player.getAllOnBattleHeros().stream().filter(hero -> hero.getQuality() >= condId).count();
+                break;
+            case TaskType.COND_510:
+                schedule = Arrays.stream(player.heroAcq).filter(heroId -> {
+                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                    if (Objects.nonNull(staticHero)) {
+                        return staticHero.getQuality() >= condId;
+                    }
+                    return false;
+                }).count();
+                break;
+            case TaskType.COND_511:
+                schedule = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && Arrays.stream(Arrays.copyOfRange(hero.getWash(), 1, hero.getWash().length)).sum() >= condId).count();
+                break;
+            case TaskType.COND_512:
+                schedule = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getWash()[HeroConstant.ATTR_ATTACK] >= condId).count();
+                break;
+            case TaskType.COND_514:
+                schedule = player.heros.values().stream().filter(hero -> Objects.nonNull(hero) && hero.getLevel() >= condId).count();
+                break;
+            case TaskType.COND_515:
+                if (Objects.nonNull(player.getCia())) {
+                    schedule = player.getCia().getFemaleAngets().values().stream().filter(cia -> Objects.nonNull(cia) && cia.getExp() >= condId).count();
+                }
+                break;
+            case TaskType.COND_516:
+                schedule = player.heros.values().stream().filter(e -> e.getShowFight().values().stream().mapToInt(Integer::intValue).sum() >= condId).count();
+                break;
+            case TaskType.COND_517:
+//                Turple<Integer, Integer> turple = TaskCone517Type.getQualityAndStageByCondId(condId);
+//                if (Objects.nonNull(turple)) {
+//                    schedule = player.heros.values().stream().filter(hero -> {
+//                        if (hero.getQuality() >= turple.getA()) {
+//                            return true;
+//                        } else return hero.getQuality() == turple.getA() && hero.getStage() >= turple.getB();
+//                    }).count();
+//                }
+                break;
+            case TaskType.COND_534:
+                schedule = player.getAllOnBattleHeros().stream().filter(e -> {
+                    Integer treasureWare = e.getTreasureWare();
+                    return Objects.nonNull(treasureWare) && treasureWare > 0;
+                }).count();
+                break;
+            case TaskType.COND_990:
+                schedule = player.getMixtureDataById(PlayerConstant.HERO_SEARCH_NEW_TOTAL_COUNT);
+                break;
+            case TaskType.COND_30:
+            case TaskType.COND_FACTORY_RECRUIT:
+            case TaskType.COND_COMMAND_ADD:
+                List<History> histories = player.typeInfo.get(Constant.TypeInfo.TYPE_1);
+                if (CheckNull.nonEmpty(histories)) {
+                    schedule = histories.stream().mapToInt(e -> {
+                        if (Objects.isNull(e)) return 0;
+                        StaticCommandMult staticCommandMult = StaticBuildingDataMgr.getCommandMult(e.getId());
+                        if (Objects.nonNull(staticCommandMult) && staticCommandMult.getType() == CommandMultType.getCommandMultType(cond)) {
+                            return staticCommandMult.getLv();
+                        }
+                        return 0;
+                    }).max().orElse(0);
+                }
+                break;
+            case TaskType.COND_HERO_EQUIPID:
+                schedule = player.equips.values().stream().filter(e -> Objects.nonNull(e) && e.getEquipId() == condId && e.getHeroId() > 0).count();
+                break;
+            case TaskType.COND_28:
+                schedule = player.getAllOnBattleHeros().stream().filter(e -> e.getType() == condId).count();
+                break;
+            case TaskType.COND_UNLOCK_AGENT:
+                if (Objects.nonNull(player.getCia())) {
+                    FemaleAgent femaleAgent = player.getCia().getFemaleAngets().get(condId);
+                    if (Objects.nonNull(femaleAgent) && CiaConstant.AGENT_UNLOCK_STATUS_2 == femaleAgent.getStatus()) {
+                        schedule = sSchedule;
+                    }
+                }
+                break;
             default:
                 break;
         }
+        boolean push = false;
         if (schedule > task.getSchedule()) {
             task.setSchedule(schedule);
+            push = true;
         }
         if (schedule >= sSchedule && task.getStatus() == TaskType.TYPE_STATUS_UNFINISH) {// 只能从未完成->完成
             task.setStatus(TaskType.TYPE_STATUS_FINISH);
-
+            push = true;
         }
+        if (push) chapterTaskDataManager.pushMajorTask(player, task);
         return task;
     }
 
@@ -628,46 +886,6 @@ public class TaskDataManager {
         player.setDailyTaskLivenss(0);
     }
 
-    /*
-    public void refreshTask(Player player, int type) {
-        if (type == 1) {// 重置日常任务和活跃任务
-            List<Integer> staskList = StaticTaskDataMgr.getRadomDayiyTask();
-            List<Task> dayiyList = player.dailyTask;
-            if (dayiyList.size() == 0) {
-                for (Integer taskId : staskList) {
-                    Task task = new Task(taskId);
-                    dayiyList.add(task);
-                }
-            } else {
-                int i = 0;
-                Iterator<Task> it = dayiyList.iterator();
-                while (it.hasNext()) {
-                    Task next = it.next();
-                    int taskId = staskList.get(i++);
-                    next.setTaskId(taskId);
-                    next.setSchedule(0);
-                    next.setAccept(0);
-                    next.setStatus(0);
-                }
-            }
-        } else if (type == 2) {// 日常活跃任务
-            Map<Integer, Task> liveTaskMap = player.partyTask;
-            if (liveTaskMap.size() == 0) {
-                List<StaticTask> liveList = StaticTaskDataMgr.getLiveList();
-                for (StaticTask ee : liveList) {
-                    Task task = new Task(ee.getTaskId());
-                    liveTaskMap.put(ee.getTaskId(), task);
-                }
-            } else {
-                Iterator<Task> it = liveTaskMap.values().iterator();
-                while (it.hasNext()) {
-                    Task task = it.next();
-                    task.setSchedule(0);
-                }
-            }
-        }
-    }
-    */
 
     /**
      * 累计世界任务中个人的流寇部分
@@ -708,206 +926,6 @@ public class TaskDataManager {
         // LogUtil.debug(player.lord.getLordId() + ",刷新军团任务等级重置为" + camp.getPartyLv());
     }
 
-    /**
-     * 更新世界任务完成进度
-     *
-     * @param taskType
-     * @param schedule
-     * @param param
-     */
-    // @Deprecated
-    // public void updWorldTask(int taskType, int schedule, int... param) {
-    // WorldTask wTask = worldDataManager.getWorldTask();
-    // int curWorldTaskId = wTask.getWorldTaskId().get();
-    // StaticWorldTask sCurWorldTask = StaticWorldDataMgr.getWorldTask(curWorldTaskId);
-    // // 检查世界任务是否完成(如果当前完成的是打城市和boss，则进入下个任务)
-    // LogUtil.debug("updWorldTask城战推送type=" + curWorldTaskId + ",任务id=" + wTask.getWorldTaskId().get() + ",schedule="
-    // + schedule + ",taskType=" + taskType + ",statiType=" + sCurWorldTask.getTaskType() + ",param="
-    // + param.length);
-    // // if (sCurWorldTask.getTaskType() != taskType) {
-    // // return;
-    // // }
-    // if (wTask.getWorldTaskMap().isEmpty()) {
-    // LogUtil.debug("updWorldTask isEmpty");
-    // wTask.getWorldTaskMap().put(WorldConstant.INIT_WORLD_TASKID,
-    // CommonPb.WorldTask.newBuilder().setTaskId(WorldConstant.INIT_WORLD_TASKID).build());
-    // }
-    // boolean push = false;
-    // CommonPb.WorldTask pushTask = null;
-    //
-    // // 如果是打城池，则开启下个世界任务进度
-    // if (taskType == TaskType.WORLD_TASK_TYPE_CITY) {
-    // if (param.length < 2) {
-    // return;
-    // }
-    // int cityType = param[0];
-    // int camp = param[1];
-    // StaticWorldTask swt = StaticWorldDataMgr.getWorldTaskMap().values()
-    // .stream().filter(wt -> wt.getTaskType() == TaskType.WORLD_TASK_TYPE_CITY
-    // && !CheckNull.isEmpty(wt.getParam()) && wt.getParam().get(0) == cityType)
-    // .findFirst().orElse(null);
-    // if (swt == null) {
-    // return;
-    // }
-    // if (swt.getTaskId() < curWorldTaskId) { // 已经完成的任务
-    // return;
-    // } else if (swt.getTaskId() > curWorldTaskId) { // 未来的任务
-    // /* ------------------记录完成未开启的世界任务------------------*/
-    // if (swt != null && swt.getTaskId() > curWorldTaskId
-    // && !wTask.getWorldTaskMap().containsKey(swt.getTaskId())) { // 完成未来的世界任务
-    // pushTask = CommonPb.WorldTask.newBuilder().setTaskId(swt.getTaskId()).setTaskCnt(1).setCamp(camp)
-    // .build();
-    // wTask.getWorldTaskMap().put(swt.getTaskId(), pushTask);
-    // curWorldTaskId = swt.getTaskId();
-    // push = true;
-    // }
-    //
-    // } else {// 当前的任务
-    // /* ------------------是当前任务完成的是当前任务------------------*/
-    // CommonPb.WorldTask worldTask = wTask.getWorldTaskMap().get(curWorldTaskId);
-    // if (worldTask == null || worldTask.getTaskCnt() <= 0) {
-    // pushTask = CommonPb.WorldTask.newBuilder().setTaskId(curWorldTaskId).setTaskCnt(1).setCamp(camp)
-    // .build();
-    // wTask.getWorldTaskMap().put(curWorldTaskId, pushTask);
-    // push = true;
-    // }
-    // onWroldTaskComplete(wTask.getWorldTaskId().get());
-    // wTask.getWorldTaskId().incrementAndGet();// 进度+1
-    // }
-    // StaticWorldTask nextWorldTask = StaticWorldDataMgr.getWorldTask(curWorldTaskId + 1);
-    // if (nextWorldTask != null && !wTask.getWorldTaskMap().containsKey(nextWorldTask.getTaskId())) {
-    // if (nextWorldTask.getTaskType() == TaskType.WORLD_TASK_TYPE_BOSS) {
-    // wTask.getWorldTaskMap().put(nextWorldTask.getTaskId(), CommonPb.WorldTask.newBuilder()
-    // .setTaskId(nextWorldTask.getTaskId()).setHp(nextWorldTask.getHp()).build());
-    // wTask.setDefender(null);
-    // } else {
-    // wTask.getWorldTaskMap().put(nextWorldTask.getTaskId(),
-    // CommonPb.WorldTask.newBuilder().setTaskId(nextWorldTask.getTaskId()).setTaskCnt(0).build());
-    // }
-    // }
-    // } else if (taskType == TaskType.WORLD_TASK_TYPE_BOSS) {
-    // // 如果是打世界boss，没打死则扣血，打死则进入下个世界任务进度
-    // if (schedule <= 0) {
-    // return;
-    // }
-    // // 扣血
-    // CommonPb.WorldTask worldTask = wTask.getWorldTaskMap().get(curWorldTaskId);
-    // pushTask = CommonPb.WorldTask.newBuilder().setTaskId(curWorldTaskId)
-    // .setTaskCnt(worldTask.getHp() <= schedule ? 1 : 0).setHp(worldTask.getHp() - schedule).build();
-    // push = true;
-    // LogUtil.debug("updWorldTask世界boss当前血=" + worldTask.getHp() + ",扣血=" + schedule);
-    // // 打死了,开启下个任务
-    // if (worldTask.getHp() <= schedule) {
-    // StaticWorldTask nextWorldTask = StaticWorldDataMgr.getWorldTask(curWorldTaskId + 1);
-    // if (nextWorldTask != null) {
-    // // 新开启
-    // onWroldTaskComplete(wTask.getWorldTaskId().get());
-    // int newWorldTaskId = wTask.getWorldTaskId().incrementAndGet();
-    // wTask.getWorldTaskMap().put(newWorldTaskId, CommonPb.WorldTask.newBuilder()
-    // .setTaskId(newWorldTaskId).setHp(nextWorldTask.getHp()).build());
-    // }
-    // schedule = 1;
-    // }
-    // // 更新世界任务内存值
-    // wTask.getWorldTaskMap().put(curWorldTaskId, pushTask);
-    // LogUtil.debug("---updWorldTask世界boss当前血=" + worldTask.getHp() + ",扣血=" + schedule);
-    // }
-    //
-    // /*------------------------------进度更新推送-----------------------------*/
-    // LogUtil.debug("updWorldTaspush=" + push);
-    // if (push) {
-    // SynWorldTaskRs.Builder syncwtBuilder = SynWorldTaskRs.newBuilder();
-    // CommonPb.WorldTask.Builder wtBuilder = CommonPb.WorldTask.newBuilder();
-    // wtBuilder.setTaskId(curWorldTaskId);
-    // wtBuilder.setTaskCnt(schedule);
-    // wtBuilder.setCamp(pushTask.getCamp());
-    // wtBuilder.setHp(pushTask.getHp());
-    // syncwtBuilder.setWorldTask(wtBuilder);
-    //
-    // Base.Builder msg = PbHelper.createSynBase(SynWorldTaskRs.EXT_FIELD_NUMBER, SynWorldTaskRs.ext,
-    // syncwtBuilder.build());
-    // Player player;
-    // Iterator<Player> it = playerDataManager.getAllOnlinePlayer().values().iterator();
-    // while (it.hasNext()) {
-    // player = it.next();
-    // if (player.ctx != null) {
-    // MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
-    // }
-    // }
-    // }
-    // }
-
-    /**
-     * 世界任务完成条件触发
-     *
-     * @param worldTaskId
-     */
-    public void onWroldTaskComplete(int worldTaskId) {
-        if (worldTaskId == Constant.REBEL_WORLD_TASKID_COND) {
-            // 匪军叛乱的触发条件
-            rebelService.initRebellion();
-        }
-    }
-
-    /**
-     * 触发剧情
-     *
-     * @param player
-     */
-    public void triggerSectiontask(Player player) {
-        if (player.sectiontask.isEmpty()) {// 没有章节才会触发
-            StaticSectiontask firstSSection = StaticTaskDataMgr.getSectiontaskList().get(0);
-            Sectiontask fSection = new Sectiontask(firstSSection.getSectionId(), TaskType.TYPE_STATUS_UNFINISH);
-            player.sectiontask.add(fSection);
-            // 任务
-            List<Integer> newTasks = firstSSection.getSectionTask();
-            // 触发章节任务
-            for (Integer taskId : newTasks) {
-                if (StaticTaskDataMgr.getTaskById(taskId) != null) {
-                    if (!player.majorTasks.containsKey(taskId)) {
-                        // 给资源+1次征收
-                        taskService.processTask(player, taskId);
-                        Task task = new Task(taskId);
-                        player.majorTasks.put(taskId, task);
-                    }
-                }
-            }
-            LogUtil.debug("触发了首个剧情章节  roleId:", player.roleId, " firstSectionId:", firstSSection.getSectionId());
-        }
-    }
-
-
-    /**
-     * 触发第十一章剧情任务
-     *
-     * @param player 玩家对象
-     */
-    public void triggerSectiontask2(Player player) {
-        // 查最后一个剧情任务是不是第九章
-        Sectiontask sectiontask = player.sectiontask.stream().sorted(Comparator.comparingInt(Sectiontask::getSectionId).reversed()).findFirst().orElse(null);
-        final int sectionId = Objects.requireNonNull(sectiontask).getSectionId();
-        // 如果剧情任务id为9
-        if (sectionId == Constant.SECTION_ID_9) {
-            StaticSectiontask sectionTask = StaticTaskDataMgr.getSectiontaskById(Constant.SECTION_ID_11);
-            Sectiontask section = new Sectiontask(sectionTask.getSectionId(), TaskType.TYPE_STATUS_UNFINISH);
-            player.sectiontask.add(section);
-            // 任务
-            List<Integer> newTasks = sectionTask.getSectionTask();
-            // 触发章节任务
-            for (Integer taskId : newTasks) {
-                if (StaticTaskDataMgr.getTaskById(taskId) != null) {
-                    if (!player.majorTasks.containsKey(taskId)) {
-                        // 给资源+1次征收
-                        taskService.processTask(player, taskId);
-                        Task task = new Task(taskId);
-                        player.majorTasks.put(taskId, task);
-                    }
-                }
-            }
-            LogUtil.debug("触发了第二个剧情章节  roleId:", player.roleId, " firstSectionId:", sectionTask.getSectionId());
-        }
-    }
-
 
     /**
      * 是否开启了世界任务
@@ -919,126 +937,7 @@ public class TaskDataManager {
         if (player.worldTasks.size() >= 2) { // 兼容用gm命令开启的世界任务,
             return true;
         }
-        Task task = player.majorTasks.get(WorldConstant.WORLD_TASK_OPEN_TASK_ID);
+        Task task = player.chapterTask.getOpenTasks().get(WorldConstant.WORLD_TASK_OPEN_TASK_ID);
         return task != null && task.getStatus() == TaskType.TYPE_STATUS_REWARD;
     }
-
-    // =============================计算当前需要显示的任务==========================
-    // 获取当前任务的列表
-    public List<Integer> getCurTask(Player player) {
-        List<Integer> curTask = new ArrayList<>();
-
-        // 1. 找到当前正在进行主线任务
-        Map<Integer, Task> majorTasks = player.majorTasks;
-        List<Task> majorTaskList = new ArrayList<>();
-        majorTaskList.addAll(majorTasks.values());
-        // 获取排序最小的未完成的主线任务
-        StaticTask curCfgMaintask = majorTaskList.stream().filter(t -> t.getStatus() != TaskType.TYPE_STATUS_REWARD)// 获取未领取的主线任务
-                .map(t -> StaticTaskDataMgr.getMajorMap().get(t.getTaskId()))
-                .filter(staticTask -> staticTask != null && staticTask.getType() == TaskType.TYPE_MAIN)
-                .min(Comparator.comparing(StaticTask::getMainSort)).orElse(null); // 找到主线任务排序最小
-
-        int curMainTaskId = 0;// 当前主线任务的id
-        if (curCfgMaintask == null) {// 没有主线任务说明,可能所有的主线任务已经完成
-            // 找到自己当前完成的最后一个主线任务
-            StaticTask myLastMainTask = majorTaskList.stream().filter(t -> t.getStatus() == TaskType.TYPE_STATUS_REWARD)// 已经完成
-                    .map(t -> StaticTaskDataMgr.getMajorMap().get(t.getTaskId()))
-                    .filter(staticTask -> staticTask != null && staticTask.getType() == TaskType.TYPE_MAIN) // 主线任务
-                    .max(Comparator.comparing(StaticTask::getMainSort)).orElse(null);
-            if (myLastMainTask != null) {
-                curMainTaskId = myLastMainTask.getTaskId();
-            }
-            // 目前任务配置表中最后一个任务id
-            StaticTask staticTask = StaticTaskDataMgr.getLastMainTask();
-
-            if (myLastMainTask != null && staticTask != null) {
-                if (staticTask.getTaskId() == myLastMainTask.getTaskId()) {
-                    LogUtil.debug("roleId:", player.roleId, ", taskId: 主线任务全部完成");
-                } else {
-                    // 尝试触发配表新增的主线任务
-                    List<StaticTask> newTaskList = StaticTaskDataMgr.getTriggerTask(myLastMainTask.getTaskId());
-                    if (!CheckNull.isEmpty(newTaskList)) {
-                        for (StaticTask st : newTaskList) {
-                            if (st.getType() == TaskType.TYPE_MAIN && !player.majorTasks.containsKey(st.getTaskId())) {
-                                // 触发新的主线
-                                Task t = new Task(st.getTaskId());
-                                player.majorTasks.put(t.getTaskId(), t);
-                                curMainTaskId = t.getTaskId();
-                                curTask.add(curMainTaskId);// 添加主线列表中
-                                LogUtil.debug("roleId:", player.roleId, ", 触发新的主线任务:", ", taskId:", st.getTaskId());
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            LogUtil.debug("roleId: ", player.roleId, ", curMaintaskId: ", curCfgMaintask.getTaskId());
-            curMainTaskId = curCfgMaintask.getTaskId();
-            curTask.add(curMainTaskId);// 添加主线
-        }
-        // 2. 找当前正在进行支线任务
-        final int mainTaskId = curMainTaskId;
-        // 获取已经完成主线任务
-        List<StaticTask> mainSTasks = StaticTaskDataMgr.getAllTask().stream()
-                .filter(st -> st.getType() == TaskType.TYPE_MAIN && st.getTaskId() <= mainTaskId)
-                .sorted((t1, t2) -> t1.getTaskId() - t2.getTaskId()) // 从小到大排序
-                .collect(Collectors.toList());
-
-        List<StaticTask> curTriggerTasks = new ArrayList<>(); // 已经触发的任务
-        for (StaticTask st : mainSTasks) {// 找每个主线 已经触发的支线任务
-            if (getTaskStatusByPlayer(player, st) == TaskType.TYPE_STATUS_REWARD) {// 主线领取才能触发
-                curTriggerTasks.addAll(findSubTask(player, st));
-            }
-        }
-        // 每种类型只能有一种
-        Set<Integer> subTypes = new HashSet<>();
-        for (StaticTask cst : curTriggerTasks) {
-            int type = cst.getSubType();
-            if (!subTypes.contains(type)) {
-                subTypes.add(type);
-                curTask.add(cst.getTaskId());
-            }
-        }
-        // 打印
-        curTask.forEach(
-                t -> LogUtil.debug("roleId:", player.roleId, " ,", StaticTaskDataMgr.getMajorMap().get(t).getTaskId()
-                        + " " + StaticTaskDataMgr.getMajorMap().get(t).getDesc()));
-
-        return curTask;
-    }
-
-    /**
-     * 更具主线获取支线
-     */
-    private List<StaticTask> findSubTask(Player player, StaticTask staticTask) {
-        List<StaticTask> subTask = new ArrayList<>();
-        List<StaticTask> triggerList = StaticTaskDataMgr.getTriggerTask(staticTask.getTaskId());
-        if (!CheckNull.isEmpty(triggerList)) {
-            // 有可触发的任务
-            for (StaticTask t : triggerList) {
-                if (t.getType() == TaskType.TYPE_SUB) {
-                    if (getTaskStatusByPlayer(player, t) == TaskType.TYPE_STATUS_REWARD) {
-                        subTask.addAll(findSubTask(player, t));
-                    } else {
-                        subTask.add(t);
-                    }
-                }
-            }
-        }
-        return subTask;
-    }
-
-    /**
-     * 获取某个任务的状态
-     */
-    public int getTaskStatusByPlayer(Player player, StaticTask t) {
-        Task task = player.majorTasks.get(t.getTaskId());
-        if (task != null) {
-            return task.getStatus();
-        } else {
-            return TaskType.TYPE_STATUS_UNFINISH;
-        }
-    }
-
-    // =============================计算当前需要显示的任务==========================
 }

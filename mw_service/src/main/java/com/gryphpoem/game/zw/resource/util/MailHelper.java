@@ -411,6 +411,7 @@ public class MailHelper {
         //跨服充值活动奖励发放
         putMailParamNum(MailConstant.MOLD_ACT_CROSS_RECHARGE_TOTAL,0,1);
         putMailParamNum(MailConstant.MOLD_ACT_CROSS_RECHARGE_DAILY,0,1);
+        putMailParamNum(MailConstant.ACT_MAGIC_TREASURE_WARE_GIFT_BAG, 1, 1);
 
         putMailParamNum(MailConstant.CROSS_COLLECT_REPORT,2,4);
         putMailParamNum(MailConstant.CROSS_COLLECT_NO_TARGET,0,0);

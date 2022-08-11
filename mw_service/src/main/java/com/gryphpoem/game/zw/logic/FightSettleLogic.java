@@ -88,7 +88,7 @@ public class FightSettleLogic {
                 }
 
                 rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, count, force.id,
-                        player.lord.getNick(), hero.getLevel(), addExp, force.lost, hero.getDecorated()));
+                        player.lord.getNick(), hero.getLevel(), addExp, force.lost, hero));
             }
             rewardDataManager.syncRoleResChanged(player, info);
         }
@@ -128,7 +128,7 @@ public class FightSettleLogic {
             }
 
             rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                    hero.getLevel(), addExp, force.lost, hero.getDecorated()));
+                    hero.getLevel(), addExp, force.lost, hero));
         }
         return rptList;
     }
@@ -205,7 +205,7 @@ public class FightSettleLogic {
                 LogUtil.debug("end 副本将领经验奖励结算逻辑===" + addExp);
             } finally {
                 rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                        hero.getLevel(), addExp, force.totalLost, hero.getDecorated()));
+                        hero.getLevel(), addExp, force.totalLost, hero));
             }
         }
         return rptList;
@@ -231,7 +231,7 @@ public class FightSettleLogic {
                 continue;
             }
             rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                    hero.getLevel(), 0, force.totalLost, hero.getDecorated()));
+                    hero.getLevel(), 0, force.totalLost, hero));
         }
         return rptList;
     }
@@ -255,7 +255,7 @@ public class FightSettleLogic {
                         continue;
                     }
                     rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id,
-                            player.lord.getNick(), hero.getLevel(), 0, force.lost, hero.getDecorated()));
+                            player.lord.getNick(), hero.getLevel(), 0, force.lost, hero));
                 }
             }
         }

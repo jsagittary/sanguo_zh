@@ -12,7 +12,7 @@ public class MakeTreasureWareHandler extends ClientHandler {
     @Override
     public void action() throws MwException {
         GamePb4.MakeTreasureWareRq req = msg.getExtension(GamePb4.MakeTreasureWareRq.ext);
-        GamePb4.MakeTreasureWareRs resp = DataResource.getBean(TreasureWareService.class).makeTreasureWare(getRoleId(), req.getQuality(), req.getCount());
+        GamePb4.MakeTreasureWareRs resp = DataResource.getBean(TreasureWareService.class).makeTreasureWare(getRoleId(), req.getQuality(), req.getCount(), req.getCondition());
         if (Objects.nonNull(resp)) {
             sendMsgToPlayer(GamePb4.MakeTreasureWareRs.ext, resp);
         }

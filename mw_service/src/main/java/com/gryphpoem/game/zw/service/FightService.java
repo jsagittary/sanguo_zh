@@ -26,7 +26,6 @@ import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinForce;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.util.*;
-import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -1400,10 +1399,7 @@ public class FightService {
                 rpt.addAtkHero(rptHero);
             }
         }
-        for (Force force : attacker.forces) {
-            rpt.addDefHero(
-                    PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.lost));
-        }
+        DataResource.ac.getBean(WorldService.class).buildRptHeroData(attacker, rpt, false);
         // 回合信息
         CommonPb.Record record = fightLogic.generateRecord();
         rpt.setRecord(record);
@@ -1412,6 +1408,7 @@ public class FightService {
     }
 
     public CommonPb.RptHero forceToRptHeroNoExp(Force force) {
+        Hero hero = null;
         long roleId = force.ownerId;
         int type = force.roleType;
         int kill = force.killed;
@@ -1429,12 +1426,12 @@ public class FightService {
         } else if (force.roleType == Constant.Role.PLAYER) {
             Player player = playerDataManager.getPlayer(roleId);
             if (player == null) return null;
-            Hero hero = player.heros.get(heroId);
+            hero = player.heros.get(heroId);
             if (hero == null) return null;
             lv = hero.getLevel();
             heroDecorated = hero.getDecorated();
         }
-        CommonPb.RptHero rptHero = PbHelper.createRptHero(type, kill, 0, heroId, owner, lv, 0, lost, heroDecorated);
+        CommonPb.RptHero rptHero = PbHelper.createRptHero(type, kill, 0, heroId, owner, lv, 0, lost, hero);
         return rptHero;
     }
 

@@ -237,8 +237,10 @@ public class RobotBuildingService {
                 return false;
             } else {
                 // 购买vip5礼包,同时雇佣了高级研究院
-                if (!(player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)
-                        && techDataManager.isAdvanceTechGain(player))) {
+                if (!(
+//                        player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)
+//                        &&
+                                techDataManager.isAdvanceTechGain(player))) {
                     LogUtil.robot("科研所正在研究,不能升级  roleId:" + roleId);
                     return false;
                 }

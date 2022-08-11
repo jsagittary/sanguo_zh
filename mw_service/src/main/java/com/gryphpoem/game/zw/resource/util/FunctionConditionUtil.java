@@ -87,7 +87,7 @@ public class FunctionConditionUtil {
                 return player.building.getCommand();
 
             case FunctionConstant.UNLOCK_TYPE_TASK:// 任务
-                return player.majorTasks.keySet();
+                return player.chapterTask.getOpenTasks().keySet();
 
             case FunctionConstant.UNLOCK_TYPE_COMBAT:// 关卡
                 return player.combats.keySet();

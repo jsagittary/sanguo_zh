@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.constant.MedalConst;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -47,7 +48,7 @@ public class Hero {
     private List<Integer> medalKeys = new ArrayList<>(MedalConst.HERO_MEDAL_UP_CNT);
     private List<Integer> warPlanes = new ArrayList<>(); // 战机信息, 记录战机Id
     private Map<Integer, Integer> showFight;// 显示战力, key见ConStant的ShowFightId
-    private AwakenData awaken;
+    private Map<Integer, AwakenData> awaken;
     private int sandTableState;//是否出战沙盘 1是 0否
     private int fightVal;//英雄战力值
     //KEY:技能ID,VALUE:技能等级
@@ -55,10 +56,14 @@ public class Hero {
     private boolean isOnBaitTeam;//是否在采集鱼饵队列
     private int[] totem;
     private Integer treasureWare;//宝具
+    /** 英雄品阶keyId*/
+    private int gradeKeyId;
+    /** 是否在主界面显示英雄奖励*/
+    private boolean showClient;
 
     public Hero() {
         attr = new int[4];// 三种属性，对应1-3位，0位为补位，不用
-        wash = new int[4];// 0位为总资质，1-3位为三种资质的值
+//        wash = new int[4];// 0位为总资质，1-3位为三种资质的值
         equip = new int[HeroConstant.HERO_EQUIP_NUM + 1];// 0位为补位，1-6为装备部位
         status = HeroConstant.HERO_STATUS_IDLE;
         state = HeroConstant.HERO_STATE_IDLE;
@@ -74,10 +79,20 @@ public class Hero {
         decorated = 0;
         commandoPos = 0;
         showFight = new HashMap<>();
-        awaken = new AwakenData();
         initMedalKeys();
         totem = new int[9];
-//        Stream.iterate(0,i->i+1).limit(totem.length).forEach(j -> totem[j] = -1);
+        awaken = new TreeMap<>(Integer::compareTo);
+        showClient = true;
+    }
+
+    /**
+     * 初始化英雄品阶
+     */
+    public void initHeroGrade() {
+        StaticHeroUpgrade staticData = StaticHeroDataMgr.getInitHeroUpgrade(getHeroId());
+        if (CheckNull.isNull(staticData))
+            return;
+        this.gradeKeyId = staticData.getKeyId();
     }
 
     /**
@@ -87,6 +102,14 @@ public class Hero {
         for (int i = 0; i < MedalConst.HERO_MEDAL_UP_CNT; i++) {
             modifyMedalKey(i,0);
         }
+    }
+
+    public int getGradeKeyId() {
+        return gradeKeyId;
+    }
+
+    public void setGradeKeyId(int gradeKeyId) {
+        this.gradeKeyId = gradeKeyId;
     }
 
     public Hero(CommonPb.Hero hero) {
@@ -145,8 +168,12 @@ public class Hero {
         for (TwoInt two : hero.getShowFightList()) {
             showFight.put(two.getV1(), two.getV2());
         }
-        if (hero.hasAwakendata()) {
-            this.awaken = new AwakenData(hero.getAwakendata());
+        if (CheckNull.nonEmpty(hero.getAwakendataList())) {
+            hero.getAwakendataList().forEach(awakenDataPb -> {
+                if (CheckNull.isNull(awakenDataPb))
+                    return;
+                this.awaken.put(awakenDataPb.getIndex(), new AwakenData(awakenDataPb));
+            });
         }
         initMedalKeys();
         this.sandTableState = hero.getSandTableState();
@@ -161,6 +188,8 @@ public class Hero {
         if (hero.hasTreasureWare()) {
             setTreasureWare(hero.getTreasureWare());
         }
+        setGradeKeyId(hero.getGrade());
+        this.setShowClient(hero.getShowClient());
     }
 
     public int getHeroType() {
@@ -332,6 +361,14 @@ public class Hero {
 
     public void setTreasureWare(Integer treasureWare) {
         this.treasureWare = treasureWare;
+    }
+
+    public boolean isShowClient() {
+        return showClient;
+    }
+
+    public void setShowClient(boolean showClient) {
+        this.showClient = showClient;
     }
 
     /**
@@ -745,12 +782,18 @@ public class Hero {
         this.commandoPos = commandoPos;
     }
 
-    public AwakenData getAwaken() {
+    public Map<Integer, AwakenData> getAwaken() {
         return awaken;
     }
 
-    public void setAwaken(AwakenData awaken) {
+    public void setAwaken(Map<Integer, AwakenData> awaken) {
         this.awaken = awaken;
+    }
+
+    public AwakenData getAwaken(int index) {
+        if (CheckNull.isEmpty(awaken))
+            awaken = new TreeMap<>(Integer::compareTo);
+        return awaken.get(index);
     }
 
     public int getSandTableState() {

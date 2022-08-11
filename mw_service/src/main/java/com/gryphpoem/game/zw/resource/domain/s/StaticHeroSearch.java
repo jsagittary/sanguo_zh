@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class StaticHeroSearch {
 	private int autoId;// 自增id
-	private int searchType;// 寻访类型，1 良将寻访，2 神将寻访
-	private int rewardType;// 奖励结果类型，1 将领，2 将令
+	private int searchType;// 抽卡池
+	private int rewardType;// 奖励结果类型: 奖励结果类型，1 橙色武将，2 紫色武将 3 橙色武将碎片 4 紫色武将碎片 5 道具奖励
 	private int grid;// 界面上的格子索引
 	private List<List<Integer>> rewardList;// 具体奖励，格式：[[type,id,count]...]
 	private int weight;// 随机到的权重

@@ -354,7 +354,7 @@ public class FactoryService {
                 builder.addArmQue(PbHelper.createArmQuePb(armQue));
             }
             if (factory.getAddList().size() == 1) {
-                taskDataManager.updTask(roleId, TaskType.COND_ARM_CNT, 1, BuildingType.getResourceByBuildingType(id));
+                taskDataManager.updTask(player, TaskType.COND_ARM_CNT, 1, BuildingType.getResourceByBuildingType(id));
                 que.setNotExtendQue(true);
             }
             return builder.build();
@@ -589,7 +589,7 @@ public class FactoryService {
                 if (TimeHelper.getCurrentSecond() >= armQue.getEndTime()) {
                     // 统计预备队列的数量，一个队列完成则任务进度+1
                     if (!armQue.isNotExtendQue()) {
-                        taskDataManager.updTask(roleId, TaskType.COND_ARM_CNT, 1,
+                        taskDataManager.updTask(player, TaskType.COND_ARM_CNT, 1,
                                 BuildingType.getResourceByBuildingType(type));
                     }
                     addNum += armQue.getAddArm();
@@ -617,7 +617,7 @@ public class FactoryService {
             change.addChangeType(AwardType.ARMY, BuildingType.getResourceByBuildingType(type));
             rewardDataManager.syncRoleResChanged(player, change);
 
-            taskDataManager.updTask(roleId, TaskType.COND_ARM_TYPE_CNT, addNum, BuildingType.getResourceByBuildingType(type));
+            taskDataManager.updTask(player, TaskType.COND_ARM_TYPE_CNT, addNum, BuildingType.getResourceByBuildingType(type));
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_ARM_TYPE_CNT, addNum);
             battlePassDataManager.updTaskSchedule(roleId, TaskType.COND_ARM_TYPE_CNT, addNum, BuildingType.getResourceByBuildingType(type));
 
@@ -638,7 +638,7 @@ public class FactoryService {
 
             // 领取后判断第二个开启了
             if (!factory.getAddList().isEmpty()) {
-                taskDataManager.updTask(roleId, TaskType.COND_ARM_CNT, 1, BuildingType.getResourceByBuildingType(type));
+                taskDataManager.updTask(player, TaskType.COND_ARM_CNT, 1, BuildingType.getResourceByBuildingType(type));
             }
             return builder.build();
         }
@@ -677,6 +677,7 @@ public class FactoryService {
             builder.setAddNum(getAddNum(player, staticFactoryRecruit, id));
             builder.setId(id);
             builder.setLv(factory.getFctLv());
+            taskDataManager.updTask(player,TaskType.COND_508,1);
             return builder.build();
         }
         return null;
@@ -988,5 +989,32 @@ public class FactoryService {
         builder.setQuickBuyArmyCnt(buyCnt);
         builder.addAllAward(showAward);
         return builder.build();
+    }
+
+    /**
+     * 根据TaskType COND_511的类型拿到建筑的容量
+     * 508类型；3建筑：1兵营、2马厩、3靶场；250000容量
+     */
+    public int getAddNumByCondId(Player player, int type) {
+        if (Objects.isNull(player)) return 0;
+        int buildingId = 0;
+        switch (type) {
+            case 1:
+                buildingId = BuildingType.FACTORY_1;
+                break;
+            case 2:
+                buildingId = BuildingType.FACTORY_2;
+                break;
+            case 3:
+                buildingId = BuildingType.FACTORY_3;
+                break;
+            default:
+                return 0;
+        }
+        Factory factory = createFactoryIfNotExist(player, buildingId);
+        if (Objects.isNull(factory)) return 0;
+        StaticFactoryRecruit staticFactoryRecruit = StaticBuildingDataMgr.getStaticFactoryRecruit(buildingId, factory.getFctLv());
+        if (Objects.isNull(staticFactoryRecruit)) return 0;
+        return getAddNum(player, staticFactoryRecruit, buildingId);
     }
 }

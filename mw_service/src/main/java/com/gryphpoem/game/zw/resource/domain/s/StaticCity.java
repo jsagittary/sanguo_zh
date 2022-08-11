@@ -10,8 +10,8 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
-import org.springframework.util.ObjectUtils;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +94,10 @@ public class StaticCity {
      */
     private List<List<Integer>> dropList = new ArrayList<>();
     private int dropTotalWeight;
+    /**
+     * 其他随机产出
+     */
+    private List<List<Integer>> otherAward;
     /**
      * 征收消耗
      */
@@ -275,6 +279,14 @@ public class StaticCity {
         return list;
     }
 
+    public List<List<Integer>> getOtherAward() {
+        return otherAward;
+    }
+
+    public void setOtherAward(List<List<Integer>> otherAward) {
+        this.otherAward = otherAward;
+    }
+
     public void calcWeight(String operation) {
         if (!dropList.isEmpty()) {
             if (dropTotalWeight != 0) {
@@ -319,6 +331,31 @@ public class StaticCity {
 
         if (randomList.isEmpty()) {
             LogUtil.error("城池随机奖励失败!, StaticCity:", this.toString(), ", random:", random);
+        }
+        return randomList;
+    }
+
+    /**
+     * 随机征收额外奖励
+     *
+     * @return
+     */
+    public List<List<Integer>> randomOtherReward(Object... objects) {
+        // 如果总权重为0, 就重新计算一下总权重
+        List<List<Integer>> randomList = null;
+        if (otherAward != null) {
+            for (List<Integer> list : otherAward) {
+                if (list.size() > 3) {
+                    int random = RandomHelper.randomInSize((int) Constant.TEN_THROUSAND);
+                    LogUtil.common(String.format("player:%d, cityLevy, cur randomValue:%d, need probValue:%d", !ObjectUtils.isEmpty(objects) ? objects[0] : 0, random, list.get(3)));
+                    if (list.get(3) >= random) {
+                        if (randomList == null)
+                            randomList = new ArrayList<>();
+                        randomList.add(list.subList(0, 3));
+                        break;
+                    }
+                }
+            }
         }
         return randomList;
     }

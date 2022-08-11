@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.*;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.p.ActBarton;
@@ -53,6 +54,7 @@ import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
@@ -61,9 +63,13 @@ import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.SupplyRecord;
+import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
+import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.MakeTreasureWare;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
@@ -162,6 +168,10 @@ public class Player {
      */
     public HashMap<Integer, Combat> combats = new HashMap<>();
     /**
+     * 普通副本掉落详情
+     */
+    public CombatInfo combatInfo = new CombatInfo();
+    /**
      * 高级副本(combatId,Obj)
      */
     public HashMap<Integer, CombatFb> combatFb = new HashMap<>();
@@ -211,14 +221,14 @@ public class Player {
      * 司令部，兵工厂官员招募
      */
     public Map<Integer, Gains> gains = new ConcurrentHashMap<>();
-    /**
-     * 主线支线,剧情任务
-     */
-    public Map<Integer, Task> majorTasks = new ConcurrentHashMap<>();
-    /**
-     * 当前显示的支线任务id,此值不会被序列化
-     */
-    public List<Integer> curMajorTaskIds = new ArrayList<>();
+//    /**
+//     * 主线支线,剧情任务
+//     */
+//    public Map<Integer, Task> majorTasks = new ConcurrentHashMap<>();
+//    /**
+//     * 当前显示的支线任务id,此值不会被序列化
+//     */
+//    public List<Integer> curMajorTaskIds = new ArrayList<>();
 
     /**
      * 日常任务
@@ -703,11 +713,46 @@ public class Player {
      * 宝具副本
      */
     private TreasureCombat treasureCombat = new TreasureCombat();
+    /** 宝具挑战玩家 */
+    private TreasureChallengePlayer treasureChallengePlayer = new TreasureChallengePlayer();
 
     /**
      * 招募奖励 v1: 对应s_system中id=1102的索引位置, v2: 1 已领取、0 未领取
      */
     private Map<Integer, Integer> recruitReward = new HashMap<>(5);
+
+    /**
+     * 玩家抽卡详情
+     */
+    private DrawCardData drawCardData = new DrawCardData();
+
+    /**
+     * 章节任务
+     */
+    public ChapterTask chapterTask = new ChapterTask();
+
+
+    /**
+     * 玩家抽卡活动详情
+     */
+    private PlayerFunctionPlanData functionPlanData = new PlayerFunctionPlanData();
+
+    public PlayerFunctionPlanData getFunctionPlanData() {
+        return functionPlanData;
+    }
+
+
+    private PersonalActs personalActs = new PersonalActs();
+
+    /**
+     * 是否第一次打造宝具
+     */
+    private MakeTreasureWare makeTreasureWare = new MakeTreasureWare();
+
+    public MakeTreasureWare getMakeTreasureWare() {
+        return makeTreasureWare;
+    }
+
     public Map<Integer, Integer> getRecruitReward() {
         return recruitReward;
     }
@@ -1056,6 +1101,10 @@ public class Player {
 
     public void addCollectMineCount() {
         this.collectMineCount++;
+    }
+
+    public DrawCardData getDrawCardData() {
+        return drawCardData;
     }
 
     /**
@@ -1568,7 +1617,8 @@ public class Player {
      * @return
      */
     public boolean washCountFull() {
-        return common.washCountFull();
+        return false;
+//        return common.washCountFull();
     }
 
     /**
@@ -1788,6 +1838,9 @@ public class Player {
         dataNew.setCrossData(serCrossData());
         dataNew.setTotem(totemData.ser().toByteArray());
         dataNew.setTreasureWares(serTreasureWares());
+        dataNew.setDrawCardData(getDrawCardData().createPb(true).toByteArray());
+        dataNew.setChapterTask(this.chapterTask.ser().toByteArray());
+        dataNew.setFunctionPlanData(getFunctionPlanData().createPb(true).toByteArray());
         return dataNew;
     }
 
@@ -1796,7 +1849,7 @@ public class Player {
         treasureWares.values().forEach(treasureWare -> {
             serTreasureWares.addTreasure(treasureWare.createPb(true));
         });
-
+        serTreasureWares.setFirstMakeTw(this.makeTreasureWare.createPb(true));
         return serTreasureWares.build().toByteArray();
     }
 
@@ -1955,6 +2008,10 @@ public class Player {
             // 宝具副本
             ser.setTreasureCombat(treasureCombat.ser(false));
         }
+        if (Objects.nonNull(treasureChallengePlayer)) {
+            // 宝具挑战玩家数据
+            ser.setTreasureChallengePlayer(treasureChallengePlayer.ser());
+        }
         if (treasureWareIdMakeCount.size() > 0) {
             //宝具打造次数
             treasureWareIdMakeCount.forEach((id, count) -> {
@@ -2088,6 +2145,7 @@ public class Player {
         for (Entry<Integer, Combat> kv : combats.entrySet()) {
             ser.addCombat(PbHelper.createCombatPb(kv.getValue()));
         }
+        ser.setCombatInfo(this.combatInfo.createPb(true));
         return ser.build().toByteArray();
     }
 
@@ -2309,6 +2367,21 @@ public class Player {
         if (data.getTreasureWares() != null) {
             SerTreasureWares ser = SerTreasureWares.parseFrom(data.getTreasureWares());
             dserTreasureWares(ser);
+        }
+
+        if (data.getDrawCardData() != null) {
+            SerDrawCardData ser = SerDrawCardData.parseFrom(data.getDrawCardData());
+            this.getDrawCardData().deSer(ser);
+        }
+
+        if (data.getChapterTask() != null) {
+            SerChapterTask ser = SerChapterTask.parseFrom(data.getChapterTask());
+            this.chapterTask.dser(ser);
+        }
+
+        if (data.getFunctionPlanData() != null) {
+            SerializePb.SerFunctionPlanData ser = SerializePb.SerFunctionPlanData.parseFrom(data.getFunctionPlanData(), DataResource.getRegistry());
+            this.getFunctionPlanData().dePlanFunctionPb(ser);
         }
 
         setMaxKey(data.getMaxKey());
@@ -2553,6 +2626,9 @@ public class Player {
         if (ser.hasTreasureCombat()) {
             this.treasureCombat.dSer(ser.getTreasureCombat());
         }
+        if (ser.hasTreasureChallengePlayer()) {
+            this.treasureChallengePlayer.dSer(ser.getTreasureChallengePlayer());
+        }
         //宝具id打造次数
         Optional.ofNullable(ser.getTreasureWareIdMakeCountList()).ifPresent(tmp -> tmp.forEach(o -> this.treasureWareIdMakeCount.put(o.getV1(), o.getV2())));
         if (ser.hasSaveCrossData()) {
@@ -2699,6 +2775,7 @@ public class Player {
         for (CommonPb.Combat pb : ser.getCombatList()) {
             this.combats.put(pb.getCombatId(), new Combat(pb.getCombatId(), pb.getStar()));
         }
+        this.combatInfo.dseCombatInfoPb(ser.getCombatInfo());
     }
 
     private void dserMills(SerMill ser) {
@@ -2802,9 +2879,9 @@ public class Player {
 
     private byte[] serTask() {
         SerTask.Builder ser = SerTask.newBuilder();
-        for (Task task : majorTasks.values()) {
-            ser.addMajorTask(PbHelper.createTaskPb(task));
-        }
+//        for (Task task : majorTasks.values()) {
+//            ser.addMajorTask(PbHelper.createTaskPb(task));
+//        }
 
         for (Task task : dailyTask.values()) {
             ser.addDayiyTask(PbHelper.createTaskPb(task));
@@ -2924,6 +3001,7 @@ public class Player {
         ser.setActBlackhawk(this.blackhawkAct.dser());
         this.actBarton.values().forEach(e -> ser.addActBarton(e.dser()));
         this.actRobinHood.values().forEach(e -> ser.addRobinHood(e.ser()));
+        ser.addAllPersonalActs(this.personalActs.createPb(true));
         return ser.build().toByteArray();
     }
 
@@ -3034,7 +3112,7 @@ public class Player {
     private void dserTasks(SerTask ser) {
         for (CommonPb.Task e : ser.getMajorTaskList()) {
             Task task = new Task(e.getTaskId(), e.getSchedule(), e.getStatus(), 1);
-            majorTasks.put(e.getTaskId(), task);
+//            majorTasks.put(e.getTaskId(), task);
         }
 
         for (CommonPb.Task e : ser.getDayiyTaskList()) {
@@ -3137,6 +3215,8 @@ public class Player {
                 this.actRobinHood.put(robinHood.getActivityId(), new ActRobinHood(robinHood));
             }
         }
+        List<CommonPb.TwoInt> personalActs = ser.getPersonalActsList();
+        this.personalActs = new PersonalActs(personalActs);
     }
 
     private void dserSignInInfo(SignInInfo ser) {
@@ -3168,6 +3248,7 @@ public class Player {
             ser.getTreasureList().forEach(treasureWare -> {
                 treasureWares.put(treasureWare.getKeyId(), new TreasureWare(treasureWare));
             });
+            this.makeTreasureWare.dsePb(ser.getFirstMakeTw());
         }
     }
 
@@ -3183,7 +3264,8 @@ public class Player {
                 || e.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
                 || e.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW
                 || e.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR
-                || e.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE) {
+                || e.getActivityType() == ActivityConst.ACT_SEASON_TURNPLATE
+                || e.getActivityType() == ActivityConst.ACT_MAGIC_TREASURE_WARE) {
             activity = new ActTurnplat(e);
         } else if (e.getActivityType() == ActivityConst.ACT_EQUIP_TURNPLATE) {
             activity = new EquipTurnplat(e);
@@ -3471,5 +3553,21 @@ public class Player {
 
     public TotemData getTotemData() {
         return totemData;
+    }
+
+    public TreasureChallengePlayer getTreasureChallengePlayer() {
+        return treasureChallengePlayer;
+    }
+
+    public void setTreasureChallengePlayer(TreasureChallengePlayer treasureChallengePlayer) {
+        this.treasureChallengePlayer = treasureChallengePlayer;
+    }
+
+    public PersonalActs getPersonalActs() {
+        return personalActs;
+    }
+
+    public void setPersonalActs(PersonalActs personalActs) {
+        this.personalActs = personalActs;
     }
 }

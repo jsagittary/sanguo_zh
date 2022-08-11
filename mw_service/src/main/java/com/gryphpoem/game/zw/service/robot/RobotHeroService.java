@@ -51,30 +51,30 @@ public class RobotHeroService {
         if (player.lord.getLevel() >= HeroConstant.HERO_SEARCH_ROLE_LV) {
             Common common = player.common;
             // 刷新将领寻访数据
-            heroService.refreshHeroSearchData(common);
+//            heroService.refreshHeroSearchData(common);
 
-            int now = TimeHelper.getCurrentSecond();
-            // 良将寻访有免费次数，使用免费次数执行良将寻访
-            if (common.getHeroCdTime() <= now) {
-                // 扣除免费次数
-                common.setHeroCdTime(now + HeroConstant.NORMAL_SEARCH_CD);
-
-                try {
-                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_NORMAL, 0);
-                } catch (MwException e) {
-                    LogUtil.robot(e, "机器人良将寻访出错, common:", common.heroSearchToString());
-                }
-            }
-
-            // 判断神将招募是否开启
-            if (common.getSuperProcess() >= Constant.INT_HUNDRED) {
-                common.setSuperFreeNum(1);
-                try {
-                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_SUPER, 0);
-                } catch (MwException e) {
-                    LogUtil.robot(e, "机器人神将寻访出错, common:", common.heroSearchToString());
-                }
-            }
+//            int now = TimeHelper.getCurrentSecond();
+//            // 良将寻访有免费次数，使用免费次数执行良将寻访
+//            if (common.getHeroCdTime() <= now) {
+//                // 扣除免费次数
+//                common.setHeroCdTime(now + HeroConstant.NORMAL_SEARCH_CD);
+//
+//                try {
+//                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_NORMAL, 0);
+//                } catch (MwException e) {
+//                    LogUtil.robot(e, "机器人良将寻访出错, common:", common.heroSearchToString());
+//                }
+//            }
+//
+//            // 判断神将招募是否开启
+//            if (common.getSuperProcess() >= Constant.INT_HUNDRED) {
+//                common.setSuperFreeNum(1);
+//                try {
+//                    heroService.doHeroSearch(player, HeroConstant.SEARCH_TYPE_SUPER, 0);
+//                } catch (MwException e) {
+//                    LogUtil.robot(e, "机器人神将寻访出错, common:", common.heroSearchToString());
+//                }
+//            }
         }
 
         // 检查是否有品质更高的将领未上阵，有则上阵

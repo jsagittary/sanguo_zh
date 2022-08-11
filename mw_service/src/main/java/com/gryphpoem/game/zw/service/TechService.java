@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.google.common.collect.Lists;
 import com.gryphpoem.cross.constants.PlayerUploadTypeDefine;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -229,9 +230,9 @@ public class TechService {
         // 检查建筑是否在升级
         boolean isUping = buildingDataManager.checkBuildIsUpping(player, BuildingType.TECH);
         if (isUping) {
-            if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
-                throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
-            }
+//            if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
+//                throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
+//            }
             if (!techDataManager.isAdvanceTechGain(player)) {
                 throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
             }
@@ -280,9 +281,10 @@ public class TechService {
         builder.setQue(PbHelper.createTechQue(tech.getQue()));
         builder.setTech(PbHelper.createTechLv(tech.getTechLv().get(id)));
         builder.setResource(PbHelper.createCombatPb(player.resource));
-        taskDataManager.updTask(player.roleId, TaskType.COND_19, 1, id);
+        taskDataManager.updTask(player, TaskType.COND_19, 1, id);
+        taskDataManager.updTask(player, TaskType.COND_500, techLv.getLv() + 1, id);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_19, 1);
-        taskDataManager.updTask(player.roleId, TaskType.COND_TECH_UP_44, 1);
+        taskDataManager.updTask(player, TaskType.COND_TECH_UP_44, 1);
         return builder.build();
     }
 
@@ -439,6 +441,7 @@ public class TechService {
         // 重置科技升级完成消息推送状态
         // player.removePushRecord(PushConstant.ID_UP_TECH_FINISH);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_TECH);
+        taskDataManager.updTask(player,TaskType.COND_508,1);
 
         //貂蝉任务-升级科技
         ActivityDiaoChanService.completeTask(player, ETask.TECHNOLOGY_UP);
@@ -640,7 +643,7 @@ public class TechService {
         }
 
         long start = System.nanoTime();
-        List<Integer> curTaskIds = player.curMajorTaskIds;
+        List<Integer> curTaskIds = Lists.newArrayList(player.chapterTask.getOpenTasks().keySet());
         List<StaticTask> buildTask = curTaskIds.stream().map(StaticTaskDataMgr::getTaskById).filter(techTaskFilter)
                 .collect(Collectors.toList());
         long end = System.nanoTime();

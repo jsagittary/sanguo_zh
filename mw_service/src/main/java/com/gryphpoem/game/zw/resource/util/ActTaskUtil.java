@@ -5,14 +5,13 @@ import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.ActivityTask;
-import com.gryphpoem.game.zw.resource.domain.s.StaticDiaoChanDayTask;
 import com.gryphpoem.game.zw.resource.domain.s.StaticStone;
 import com.gryphpoem.game.zw.resource.pojo.Stone;
 import com.gryphpoem.game.zw.resource.pojo.StoneHole;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.skill.IFightAction;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 
 import java.util.List;
 import java.util.Objects;
@@ -44,9 +43,18 @@ public class ActTaskUtil {
             case JOIN_CITY_WAR:
             case JOIN_ACTIVITY:
             case FINISHED_TASK:
+            case PASS_TREASURE_WARE_COMBAT_ID:
+            case UNLOCK_TREASURE_WARE_COPY_HERO_INDEX:
                 if (params[0] == cfgParams.get(0)) {
                     b = true;
                     activityTask.setProgress(activityTask.getProgress() + 1);
+                }
+                break;
+            case MAKE_QUALITY_AND_COUNT_TREASURE_WARE:
+            case MAKE_QUALITY_AND_COUNT_AND_SPECIAL_TREASURE_WARE:
+                if (params[0] == cfgParams.get(0)) {
+                    b = true;
+                    activityTask.setProgress(activityTask.getProgress() + params[1]);
                 }
                 break;
             case PASS_BARRIER:
@@ -229,6 +237,26 @@ public class ActTaskUtil {
                     activityTask.setProgress(activityTask.getProgress() + params[1]);
                 }
                 break;
+            case STRENGTH_QUALITY_AND_COUNT_TREASURE_WARE:
+                if (params[1] == cfgParams.get(0) && params[2] == cfgParams.get(1)) {
+                    b = true;
+                    activityTask.setProgress(activityTask.getProgress() + params[0]);
+                }
+                break;
+            case TRAIN_QUALITY_AND_COUNT_TREASURE_WARE:
+                if (params[1] == cfgParams.get(0)) {
+                    b = true;
+                    activityTask.setProgress(activityTask.getProgress() + params[0]);
+                }
+                break;
+            case TRAIN_QUALITY_AND_2SAME_ANY_ATTR_TREASURE_WARE:
+                TreasureWare treasureWare = player.treasureWares.get(params[0]);
+                if (Objects.nonNull(treasureWare)) {
+                    b = treasureWare.getSameAttrCnt(cfgParams.get(0), 2, cfgParams.get(1));
+                    if (b)
+                        activityTask.setProgress(activityTask.getProgress() + 1);
+                    break;
+                }
             default:
         }
         return b;
@@ -244,6 +272,8 @@ public class ActTaskUtil {
             case COLLECT_RES:
             case HERO_UPSKILL:
             case BEAUTY_GIFT:
+            case STRENGTH_QUALITY_AND_COUNT_TREASURE_WARE:
+            case TRAIN_QUALITY_AND_2SAME_ANY_ATTR_TREASURE_WARE:
                 return activityTask.getProgress() >= cfgParams.get(2);
             case JOIN_CITY_WAR:
             case MAKE_EQUIP:
@@ -251,6 +281,9 @@ public class ActTaskUtil {
             case FINISHED_TASK:
             case GET_TASKAWARD:
             case HERO_LEVELUP:
+            case MAKE_QUALITY_AND_COUNT_TREASURE_WARE:
+            case MAKE_QUALITY_AND_COUNT_AND_SPECIAL_TREASURE_WARE:
+            case TRAIN_QUALITY_AND_COUNT_TREASURE_WARE:
                 return activityTask.getProgress() >= cfgParams.get(1);
             case PASS_BARRIER:
             case PASS_EXPEDITION:
@@ -288,6 +321,9 @@ public class ActTaskUtil {
             case TRADE_TIMES:
                 break;
             case GET_HERO:
+            case PASS_THE_COMBAT:
+            case UNLOCK_TREASURE_WARE_COPY_HERO_INDEX:
+            case PASS_TREASURE_WARE_COMBAT_ID:
                 return activityTask.getProgress() >= 1;
             case HERO_UPSTAR:
                 hero = player.heros.get(cfgParams.get(0));

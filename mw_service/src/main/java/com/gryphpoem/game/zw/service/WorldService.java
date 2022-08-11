@@ -4176,7 +4176,7 @@ public class WorldService {
      * @return true 表示任务列表中有匪军任务
      */
     public boolean checkCurTaskHasBandit(Player player) {
-        return !Collections.disjoint(Constant.ATK_BANDIT_MARCH_TIME_TASKID, player.curMajorTaskIds); // 有交集
+        return !Collections.disjoint(Constant.ATK_BANDIT_MARCH_TIME_TASKID, player.chapterTask.getOpenTasks().keySet()); // 有交集
     }
 
     /**
@@ -4461,6 +4461,52 @@ public class WorldService {
     }
 
     /*--------------------------------部队返回 end-----------------------------------*/
+
+    public void buildRptHeroData(Fighter defender, CommonPb.RptAtkBandit.Builder rpt, boolean calAward) {
+        for (Force force : defender.forces) {
+            int award = 0;
+            if (calAward) {
+                award =  (int) (force.killed * 0.8f + force.totalLost * 0.2f);
+            }
+            Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
+            if (CheckNull.isNull(tmpP)) {
+                rpt.addDefHero(
+                        PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, force.id, null, 0, 0, force.lost));
+            } else {
+                Hero hero = tmpP.heros.get(force.id);
+                if (CheckNull.isNull(hero)) {
+                    rpt.addDefHero(
+                            PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, force.id, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
+                } else {
+                    rpt.addDefHero(
+                            PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, hero, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
+                }
+            }
+        }
+    }
+
+    public void buildRptHeroData(Fighter defender, CommonPb.RptAtkPlayer.Builder rpt, int roleType, boolean calAward) {
+        for (Force force : defender.forces) {
+            int award = 0;
+            if (calAward) {
+                award =  (int) (force.killed * 0.8f + force.totalLost * 0.2f);
+            }
+            Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
+            if (CheckNull.isNull(tmpP)) {
+                rpt.addDefHero(
+                        PbHelper.createRptHero(roleType, force.killed, award, force.id, null, 0, 0, force.lost));
+            } else {
+                Hero hero = tmpP.heros.get(force.id);
+                if (CheckNull.isNull(hero)) {
+                    rpt.addDefHero(
+                            PbHelper.createRptHero(roleType, force.killed, award, force.id, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
+                } else {
+                    rpt.addDefHero(
+                            PbHelper.createRptHero(roleType, force.killed, award, hero, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
+                }
+            }
+        }
+    }
 
     public CommonPb.Report.Builder createAtkBanditReport(CommonPb.RptAtkBandit rpt, int now) {
         CommonPb.Report.Builder report = CommonPb.Report.newBuilder();

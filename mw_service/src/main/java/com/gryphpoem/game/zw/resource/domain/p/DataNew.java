@@ -43,6 +43,9 @@ public class DataNew {
     private byte[] crossData;// 跨服数据
     private byte[] totem;//图腾数据
     private byte[] treasureWares;//宝具数据
+    private byte[] drawCardData;// 抽卡数据
+    private byte[] chapterTask;//宝具数据
+    private byte[] functionPlanData;// 功能计划数据
 
     public byte[] getActivity() {
         return activity;
@@ -377,5 +380,29 @@ public class DataNew {
 
     public void setTreasureWares(byte[] treasureWares) {
         this.treasureWares = treasureWares;
+    }
+
+    public byte[] getDrawCardData() {
+        return drawCardData;
+    }
+
+    public void setDrawCardData(byte[] drawCardData) {
+        this.drawCardData = drawCardData;
+    }
+
+    public byte[] getChapterTask() {
+        return chapterTask;
+    }
+
+    public void setChapterTask(byte[] chapterTask) {
+        this.chapterTask = chapterTask;
+    }
+
+    public byte[] getFunctionPlanData() {
+        return functionPlanData;
+    }
+
+    public void setFunctionPlanData(byte[] functionPlanData) {
+        this.functionPlanData = functionPlanData;
     }
 }

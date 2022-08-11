@@ -968,6 +968,12 @@ public class MailConstant {
     public static final int MOD_LONG_LIGHT = 814;
 
     /**
+     *
+     * 神兵宝具礼包邮件
+     */
+    public static final int ACT_MAGIC_TREASURE_WARE_GIFT_BAG = 815;
+
+    /**
      * 限时活动物品自动兑换
      */
     public static final int MOLD_ACT_TIME_LIMIT_EXCHANGE_AWARD = 1000;

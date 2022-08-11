@@ -24,7 +24,6 @@ public class StaticDataDao extends BaseDao {
     public Map<Integer,StaticSeasonTaskScore> selectStaticSeasonTaskScoreMap(){
         return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTaskScoreMap","id");
     }
-
     public Map<Integer,StaticSeasonTask> selectStaticSeasonTaskMap(){
         return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTaskMap","taskId");
     }
@@ -1043,5 +1042,17 @@ public class StaticDataDao extends BaseDao {
 
     public List<StaticChannelMail> selectChannelMailList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticChannelMailList");
+    }
+
+    public Map<Integer, StaticTask> selectTaskNewMap() {
+        return getSqlSession().selectMap("StaticDao.selectTaskNewMap", "taskId");
+    }
+
+    public Map<Integer, StaticTaskChapter> selectTaskChapterMap() {
+        return getSqlSession().selectMap("StaticDao.selectTaskChapterMap", "chapterId");
+    }
+
+    public List<StaticHeroUpgrade> selectHeroUpgradeList() {
+        return getSqlSession().selectList("StaticDao.selectHeroUpgradeList");
     }
 }
