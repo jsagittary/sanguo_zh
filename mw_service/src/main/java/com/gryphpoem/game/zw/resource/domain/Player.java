@@ -142,6 +142,11 @@ public class Player {
     private Cia cia;
 
     /**
+     * 武将相关
+     */
+    public PlayerHero playerHero;
+
+    /**
      * 教官相关
      */
     private MentorInfo mentorInfo = new MentorInfo();

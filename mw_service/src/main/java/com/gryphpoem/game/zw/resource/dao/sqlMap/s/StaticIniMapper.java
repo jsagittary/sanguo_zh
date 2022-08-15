@@ -5,7 +5,6 @@ import com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler;
 import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.sun.org.apache.xml.internal.utils.ListingErrorHandler;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -304,4 +303,17 @@ public interface StaticIniMapper {
             @Result(column = "param",property = "params",typeHandler = ListIntTypeHandler.class)
     })
     List<StaticActTreasureWareJourney> selectStaticActTreasureWareJourney();
+
+    @Select("select * from s_hero_biography_attr")
+    @Results({
+            @Result(column = "attr",property = "attr",typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticHeroBiographyAttr> selectStaticHeroBiographyAttrList();
+
+    @MapKey("id")
+    @Select("select * from s_hero_biography_show")
+    @Results({
+            @Result(column = "heroId",property = "heroId",typeHandler = ListIntTypeHandler.class)
+    })
+    Map<Integer, StaticHeroBiographyShow> selectStaticHeroBiographyShowMap();
 }

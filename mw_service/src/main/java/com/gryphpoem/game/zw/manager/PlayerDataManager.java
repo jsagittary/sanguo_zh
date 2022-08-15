@@ -63,6 +63,8 @@ public class PlayerDataManager implements PlayerDM {
     @Autowired
     private CommonDao commonDao;
     @Autowired
+    private PlayerHeroDao playerHeroDao;
+    @Autowired
     private PayDao payDao;
     @Autowired
     private SmallIdManager smallIdManager;
@@ -403,6 +405,7 @@ public class PlayerDataManager implements PlayerDM {
             createData(player);
             creatCommon(player);
             createMailData(player);
+            createPlayerHero(player);
             lordDao.updateLord(player.lord);
             accountDao.updateCreateRole(player.account);
         } catch (Exception ex) {
@@ -437,6 +440,13 @@ public class PlayerDataManager implements PlayerDM {
         commonDao.insertCommon(common);
         player.common = common;
         return common;
+    }
+
+    private PlayerHero createPlayerHero(Player player) {
+        PlayerHero playerHero = new PlayerHero(player.roleId);
+        player.playerHero = playerHero;
+        playerHeroDao.insertPlayerHero(playerHero.createPb(true));
+        return playerHero;
     }
 
     private Common creatCommonAfterCutSmallId(Player player) {
@@ -634,6 +644,7 @@ public class PlayerDataManager implements PlayerDM {
             loadCommon();
             loadMail();
             loadPaySum();
+            loadPlayerHero();
             // 刷新勋章商品
             refreshMedalGoods();
             LogUtil.start("done load all players data!!!");
@@ -674,6 +685,23 @@ public class PlayerDataManager implements PlayerDM {
                     player = playerCache.get(common.getLordId());
                     if (player != null) {
                         player.common = common;
+                    }
+                }
+            }
+        }
+
+        private void loadPlayerHero() {
+            List<DbPlayerHero> list = playerHeroDao.load();
+            Player player = null;
+            for (DbPlayerHero dbPlayerHero : list) {
+                if (!smallIdManager.isSmallId(dbPlayerHero.getLordId())) {
+                    player = playerCache.get(dbPlayerHero.getLordId());
+                    if (player != null) {
+                        try {
+                            player.playerHero = new PlayerHero(dbPlayerHero);
+                        } catch (InvalidProtocolBufferException e) {
+                            LogUtil.error(e, "roleId:", dbPlayerHero.getLordId());
+                        }
                     }
                 }
             }
@@ -795,6 +823,11 @@ public class PlayerDataManager implements PlayerDM {
 
         if (role.getCommon() != null) {
             commonDao.save(role.getCommon());
+        } else {
+            LogUtil.error("updateRole, 更新Common" + role.getCommon() + ",roleId=" + role.getRoleId());
+        }
+        if (role.getDbPlayerHero() != null) {
+            playerHeroDao.save(role.getDbPlayerHero());
         } else {
             LogUtil.error("updateRole, 更新Common" + role.getCommon() + ",roleId=" + role.getRoleId());
         }
