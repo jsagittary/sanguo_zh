@@ -70,7 +70,7 @@ public class HeroBiographyService implements GmCmdService {
 
         Integer curLevel = playerHero.getBiography().getLevelMap().get(type);
         StaticHeroBiographyAttr biographyAttr = Objects.nonNull(curLevel) ? staticHeroBiographyDataMgr.nextBiographyAttr(type, curLevel) : staticHeroBiographyDataMgr.initBiographyAttr(type);
-        if (CheckNull.isNull(biographyAttr) || biographyAttr.getLevel() == (Objects.nonNull(curLevel) ? curLevel : 0)) {
+        if (CheckNull.isNull(biographyAttr) || biographyAttr.getLevel() == (Objects.nonNull(curLevel) ? curLevel : -1)) {
             throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, hero biography type:%d, next biographyAttr config not found, curLv:%d", roleId, type, curLevel));
         }
 
