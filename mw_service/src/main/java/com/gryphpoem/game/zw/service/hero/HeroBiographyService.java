@@ -12,12 +12,16 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyAttr;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyShow;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -42,7 +46,7 @@ public class HeroBiographyService implements GmCmdService {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         PlayerHero playerHero = player.playerHero;
         GamePb5.GetHeroBiographyInfoRs.Builder builder = GamePb5.GetHeroBiographyInfoRs.newBuilder();
-        builder.setData(playerHero.getBiography().buildClientData());
+        builder.setInfo(playerHero.getBiography().buildClientData());
         return builder.build();
     }
 
@@ -66,7 +70,7 @@ public class HeroBiographyService implements GmCmdService {
 
         Integer curLevel = playerHero.getBiography().getLevelMap().get(type);
         StaticHeroBiographyAttr biographyAttr = Objects.nonNull(curLevel) ? staticHeroBiographyDataMgr.nextBiographyAttr(type, curLevel) : staticHeroBiographyDataMgr.initBiographyAttr(type);
-        if (CheckNull.isNull(biographyAttr) || biographyAttr.getLevel() == curLevel) {
+        if (CheckNull.isNull(biographyAttr) || biographyAttr.getLevel() == (Objects.nonNull(curLevel) ? curLevel : 0)) {
             throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, hero biography type:%d, next biographyAttr config not found, curLv:%d", roleId, type, curLevel));
         }
 
@@ -90,7 +94,32 @@ public class HeroBiographyService implements GmCmdService {
         GamePb5.UpgradeHeroBiographyRs.Builder builder = GamePb5.UpgradeHeroBiographyRs.newBuilder();
         builder.setType(type);
         builder.setLevel(biographyAttr.getLevel());
+        CalculateUtil.reCalcAllHeroAttr(player);
         return builder.build();
+    }
+
+    /**
+     * 获取战斗力属性
+     *
+     * @param player
+     * @param hero
+     * @return
+     */
+    public List<List<Integer>> getFightAttr(Player player, Hero hero) {
+        if (CheckNull.isNull(player) || CheckNull.isNull(hero))
+            return null;
+        if (!hero.isOnBattle()) return null;
+
+        PlayerHero playerHero = player.playerHero;
+        if (CheckNull.isEmpty(playerHero.getBiography().getLevelMap()))
+            return null;
+        List<List<Integer>> attrList = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> attrId : playerHero.getBiography().getLevelMap().entrySet()) {
+            StaticHeroBiographyAttr staticData = staticHeroBiographyDataMgr.getStaticHeroBiographyAttr(attrId.getKey(), attrId.getValue());
+            if (CheckNull.isNull(staticData)) continue;
+            attrList.addAll(staticData.getAttr());
+        }
+        return attrList;
     }
 
     @GmCmd("biography")

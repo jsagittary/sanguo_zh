@@ -4,7 +4,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -44,8 +43,8 @@ public class PlayerHero implements Serializable, Cloneable, GamePb<DbPlayerHero>
 
     public PlayerHero(DbPlayerHero dbPlayerHero) throws InvalidProtocolBufferException {
         this.lordId = dbPlayerHero.getLordId();
-        if (!ObjectUtils.isEmpty(dbPlayerHero.getHeroBiography())) {
-            biography = new PlayerHeroBiography();
+        biography = new PlayerHeroBiography();
+        if (Objects.nonNull(dbPlayerHero.getHeroBiography())) {
             SerializePb.SerHeroBiographyData data = SerializePb.SerHeroBiographyData.parseFrom(dbPlayerHero.getHeroBiography());
             if (Objects.nonNull(data) && CheckNull.nonEmpty(data.getDataList())) {
                 data.getDataList().forEach(pb -> {

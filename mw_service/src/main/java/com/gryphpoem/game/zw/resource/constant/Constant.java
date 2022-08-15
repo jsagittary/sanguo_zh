@@ -1407,6 +1407,7 @@ public final class Constant {
         int CASTLE_SKIN = 11;// 城堡皮肤
         int TREASURE_WARE = 13;//宝具
         int TOTEM = 12;//阵法图腾
+        int HERO_BIOGRAPHY = 13;    // 武将列传
     }
 
     /**

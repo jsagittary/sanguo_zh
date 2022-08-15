@@ -34,6 +34,7 @@ import com.gryphpoem.game.zw.resource.pojo.totem.Totem;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
+import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.util.ObjectUtils;
 
@@ -501,6 +502,9 @@ public class CalculateUtil {
         addTreasureWare(player, hero, attrMap);
         // 赛季天赋
         addSeasonTalent(player, hero, attrMap);
+        // 武将列传属性加成
+        addHeroBiographyAttr(player, hero, attrMap);
+
 
         // 方便一个人打一个城
         if (player.isTester) {
@@ -783,6 +787,40 @@ public class CalculateUtil {
                 }
             });
         });
+    }
+
+    /**
+     * 增加武将列传属性
+     *
+     * @param player
+     * @param hero
+     * @param attrMap
+     */
+    private static void addHeroBiographyAttr(Player player, Hero hero, Map<Integer, Integer> attrMap) {
+        List<List<Integer>> attrList = DataResource.ac.getBean(HeroBiographyService.class).getFightAttr(player, hero);
+        if (CheckNull.isEmpty(attrList)) return;
+
+        Map<Integer, Integer> tempMap = new HashMap<>();
+        Map<Integer, Integer> attrMutMap = new HashMap<>();// 万分比属性
+        for (List<Integer> attrList_ : attrList) {
+            if (CheckNull.isEmpty(attrList_))
+                continue;
+            switch (attrList_.get(0)) {
+                case Constant.AttrId.ATK_MUT:
+                case Constant.AttrId.DEF_MUT:// 防御附加万分比
+                case Constant.AttrId.LEAD_MUT:// 兵力附加万分比
+                    attrMutMap.merge(attrList_.get(0), attrList_.get(1), Integer::sum);
+                    break;
+                default:
+                    tempMap.merge(attrList_.get(0), attrList_.get(1), Integer::sum);
+                    break;
+            }
+        }
+
+        // 最终值 = 基础 * 万分比
+        processFinalAttr(tempMap, attrMutMap);
+        //重新计算showFight
+        reCalcFinalAttrFight(player, Constant.ShowFightId.HERO_BIOGRAPHY, hero, attrMap, tempMap);
     }
 
     /**

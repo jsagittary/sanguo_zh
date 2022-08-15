@@ -43,7 +43,7 @@
 
 	<mappers>
 		<mapper class="com.gryphpoem.game.zw.resource.dao.sqlMap.s.StaticIniMapper" />
-		<mapper class="com.gryphpoem.game.zw.resource.dao.sqlMap.p.PlayerMapper" />
+		<mapper class="com.gryphpoem.game.zw.resource.dao.sqlMap.p.PlayerHeroMapper" />
 	</mappers>
 
 </configuration>

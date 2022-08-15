@@ -13,15 +13,22 @@ import java.util.Map;
  */
 public interface PlayerHeroMapper {
     @Select("select * from p_hero where #{lordId}")
-    @Result(column = "hero_biography", property = "biography")
+    @Results({
+            @Result(column = "lord_id", property = "lordId"),
+            @Result(column = "hero_biography", property = "heroBiography")
+    })
     DbPlayerHero selectByLordId(@Param("lordId") long lordId);
 
-    @Insert("insert into p_hero(lord_id, hero_biography), values(#{lordId}, #{biography})")
+    @Insert({"insert into p_hero(lord_id, hero_biography) values(#{lordId},#{heroBiography})"})
     int insert(DbPlayerHero playerHero);
 
-    @Update("update p_hero set hero_biography=#{biography} where lord_id = #{lordId}")
+    @Update({"update p_hero set hero_biography=#{heroBiography} where lord_id = #{lordId}"})
     int update(DbPlayerHero playerHero);
 
-    @Select("select * from p_hero  where lordId > #{curIndex} order by lordId limit 0,#{count}")
+    @Select("select * from p_hero  where lord_id > #{curIndex} order by lord_id limit 0,#{count}")
+    @Results({
+            @Result(column = "lord_id", property = "lordId"),
+            @Result(column = "hero_biography", property = "heroBiography")
+    })
     List<DbPlayerHero> selectList(Map<String, Object> params);
 }
