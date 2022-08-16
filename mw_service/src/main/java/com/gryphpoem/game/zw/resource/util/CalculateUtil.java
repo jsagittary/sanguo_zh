@@ -836,19 +836,7 @@ public class CalculateUtil {
         if (!seasonTalentService.checkTalentBuffOpen(player)) {
             return;
         }
-//         //赛季未开启
-//        if (seasonService.getSeasonState() == SeasonConst.STATE_OPEN) return;
-//        int seasonPlanId = seasonService.getCurSeasonPlanId();
-//        //天赋未开启
-//        StaticSeasonTalentPlan sTalentPlan = StaticIniDataMgr.getOpenStaticSeasonTalentPlan(seasonPlanId);
-//        if (Objects.isNull(sTalentPlan)) return;
-//        //赛季ID异常
-//        int curSeasonId = seasonService.getCurrSeason();
-//        if (curSeasonId < 1) return;
-//        //玩家天赋未开启, 赛季ID异常, 未学习天赋
-//        if (!talent.isOpenTalent() || talent.getSeasonId() != curSeasonId || CheckNull.isEmpty(talent.getLearns())) {
-//            return;
-//        }
+
         SeasonTalent talent = player.getPlayerSeasonData().getSeasonTalent();
         Map<Integer, Integer> tempMap = null;
         Map<Integer, StaticSeasonTalent> talentMap = StaticIniDataMgr.getSeasonTalentMap();
