@@ -820,7 +820,7 @@ public class CalculateUtil {
         // 最终值 = 基础 * 万分比
         processFinalAttr(tempMap, attrMutMap);
         //重新计算showFight
-        reCalcFinalAttrFight(player, Constant.ShowFightId.HERO_BIOGRAPHY, hero, attrMap, tempMap);
+        reCalcAttrFight(player, Constant.ShowFightId.HERO_BIOGRAPHY, hero, attrMap, tempMap);
     }
 
     /**

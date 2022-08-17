@@ -166,4 +166,21 @@ public interface Events {
             this.curLevel = curLevel;
         }
     }
+
+    /**
+     * 同步英雄属性变更
+     */
+    public static class SyncHeroAttrChangeEvent {
+        public int[] heroIds;
+        public Player player;
+
+        public SyncHeroAttrChangeEvent(int[] heroIds) {
+            this.heroIds = heroIds;
+        }
+
+        public SyncHeroAttrChangeEvent(int[] heroIds, Player player) {
+            this.heroIds = heroIds;
+            this.player = player;
+        }
+    }
 }

@@ -1,11 +1,17 @@
 package com.gryphpoem.game.zw.service.hero;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.eventbus.EventBus;
+import com.gryphpoem.game.zw.core.eventbus.Subscribe;
+import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroBiographyDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyAttr;
@@ -14,10 +20,14 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.service.EventRegisterService;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
+import com.gryphpoem.game.zw.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +40,16 @@ import java.util.Objects;
  * createTime: 2022-08-12 17:05
  */
 @Component
-public class HeroBiographyService implements GmCmdService {
+public class HeroBiographyService implements GmCmdService, EventRegisterService {
     @Autowired
     private PlayerDataManager playerDataManager;
     @Autowired
     private StaticHeroBiographyDataMgr staticHeroBiographyDataMgr;
+
+    @Override
+    public void registerEvent() {
+        EventBus.getDefault().register(this);
+    }
 
     /**
      * 获取武将列传信息
@@ -95,6 +110,8 @@ public class HeroBiographyService implements GmCmdService {
         builder.setType(type);
         builder.setLevel(biographyAttr.getLevel());
         CalculateUtil.reCalcAllHeroAttr(player);
+        // 同步客户端上阵武将属性变更
+        EventBus.getDefault().post(new Events.SyncHeroAttrChangeEvent(player.heroBattle, player));
         return builder.build();
     }
 
@@ -120,6 +137,28 @@ public class HeroBiographyService implements GmCmdService {
             attrList.addAll(staticData.getAttr());
         }
         return attrList;
+    }
+
+    /**
+     * 同步武将属性变更
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void syncHeroAttr(Events.SyncHeroAttrChangeEvent event) {
+        if (ObjectUtils.isEmpty(event) || ObjectUtils.isEmpty(event.heroIds) || ObjectUtils.isEmpty(event.player) || !event.player.isLogin)
+            return;
+
+        GamePb5.SyncHeroOnBattleAttrChangeRs.Builder builder = GamePb5.SyncHeroOnBattleAttrChangeRs.newBuilder();
+        for (int heroId : event.heroIds) {
+            if (heroId == 0)
+                continue;
+            Hero hero = event.player.heros.get(heroId);
+            if (CheckNull.isNull(hero)) continue;
+            builder.addHero(PbHelper.createHeroPb(hero, event.player));
+        }
+        BasePb.Base base = PbHelper.createRsBase(GamePb5.SyncHeroOnBattleAttrChangeRs.EXT_FIELD_NUMBER, GamePb5.SyncHeroOnBattleAttrChangeRs.ext, builder.build()).build();
+        DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, event.player);
     }
 
     @GmCmd("biography")
