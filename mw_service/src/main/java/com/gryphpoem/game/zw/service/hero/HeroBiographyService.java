@@ -46,11 +46,6 @@ public class HeroBiographyService implements GmCmdService, EventRegisterService 
     @Autowired
     private StaticHeroBiographyDataMgr staticHeroBiographyDataMgr;
 
-    @Override
-    public void registerEvent() {
-        EventBus.getDefault().register(this);
-    }
-
     /**
      * 获取武将列传信息
      *
