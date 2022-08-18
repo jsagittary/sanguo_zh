@@ -395,68 +395,68 @@ public class CalculateUtil {
         return attrMap;
     }
 
-    private static void addTotemEffect(Player player,Hero hero,Map<Integer, Integer> attrMap){
+    private static void addTotemEffect(Player player, Hero hero, Map<Integer, Integer> attrMap) {
         if (CheckNull.isNull(attrMap)) {
             return;
         }
         HashMap<Integer, Integer> tempMap = new HashMap<>();
         //图腾基础属性
         for (int totemKey : hero.getTotem()) {
-            if(totemKey <= 0) continue;
+            if (totemKey <= 0) continue;
             Totem totem = player.getTotemData().getTotem(totemKey);
-            if(Objects.isNull(totem)) {
-                LogUtil.error("计算将领图腾属性,图腾不存在,totemKey=",totemKey);
+            if (Objects.isNull(totem)) {
+                LogUtil.error("计算将领图腾属性,图腾不存在,totemKey=", totemKey);
                 continue;
             }
             StaticTotem staticTotem = StaticTotemDataMgr.getStaticTotem(totem.getTotemId());
-            StaticTotemUp staticTotemUp1 = StaticTotemDataMgr.getStaticTotemUp(1,staticTotem.getQuality(),totem.getStrengthen());
-            StaticTotemUp staticTotemUp2 = StaticTotemDataMgr.getStaticTotemUp(2,staticTotem.getQuality(),totem.getResonate());
-            if(Objects.isNull(staticTotem) || Objects.isNull(staticTotemUp1) || Objects.isNull(staticTotemUp2)){
-                LogUtil.error("计算将领图腾属性,配置不存在",totem,staticTotem,staticTotemUp1,staticTotemUp2);
+            StaticTotemUp staticTotemUp1 = StaticTotemDataMgr.getStaticTotemUp(1, staticTotem.getQuality(), totem.getStrengthen());
+            StaticTotemUp staticTotemUp2 = StaticTotemDataMgr.getStaticTotemUp(2, staticTotem.getQuality(), totem.getResonate());
+            if (Objects.isNull(staticTotem) || Objects.isNull(staticTotemUp1) || Objects.isNull(staticTotemUp2)) {
+                LogUtil.error("计算将领图腾属性,配置不存在", totem, staticTotem, staticTotemUp1, staticTotemUp2);
                 continue;
             }
-            Optional.ofNullable(staticTotemUp1.getAttrByIdx(staticTotem.getPlace())).ifPresent(map -> map.entrySet().forEach(entry -> tempMap.merge(entry.getKey(),entry.getValue(),Integer::sum)));
-            Optional.ofNullable(staticTotemUp2.getAttrByIdx(staticTotem.getPlace())).ifPresent(map -> map.entrySet().forEach(entry -> tempMap.merge(entry.getKey(),entry.getValue(),Integer::sum)));
+            Optional.ofNullable(staticTotemUp1.getAttrByIdx(staticTotem.getPlace())).ifPresent(map -> map.entrySet().forEach(entry -> tempMap.merge(entry.getKey(), entry.getValue(), Integer::sum)));
+            Optional.ofNullable(staticTotemUp2.getAttrByIdx(staticTotem.getPlace())).ifPresent(map -> map.entrySet().forEach(entry -> tempMap.merge(entry.getKey(), entry.getValue(), Integer::sum)));
         }
-        reCalcAttrFight(player,Constant.ShowFightId.TOTEM,hero,attrMap,tempMap);
+        reCalcAttrFight(player, Constant.ShowFightId.TOTEM, hero, attrMap, tempMap);
     }
 
-    private static void addTotemLinkEffect(Player player,Hero hero, Map<Integer, Integer> attrMutMap){
+    private static void addTotemLinkEffect(Player player, Hero hero, Map<Integer, Integer> attrMutMap) {
         //图腾套装属性
         StaticTotemLink staticTotemLink = null;
         for (StaticTotemLink link : StaticTotemDataMgr.getStaticTotemLinkList()) {
-            boolean isOut = false,isFit = true;
+            boolean isOut = false, isFit = true;
 
-            for(int i=1;i<hero.getTotem().length;i++){
+            for (int i = 1; i < hero.getTotem().length; i++) {
                 Totem totem = player.getTotemData().getTotem(hero.getTotemKey(i));
-                if(Objects.isNull(totem)){
+                if (Objects.isNull(totem)) {
                     isOut = true;
                     break;
                 }
                 StaticTotem staticTotem = StaticTotemDataMgr.getStaticTotem(totem.getTotemId());
-                if(Objects.isNull(staticTotem)){
+                if (Objects.isNull(staticTotem)) {
                     isOut = true;
                     break;
                 }
-                StaticTotemUp staticTotemUp = StaticTotemDataMgr.getStaticTotemUp(1,staticTotem.getQuality(),totem.getStrengthen());
-                if(Objects.isNull(staticTotemUp)){
+                StaticTotemUp staticTotemUp = StaticTotemDataMgr.getStaticTotemUp(1, staticTotem.getQuality(), totem.getStrengthen());
+                if (Objects.isNull(staticTotemUp)) {
                     isOut = true;
                     break;
                 }
-                if(link.getQuality() > staticTotem.getQuality() || totem.getStrengthen() < link.getLv()){
+                if (link.getQuality() > staticTotem.getQuality() || totem.getStrengthen() < link.getLv()) {
                     isFit = false;
                     break;
                 }
             }
-            if(isOut){
+            if (isOut) {
                 break;
             }
-            if(isFit){
+            if (isFit) {
                 staticTotemLink = link;
                 break;
             }
         }
-        if(Objects.nonNull(staticTotemLink)){
+        if (Objects.nonNull(staticTotemLink)) {
 //            staticTotemLink.getAttr().entrySet().forEach(entry -> tempMap.merge(entry.getKey(),entry.getValue(),Integer::sum));
             staticTotemLink.getAttr().entrySet().forEach(entry -> addAttrValue(attrMutMap, entry.getKey(), entry.getValue()));
         }
@@ -471,7 +471,7 @@ public class CalculateUtil {
         addEquipEffect(player, hero, attrMap);
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "Equip attrMap=" + attrMap);
         //阵法图腾属性加成
-        addTotemEffect(player,hero,attrMap);
+        addTotemEffect(player, hero, attrMap);
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "阵法图腾加成 attrMap=" + attrMap);
         // 国器加成
         addSuperEquipEffect(player, hero, attrMap);
@@ -497,14 +497,16 @@ public class CalculateUtil {
 
         // 其他属性加成, 例如: 科技加成
         addOtherEffect(player, hero, attrMap, staticHero);//出战沙盘的武将不处理跨服加成
-
-        //宝具加成
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "otherEffect attrMap=" + attrMap);
+        // 宝具加成
         addTreasureWare(player, hero, attrMap);
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "treasureWare attrMap=" + attrMap);
         // 赛季天赋
         addSeasonTalent(player, hero, attrMap);
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "seasonTalent attrMap=" + attrMap);
         // 武将列传属性加成
         addHeroBiographyAttr(player, hero, attrMap);
-
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "heroBiography attrMap=" + attrMap);
 
         // 方便一个人打一个城
         if (player.isTester) {
@@ -531,7 +533,7 @@ public class CalculateUtil {
                 hero.getExtAttrs().put(attr, attrVal);
             }
         }
-        DataResource.ac.getBean(TaskDataManager.class).updTask(player, TaskType.COND_516,1, hero.getShowFight().values().stream().mapToInt(Integer::intValue).sum());
+        DataResource.ac.getBean(TaskDataManager.class).updTask(player, TaskType.COND_516, 1, hero.getShowFight().values().stream().mapToInt(Integer::intValue).sum());
         return attrMap;
     }
 
@@ -655,11 +657,11 @@ public class CalculateUtil {
         addWarFireBuffEffect(player, attrMutMap);
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), ",战火燎原万分比加成 attrMutMap=" + attrMutMap);
         //图腾万分比加成
-        addTotemLinkEffect(player,hero,attrMutMap);
-        LogUtil.calculate("roleId:",player.roleId,",heroId:",hero.getHeroId(),",图腾套装属性万分比加成 attrMutMap=" + attrMutMap);
+        addTotemLinkEffect(player, hero, attrMutMap);
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), ",图腾套装属性万分比加成 attrMutMap=" + attrMutMap);
         // 跨服战火燎原万分比加成
         addCrossWarFireBuffEffect(player, attrMutMap);
-        LogUtil.calculate("roleId:",player.roleId,",heroId:",hero.getHeroId(),",跨服战火燎原万分比加成 attrMutMap=" + attrMutMap);
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), ",跨服战火燎原万分比加成 attrMutMap=" + attrMutMap);
 
         // 最终值 = 基础 * 万分比
         processFinalAttr(tempMap, attrMutMap);
@@ -819,6 +821,7 @@ public class CalculateUtil {
 
         // 最终值 = 基础 * 万分比
         processFinalAttr(tempMap, attrMutMap);
+        LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "武将列传 tempMap=" + tempMap);
         //重新计算showFight
         reCalcAttrFight(player, Constant.ShowFightId.HERO_BIOGRAPHY, hero, attrMap, tempMap);
     }
@@ -874,6 +877,7 @@ public class CalculateUtil {
 
     /**
      * 宝具战斗力加成
+     *
      * @param player
      * @param hero
      * @param attrMap
@@ -1005,19 +1009,20 @@ public class CalculateUtil {
                     }
                 });
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "CastleSkin into title attrMap=" + attrMap);
-        addTitleEffect(player,hero,attrMap,tempMap);
+        addTitleEffect(player, hero, attrMap, tempMap);
         // 重新计算模块战斗力
         reCalcAttrFight(player, Constant.ShowFightId.CASTLE_SKIN, hero, attrMap, tempMap);
     }
 
     /**
      * 计算称号属性加成
+     *
      * @param player
      * @param hero
      * @param attrMap
      * @param tempMap
      */
-    private static void addTitleEffect(Player player, Hero hero, Map<Integer, Integer> attrMap,Map<Integer, Integer> tempMap) {
+    private static void addTitleEffect(Player player, Hero hero, Map<Integer, Integer> attrMap, Map<Integer, Integer> tempMap) {
         DressUpDataManager dressUpDataManager = DataResource.ac.getBean(DressUpDataManager.class);
         TitleService titleService = DataResource.ac.getBean(TitleService.class);
         if (CheckNull.isNull(attrMap)) {
@@ -1033,14 +1038,14 @@ public class CalculateUtil {
                     return;
                 }
                 //如果玩家装扮上没有，加入进去一个未解锁的称号。
-                if(null==dressUpByType.get(title.getId())){
-                    TitleEntity titleEntity=new TitleEntity(title.getId(),false);
-                    dressUpByType.put(title.getId(),titleEntity);
+                if (null == dressUpByType.get(title.getId())) {
+                    TitleEntity titleEntity = new TitleEntity(title.getId(), false);
+                    dressUpByType.put(title.getId(), titleEntity);
                 }
                 TitleEntity titleEntity = (TitleEntity) dressUpByType.get(title.getId());
                 if (null != title.getTaskId() && title.getTaskId() > 0) {
                     if (titleService.checkFinishTaskUnlock(player, titleEntity, ETask.getByType(title.getTaskId()), title)) {
-                        if(null!=title.getAttr()&&!title.getAttr().isEmpty()){
+                        if (null != title.getAttr() && !title.getAttr().isEmpty()) {
                             title.getAttr().entrySet().forEach(add -> {
                                 addAttrValue(tempMap, add.getKey(), add.getValue());
                             });
@@ -1049,7 +1054,7 @@ public class CalculateUtil {
                 } else {
                     //没有任务,需要解锁过
                     if (titleEntity.isPermanentHas() || titleEntity.getDuration() > 0) {
-                        if(!title.getAttr().isEmpty()){
+                        if (!title.getAttr().isEmpty()) {
                             title.getAttr().entrySet().forEach(add -> {
                                 addAttrValue(tempMap, add.getKey(), add.getValue());
                             });
