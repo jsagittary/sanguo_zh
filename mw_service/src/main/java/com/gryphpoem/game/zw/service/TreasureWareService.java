@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.resource.util.game.TreasureWareUtil;
 import com.gryphpoem.game.zw.resource.util.pb.TreasureWarePbUtil;
 import com.gryphpoem.game.zw.service.activity.AbsRankActivityService;
@@ -175,6 +176,9 @@ public class TreasureWareService implements GmCmdService {
                     roleId, majorConfig.getId(), materialConfig.getId()));
         }
 
+        // 宝具被洗炼消耗事件上报（材料宝具）
+        EventDataUp.treasureCultivate(player, material, String.valueOf(AwardFrom.TREASURE_WARE_TRAIN.getCode()), getAttrType(material));
+
         //删除宝具
         rewardDataManager.subTreasureWare(player, matKeyId, AwardFrom.TREASURE_WARE_TRAIN, JSON.toJSONString(material));
 
@@ -189,6 +193,9 @@ public class TreasureWareService implements GmCmdService {
         builder.setTargetIndex(trainAttr.getTrainTargetIndex());
         TaskService.processTask(player, ETask.TRAIN_QUALITY_AND_COUNT_TREASURE_WARE, 1, majorConfig.getQuality());
         taskDataManager.updTask(player, TaskType.COND_529, 1);
+
+        // 宝具洗炼事件上报（主宝具）
+        EventDataUp.treasureCultivate(player, major, String.valueOf(AwardFrom.TREASURE_WARE_TRAIN.getCode()), getAttrType(major));
 
         return builder.build();
     }
@@ -260,7 +267,7 @@ public class TreasureWareService implements GmCmdService {
 
                 treasureWareList = treasureWareList == null ? new ArrayList<>() : treasureWareList;
                 treasureWareList.add(treasureWare);
-                treasureWare.setProfileId(StaticTreasureWareDataMgr.getProfileId(getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId()));
+                // treasureWare.setProfileId(StaticTreasureWareDataMgr.getProfileId(getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId()));
 
                 makeCount++;
 //                makeCondition = 0;
@@ -464,7 +471,7 @@ public class TreasureWareService implements GmCmdService {
             putInBag = putInTreasureWare(remainBagCnt, putInBag, treasureWare, player, staticTreasureWare, treasureWareMailList, from);
             treasureWares = treasureWares == null ? new ArrayList<>() : treasureWares;
             treasureWares.add(treasureWare);
-            treasureWare.setProfileId(StaticTreasureWareDataMgr.getProfileId(getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId()));
+            // treasureWare.setProfileId(StaticTreasureWareDataMgr.getProfileId(getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId()));
         }
 
         if (treasureWareMailList.size() > 0) {
@@ -518,21 +525,44 @@ public class TreasureWareService implements GmCmdService {
      * @param from
      * @return
      */
-    private int putInTreasureWare(int remainBagCnt, int putInBag, TreasureWare treasureWare, Player player, StaticTreasureWare staticTreasureWare, List<CommonPb.Award> treasureWareMailList, AwardFrom from) {
+    private int putInTreasureWare(int remainBagCnt,
+                                  int putInBag,
+                                  TreasureWare treasureWare,
+                                  Player player,
+                                  StaticTreasureWare staticTreasureWare,
+                                  List<CommonPb.Award> treasureWareMailList,
+                                  AwardFrom from) {
         treasureWare.setKeyId(player.maxKey());
+        int attrType = getAttrType(treasureWare);
+        int profileId = StaticTreasureWareDataMgr.getProfileId(attrType, treasureWare.getQuality(), treasureWare.getSpecialId());
+
         if (remainBagCnt > putInBag) {
             treasureWare.setStatus(TreasureWareConst.TREASURE_IN_USING);
             putInBag++;
 
             // 记录玩家获得新宝具
-            LogLordHelper.treasureWare(from, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(), Constant.ACTION_ADD,
-                    treasureWare.getQuality(), treasureWare.logAttrs(), CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId());
+            LogLordHelper.treasureWare(
+                    from,
+                    player.account,
+                    player.lord,
+                    treasureWare.getEquipId(),
+                    treasureWare.getKeyId(),
+                    Constant.ACTION_ADD,
+                    treasureWare.getQuality(),
+                    treasureWare.logAttrs(),
+                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId()
+            );
         } else {
             //发邮件
             treasureWare.setStatus(TreasureWareConst.TREASURE_IN_MAIL);
             treasureWareMailList = CheckNull.isNull(treasureWareMailList) ? new ArrayList<>() : treasureWareMailList;
-            treasureWareMailList.add(PbHelper.createAwardPbWithParam(AwardType.TREASURE_WARE, staticTreasureWare.getId(), 1,
-                    treasureWare.getKeyId(), StaticTreasureWareDataMgr.getProfileId(getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId())));
+            treasureWareMailList.add(PbHelper.createAwardPbWithParam(
+                    AwardType.TREASURE_WARE,
+                    staticTreasureWare.getId(),
+                    1,
+                    treasureWare.getKeyId(),
+                    profileId
+            ));
         }
 
         player.treasureWares.put(treasureWare.getKeyId(), treasureWare);
@@ -541,6 +571,11 @@ public class TreasureWareService implements GmCmdService {
             if (CheckNull.nonEmpty(e))
                 taskDataManager.updTask(player, TaskType.COND_536, 1, treasureWare.getQuality());
         });
+
+        // 宝具获取事件上报
+        treasureWare.setProfileId(profileId);
+        EventDataUp.treasureCultivate(player, treasureWare, String.valueOf(AwardFrom.TREASURE_WARE_MAKE.getCode()), attrType);
+
         return putInBag;
     }
 
@@ -787,6 +822,9 @@ public class TreasureWareService implements GmCmdService {
             TreasureWare treasureWare = player.treasureWares.get(keyId);
             staticTreasureWareLevel = StaticTreasureWareDataMgr.getStaticTreasureWareLevel(treasureWare.getQuality(), treasureWare.getLevel());
 
+            // 宝具分解事件上报
+            EventDataUp.treasureCultivate(player, treasureWare, String.valueOf(AwardFrom.TREASURE_WARE_DECOMPOSE.getCode()), getAttrType(treasureWare));
+
             //删除宝具
             rewardDataManager.subTreasureWare(player, keyId, AwardFrom.TREASURE_WARE_DECOMPOSE,
                     treasureWare.getQuality(), treasureWare.getLevel(), req.hasQuality() ? req.getQuality() : -1, req.hasLevel() ? req.getLevel() : -1);
@@ -931,6 +969,8 @@ public class TreasureWareService implements GmCmdService {
                 treasureWare.setSpecialId(nextSpecialAttr.getId());
             }
         }
+
+        EventDataUp.treasureCultivate(player, treasureWare, String.valueOf(AwardFrom.STRENGTH_TREASURE_WARE.getCode()), getAttrType(treasureWare));
 
         //强化触发礼包
         activityTriggerService.strengthTreasureWare(player, treasureWare.getQuality(), treasureWare.getLevel());
