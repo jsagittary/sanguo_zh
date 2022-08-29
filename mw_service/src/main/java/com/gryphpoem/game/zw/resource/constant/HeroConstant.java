@@ -278,7 +278,8 @@ public class HeroConstant {
     public static final int CHANGE_COMBAT_POS_TYPE = 2;
     /** 出征将领更换位置:类型 */
     public static final int CHANGE_BATTLE_POS_TYPE = 3;
-
+    /** 宝具将领更换位置:类型 */
+    public static final int CHANGE_TREASURE_WARE_POS_TYPE = 4;
 
     /**
      * 激活 1, 进化 2, 重组 3

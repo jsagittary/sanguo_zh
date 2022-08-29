@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.cross.activity.CrossRechargeActivityService;
 import com.gryphpoem.cross.constants.PlayerUploadTypeDefine;
 import com.gryphpoem.cross.player.RpcPlayerService;
-import com.gryphpoem.cross.player.dto.PlayerLordDto;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -13,30 +12,21 @@ import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.CommonPb.SearchHero;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.resource.constant.*;
-import com.gryphpoem.game.zw.resource.constant.task.TaskCone517Type;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Common;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
-import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
-import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.*;
-import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
-import com.gryphpoem.game.zw.resource.util.random.HeroSearchRandom;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
@@ -48,7 +38,6 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author TanDonghai
@@ -426,7 +415,7 @@ public class HeroService implements GmCmdService {
         Player player = playerDataManager.getPlayer(roleId);
         Set<Integer> check = new HashSet<>();
         int posType = req.getPosType();
-        if (posType < HeroConstant.CHANGE_POS_TYPE || posType > HeroConstant.CHANGE_BATTLE_POS_TYPE) {
+        if (posType < HeroConstant.CHANGE_POS_TYPE || posType > HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId :", roleId);
         }
         for (TwoInt kv : req.getHerosList()) {
@@ -475,7 +464,9 @@ public class HeroService implements GmCmdService {
 
         GamePb1.HeroPosSetRs.Builder builder = GamePb1.HeroPosSetRs.newBuilder();
         List<Integer> posList = player.heroBattlePos.get(posType);
-        if (posType == HeroConstant.CHANGE_COMBAT_POS_TYPE || posType == HeroConstant.CHANGE_BATTLE_POS_TYPE) {
+        if (posType == HeroConstant.CHANGE_COMBAT_POS_TYPE ||
+                posType == HeroConstant.CHANGE_BATTLE_POS_TYPE ||
+                posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
             if (posList == null) {
                 posList = new ArrayList<>();
                 player.heroBattlePos.put(posType, posList);
