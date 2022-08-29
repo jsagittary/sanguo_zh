@@ -173,6 +173,16 @@ public class ArmyService {
                 hero.setCount(hero.getCount() + add);
                 LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
                         Constant.ACTION_ADD);
+
+                // 上报玩家兵力变化
+                LogLordHelper.playerArm(
+                        AwardFrom.REPLENISH,
+                        player,
+                        armType,
+                        Constant.ACTION_ADD,
+                        add,
+                        playerDataManager.getArmCount(player.resource, armType)
+                );
             }
 
             builder.addHero(PbHelper.createTwoIntPb(heroId, hero.getCount()));
@@ -232,6 +242,15 @@ public class ArmyService {
         hero.setCount(hero.getCount() + add);
         LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, hero.getHeroId(), hero.getCount(), add, armType,
                 Constant.ACTION_ADD);
+
+        // 上报玩家兵力变化
+        LogLordHelper.playerArm(
+                AwardFrom.REPLENISH,
+                player, armType,
+                Constant.ACTION_ADD,
+                add,
+                playerDataManager.getArmCount(player.resource, armType)
+        );
     }
 
     /**

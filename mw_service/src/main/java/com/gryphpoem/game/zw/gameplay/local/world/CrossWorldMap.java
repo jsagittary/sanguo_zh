@@ -31,6 +31,7 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,6 +82,9 @@ public class CrossWorldMap extends WatcherWorldMap {
      * 战火燎原
      */
     private final GlobalWarFire globalWarFire;
+
+    @Autowired
+    private PlayerDataManager playerDataManager;
 
     public CrossWorldMap(int mapId, int width, int height, int cellSize) {
         super(mapId, width, height, cellSize);
@@ -579,6 +583,16 @@ public class CrossWorldMap extends WatcherWorldMap {
                                                     //记录玩家兵力变化信息
                                                     LogLordHelper.filterHeroArm(AwardFrom.WAR_FIRE_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
                                                             Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                                                    // 上报玩家兵力变化信息
+                                                    LogLordHelper.playerArm(
+                                                            AwardFrom.WAR_FIRE_BATTLE,
+                                                            player,
+                                                            armyType,
+                                                            Constant.ACTION_ADD,
+                                                            addArm,
+                                                            playerDataManager.getArmCount(player.resource, armyType)
+                                                    );
                                                 }
                                             }
                                         }

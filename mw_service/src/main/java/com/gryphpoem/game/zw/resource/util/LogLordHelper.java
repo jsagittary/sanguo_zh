@@ -274,6 +274,28 @@ public class LogLordHelper {
         }
     }
 
+    /**
+     * 玩家整体兵力变化记录
+     *
+     * @param from
+     * @param player
+     * @param armyType
+     * @param action
+     * @param add
+     * @param current
+     */
+    public static void playerArm(AwardFrom from, Player player, int armyType, int action, int add, int current) {
+        if (player == null) {
+            return;
+        }
+
+        StringBuffer message = getCommonParams("heroArm", from, player.account, player.lord).append("|")
+                .append(current).append("|").append(add).append("|").append(action);
+        GAME_LOGGER.info(message);
+
+        EventDataUp.playerArmy(player, from, armyType, add, current);
+    }
+
     /*---------------------------------------RewardDataManager里的埋点日志start ---------------------------------------*/
 
     /**

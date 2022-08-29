@@ -638,7 +638,7 @@ public class EventDataUp {
     }
 
     /**
-     * 兵力变化上报
+     * 单个武将兵力变化上报
      *
      * @param account
      * @param lord
@@ -655,6 +655,49 @@ public class EventDataUp {
         if (functionUnlock(account)) {
             return;
         }
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(account, lord);
+            common.put("@public_data", "");
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
+            common.put("money", lord.getGold());
+            common.put("faction", lord.getCamp());
+            common.put("army_type", armyType);
+            int changeType = add > 0 ? 1 : 2;
+            common.put("army_change_type", changeType);
+            common.put("army_nums", add);
+            common.put("army_after_nums", current);
+            common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
+
+            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
+    }
+
+
+    /**
+     * 玩家整体兵力变化上报
+     * @param player
+     * @param from
+     * @param armyType
+     * @param add
+     * @param current
+     */
+    public static void playerArmy(Player player, AwardFrom from, int armyType, int add, int current) {
+        if (Objects.isNull(player) || Objects.isNull(player.account) || Objects.isNull(player.lord)) {
+            return;
+        }
+
+        Account account = player.account;
+        Lord lord = player.lord;
+
+        // 检测数数上报的功能
+        if (functionUnlock(player.account)) {
+            return;
+        }
+
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
@@ -849,9 +892,9 @@ public class EventDataUp {
      * 宝具养成时数据上报（分解、获取、强化、被洗炼消耗、洗炼）
      * @param player
      * @param treasureWare
-     * @param operateType
+     * @param reason
      */
-    public static void treasureCultivate(Player player, TreasureWare treasureWare, String operateType, int attrType) {
+    public static void treasureCultivate(Player player, TreasureWare treasureWare, AwardFrom reason, int attrType) {
         if (CheckNull.isNull(player.lord) || CheckNull.isNull(player.account) || CheckNull.isNull(treasureWare))
             return;
         // 检测数数上报的功能
@@ -863,7 +906,7 @@ public class EventDataUp {
             Map<String, Object> common = getCommonParams(player.account, player.lord);
             common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
             // 宝具变更原因：分解、获取、强化、被洗练消耗、洗炼等
-            common.put("treasure_change_reason", operateType);
+            common.put("treasure_change_reason", String.valueOf(reason.getCode()));
             // 宝具变更后评级
             common.put("treasure_after_rate", String.valueOf(treasureWare.getRank()));
             // 宝具类型：攻击、防御、平衡、赛季等

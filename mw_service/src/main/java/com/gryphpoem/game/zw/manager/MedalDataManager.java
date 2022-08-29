@@ -526,6 +526,15 @@ public class MedalDataManager {
                             //记录玩家兵力变化信息
                             LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
                                     Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                            // 记录玩家兵力变化
+                            LogLordHelper.playerArm(
+                                    AwardFrom.MEDAL_SKILL_ACTION,
+                                    player, armyType,
+                                    Constant.ACTION_ADD,
+                                    recovery,
+                                    playerDataManager.getArmCount(player.resource, armyType)
+                            );
                         }
                     }
                 }
@@ -607,6 +616,16 @@ public class MedalDataManager {
                             //记录玩家兵力变化信息
                             LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
                                     Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                            // 上报玩家兵力变化信息
+                            LogLordHelper.playerArm(
+                                    AwardFrom.MEDAL_SKILL_ACTION,
+                                    player,
+                                    armyType,
+                                    Constant.ACTION_ADD,
+                                    recovery,
+                                    playerDataManager.getArmCount(player.resource, armyType)
+                            );
                         }
                     }
                 }

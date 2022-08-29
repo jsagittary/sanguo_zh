@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service.robot;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
@@ -45,6 +46,9 @@ public class RobotHeroService {
 
     @Autowired
     private ArmyService armyService;
+
+    @Autowired
+    private PlayerDataManager playerDataManager;
 
     public void autoRecruitHero(Player player) {
         // 判断良将招募是否开启
@@ -107,9 +111,21 @@ public class RobotHeroService {
                     int sub = battleHero.getCount();
                     battleHero.setCount(0);
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
-                    if (Objects.nonNull(staticHero))
+                    if (Objects.nonNull(staticHero)) {
+                        int armType = staticHero.getType();// 获取将领对应类型的兵力
                         LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
                                 battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+
+                        // 上报玩家兵力变化
+                        LogLordHelper.playerArm(
+                                AwardFrom.HERO_DOWN,
+                                player,
+                                armType,
+                                Constant.ACTION_ADD,
+                                -sub,
+                                playerDataManager.getArmCount(player.resource, armType)
+                        );
+                    }
                     rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
                     // 重新计算并更新将领属性

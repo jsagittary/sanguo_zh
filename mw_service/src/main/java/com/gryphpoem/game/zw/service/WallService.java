@@ -199,7 +199,8 @@ public class WallService {
             // 耗粮判断
             // 科技消耗系数
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-            int radio = techDataManager.getFood4ArmyType(player, staticHero.getType());
+            int armyType = staticHero.getType();
+            int radio = techDataManager.getFood4ArmyType(player, armyType);
             if (radio == 0) {
                 radio = Constant.FACTORY_ARM_NEED_FOOD;
             }
@@ -213,7 +214,17 @@ public class WallService {
 
                     //记录玩家兵力变化信息
                     LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
-                            Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
+                            Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                    // 上报玩家兵力变化信息
+                    LogLordHelper.playerArm(
+                            AwardFrom.WALL_NPC_AUTO_ARMY,
+                            player,
+                            armyType,
+                            Constant.ACTION_ADD,
+                            add,
+                            playerDataManager.getArmCount(player.resource, armyType)
+                    );
                 } else {
                     // 粮不够,能补多少扣多少
                     add = (int) (resource.getFood() / radio);
@@ -226,7 +237,17 @@ public class WallService {
 
                         //记录玩家兵力变化信息
                         LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
-                                Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
+                                Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                        // 上报玩家兵力变化信息
+                        LogLordHelper.playerArm(
+                                AwardFrom.WALL_NPC_AUTO_ARMY,
+                                player,
+                                armyType,
+                                Constant.ACTION_ADD,
+                                add,
+                                playerDataManager.getArmCount(player.resource, armyType)
+                        );
                     }
                 }
                 hero.setWallArmyTime(now);
@@ -498,7 +519,8 @@ public class WallService {
         // 返还资源
         int sub = downHero.getCount();
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
-        int radio = techDataManager.getFood4ArmyType(player, staticHero.getType());
+        int armyType = staticHero.getType();
+        int radio = techDataManager.getFood4ArmyType(player, armyType);
         if (radio == 0) {
             radio = Constant.FACTORY_ARM_NEED_FOOD;
         }
@@ -507,7 +529,17 @@ public class WallService {
                 .addAward(player, AwardType.RESOURCE, AwardType.Resource.FOOD, sub * radio, AwardFrom.HERO_DOWN);
         //记录玩家兵力变化信息
         LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
-                Constant.ACTION_SUB, staticHero.getType(), downHero.getQuality());
+                Constant.ACTION_SUB, armyType, downHero.getQuality());
+
+        // 上报玩家兵力变化信息
+        LogLordHelper.playerArm(
+                AwardFrom.HERO_DOWN,
+                player,
+                armyType,
+                Constant.ACTION_SUB,
+                -sub,
+                playerDataManager.getArmCount(player.resource, armyType)
+        );
 
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);

@@ -114,6 +114,10 @@ public class TreasureWareService implements GmCmdService {
         builder.setTreasureWare(tw.createPb(false));
         //完成任务
         TaskService.processTask(player, ETask.TRAIN_QUALITY_AND_2SAME_ANY_ATTR_TREASURE_WARE, keyId);
+
+        // 宝具洗炼事件上报
+        EventDataUp.treasureCultivate(player, tw, AwardFrom.TREASURE_WARE_TRAIN, getAttrType(tw));
+
         return builder.build();
     }
 
@@ -176,8 +180,6 @@ public class TreasureWareService implements GmCmdService {
                     roleId, majorConfig.getId(), materialConfig.getId()));
         }
 
-        // 宝具被洗炼消耗事件上报（材料宝具）
-        EventDataUp.treasureCultivate(player, material, String.valueOf(AwardFrom.TREASURE_WARE_TRAIN.getCode()), getAttrType(material));
 
         //删除宝具
         rewardDataManager.subTreasureWare(player, matKeyId, AwardFrom.TREASURE_WARE_TRAIN, JSON.toJSONString(material));
@@ -193,9 +195,6 @@ public class TreasureWareService implements GmCmdService {
         builder.setTargetIndex(trainAttr.getTrainTargetIndex());
         TaskService.processTask(player, ETask.TRAIN_QUALITY_AND_COUNT_TREASURE_WARE, 1, majorConfig.getQuality());
         taskDataManager.updTask(player, TaskType.COND_529, 1);
-
-        // 宝具洗炼事件上报（主宝具）
-        EventDataUp.treasureCultivate(player, major, String.valueOf(AwardFrom.TREASURE_WARE_TRAIN.getCode()), getAttrType(major));
 
         return builder.build();
     }
@@ -488,7 +487,7 @@ public class TreasureWareService implements GmCmdService {
      * @param treasureWare
      * @return
      */
-    private int getAttrType(TreasureWare treasureWare) {
+    public int getAttrType(TreasureWare treasureWare) {
         if (ObjectUtils.isEmpty(treasureWare.getAttrs()))
             return -1;
 
@@ -574,7 +573,7 @@ public class TreasureWareService implements GmCmdService {
 
         // 宝具获取事件上报
         treasureWare.setProfileId(profileId);
-        EventDataUp.treasureCultivate(player, treasureWare, String.valueOf(AwardFrom.TREASURE_WARE_MAKE.getCode()), attrType);
+        EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_MAKE, attrType);
 
         return putInBag;
     }
@@ -823,7 +822,7 @@ public class TreasureWareService implements GmCmdService {
             staticTreasureWareLevel = StaticTreasureWareDataMgr.getStaticTreasureWareLevel(treasureWare.getQuality(), treasureWare.getLevel());
 
             // 宝具分解事件上报
-            EventDataUp.treasureCultivate(player, treasureWare, String.valueOf(AwardFrom.TREASURE_WARE_DECOMPOSE.getCode()), getAttrType(treasureWare));
+            EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_DECOMPOSE, getAttrType(treasureWare));
 
             //删除宝具
             rewardDataManager.subTreasureWare(player, keyId, AwardFrom.TREASURE_WARE_DECOMPOSE,
@@ -970,13 +969,13 @@ public class TreasureWareService implements GmCmdService {
             }
         }
 
-        EventDataUp.treasureCultivate(player, treasureWare, String.valueOf(AwardFrom.STRENGTH_TREASURE_WARE.getCode()), getAttrType(treasureWare));
+        EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.STRENGTH_TREASURE_WARE, getAttrType(treasureWare));
 
         //强化触发礼包
         activityTriggerService.strengthTreasureWare(player, treasureWare.getQuality(), treasureWare.getLevel());
 
-        taskDataManager.updTask(player,TaskType.COND_528,1);
-        taskDataManager.updTask(player,TaskType.COND_532,1,nextLevel);
+        taskDataManager.updTask(player, TaskType.COND_528, 1);
+        taskDataManager.updTask(player, TaskType.COND_532, 1, nextLevel);
 
         // 重新计算并更新将领属性
         if (Objects.nonNull(hero)) {
@@ -1131,12 +1130,23 @@ public class TreasureWareService implements GmCmdService {
     public void timedClearDecomposeTreasureWare() {
         LogUtil.common("===start delete expired treasureWare");
         int delTime = TimeHelper.getCurrentSecond() - Constant.DEL_DECOMPOSED_TREASURE_WARE * TimeHelper.DAY_S;
+
+        // 宝具分解事件上报
+        Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players ->
+                players.forEach(p -> p.treasureWares.values().forEach(tw -> {
+                            if (tw.getDecomposeTime() != 0 && tw.getDecomposeTime() <= delTime) {
+                                EventDataUp.treasureCultivate(p, tw, AwardFrom.TREASURE_WARE_DECOMPOSE, getAttrType(tw));
+                            }
+                        })
+                )
+        );
+
+        // 移除宝具
         Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players -> {
             players.forEach(p -> {
                 p.treasureWares.values().removeIf(treasureWare -> treasureWare.getDecomposeTime() != 0 &&
                         treasureWare.getDecomposeTime() <= delTime);
             });
-
         });
     }
 
@@ -1184,7 +1194,8 @@ public class TreasureWareService implements GmCmdService {
      * @param equipKeyId
      * @throws MwException
      */
-    public void heroOnTreasureWare(Player player, Hero hero, int equipKeyId, List<CommonPb.TreasureWare> list, boolean record) throws MwException {
+    public void heroOnTreasureWare(Player player, Hero hero, int equipKeyId, List<CommonPb.TreasureWare> list,
+                                   boolean record) throws MwException {
         heroOnTreasureWareIsUpTask(player, hero, equipKeyId, list, true, record);
     }
 
@@ -1197,7 +1208,8 @@ public class TreasureWareService implements GmCmdService {
      * @param upTask
      * @throws MwException
      */
-    public void heroOnTreasureWareIsUpTask(Player player, Hero hero, int treasureWareKeyId, List<CommonPb.TreasureWare> list, boolean upTask, boolean record) throws MwException {
+    public void heroOnTreasureWareIsUpTask(Player player, Hero hero, int treasureWareKeyId, List<
+            CommonPb.TreasureWare> list, boolean upTask, boolean record) throws MwException {
         if (null == hero) {
             return;
         }
@@ -1230,7 +1242,8 @@ public class TreasureWareService implements GmCmdService {
      * @param hero
      * @param treasureWareKeyId
      */
-    public void downEquip(Player player, Hero hero, int treasureWareKeyId, List<CommonPb.TreasureWare> list, boolean record) {
+    public void downEquip(Player player, Hero hero, int treasureWareKeyId, List<CommonPb.TreasureWare> list,
+                          boolean record) {
         if (null == hero) {
             return;
         }

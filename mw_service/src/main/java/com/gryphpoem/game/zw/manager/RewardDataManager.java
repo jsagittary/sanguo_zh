@@ -21,6 +21,7 @@ import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
+import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.chat.Chat;
 import com.gryphpoem.game.zw.resource.pojo.chat.SystemChat;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -117,6 +118,8 @@ public class RewardDataManager {
     private TitleService titleService;
     @Autowired
     private DrawCardService drawCardService;
+    @Autowired
+    private TreasureWareService treasureWareService;
 
     /**
      * 合并奖励
@@ -2476,6 +2479,9 @@ public class RewardDataManager {
             LogLordHelper.treasureWare(from, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(),
                     Constant.ACTION_SUB, treasureWare.getQuality(), treasureWare.logAttrs(),
                     CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
+
+            // 宝具事件上报
+            EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_TRAIN, treasureWareService.getAttrType(treasureWare));
         }
     }
 

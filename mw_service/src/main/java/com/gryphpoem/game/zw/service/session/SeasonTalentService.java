@@ -807,6 +807,7 @@ public class SeasonTalentService {
 
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
                     if (!CheckNull.isNull(staticHero)) {
+                        int armyType = staticHero.getType();
                         //判断是否超过最大兵力
                         int max = hero.getAttr()[HeroConstant.ATTR_LEAD];//最大兵力
                         recovery = Math.min(recovery, max - hero.getCount());
@@ -817,6 +818,16 @@ public class SeasonTalentService {
                         LogLordHelper.filterHeroArm(AwardFrom.SEASON_TALENT_ACTION, player.account, player.lord,
                                 hero.getHeroId(), hero.getCount(), recovery,
                                 Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
+
+                        // 上报玩家兵力变化
+                        LogLordHelper.playerArm(
+                                AwardFrom.SEASON_TALENT_ACTION,
+                                player,
+                                armyType,
+                                Constant.ACTION_ADD,
+                                recovery,
+                                playerDataManager.getArmCount(player.resource, armyType)
+                        );
                     }
                 }
             }

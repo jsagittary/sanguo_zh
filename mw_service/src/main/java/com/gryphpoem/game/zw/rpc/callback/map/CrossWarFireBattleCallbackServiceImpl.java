@@ -162,18 +162,39 @@ public class CrossWarFireBattleCallbackServiceImpl extends CrossErrorCallback im
                             hero.subArm(heroFightSummary.getLost());
                             //记录玩家兵力变化信息
                             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
-                            if (Objects.nonNull(staticHero)) {
-                                LogLordHelper.filterHeroArm(AwardFrom.CROSS_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), -heroFightSummary.getLost(),
-                                        Constant.ACTION_SUB, staticHero.getType(), hero.getQuality());
-                            }
+                            AwardFrom from = AwardFrom.CROSS_BATTLE;
+                            int armyType = staticHero.getType();
+                            LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -heroFightSummary.getLost(),
+                                    Constant.ACTION_SUB, armyType, hero.getQuality());
+
+                            // 上报玩家兵力变化信息
+                            LogLordHelper.playerArm(
+                                    from,
+                                    player,
+                                    armyType,
+                                    Constant.ACTION_SUB,
+                                    -heroFightSummary.getLost(),
+                                    DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType)
+                            );
+
                             DataResource.getBean(WarService.class).addCrossBattleHeroExp(heroFightSummary, player, AwardFrom.CROSS_BATTLE_AWARD);
                             int heroArmyCapacity = hero.getAttr()[HeroConstant.ATTR_LEAD];
                             int addArm = heroFightSummary.getRecover() + hero.getCount() >= heroArmyCapacity
                                     ? heroArmyCapacity - hero.getCount() : heroFightSummary.getRecover();
                             hero.addArm(addArm);//返还兵力
                             //记录玩家兵力变化信息
-                            LogLordHelper.filterHeroArm(AwardFrom.CROSS_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
+                            LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
                                     Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
+
+                            // 上报玩家兵力变化信息
+                            LogLordHelper.playerArm(
+                                    from,
+                                    player,
+                                    armyType,
+                                    Constant.ACTION_ADD,
+                                    addArm,
+                                    DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType)
+                            );
                             break;
                         case Constant.Role.WALL:
                             int pos = heroFightSummary.getPos();

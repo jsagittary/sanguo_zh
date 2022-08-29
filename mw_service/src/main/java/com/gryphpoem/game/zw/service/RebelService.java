@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -890,6 +891,16 @@ public class RebelService extends BaseAwkwardDataManager {
                             //记录玩家兵力变化信息
                             LogLordHelper.filterHeroArm(AwardFrom.REBEL_BUFF_ACTION, defPlayer.account, defPlayer.lord, hero.getHeroId(), hero.getCount(), addArm,
                                     Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                            // 上报玩家兵力变化
+                            LogLordHelper.playerArm(
+                                    AwardFrom.REBEL_BUFF_ACTION,
+                                    defPlayer,
+                                    armyType,
+                                    Constant.ACTION_ADD,
+                                    addArm,
+                                    playerDataManager.getArmCount(defPlayer.resource, armyType)
+                            );
                         }
                     }
                 }
