@@ -590,6 +590,17 @@ public class RewardDataManager {
             changeInfo.addChangeType(AwardType.HERO_FRAGMENT, id);
             syncRoleResChanged(player, changeInfo);
         }
+
+        // 武将碎片变更
+        LogLordHelper.heroFragment(
+                from,
+                player.account,
+                player.lord,
+                id,
+                count > 0 ? Constant.ACTION_ADD : Constant.ACTION_SUB,
+                count,
+                player.getDrawCardData().getFragmentData().get(id)
+        );
     }
 
     /**
@@ -824,9 +835,23 @@ public class RewardDataManager {
 
         treasureWare.setStatus(TreasureWareConst.TREASURE_IN_USING);
 
+        int quality = treasureWare.getQuality();
+        // 获取宝具名id
+        int profileId = StaticTreasureWareDataMgr.getProfileId(treasureWareService.getAttrType(treasureWare), quality, treasureWare.getSpecialId());
         // 记录玩家获得新宝具
-        LogLordHelper.treasureWare(from, player.account, player.lord, treasureWareId, keyId, Constant.ACTION_ADD,
-                treasureWare.getQuality(), treasureWare.logAttrs(), CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
+        LogLordHelper.treasureWare(
+                from,
+                player.account,
+                player.lord,
+                treasureWareId,
+                keyId,
+                Constant.ACTION_ADD,
+                profileId,
+                quality,
+                treasureWare.logAttrs(),
+                CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(),
+                param
+        );
     }
 
     /**
@@ -2475,10 +2500,23 @@ public class RewardDataManager {
             treasureWare.setDecomposeTime(TimeHelper.getCurrentSecond());
         } else {
             player.treasureWares.remove(keyId);
+            int quality = treasureWare.getQuality();
+            // 获取宝具名id
+            int profileId = StaticTreasureWareDataMgr.getProfileId(treasureWareService.getAttrType(treasureWare), quality, treasureWare.getSpecialId());
             // 记录玩家减少的宝具
-            LogLordHelper.treasureWare(from, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(),
-                    Constant.ACTION_SUB, treasureWare.getQuality(), treasureWare.logAttrs(),
-                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
+            LogLordHelper.treasureWare(
+                    from,
+                    player.account,
+                    player.lord,
+                    treasureWare.getEquipId(),
+                    treasureWare.getKeyId(),
+                    Constant.ACTION_SUB,
+                    profileId,
+                    treasureWare.getQuality(),
+                    treasureWare.logAttrs(),
+                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(),
+                    param
+            );
 
             // 宝具事件上报
             EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_TRAIN, treasureWareService.getAttrType(treasureWare));

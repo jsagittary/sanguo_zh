@@ -532,8 +532,9 @@ public class TreasureWareService implements GmCmdService {
                                   List<CommonPb.Award> treasureWareMailList,
                                   AwardFrom from) {
         treasureWare.setKeyId(player.maxKey());
+        int quality = treasureWare.getQuality();
         int attrType = getAttrType(treasureWare);
-        int profileId = StaticTreasureWareDataMgr.getProfileId(attrType, treasureWare.getQuality(), treasureWare.getSpecialId());
+        int profileId = StaticTreasureWareDataMgr.getProfileId(attrType, quality, treasureWare.getSpecialId());
 
         if (remainBagCnt > putInBag) {
             treasureWare.setStatus(TreasureWareConst.TREASURE_IN_USING);
@@ -547,7 +548,8 @@ public class TreasureWareService implements GmCmdService {
                     treasureWare.getEquipId(),
                     treasureWare.getKeyId(),
                     Constant.ACTION_ADD,
-                    treasureWare.getQuality(),
+                    profileId,
+                    quality,
                     treasureWare.logAttrs(),
                     CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId()
             );
@@ -1510,10 +1512,27 @@ public class TreasureWareService implements GmCmdService {
                 treasureWare.setStatus(TreasureWareConst.TREASURE_IN_USING);
                 treasureWare.setDecomposeTime(0);
 
+                int quality = treasureWare.getQuality();
+                int attrType = getAttrType(treasureWare);
+                int profileId = StaticTreasureWareDataMgr.getProfileId(attrType, quality, treasureWare.getSpecialId());
                 // 记录玩家获得新宝具
-                LogLordHelper.treasureWare(AwardFrom.TREASURE_WARE_GM_RETURN, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(), Constant.ACTION_ADD,
-                        treasureWare.getQuality(), treasureWare.logAttrs(), CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId());
+                LogLordHelper.treasureWare(
+                        AwardFrom.TREASURE_WARE_GM_RETURN,
+                        player.account,
+                        player.lord,
+                        treasureWare.getEquipId(),
+                        treasureWare.getKeyId(),
+                        Constant.ACTION_ADD,
+                        profileId,
+                        quality,
+                        treasureWare.logAttrs(),
+                        CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId()
+                );
+
                 LogUtil.debug("恢复宝具成功, treasureWare: ", treasureWare.toString(), ", lordId: ", player.lord.getLordId());
+
+                // 宝具变更事件上报
+                EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_GM_RETURN, attrType);
             }
         }
 
