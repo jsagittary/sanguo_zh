@@ -1290,7 +1290,7 @@ public class CalculateUtil {
                 int armyType = staticHero.getType();
                 AwardFrom from = AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION;
                 //记录玩家兵力变化信息
-                LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy, Constant.ACTION_SUB, armyType, hero.getQuality());
+                // LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy, Constant.ACTION_SUB, armyType, hero.getQuality());
 
                 // 上报玩家兵力变化信息
                 LogLordHelper.playerArm(

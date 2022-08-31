@@ -637,44 +637,44 @@ public class EventDataUp {
         });
     }
 
-    /**
-     * 单个武将兵力变化上报
-     *
-     * @param account
-     * @param lord
-     * @param from
-     * @param armyType
-     * @param add
-     * @param current
-     */
-    public static void heroArmy(Account account, Lord lord, AwardFrom from, int armyType, int add, int current) {
-        if (Objects.isNull(account) || CheckNull.isNull(lord)) {
-            return;
-        }
-        // 检测数数上报的功能
-        if (functionUnlock(account)) {
-            return;
-        }
-        Java8Utils.invokeNoExceptionICommand(() -> {
-            Map<String, Object> common = getCommonParams(account, lord);
-            common.put("@public_data", "");
-            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
-            common.put("money", lord.getGold());
-            common.put("faction", lord.getCamp());
-            common.put("army_type", armyType);
-            int changeType = add > 0 ? 1 : 2;
-            common.put("army_change_type", changeType);
-            common.put("army_nums", add);
-            common.put("army_after_nums", current);
-            common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
-
-            Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
-            Map<String, Object> properties = new HashMap<>();
-            properties.put("type", "track");
-            properties.put("data", propertyMap);
-            request(0, properties);
-        });
-    }
+    // /**
+    //  * 单个武将兵力变化上报
+    //  *
+    //  * @param account
+    //  * @param lord
+    //  * @param from
+    //  * @param armyType
+    //  * @param add
+    //  * @param current
+    //  */
+    // public static void heroArmy(Account account, Lord lord, AwardFrom from, int armyType, int add, int current) {
+    //     if (Objects.isNull(account) || CheckNull.isNull(lord)) {
+    //         return;
+    //     }
+    //     // 检测数数上报的功能
+    //     if (functionUnlock(account)) {
+    //         return;
+    //     }
+    //     Java8Utils.invokeNoExceptionICommand(() -> {
+    //         Map<String, Object> common = getCommonParams(account, lord);
+    //         common.put("@public_data", "");
+    //         common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
+    //         common.put("money", lord.getGold());
+    //         common.put("faction", lord.getCamp());
+    //         common.put("army_type", armyType);
+    //         int changeType = add > 0 ? 1 : 2;
+    //         common.put("army_change_type", changeType);
+    //         common.put("army_nums", add);
+    //         common.put("army_after_nums", current);
+    //         common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
+    //
+    //         Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
+    //         Map<String, Object> properties = new HashMap<>();
+    //         properties.put("type", "track");
+    //         properties.put("data", propertyMap);
+    //         request(0, properties);
+    //     });
+    // }
 
 
     /**

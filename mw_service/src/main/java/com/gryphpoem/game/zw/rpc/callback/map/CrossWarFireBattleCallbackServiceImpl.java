@@ -164,8 +164,8 @@ public class CrossWarFireBattleCallbackServiceImpl extends CrossErrorCallback im
                             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
                             AwardFrom from = AwardFrom.CROSS_BATTLE;
                             int armyType = staticHero.getType();
-                            LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -heroFightSummary.getLost(),
-                                    Constant.ACTION_SUB, armyType, hero.getQuality());
+                            // LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -heroFightSummary.getLost(),
+                            //         Constant.ACTION_SUB, armyType, hero.getQuality());
 
                             // 上报玩家兵力变化信息
                             LogLordHelper.playerArm(
@@ -183,8 +183,8 @@ public class CrossWarFireBattleCallbackServiceImpl extends CrossErrorCallback im
                                     ? heroArmyCapacity - hero.getCount() : heroFightSummary.getRecover();
                             hero.addArm(addArm);//返还兵力
                             //记录玩家兵力变化信息
-                            LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
-                                    Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
+                            // LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
+                            //         Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
 
                             // 上报玩家兵力变化信息
                             LogLordHelper.playerArm(

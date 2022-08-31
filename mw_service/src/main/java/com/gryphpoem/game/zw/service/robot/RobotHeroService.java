@@ -112,9 +112,10 @@ public class RobotHeroService {
                     battleHero.setCount(0);
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
                     if (Objects.nonNull(staticHero)) {
-                        int armType = staticHero.getType();// 获取将领对应类型的兵力
-                        LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
-                                battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+                        // 获取武将对应类型的兵力
+                        int armType = staticHero.getType();
+                        // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
+                        //         battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
 
                         // 上报玩家兵力变化
                         LogLordHelper.playerArm(

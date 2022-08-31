@@ -171,8 +171,8 @@ public class ArmyService {
                 // rewardDataManager.subArmyResource(player, armType, add, AwardFrom.REPLENISH, "补兵");
                 // 增加武将兵力
                 hero.setCount(hero.getCount() + add);
-                LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
-                        Constant.ACTION_ADD);
+                // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
+                //         Constant.ACTION_ADD);
 
                 // 上报玩家兵力变化
                 LogLordHelper.playerArm(
@@ -240,8 +240,8 @@ public class ArmyService {
         rewardDataManager.subArmyResource(player, armType, add, AwardFrom.REPLENISH);
         // 增加武将兵力
         hero.setCount(hero.getCount() + add);
-        LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, hero.getHeroId(), hero.getCount(), add, armType,
-                Constant.ACTION_ADD);
+        // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, hero.getHeroId(), hero.getCount(), add, armType,
+        //         Constant.ACTION_ADD);
 
         // 上报玩家兵力变化
         LogLordHelper.playerArm(

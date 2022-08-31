@@ -4262,9 +4262,10 @@ public class WorldService {
                 lost = hero.subArm(force.totalLost);
                 StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
                 if (Objects.nonNull(staticHero)) {
-                    int armType = staticHero.getType();// 获取将领对应类型的兵力
-                    LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
-                            Constant.ACTION_SUB);
+                    // 获取武将对应类型的兵力
+                    int armType = staticHero.getType();
+                    // LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                    //         Constant.ACTION_SUB);
 
                     // 上报玩家兵力变化
                     LogLordHelper.playerArm(

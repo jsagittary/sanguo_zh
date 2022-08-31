@@ -1166,8 +1166,8 @@ public class PlayerDataManager implements PlayerDM {
                 }
                 // 增加武将兵力
                 hero.setCount(hero.getCount() + add);
-                LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
-                        Constant.ACTION_ADD);
+                // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
+                //         Constant.ACTION_ADD);
 
                 // 上报玩家兵力变化信息
                 LogLordHelper.playerArm(

@@ -524,8 +524,8 @@ public class MedalDataManager {
                             LogUtil.debug("勋章特技-白衣天使触发 角色id:", player.roleId, ", 将领id:", force.id, ", 恢复的兵力:",
                                     recovery);
                             //记录玩家兵力变化信息
-                            LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
-                                    Constant.ACTION_ADD, armyType, hero.getQuality());
+                            // LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
+                            //         Constant.ACTION_ADD, armyType, hero.getQuality());
 
                             // 记录玩家兵力变化
                             LogLordHelper.playerArm(
@@ -614,8 +614,8 @@ public class MedalDataManager {
                             LogUtil.debug("勋章特技-以战养战触发 角色id:", player.roleId, ", 将领id:", force.id, ", 恢复的兵力:", recovery,
                                     ", 总损兵:", force.totalLost);
                             //记录玩家兵力变化信息
-                            LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
-                                    Constant.ACTION_ADD, armyType, hero.getQuality());
+                            // LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
+                            //         Constant.ACTION_ADD, armyType, hero.getQuality());
 
                             // 上报玩家兵力变化信息
                             LogLordHelper.playerArm(

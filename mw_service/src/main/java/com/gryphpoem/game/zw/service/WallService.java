@@ -213,8 +213,8 @@ public class WallService {
                     change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
 
                     //记录玩家兵力变化信息
-                    LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
-                            Constant.ACTION_ADD, armyType, hero.getQuality());
+                    // LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
+                    //         Constant.ACTION_ADD, armyType, hero.getQuality());
 
                     // 上报玩家兵力变化信息
                     LogLordHelper.playerArm(
@@ -236,8 +236,8 @@ public class WallService {
                         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
 
                         //记录玩家兵力变化信息
-                        LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
-                                Constant.ACTION_ADD, armyType, hero.getQuality());
+                        // LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
+                        //         Constant.ACTION_ADD, armyType, hero.getQuality());
 
                         // 上报玩家兵力变化信息
                         LogLordHelper.playerArm(
@@ -528,8 +528,8 @@ public class WallService {
         rewardDataManager
                 .addAward(player, AwardType.RESOURCE, AwardType.Resource.FOOD, sub * radio, AwardFrom.HERO_DOWN);
         //记录玩家兵力变化信息
-        LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
-                Constant.ACTION_SUB, armyType, downHero.getQuality());
+        // LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
+        //         Constant.ACTION_SUB, armyType, downHero.getQuality());
 
         // 上报玩家兵力变化信息
         LogLordHelper.playerArm(

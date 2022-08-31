@@ -238,7 +238,7 @@ public class LogLordHelper {
             return;
         }
 
-        EventDataUp.heroArmy(account, lord, from, armyType, add, count);
+        // EventDataUp.heroArmy(account, lord, from, armyType, add, count);
         if (quality < HeroConstant.QUALITY_ORANGE_HERO)
             return;
         StringBuffer message = getCommonParams("heroArm", from, account, lord).append("|").append(heroId).append("|")
@@ -264,7 +264,7 @@ public class LogLordHelper {
         StringBuffer message = getCommonParams("heroArm", from, account, lord).append("|").append(heroId).append("|")
                 .append(count).append("|").append(add).append("|").append(action);
         GAME_LOGGER.info(message);
-        EventDataUp.heroArmy(account, lord, from, armyType, add, count);
+        // EventDataUp.heroArmy(account, lord, from, armyType, add, count);
     }
 
     private static void contactParamsOneByOne(StringBuffer message, Object... params) {
