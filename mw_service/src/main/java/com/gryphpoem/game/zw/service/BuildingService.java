@@ -2037,9 +2037,9 @@ public class BuildingService {
         // 获取当前任务id
         // List<Integer> curTaskIds = taskDataManager.getCurTask(player);
         List<StaticTask> buildTask =  player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
-                .filter(t -> t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
+                .filter(t -> Objects.nonNull(t) && (t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
                         || t.getCond() == TaskType.COND_RES_OIL_CNT || t.getCond() == TaskType.COND_RES_ELE_CNT
-                        || t.getCond() == TaskType.COND_RES_ORE_CNT)
+                        || t.getCond() == TaskType.COND_RES_ORE_CNT))
                 // 过滤未完成的任务
                 .filter(t -> {
                     int taskId = t.getTaskId();

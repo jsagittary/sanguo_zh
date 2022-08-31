@@ -403,12 +403,12 @@ public class ActivityService {
                     tips = activityDataManager.getCurActTips(player, activityType);
                 } else if (ActivityConst.ACT_DEDICATED_CUSTOMER_SERVICE == activityType) {
                     long createTime = activity.getStatusCnt().getOrDefault(0, 0L);
-                    if (createTime > 0L) {
-                        long disPlayTime = TimeHelper.getSomeDayAfter(TimeHelper.secondToDate((int) createTime), ActParamConstant.ACT_DEDICATED_CUSTOMER_SERVICE_CONF.get(1).get(0) - 1, 23, 59, 59) * TimeHelper.SECOND_MS;
-                        actBase = copyActiviyBase(actBase, player.account.getCreateDate(), new Date(disPlayTime));
-                        if (now.getTime() > disPlayTime) {
-                            continue;
-                        }
+                    if (createTime <= 0)
+                        continue;
+                    long disPlayTime = TimeHelper.getSomeDayAfter(TimeHelper.secondToDate((int) createTime), ActParamConstant.ACT_DEDICATED_CUSTOMER_SERVICE_CONF.get(1).get(0) - 1, 23, 59, 59) * TimeHelper.SECOND_MS;
+                    actBase = copyActiviyBase(actBase, player.account.getCreateDate(), new Date(disPlayTime));
+                    if (now.getTime() > disPlayTime) {
+                        continue;
                     }
                 } else if(ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType){
                     tips = 1;
@@ -426,13 +426,12 @@ public class ActivityService {
                 if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType)) { // 部分活动结束后还显示
                     continue;
                 }
-                boolean cangetAward = true;// 可领奖，不可领奖
                 int tips_ = AbsSimpleActivityService.getTipsInActList(player, activityType);
                 tips = tips_ == 0 ? tips : tips_;
-                if(ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType){
-                    builder.addActivity(activityChristmasService.buildActivityPb(activity,actBase,cangetAward,tips));
-                }else {
-                    builder.addActivity(PbHelper.createActivityPb(actBase, cangetAward, tips));
+                if (ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType) {
+                    builder.addActivity(activityChristmasService.buildActivityPb(activity, actBase, true, tips));
+                } else {
+                    builder.addActivity(PbHelper.createActivityPb(actBase, true, tips));
                 }
             } catch (Exception error) {
                 LogUtil.error("---------警告活动列表出错----------- actType:", actBase.getActivityType());
