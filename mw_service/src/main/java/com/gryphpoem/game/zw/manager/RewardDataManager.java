@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.manager;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
@@ -21,7 +22,6 @@ import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.chat.Chat;
 import com.gryphpoem.game.zw.resource.pojo.chat.SystemChat;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -2495,14 +2495,18 @@ public class RewardDataManager {
             return;
         }
 
+
         if (treasureWare.getQuality() >= TreasureWareConst.PURPLE_QUALITY) {
             treasureWare.setStatus(TreasureWareConst.TREASURE_HAS_DECOMPOSED);
             treasureWare.setDecomposeTime(TimeHelper.getCurrentSecond());
         } else {
             player.treasureWares.remove(keyId);
-            int quality = treasureWare.getQuality();
+        }
+
+        // 添加到后台执行日志打印
+        DataResource.logicServer.addCommandByType(() -> {
             // 获取宝具名id
-            int profileId = StaticTreasureWareDataMgr.getProfileId(treasureWareService.getAttrType(treasureWare), quality, treasureWare.getSpecialId());
+            int profileId = StaticTreasureWareDataMgr.getProfileId(treasureWareService.getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId());
             // 记录玩家减少的宝具
             LogLordHelper.treasureWare(
                     from,
@@ -2520,7 +2524,7 @@ public class RewardDataManager {
 
             // 宝具事件上报
             EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_TRAIN, treasureWareService.getAttrType(treasureWare));
-        }
+        }, DealType.BACKGROUND);
     }
 
     private void modifyResource(Player player, int type, int id, long count, float factor, AwardFrom from) {

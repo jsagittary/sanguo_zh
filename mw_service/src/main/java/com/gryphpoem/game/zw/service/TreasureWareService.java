@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.service;
 import com.alibaba.fastjson.JSON;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.ChannelUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
@@ -567,6 +566,7 @@ public class TreasureWareService implements GmCmdService {
             ));
         }
 
+        treasureWare.setProfileId(profileId);
         player.treasureWares.put(treasureWare.getKeyId(), treasureWare);
         taskDataManager.updTask(player, TaskType.COND_535, 1, treasureWare.getQuality());
         Optional.ofNullable(treasureWare.getSpecialAttr()).ifPresent(e -> {
@@ -575,7 +575,6 @@ public class TreasureWareService implements GmCmdService {
         });
 
         // 宝具获取事件上报
-        treasureWare.setProfileId(profileId);
         EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_MAKE, attrType);
 
         return putInBag;
@@ -1133,19 +1132,6 @@ public class TreasureWareService implements GmCmdService {
     public void timedClearDecomposeTreasureWare() {
         LogUtil.common("===start delete expired treasureWare");
         int delTime = TimeHelper.getCurrentSecond() - Constant.DEL_DECOMPOSED_TREASURE_WARE * TimeHelper.DAY_S;
-
-        // 宝具分解事件上报
-        DataResource.logicServer.addCommandByType(() -> {
-            Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players ->
-                    players.forEach(p -> p.treasureWares.values().forEach(tw -> {
-                                if (tw.getDecomposeTime() != 0 && tw.getDecomposeTime() <= delTime) {
-                                    EventDataUp.treasureCultivate(p, tw, AwardFrom.TREASURE_WARE_DECOMPOSE, getAttrType(tw));
-                                }
-                            })
-                    )
-            );
-        }, DealType.BACKGROUND);
-
         // 移除宝具
         Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players -> {
             players.forEach(p -> {
