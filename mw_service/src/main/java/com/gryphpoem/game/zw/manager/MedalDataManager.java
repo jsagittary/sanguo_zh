@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.manager;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
@@ -15,14 +14,13 @@ import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.random.MedalGoodsRandom;
-import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -523,17 +521,12 @@ public class MedalDataManager {
                             cntMap.put(armyType, cnt + recovery);
                             LogUtil.debug("勋章特技-白衣天使触发 角色id:", player.roleId, ", 将领id:", force.id, ", 恢复的兵力:",
                                     recovery);
-                            //记录玩家兵力变化信息
-                            // LogLordHelper.filterHeroArm(AwardFrom.MEDAL_SKILL_ACTION, player.account, player.lord, hero.getHeroId(), hero.getCount(), recovery,
-                            //         Constant.ACTION_ADD, armyType, hero.getQuality());
-
                             // 记录玩家兵力变化
                             LogLordHelper.playerArm(
                                     AwardFrom.MEDAL_SKILL_ACTION,
                                     player, armyType,
                                     Constant.ACTION_ADD,
-                                    recovery,
-                                    playerDataManager.getArmCount(player.resource, armyType)
+                                    recovery
                             );
                         }
                     }
@@ -623,8 +616,7 @@ public class MedalDataManager {
                                     player,
                                     armyType,
                                     Constant.ACTION_ADD,
-                                    recovery,
-                                    playerDataManager.getArmCount(player.resource, armyType)
+                                    recovery
                             );
                         }
                     }

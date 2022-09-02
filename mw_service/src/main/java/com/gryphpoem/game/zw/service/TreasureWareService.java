@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service;
 import com.alibaba.fastjson.JSON;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.ChannelUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
@@ -1134,14 +1135,16 @@ public class TreasureWareService implements GmCmdService {
         int delTime = TimeHelper.getCurrentSecond() - Constant.DEL_DECOMPOSED_TREASURE_WARE * TimeHelper.DAY_S;
 
         // 宝具分解事件上报
-        Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players ->
-                players.forEach(p -> p.treasureWares.values().forEach(tw -> {
-                            if (tw.getDecomposeTime() != 0 && tw.getDecomposeTime() <= delTime) {
-                                EventDataUp.treasureCultivate(p, tw, AwardFrom.TREASURE_WARE_DECOMPOSE, getAttrType(tw));
-                            }
-                        })
-                )
-        );
+        DataResource.logicServer.addCommandByType(() -> {
+            Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players ->
+                    players.forEach(p -> p.treasureWares.values().forEach(tw -> {
+                                if (tw.getDecomposeTime() != 0 && tw.getDecomposeTime() <= delTime) {
+                                    EventDataUp.treasureCultivate(p, tw, AwardFrom.TREASURE_WARE_DECOMPOSE, getAttrType(tw));
+                                }
+                            })
+                    )
+            );
+        }, DealType.BACKGROUND);
 
         // 移除宝具
         Optional.of(playerDataManager.getAllPlayer().values()).ifPresent(players -> {

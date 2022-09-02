@@ -7,7 +7,6 @@ import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.constant.TaskType;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -15,8 +14,6 @@ import com.gryphpoem.game.zw.resource.domain.p.Common;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.ArmyService;
 import com.gryphpoem.game.zw.service.HeroService;
@@ -24,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @Description AI机器人将领相关服务类
@@ -111,22 +107,22 @@ public class RobotHeroService {
                     int sub = battleHero.getCount();
                     battleHero.setCount(0);
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
-                    if (Objects.nonNull(staticHero)) {
+//                    if (Objects.nonNull(staticHero)) {
                         // 获取武将对应类型的兵力
-                        int armType = staticHero.getType();
+//                        int armType = staticHero.getType();
                         // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
                         //         battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
 
                         // 上报玩家兵力变化
-                        LogLordHelper.playerArm(
-                                AwardFrom.HERO_DOWN,
-                                player,
-                                armType,
-                                Constant.ACTION_ADD,
-                                -sub,
-                                playerDataManager.getArmCount(player.resource, armType)
-                        );
-                    }
+//                        LogLordHelper.playerArm(
+//                                AwardFrom.HERO_DOWN,
+//                                player,
+//                                armType,
+//                                Constant.ACTION_ADD,
+//                                -sub,
+//                                playerDataManager.getArmCount(player.resource, armType)
+//                        );
+//                    }
                     rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
                     // 重新计算并更新将领属性

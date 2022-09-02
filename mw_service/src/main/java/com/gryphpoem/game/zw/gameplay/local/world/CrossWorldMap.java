@@ -580,18 +580,13 @@ public class CrossWorldMap extends WatcherWorldMap {
                                                     List<CommonPb.Award> awards = recoverArmyAwardMap.computeIfAbsent(roleId, (k) -> new ArrayList<>());
                                                     awards.add(PbHelper.createAwardPb(AwardType.ARMY, armyType, addArm));
                                                     LogUtil.debug("战火燎原回复兵力 roleId:", roleId, ", heroId:", hero.getHeroId(), ", recArm:", addArm);
-                                                    //记录玩家兵力变化信息
-                                                    // LogLordHelper.filterHeroArm(AwardFrom.WAR_FIRE_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
-                                                    //         Constant.ACTION_ADD, armyType, hero.getQuality());
-
                                                     // 上报玩家兵力变化信息
                                                     LogLordHelper.playerArm(
                                                             AwardFrom.WAR_FIRE_BATTLE,
                                                             player,
                                                             armyType,
                                                             Constant.ACTION_ADD,
-                                                            addArm,
-                                                            playerDataManager.getArmCount(player.resource, armyType)
+                                                            addArm
                                                     );
                                                 }
                                             }

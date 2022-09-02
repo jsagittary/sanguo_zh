@@ -1,12 +1,11 @@
 package com.gryphpoem.game.zw.quartz.jobs;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.service.TreasureWareService;
 import org.quartz.JobExecutionContext;
 
-public class DelTreasureWareJob extends AbsBackgroundLogicThreadJob {
+public class DelTreasureWareJob extends AbsMainLogicThreadJob {
 
     @Override
     protected void executeInMain(JobExecutionContext context) {

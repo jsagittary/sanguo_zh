@@ -1170,13 +1170,12 @@ public class PlayerDataManager implements PlayerDM {
                 //         Constant.ACTION_ADD);
 
                 // 上报玩家兵力变化信息
-                LogLordHelper.playerArm(
-                        AwardFrom.REPLENISH,
-                        player, armType,
-                        Constant.ACTION_ADD,
-                        add,
-                        getArmCount(player.resource, armType)
-                );
+//                LogLordHelper.playerArm(
+//                        AwardFrom.REPLENISH,
+//                        player, armType,
+//                        Constant.ACTION_ADD,
+//                        add
+//                );
 
                 change.addChangeType(AwardType.ARMY, armType);
                 change.addChangeType(AwardType.HERO_ARM, heroId);

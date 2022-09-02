@@ -217,14 +217,14 @@ public class WallService {
                     //         Constant.ACTION_ADD, armyType, hero.getQuality());
 
                     // 上报玩家兵力变化信息
-                    LogLordHelper.playerArm(
-                            AwardFrom.WALL_NPC_AUTO_ARMY,
-                            player,
-                            armyType,
-                            Constant.ACTION_ADD,
-                            add,
-                            playerDataManager.getArmCount(player.resource, armyType)
-                    );
+//                    LogLordHelper.playerArm(
+//                            AwardFrom.WALL_NPC_AUTO_ARMY,
+//                            player,
+//                            armyType,
+//                            Constant.ACTION_ADD,
+//                            add,
+//                            playerDataManager.getArmCount(player.resource, armyType)
+//                    );
                 } else {
                     // 粮不够,能补多少扣多少
                     add = (int) (resource.getFood() / radio);
@@ -240,14 +240,14 @@ public class WallService {
                         //         Constant.ACTION_ADD, armyType, hero.getQuality());
 
                         // 上报玩家兵力变化信息
-                        LogLordHelper.playerArm(
-                                AwardFrom.WALL_NPC_AUTO_ARMY,
-                                player,
-                                armyType,
-                                Constant.ACTION_ADD,
-                                add,
-                                playerDataManager.getArmCount(player.resource, armyType)
-                        );
+//                        LogLordHelper.playerArm(
+//                                AwardFrom.WALL_NPC_AUTO_ARMY,
+//                                player,
+//                                armyType,
+//                                Constant.ACTION_ADD,
+//                                add,
+//                                playerDataManager.getArmCount(player.resource, armyType)
+//                        );
                     }
                 }
                 hero.setWallArmyTime(now);
@@ -532,14 +532,14 @@ public class WallService {
         //         Constant.ACTION_SUB, armyType, downHero.getQuality());
 
         // 上报玩家兵力变化信息
-        LogLordHelper.playerArm(
-                AwardFrom.HERO_DOWN,
-                player,
-                armyType,
-                Constant.ACTION_SUB,
-                -sub,
-                playerDataManager.getArmCount(player.resource, armyType)
-        );
+//        LogLordHelper.playerArm(
+//                AwardFrom.HERO_DOWN,
+//                player,
+//                armyType,
+//                Constant.ACTION_SUB,
+//                -sub,
+//                playerDataManager.getArmCount(player.resource, armyType)
+//        );
 
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);

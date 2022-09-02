@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.resource.util;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
@@ -13,9 +14,11 @@ import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import org.apache.commons.lang3.StringUtils;
@@ -282,18 +285,27 @@ public class LogLordHelper {
      * @param armyType
      * @param action
      * @param add
-     * @param current
+     * @param params
      */
-    public static void playerArm(AwardFrom from, Player player, int armyType, int action, int add, int current) {
+    public static void playerArm(AwardFrom from, Player player, int armyType, int action, int add, Object... params) {
         if (player == null) {
             return;
         }
 
-        StringBuffer message = getCommonParams("heroArm", from, player.account, player.lord).append("|")
-                .append(current).append("|").append(add).append("|").append(action);
-        GAME_LOGGER.info(message);
-
-        EventDataUp.playerArmy(player, from, armyType, add, current);
+        LogUtil.getLogThread().addCommand(() -> {
+            int current = DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType);
+            for (Hero hero : player.heros.values()) {
+                if (CheckNull.isNull(hero)) continue;
+                StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                if (CheckNull.isNull(staticHero)) continue;
+                if (staticHero.getType() != armyType) continue;
+                current += hero.getCount();
+            }
+            StringBuffer message = getCommonParams("heroArm", from, player.account, player.lord).append("|")
+                    .append(current).append("|").append(add).append("|").append(action);
+            GAME_LOGGER.info(message);
+            EventDataUp.playerArmy(player, from, armyType, add, current);
+        });
     }
 
     /*---------------------------------------RewardDataManager里的埋点日志start ---------------------------------------*/

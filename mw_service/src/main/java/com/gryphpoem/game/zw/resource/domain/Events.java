@@ -183,4 +183,19 @@ public interface Events {
             this.player = player;
         }
     }
+
+    /**
+     * 同步英雄兵力变更
+     */
+    public static class SyncHeroMilitaryChangeEvent {
+        public int heroId;
+        public int curCount;
+        public Player player;
+
+        public SyncHeroMilitaryChangeEvent(int heroId, int curCount, Player player) {
+            this.heroId = heroId;
+            this.curCount = curCount;
+            this.player = player;
+        }
+    }
 }

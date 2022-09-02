@@ -6,7 +6,9 @@ import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Description:
@@ -15,6 +17,8 @@ import java.util.Objects;
  */
 public class PlayerHero implements Serializable, Cloneable, GamePb<DbPlayerHero> {
     private long lordId;
+    /** 拥有兵力的武将*/
+//    private Set<Integer> militaryHero;
     private PlayerHeroBiography biography;
 
     public long getLordId() {
@@ -43,7 +47,7 @@ public class PlayerHero implements Serializable, Cloneable, GamePb<DbPlayerHero>
 
     public PlayerHero(DbPlayerHero dbPlayerHero) throws InvalidProtocolBufferException {
         this.lordId = dbPlayerHero.getLordId();
-        biography = new PlayerHeroBiography();
+//        this.biography = new PlayerHeroBiography();
         if (Objects.nonNull(dbPlayerHero.getHeroBiography())) {
             SerializePb.SerHeroBiographyData data = SerializePb.SerHeroBiographyData.parseFrom(dbPlayerHero.getHeroBiography());
             if (Objects.nonNull(data) && CheckNull.nonEmpty(data.getDataList())) {

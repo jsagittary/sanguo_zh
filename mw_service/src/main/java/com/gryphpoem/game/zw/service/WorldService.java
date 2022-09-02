@@ -4273,8 +4273,7 @@ public class WorldService {
                             player,
                             armType,
                             Constant.ACTION_SUB,
-                            -lost,
-                            playerDataManager.getArmCount(player.resource, armType)
+                            -lost
                     );
                 }
 

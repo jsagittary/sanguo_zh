@@ -1,17 +1,16 @@
 package com.gryphpoem.game.zw.service;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -33,12 +32,12 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRebelBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRebelRound;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRebelShop;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.GlobalRebellion;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -898,8 +897,7 @@ public class RebelService extends BaseAwkwardDataManager {
                                     defPlayer,
                                     armyType,
                                     Constant.ACTION_ADD,
-                                    addArm,
-                                    playerDataManager.getArmCount(defPlayer.resource, armyType)
+                                    addArm
                             );
                         }
                     }

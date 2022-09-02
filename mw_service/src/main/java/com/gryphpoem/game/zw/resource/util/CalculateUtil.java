@@ -36,7 +36,6 @@ import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
@@ -49,10 +48,6 @@ import java.util.Map.Entry;
  * @date 创建时间：2017年3月29日 下午2:58:49
  */
 public class CalculateUtil {
-
-    @Autowired
-    private PlayerDataManager playerDataManager;
-
     /**
      * 计算返回将领的属性值
      *
@@ -1287,20 +1282,20 @@ public class CalculateUtil {
                 // 向客户端同步玩家资源数据
                 rewardDataManager.syncRoleResChanged(player, change);
 
-                int armyType = staticHero.getType();
-                AwardFrom from = AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION;
+//                int armyType = staticHero.getType();
+//                AwardFrom from = AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION;
                 //记录玩家兵力变化信息
                 // LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy, Constant.ACTION_SUB, armyType, hero.getQuality());
 
                 // 上报玩家兵力变化信息
-                LogLordHelper.playerArm(
-                        from,
-                        player,
-                        armyType,
-                        Constant.ACTION_SUB,
-                        -subArmy,
-                        DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType)
-                );
+//                LogLordHelper.playerArm(
+//                        from,
+//                        player,
+//                        armyType,
+//                        Constant.ACTION_SUB,
+//                        -subArmy,
+//                        DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType)
+//                );
             }
         }
     }

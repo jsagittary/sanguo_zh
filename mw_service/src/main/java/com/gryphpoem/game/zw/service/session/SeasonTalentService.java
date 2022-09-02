@@ -34,10 +34,7 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.season.GlobalSeasonData;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
-import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.*;
-import com.gryphpoem.game.zw.service.TreasureWareService;
-import org.apache.zookeeper.Op;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -814,19 +811,13 @@ public class SeasonTalentService {
                         hero.addArm(recovery);//返还兵力
                         awards.add(PbHelper.createAwardPb(AwardType.ARMY, staticHero.getType(), recovery));
 
-                        //记录玩家兵力变化信息
-                        // LogLordHelper.filterHeroArm(AwardFrom.SEASON_TALENT_ACTION, player.account, player.lord,
-                        //         hero.getHeroId(), hero.getCount(), recovery,
-                        //         Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
-
                         // 上报玩家兵力变化
                         LogLordHelper.playerArm(
                                 AwardFrom.SEASON_TALENT_ACTION,
                                 player,
                                 armyType,
                                 Constant.ACTION_ADD,
-                                recovery,
-                                playerDataManager.getArmCount(player.resource, armyType)
+                                recovery
                         );
                     }
                 }

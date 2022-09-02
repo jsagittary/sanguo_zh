@@ -1513,8 +1513,6 @@ public class BerlinWarService {
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
             if (Objects.nonNull(staticHero)) {
                 int armType = staticHero.getType();// 获取将领对应类型的兵力
-                // LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, armType,
-                //         Constant.ACTION_SUB);
 
                 // 上报玩家兵力变化
                 LogLordHelper.playerArm(
@@ -1522,8 +1520,7 @@ public class BerlinWarService {
                         player,
                         armType,
                         Constant.ACTION_SUB,
-                        -lost,
-                        playerDataManager.getArmCount(player.resource, armType)
+                        -lost
                 );
             }
         }

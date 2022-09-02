@@ -156,6 +156,23 @@ public class HeroBiographyService implements GmCmdService, EventRegisterService 
         DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, event.player);
     }
 
+    /**
+     * 变更拥有兵力的武将
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void changeMilitaryHero(Events.SyncHeroMilitaryChangeEvent event) {
+        if (ObjectUtils.isEmpty(event) || event.heroId <= 0 || CheckNull.isNull(event.player))
+            return;
+
+//        GamePb5.SyncHeroOnBattleAttrChangeRs.Builder builder = GamePb5.SyncHeroOnBattleAttrChangeRs.newBuilder();
+//        if (event.curCount > 0)
+//            event.player.playerHero.getMilitaryHero().add(event.heroId);
+//        else
+//            event.player.playerHero.getMilitaryHero().remove(event.heroId);
+    }
+
     @GmCmd("biography")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
