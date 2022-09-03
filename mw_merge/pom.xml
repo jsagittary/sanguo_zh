@@ -31,7 +31,7 @@
 		</dependency> -->
 	</dependencies>
 	<build>
-		<finalName>sanguo_merge</finalName>
+		<finalName>sanguo2_merge</finalName>
 		<plugins>
 			<!-- 项目依赖插件 -->
 			<plugin>
