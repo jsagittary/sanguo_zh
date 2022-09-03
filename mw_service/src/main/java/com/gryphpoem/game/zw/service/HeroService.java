@@ -457,8 +457,12 @@ public class HeroService implements GmCmdService {
             }
         }
 
-        if (posType == HeroConstant.CHANGE_POS_TYPE || posType == HeroConstant.CHANGE_DEFEND_POS_TYPE) {
-            int[] heroArray = posType == HeroConstant.CHANGE_POS_TYPE ? player.heroBattle : player.heroDef;
+        if (posType == HeroConstant.CHANGE_POS_TYPE ||
+                posType == HeroConstant.CHANGE_DEFEND_POS_TYPE ||
+                posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
+            int[] heroArray = posType == HeroConstant.CHANGE_POS_TYPE ||
+                    posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE ?
+                    player.heroBattle : player.heroDef;
             Set<Integer> set = Arrays.stream(heroArray).filter(heroId -> heroId > 0).boxed().collect(Collectors.toSet());
             if (req.getHerosCount() != set.size()) {
                 throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId :%d, hero arrays :%s", roleId, Arrays.toString(heroArray)));
