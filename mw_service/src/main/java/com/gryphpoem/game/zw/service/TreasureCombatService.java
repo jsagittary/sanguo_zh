@@ -510,6 +510,9 @@ public class TreasureCombatService implements GmCmdService {
                     });
                 }
                 break;
+            case "restOnHook":
+                player.getTreasureCombat().getOnHook().setStartTime(TimeHelper.getCurrentSecond());
+                break;
         }
     }
 
