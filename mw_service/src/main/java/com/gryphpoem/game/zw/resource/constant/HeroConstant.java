@@ -121,6 +121,11 @@ public class HeroConstant {
      */
     public static List<Integer> ALL_HERO_GRADE_CAPS;
 
+    /**
+     * 寻访武将保底紫橙品质权重
+     */
+    public static List<List<Integer>> DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE;
+
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
         HERO_BATTLE_LEN = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_BATTLE_LEN, 4);
@@ -151,6 +156,7 @@ public class HeroConstant {
         TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES, "[]");
         NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS = SystemTabLoader.getIntegerSystemValue(SystemId.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, 80);
         ALL_HERO_GRADE_CAPS = SystemTabLoader.getListIntSystemValue(SystemId.ALL_HERO_GRADE_CAPS, "[]");
+        DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = SystemTabLoader.getListListIntSystemValue(SystemId.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, "[]");
     }
 
     /**
