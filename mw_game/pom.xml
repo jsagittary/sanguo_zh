@@ -36,7 +36,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>sanguo_game</finalName>
+		<finalName>sanguo2_game</finalName>
 		<plugins>
 			<!-- 项目依赖插件 -->
 			<plugin>
