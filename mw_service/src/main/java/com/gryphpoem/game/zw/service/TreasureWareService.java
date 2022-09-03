@@ -1081,6 +1081,11 @@ public class TreasureWareService implements GmCmdService {
 
         switch (type) {
             case TreasureWareConst.SpecialType.COLLECT_TYPE:
+                if (!hero.isOnAcq()) {
+                    LogUtil.debug("专属属性不对非采集英雄生效, lordId: ", player.lord.getLordId(),
+                            ", heroId: ", hero.getHeroId(), ", heroStatus: ", hero.getStatus());
+                    return null;
+                }
                 return staticTreasureWareSpecial.getAttrSpecial().
                         stream().filter(attr -> attr.get(0) == subType).collect(Collectors.toList());
             case TreasureWareConst.SpecialType.SEASON_HERO:
