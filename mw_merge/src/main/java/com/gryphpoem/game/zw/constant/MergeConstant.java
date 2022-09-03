@@ -11,7 +11,7 @@ import com.gryphpoem.game.zw.resource.util.TimeHelper;
 public interface MergeConstant {
     public String DATASOURCE_KEY_PREFIX_SRC = "merge_";
 
-    public String DATASOURCE_KEY_PREFIX_DST = "sanguo_merge_";
+    public String DATASOURCE_KEY_PREFIX_DST = "sanguo2_merge_";
 
     public String CREATE_TABLE_DDL_COLUMN = "Create Table";
     public String CREATE_TABLE_NAME_COLUMN = "Table";
