@@ -932,7 +932,7 @@ public class EventDataUp {
                 map.put("index", treasureWareAttrItem.getIndex());
                 map.put("attrId", treasureWareAttrItem.getAttrId());
                 map.put("stage", treasureWareAttrItem.getStage());
-                map.put("value", treasureWareAttrItem.getLevel());
+                map.put("value", treasureWareAttrItem.getValue());
                 objects[entry.getKey() - 1] = map;
             }
             common.put("treasure_basic_attribute", objects);

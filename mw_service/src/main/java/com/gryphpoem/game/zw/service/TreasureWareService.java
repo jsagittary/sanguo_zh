@@ -467,7 +467,7 @@ public class TreasureWareService implements GmCmdService {
                 return treasureWares;
             }
 
-            putInBag = putInTreasureWare(remainBagCnt, putInBag, treasureWare, player, staticTreasureWare, treasureWareMailList, from);
+            putInBag = putInTreasureWare(remainBagCnt, putInBag, treasureWare, player, staticTreasureWare, treasureWareMailList, AwardFrom.USE_PROP);
             treasureWares = treasureWares == null ? new ArrayList<>() : treasureWares;
             treasureWares.add(treasureWare);
             // treasureWare.setProfileId(StaticTreasureWareDataMgr.getProfileId(getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId()));
@@ -575,7 +575,7 @@ public class TreasureWareService implements GmCmdService {
         });
 
         // 宝具获取事件上报
-        EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_MAKE, attrType);
+        // EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_MAKE, attrType);
 
         return putInBag;
     }

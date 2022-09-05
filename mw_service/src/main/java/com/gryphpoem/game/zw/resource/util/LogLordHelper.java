@@ -590,7 +590,7 @@ public class LogLordHelper {
                 .append(keyId).append("|").append(action).append("|").append(profileId);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        // EventDataUp.prop(from, account, lord, treasureWareId, AwardType.TREASURE_WARE, 1, action, keyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
+        EventDataUp.prop(from, account, lord, profileId, AwardType.TREASURE_WARE, 1, action, keyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
     }
 
     /**
