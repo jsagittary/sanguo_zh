@@ -263,7 +263,7 @@ public class DrawCardService implements GmCmdService {
             // 当前次数到必出武将次数
             if (drawCardData.getHeroDrawCount() + 1 >= HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.setHeroDrawCount(0);
-                staticData = dataMgr.randomGuaranteeHero(config, HeroConstant.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, now);
+                staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO, now);
                 return staticData;
             }
             // 免费活动次数保底
@@ -281,7 +281,7 @@ public class DrawCardService implements GmCmdService {
             if (drawCardData.getFragmentDrawCount() + 1 >= HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
                 drawCardData.setFragmentDrawCount(0);
                 drawCardData.addHeroDrawCount();
-                staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO_FRAGMENT, now);
+                staticData = dataMgr.randomGuaranteeHero(config, HeroConstant.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, now);
                 return staticData;
             }
 
