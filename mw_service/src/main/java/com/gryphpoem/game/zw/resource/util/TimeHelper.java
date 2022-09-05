@@ -564,8 +564,6 @@ public class TimeHelper {
 //        Date date1 = DateHelper.parseDate("2021-12-31 12:00:00");
 //        Date date2 = DateHelper.parseDate("2022-01-02 00:00:00");
 //        System.out.println("is same week :" + isSameWeek(date2, date1));
-
-        System.out.println(Calendar.getInstance().get(Calendar.YEAR) * 10000);
     }
 
 
