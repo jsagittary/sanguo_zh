@@ -574,8 +574,8 @@ public class TreasureWareService implements GmCmdService {
                 taskDataManager.updTask(player, TaskType.COND_536, 1, treasureWare.getQuality());
         });
 
-        // 宝具获取事件上报
-        // EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_MAKE, attrType);
+        // 宝具养成事件上报
+        EventDataUp.treasureCultivate(player, treasureWare, from, attrType);
 
         return putInBag;
     }
