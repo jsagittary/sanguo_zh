@@ -208,13 +208,8 @@ public class CombatService {
         }
         if (staticCombat.getCost() > 0) {
             try {
-                if (staticCombat.getType() == CombatType.type_1 || staticCombat.getType() == CombatType.type_3) {
-                    rewardDataManager.checkPlayerResIsEnough(player, AwardType.MONEY, AwardType.Money.ACT,
-                            staticCombat.getCost());
-                } else {
-                    rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.ACT,
-                            staticCombat.getCost(), AwardFrom.COMBAT_FIGHT, false);
-                }
+                rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.ACT,
+                        staticCombat.getCost(), AwardFrom.COMBAT_FIGHT, false);
             } catch (MwException mwException) {
                 // 攻打副本行动力不足
                 activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_ACT, player);
@@ -418,7 +413,7 @@ public class CombatService {
             activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_FAIL, player);
             builder.setResult(-1);
             builder.setStar(0);
-            if (staticCombat.getType() != CombatType.type_1 && staticCombat.getCost() > 0) {
+            if (staticCombat.getCost() > 0) {
                 int count = staticCombat.getCost() - FAIL_COST_ACT;
                 builder.addAward(rewardDataManager.addAwardSignle(player, AwardType.MONEY, AwardType.Money.ACT, count,
                         AwardFrom.COMBAT_FIGHT));
@@ -892,7 +887,7 @@ public class CombatService {
             activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_FAIL, player);
             builder.setResult(-1);
             builder.setStar(0);
-            if (staticCombat.getType() != CombatType.type_3 && staticCombat.getCost() > 0) {
+            if (staticCombat.getCost() > 0) {
                 int count = staticCombat.getCost() - FAIL_COST_ACT;
                 builder.addAward(rewardDataManager.addAwardSignle(player, AwardType.MONEY, AwardType.Money.ACT, count,
                         AwardFrom.COMBAT_FIGHT));
