@@ -115,7 +115,7 @@ public class MailHelper {
         // 升级奖励
         putMailParamNum(MailConstant.MOLD_PARTY_LV_REWARD, 1, 1);
         // 充值到账
-        putMailParamNum(MailConstant.MOLD_PAY_DONE, 1, 1);
+        putMailParamNum(MailConstant.MOLD_PAY_DONE, 1, 2);
         // 充值礼包成功
         putMailParamNum(MailConstant.MOLD_PAY_GIFT_FAIL, 1, 1);
         // 首冲礼包注册

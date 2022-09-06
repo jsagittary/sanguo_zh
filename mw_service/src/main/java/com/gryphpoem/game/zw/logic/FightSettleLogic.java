@@ -25,10 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author TanDonghai
  * @ClassName FightSettleLogic.java
  * @Description 战斗结算相关逻辑处理
+ * @author TanDonghai
  * @date 创建时间：2017年5月22日 下午5:20:13
+ *
  */
 @Component
 public class FightSettleLogic {
@@ -137,10 +138,10 @@ public class FightSettleLogic {
      * 副本将领经验奖励结算逻辑
      *
      * @param player
-     * @param forces       进攻方将领
+     * @param forces 进攻方将领
      * @param staticCombat 副本配置信息
-     * @param wipe         是否是扫荡
-     * @param win          是否胜利
+     * @param wipe 是否是扫荡
+     * @param win 是否胜利
      */
     public List<RptHero> combatFightHeroExpReward(Player player, List<Force> forces, StaticCombat staticCombat,
                                                   boolean wipe, boolean win) {
@@ -152,7 +153,24 @@ public class FightSettleLogic {
         int num = activityDataManager.getActDoubleNum(player);
         Hero hero;
         int addExp = 0;
+        int heroExp = 0;
+        int totalExp = 0;
         int roleLv = player.lord.getLevel();
+        // 计算经验之和, 均分经验
+        if (!wipe) {
+            for (Force force : forces) {
+                addExp = (force.killed + force.totalLost) / 2;
+                int max = staticCombat.getExp();
+                addExp = max < addExp ? max : addExp;// 上限控制
+                totalExp += addExp;
+            }
+            if (totalExp > 0) {
+                totalExp = heroService.adaptHeroAddExp(player, totalExp);
+                totalExp *= num; // 活动翻倍
+            }
+            addExp = (int) Math.ceil(totalExp * 1.0d / forces.size());
+        }
+
         for (Force force : forces) {
             hero = player.heros.get(force.id);
             if (null == hero) {
@@ -160,53 +178,36 @@ public class FightSettleLogic {
                 continue;
             }
 
-            try {
+            if (wipe && win) {// 扫荡并胜利：将领经验 = 关卡NPC兵力 / 将领个数
                 if (null == staticCombat) {
                     LogUtil.error("副本将领经验结算，副本配置信息为空, roleId:", player.roleId);
                     continue;
                 }
-                // 普通副本只有赢了才加将领经验
-                if ((staticCombat.getType() == Constant.CombatType.type_1 ||
-                        staticCombat.getType() == Constant.CombatType.type_3) && !win) {
-                    continue;
-                }
 
-                // 活动翻倍
-                if (staticCombat.getType() == Constant.CombatType.type_1 ||
-                        staticCombat.getType() == Constant.CombatType.type_3) {
-                    if (wipe) {// 扫荡并胜利：将领经验 = 关卡NPC兵力 / 将领个数
-                        addExp = staticCombat.getExp(); // / forces.size()
-                    } else {// 将领经验 = （杀敌数+损兵数）/2
-                        addExp = (force.killed + force.totalLost) / 2;
-                        int max = staticCombat.getExp();
-                        addExp = max < addExp ? max : addExp;// 上限控制
-                    }
-
-                } else {
-                    if (wipe & win) {// 扫荡并胜利：将领经验 = 关卡NPC兵力 / 将领个数
-                        addExp = staticCombat.getExp(); // / forces.size()
-                    } else {// 将领经验 = （杀敌数+损兵数）/2
-                        addExp = (force.killed + force.totalLost) / 2;
-                        int max = staticCombat.getExp();
-                        addExp = max < addExp ? max : addExp;// 上限控制
-                    }
-                }
-
-                if (hero.getLevel() >= roleLv) {
-                    // 将领等级不超过玩家等级，因此将领等级达到玩家等级后将不再获得经验
-                    addExp = 0;
-                }
-                LogUtil.debug("before 副本将领经验奖励结算逻辑===" + addExp);
-                if (addExp > 0) {
-                    addExp = heroService.adaptHeroAddExp(player, addExp);
-                    addExp *= num; // 活动翻倍
-                    addExp = heroService.addHeroExp(hero, addExp, roleLv, player);
-                }
-                LogUtil.debug("end 副本将领经验奖励结算逻辑===" + addExp);
-            } finally {
-                rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                        hero.getLevel(), addExp, force.totalLost, hero));
+                heroExp = staticCombat.getExp();
+            } else {
+                heroExp = addExp;
             }
+
+            if (hero.getLevel() >= roleLv) {
+                // 将领等级不超过玩家等级，因此将领等级达到玩家等级后将不再获得经验
+                heroExp = 0;
+            }
+
+            LogUtil.debug("before 副本将领经验奖励结算逻辑===" + heroExp);
+
+            if (heroExp > 0) {
+                if (wipe && win) {
+                    heroExp = heroService.adaptHeroAddExp(player, heroExp);
+                    heroExp *= num; // 活动翻倍
+                }
+                heroExp = heroService.addHeroExp(hero, heroExp, roleLv, player);
+            }
+
+            LogUtil.debug("end 副本将领经验奖励结算逻辑===" + heroExp);
+
+            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
+                    hero.getLevel(), addExp, force.totalLost, hero));
         }
         return rptList;
     }
