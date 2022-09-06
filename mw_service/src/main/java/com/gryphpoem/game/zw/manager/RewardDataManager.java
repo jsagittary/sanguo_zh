@@ -120,6 +120,8 @@ public class RewardDataManager {
     private DrawCardService drawCardService;
     @Autowired
     private TreasureWareService treasureWareService;
+    @Autowired
+    private HeroService heroService;
 
     /**
      * 合并奖励
@@ -2412,6 +2414,22 @@ public class RewardDataManager {
             hero.setHeroId(heroId);
             hero.setHeroType(staticHero.getHeroType());
             hero.setQuality(staticHero.getQuality());
+            // 设置武将初始等级（武将初始等级自适应配置的最大值与玩家等级的取小
+            List<String> appoint = new ArrayList<>(
+                    Arrays.asList(StaticHeroDataMgr.getInitHeroAppoint(heroId).getAppoint()
+                            .replace("[", "")
+                            .replace("]", "")
+                            .split(","))
+            );
+            if (CheckNull.nonEmpty(appoint)) {
+                int minLv = Integer.parseInt(appoint.get(0)); // 武将初始等级下限
+                int maxLv = Integer.parseInt(appoint.get(1)); // 武将初始等级上限
+                int lordLevel = player.lord.getLevel(); // 玩家当前等级
+                int targetLevel = Math.min(Math.max(minLv, maxLv), lordLevel);// 目标要升至的等级
+                int needExp = heroService.heroUpLvNeedExp(staticHero.getQuality(), hero, 1, targetLevel);
+                heroService.addHeroExp(hero, needExp, targetLevel, player);
+            }
+
             // 初始化将领品阶数据
             hero.initHeroGrade();
             //如果是赛季英雄则初始化英雄技能

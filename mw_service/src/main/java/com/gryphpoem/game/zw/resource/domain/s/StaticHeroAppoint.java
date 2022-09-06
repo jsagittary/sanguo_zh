@@ -11,7 +11,7 @@ public class StaticHeroAppoint {
 
     private int heroId; // 武将id
 
-    private List<Integer> appoint; // 获得该英雄时，英雄等级自适应lordLv的上下限
+    private String appoint; // 获得该英雄时，英雄等级自适应lordLv的上下限
 
     private String desc; // 备注
 
@@ -23,11 +23,11 @@ public class StaticHeroAppoint {
         this.heroId = heroId;
     }
 
-    public List<Integer> getAppoint() {
+    public String getAppoint() {
         return appoint;
     }
 
-    public void setAppoint(List<Integer> appoint) {
+    public void setAppoint(String appoint) {
         this.appoint = appoint;
     }
 

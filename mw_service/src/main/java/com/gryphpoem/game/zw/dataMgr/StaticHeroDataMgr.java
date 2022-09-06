@@ -82,12 +82,14 @@ public class StaticHeroDataMgr {
         initSessHeroSkill();
         //初始化英雄升阶配置数据
         initHeroUpgrade();
+        //初始化武将初始等级自适应配置
+        initHeroAppoint();
     }
 
     /**
      * 初始化武将被获取时的初始等级自适应配置数据
      */
-    public static void initHeroAppoint() {
+    private static void initHeroAppoint() {
         List<StaticHeroAppoint> staticHeroAppointList = staticDataDao.selectHeroAppointList();
         for (StaticHeroAppoint staticHeroAppoint : staticHeroAppointList) {
             int heroId = staticHeroAppoint.getHeroId();
@@ -95,6 +97,11 @@ public class StaticHeroDataMgr {
         }
     }
 
+    /**
+     * 获取指定武将初始等级自适应配置
+     * @param heroId 武将id
+     * @return
+     */
     public static StaticHeroAppoint getInitHeroAppoint(int heroId) {
         return staticHeroAppointMap.get(heroId);
     }
