@@ -842,7 +842,7 @@ public class HeroService implements GmCmdService {
      * @param maxLv   最高等级
      * @return 返回实际增加经验
      */
-    private int addHeroExp(int quality, Hero hero, int addExp, int maxLv) {
+    public int addHeroExp(int quality, Hero hero, int addExp, int maxLv) {
         int add = 0;
         while (addExp > 0 && hero.getLevel() < maxLv) {
             int need = StaticHeroDataMgr.getExperByQuality(quality, hero.getLevel() + 1);
@@ -870,7 +870,7 @@ public class HeroService implements GmCmdService {
     /**
      * 将领升到指定等级所需经验
      */
-    private int heroUpLvNeedExp(int quality, Hero hero, int curLv, int maxLv) {
+    public int heroUpLvNeedExp(int quality, Hero hero, int curLv, int maxLv) {
         int add = 0;
         while (curLv < maxLv) {
             curLv += 1;

@@ -1055,4 +1055,8 @@ public class StaticDataDao extends BaseDao {
     public List<StaticHeroUpgrade> selectHeroUpgradeList() {
         return getSqlSession().selectList("StaticDao.selectHeroUpgradeList");
     }
+
+    public List<StaticHeroAppoint> selectHeroAppointList() {
+        return getSqlSession().selectList("StaticDao.selectHeroAppointList");
+    }
 }

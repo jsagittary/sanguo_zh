@@ -52,6 +52,9 @@ public class StaticHeroDataMgr {
     /** 英雄升品阶配置表 map<<<heroId, map<grade, map<level, data>>>*/
     private static Map<Integer, Map<Integer, Map<Integer, StaticHeroUpgrade>>> heroUpgradeMap = new HashMap<>();
     private static Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap = new TreeMap<>();
+    // 武将初始等级自适应配置， key：heroId
+    private static Map<Integer, StaticHeroAppoint> staticHeroAppointMap = new HashMap<>();
+
 
     public static void init() {
         Map<Integer, StaticHero> heroMap = staticDataDao.selectHeroMap();
@@ -79,6 +82,28 @@ public class StaticHeroDataMgr {
         initSessHeroSkill();
         //初始化英雄升阶配置数据
         initHeroUpgrade();
+        //初始化武将初始等级自适应配置
+        initHeroAppoint();
+    }
+
+    /**
+     * 初始化武将被获取时的初始等级自适应配置数据
+     */
+    private static void initHeroAppoint() {
+        List<StaticHeroAppoint> staticHeroAppointList = staticDataDao.selectHeroAppointList();
+        for (StaticHeroAppoint staticHeroAppoint : staticHeroAppointList) {
+            int heroId = staticHeroAppoint.getHeroId();
+            staticHeroAppointMap.putIfAbsent(heroId, staticHeroAppoint);
+        }
+    }
+
+    /**
+     * 获取指定武将初始等级自适应配置
+     * @param heroId 武将id
+     * @return
+     */
+    public static StaticHeroAppoint getInitHeroAppoint(int heroId) {
+        return staticHeroAppointMap.get(heroId);
     }
 
     /**
