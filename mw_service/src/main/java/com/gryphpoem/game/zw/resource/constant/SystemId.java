@@ -1322,6 +1322,11 @@ public class SystemId {
     public static final int BERLIN_BATTLE_FRENZY_EXT_HURT = 372;
 
     /**
+     * 关平增援赠送指定品阶关平
+     */
+    public static final int GUAN_PING_RESCUE_REWARD = 373;
+
+    /**
      * 玩家登录刷新流寇距上次离线时间间隔
      */
     public static final int REFRESH_BANDITS_OFFLINE_TIME = 1008;

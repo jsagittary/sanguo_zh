@@ -439,6 +439,9 @@ public class RewardDataManager {
             case AwardType.HERO:
                 addHero(player, id, from, param);
                 break;
+            case AwardType.HERO_DESIGNATED_GRADE:
+                addHeroDesignatedGrade(player, id, count, from, param);
+                break;
             case AwardType.PROP:
                 addProp(player, id, (int) count, from, param);
                 break;
@@ -606,6 +609,47 @@ public class RewardDataManager {
     }
 
     /**
+     * 增加指定武将品阶碎片
+     *
+     * @param player
+     * @param id
+     * @param gradeKeyId
+     * @param from
+     * @param operation
+     * @param sync
+     * @param param
+     */
+    private void operationDesignatedHeroGradeFragment(Player player, int id, int gradeKeyId, AwardFrom from, boolean operation, boolean sync, Object... param) {
+        if (gradeKeyId <= 0)
+            return;
+        Integer costFragment = StaticHeroDataMgr.heroUpgradeCostFragment(id, gradeKeyId);
+        if (CheckNull.isNull(costFragment)) {
+            LogUtil.error(String.format("heroId:%d, gradeKeyId:%d, found no fragment", id, gradeKeyId));
+            return;
+        }
+
+        costFragment = Math.abs(costFragment);
+        costFragment = operation ? costFragment : -costFragment;
+        player.getDrawCardData().getFragmentData().merge(id, costFragment, Integer::sum);
+        if (sync) {
+            ChangeInfo changeInfo = ChangeInfo.newIns();
+            changeInfo.addChangeType(AwardType.HERO_FRAGMENT, id);
+            syncRoleResChanged(player, changeInfo);
+        }
+
+        // 武将碎片变更
+        LogLordHelper.heroFragment(
+                from,
+                player.account,
+                player.lord,
+                id,
+                costFragment > 0 ? Constant.ACTION_ADD : Constant.ACTION_SUB,
+                costFragment,
+                player.getDrawCardData().getFragmentData().get(id)
+        );
+    }
+
+    /**
      * 获得奖励单个奖励总入口
      *
      * @param player
@@ -647,6 +691,7 @@ public class RewardDataManager {
                 addHero(player, id, from, param);
                 break;
             case AwardType.HERO_DESIGNATED_GRADE:
+                addHeroDesignatedGrade(player, id, count, from, param);
                 break;
             case AwardType.PROP:
                 addProp(player, id, (int) count, from, param);
@@ -2383,6 +2428,32 @@ public class RewardDataManager {
     }
 
     /**
+     * 发送武将奖励
+     *
+     * @param player
+     * @param type
+     * @param id
+     * @param count
+     * @param from
+     * @param param
+     * @return
+     */
+    public Hero sendHeroAward(Player player, int type, int id, int count, AwardFrom from,
+                              Object... param) {
+        Hero hero = null;
+        switch (type) {
+            case AwardType.HERO:
+                hero = addHero(player, id, from, param);
+                break;
+            case AwardType.HERO_DESIGNATED_GRADE:
+                hero = addHeroDesignatedGrade(player, id, count, from, param);
+                break;
+        }
+
+        return hero;
+    }
+
+    /**
      * 给玩家奖励将领
      *
      * @param player
@@ -2506,15 +2577,32 @@ public class RewardDataManager {
                 // 获取没有的武将, 处理救援奖励邮件
                 drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
                 // 重复英雄转化为碎片
-                operationHeroFragment(player, heroId, HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS, AwardFrom.SAME_TYPE_HERO, true, true, param);
-                LogUtil.error("玩家已有该将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+                operationDesignatedHeroGradeFragment(player, heroId, gradeKeyId, AwardFrom.SAME_TYPE_HERO, true, true, param);
+                LogUtil.error("玩家已有该高级品阶将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
                 return drawCardService.containAwardFrom(from) ? hero : null;
+            }
+
+            StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(gradeKeyId);
+            if (CheckNull.isNull(staticData)) {
+                LogUtil.error("heroId:%d, 不存在此品阶, gradeKeyId:%d", heroId, gradeKeyId);
+                return null;
             }
 
             hero = new Hero();
             hero.setHeroId(heroId);
             hero.setHeroType(staticHero.getHeroType());
             hero.setQuality(staticHero.getQuality());
+            // 设置武将初始等级（武将初始等级自适应配置的最大值与玩家等级的取小
+            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId).getAppoint();
+
+            if (CheckNull.nonEmpty(appoint)) {
+                int minLv = appoint.get(0); // 武将初始等级下限
+                int maxLv = appoint.get(1); // 武将初始等级上限
+                int lordLevel = player.lord.getLevel(); // 玩家当前等级
+                int targetLevel = Math.min(Math.max(minLv, maxLv), lordLevel);// 目标要升至的等级
+                hero.setLevel(targetLevel);
+            }
+
             // 初始化将领品阶数据
             hero.setGradeKeyId(gradeKeyId);
             //如果是赛季英雄则初始化英雄技能
