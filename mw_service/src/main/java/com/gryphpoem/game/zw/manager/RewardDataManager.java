@@ -629,7 +629,8 @@ public class RewardDataManager {
         }
 
         costFragment = Math.abs(costFragment);
-        costFragment = operation ? costFragment : -costFragment;
+        costFragment = operation ? costFragment + HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS :
+                -costFragment - HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS;
         player.getDrawCardData().getFragmentData().merge(id, costFragment, Integer::sum);
         if (sync) {
             ChangeInfo changeInfo = ChangeInfo.newIns();
