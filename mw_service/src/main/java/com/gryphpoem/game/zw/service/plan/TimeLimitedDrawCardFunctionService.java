@@ -18,6 +18,7 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
+import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.draw.DrawCardTimeLimitedFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.LogLordHelper;
@@ -225,7 +226,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
     @Override
     public CommonPb.SearchHero onceDraw(Player player, FunctionPlanData drawCardData,  StaticDrawHeoPlan planData, int costCount, DrawCardOperation.DrawCardCount drawCardCount, DrawCardOperation.DrawCardCostType drawCardCostType, StaticDrawCardWeight config, Date now) throws MwException {
         // 记录随机到的奖励信息
-        StaticHeroSearch shs = randomPriorityReward(player.roleId, drawCardData, planData, now, config);
+        StaticHeroSearch shs = randomPriorityReward(player.roleId, drawCardData, planData, now, config, player.getFunctionPlanData());
         if (CheckNull.isNull(shs) || CheckNull.isEmpty(shs.getRewardList())) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "寻访配置错误   drawCardCount:", drawCardCount, ", drawCardCostType:", drawCardCostType);
         }
@@ -286,7 +287,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
     }
 
     @Override
-    public StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData functionPlanData, StaticDrawHeoPlan planData, Date now, StaticDrawCardWeight config) throws MwException {
+    public StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData functionPlanData, StaticDrawHeoPlan planData, Date now, StaticDrawCardWeight config, PlayerFunctionPlanData playerFunctionPlanData) throws MwException {
         StaticHeroSearch staticData;
         // 当前次数到必出武将次数
         DrawCardTimeLimitedFunctionPlanData drawCardData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
@@ -314,7 +315,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
             LogUtil.debug(String.format("drawAcrCard===player:%d, 限时随机抽卡：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
             return staticData;
         } finally {
-            drawCardData.addTotalDrawHeroCount();
+            drawCardData.addTotalDrawHeroCount(playerFunctionPlanData);
         }
     }
 }

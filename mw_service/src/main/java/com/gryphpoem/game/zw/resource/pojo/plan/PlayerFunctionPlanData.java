@@ -5,7 +5,9 @@ import com.gryphpoem.game.zw.manager.FunctionPlanDataManager;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +22,8 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
     private long roleId;
     /** 功能信息*/
     private Map<Integer, FunctionPlanData> functionPlanDataMap = new ConcurrentHashMap<>();
+    /** 功能信息额外参数*/
+    private Map<Integer, Integer> extDataMap = new HashMap<>();
 
     public PlayerFunctionPlanData() {
     }
@@ -34,6 +38,18 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
 
     public void removeData(int planKeyId) {
         this.functionPlanDataMap.remove(planKeyId);
+    }
+
+    public Map<Integer, Integer> getExtDataMap() {
+        return extDataMap;
+    }
+
+    public void setExtDataMap(Map<Integer, Integer> extDataMap) {
+        this.extDataMap = extDataMap;
+    }
+
+    public int getExtData(int index) {
+        return this.extDataMap.getOrDefault(index, 0);
     }
 
     public FunctionPlanData updateData(FunctionPlanData data) {
@@ -58,12 +74,16 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
                 }
             });
         }
+        if (CheckNull.nonEmpty(builder.getExtDataList())) {
+            builder.getExtDataList().forEach(data -> this.extDataMap.put(data.getV1(), data.getV2()));
+        }
     }
 
     @Override
     public SerializePb.SerFunctionPlanData createPb(boolean isSaveDb) {
         SerializePb.SerFunctionPlanData.Builder builder = SerializePb.SerFunctionPlanData.newBuilder();
         this.functionPlanDataMap.values().forEach(data -> builder.addData(data.createBasePb()));
+        this.extDataMap.entrySet().forEach(entry -> builder.addExtData(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
         return builder.build();
     }
 }

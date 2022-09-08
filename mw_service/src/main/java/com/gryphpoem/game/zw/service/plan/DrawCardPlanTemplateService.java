@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service.plan;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticDrawHeroDataMgr;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
 import com.gryphpoem.game.zw.manager.FunctionPlanDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
@@ -14,6 +15,7 @@ import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.FunctionJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionEndJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionPreviewJob;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -58,6 +60,8 @@ public class DrawCardPlanTemplateService {
     private PlayerService playerService;
     @Autowired
     private RewardDataManager rewardDataManager;
+    @Autowired
+    private ActivityDataManager activityDataManager;
 
     /**
      * 获取所有plan信息
@@ -154,6 +158,9 @@ public class DrawCardPlanTemplateService {
                 builder.addHero(sh);
             }
         }
+
+        // 更新七日活动-抽卡任务
+        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_CUMULATIVE_RESIDENT_DRAW_CARD);
         builder.setData((ActivityPb.TimeLimitedDrawCardActData) functionPlanData.createPb(false));
         return builder.build();
     }

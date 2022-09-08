@@ -2488,7 +2488,7 @@ public class RewardDataManager {
             hero.setHeroType(staticHero.getHeroType());
             hero.setQuality(staticHero.getQuality());
             // 设置武将初始等级（武将初始等级自适应配置的最大值与玩家等级的取小
-            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId).getAppoint();
+            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId);
 
             if (CheckNull.nonEmpty(appoint)) {
                 int minLv = appoint.get(0); // 武将初始等级下限
@@ -2593,7 +2593,7 @@ public class RewardDataManager {
             hero.setHeroType(staticHero.getHeroType());
             hero.setQuality(staticHero.getQuality());
             // 设置武将初始等级（武将初始等级自适应配置的最大值与玩家等级的取小
-            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId).getAppoint();
+            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId);
 
             if (CheckNull.nonEmpty(appoint)) {
                 int minLv = appoint.get(0); // 武将初始等级下限

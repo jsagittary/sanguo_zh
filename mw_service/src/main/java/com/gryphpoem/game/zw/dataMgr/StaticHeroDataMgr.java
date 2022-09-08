@@ -103,8 +103,10 @@ public class StaticHeroDataMgr {
      * @param heroId 武将id
      * @return
      */
-    public static StaticHeroAppoint getInitHeroAppoint(int heroId) {
-        return staticHeroAppointMap.get(heroId);
+    public static List<Integer> getInitHeroAppoint(int heroId) {
+        StaticHeroAppoint staticHeroAppoint = staticHeroAppointMap.get(heroId);
+        if (CheckNull.isNull(staticHeroAppoint)) return null;
+        return staticHeroAppoint.getAppoint();
     }
 
     /**

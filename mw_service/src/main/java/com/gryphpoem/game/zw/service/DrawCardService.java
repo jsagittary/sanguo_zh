@@ -49,6 +49,8 @@ public class DrawCardService implements GmCmdService {
     private TaskDataManager taskDataManager;
     @Autowired
     private MailDataManager mailDataManager;
+    @Autowired
+    private ActivityDataManager activityDataManager;
 
     /**
      * 获取抽卡详情
@@ -159,6 +161,8 @@ public class DrawCardService implements GmCmdService {
 
         taskDataManager.updTask(player, TaskType.COND_997, drawCardCount.getCount());
         taskDataManager.updTask(player, TaskType.COND_1000, drawCardCount.getCount());
+        // 更新七日活动 - 常驻抽卡
+        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_CUMULATIVE_RESIDENT_DRAW_CARD);
         builder.setCount(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - drawCardData.getHeroDrawCount());
         builder.setCdTime((int) (drawCardData.getCdFreeTime() / 1000l));
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
