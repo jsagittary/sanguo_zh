@@ -276,7 +276,7 @@ public final class Constant {
     /**
      * 黑鹰计划招募将领ID
      */
-    public static int BLACKHAWK_HERO_ID;
+    public static List<Integer> BLACKHAWK_HERO_ID;
     /**
      * 黑鹰计划招募将领信物所需个数
      */
@@ -1112,7 +1112,7 @@ public final class Constant {
         BLACKHAWK_REFRESH_INTERVAL = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_REFRESH_INTERVAL, 18000);
         BLACKHAWK_INIT_PAY_GOLD = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_INIT_PAY_GOLD, 10);
         BLACKHAWK_INCR_GOLD = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_INCR_GOLD, 10);
-        BLACKHAWK_HERO_ID = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_HERO_ID, 0);
+        // BLACKHAWK_HERO_ID = SystemTabLoader.getListIntSystemValue(SystemId.BLACKHAWK_HERO_ID, "[]");
         BLACKHAWK_NEED_TOKEN = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_NEED_TOKEN, 7);
         ACQ_HERO_REQUIRE = SystemTabLoader.getListIntSystemValue(SystemId.ACQ_HERO_REQUIRE, "[]");
         COMMANDO_HERO_REQUIRE = SystemTabLoader.getListIntSystemValue(SystemId.COMMANDO_HERO_REQUIRE, "[]");
