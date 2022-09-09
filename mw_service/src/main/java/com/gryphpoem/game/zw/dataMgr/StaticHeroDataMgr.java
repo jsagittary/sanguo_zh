@@ -259,7 +259,7 @@ public class StaticHeroDataMgr {
                 if (CheckNull.isNull(entry) || CheckNull.isNull(entry.getValue())) continue;
                 for (StaticHeroUpgrade staticHeroUpgrade : entry.getValue().values()) {
                     if (CheckNull.isNull(staticHeroUpgrade)) continue;
-                    if (staticHeroUpgrade.getGrade() == staticData.getGrade() && staticHeroUpgrade.getLevel() > staticData.getLevel())
+                    if (staticHeroUpgrade.getGrade() == staticData.getGrade() && staticHeroUpgrade.getLevel() >= staticData.getLevel())
                         continue;
                     totalCost += staticHeroUpgrade.getConsume().stream().filter(list -> list.get(0) == AwardType.HERO_FRAGMENT).mapToInt(list -> list.get(2)).sum();
                 }
