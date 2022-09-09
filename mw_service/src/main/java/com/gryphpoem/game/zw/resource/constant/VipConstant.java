@@ -23,7 +23,7 @@ public class VipConstant {
      */
     public static final int EQUIP_FORGE = 7;
     /** vip3 */
-    public static final int VIP_THREE = 5;
+    public static final int VIP_THREE = 3;
     /** vip5 */
     public static final int VIP_FIVE = 5;
     /** vip6 */

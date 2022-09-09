@@ -8,8 +8,10 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroBiographyDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.GamePb5;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -176,6 +178,10 @@ public class HeroBiographyService implements GmCmdService, EventRegisterService 
     @GmCmd("biography")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
-
+        if ("addAward".equalsIgnoreCase(params[0])) {
+            String[] award_ = params[1].split(",");
+            DataResource.ac.getBean(RewardDataManager.class).sendRewardSignle(player, Integer.parseInt(award_[0]),
+                    Integer.parseInt(award_[1]), Integer.parseInt(award_[2]), AwardFrom.COMMON);
+        }
     }
 }
