@@ -73,7 +73,7 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
             this.drawHeoPlanMap = drawHeoPlanMap.values().stream().filter(staticData ->
                     Objects.nonNull(staticData) && CheckNull.nonEmpty(staticData.getServerIdList()) &&
                     checkServerId(serverId, staticData.getServerIdList()) && staticData.initPlan() &&
-                            now.after(staticData.getEndTime())).collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
+                            now.before(staticData.getEndTime())).collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
         }
 
         List<StaticDrawCardWeight> drawCardWeightList_ = staticIniDao.selectStaticDrawCardWeightList();

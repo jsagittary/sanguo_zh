@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.pb.ActivityPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.FunctionPlan;
+import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * createTime: 2022-06-15 13:48
  */
 @FunctionPlan(functions = PlanFunction.DRAW_CARD)
-public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionPlanData<ActivityPb.TimeLimitedDrawCardActData> {
+public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<ActivityPb.TimeLimitedDrawCardActData> {
     /** 进度下标*/
     private static final int PROGRESS_INDEX = -1000;
     /** 领取状态下标*/
