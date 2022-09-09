@@ -207,7 +207,7 @@ public class FightSettleLogic {
             LogUtil.debug("end 副本将领经验奖励结算逻辑===" + heroExp);
 
             rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                    hero.getLevel(), addExp, force.totalLost, hero));
+                    hero.getLevel(), heroExp, force.totalLost, hero));
         }
         return rptList;
     }
