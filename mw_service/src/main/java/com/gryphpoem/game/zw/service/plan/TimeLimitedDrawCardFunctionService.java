@@ -19,6 +19,7 @@ import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
+import com.gryphpoem.game.zw.resource.pojo.plan.constant.FunctionPlanConstant;
 import com.gryphpoem.game.zw.resource.pojo.plan.draw.DrawCardTimeLimitedFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.LogLordHelper;
@@ -148,7 +149,11 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                 FunctionPlanData planData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, keyId, false);
                 drawCardPlanTemplateService.syncChangeDrawCardActPlan(player, planData, staticPlan, ACT_DELETE, now);
             }
-            functionPlanDataManager.removeFunctionPlanData(player.getFunctionPlanData(), keyId);
+            FunctionPlanData functionPlanData = functionPlanDataManager.removeFunctionPlanData(player.getFunctionPlanData(), keyId);
+            if (Objects.nonNull(functionPlanData)) {
+                player.getFunctionPlanData().updateExtData(PlanFunction.DRAW_CARD, FunctionPlanConstant.TOTAL_DRAW_CARD_COUNT,
+                        ((DrawCardTimeLimitedFunctionPlanData) functionPlanData).getTotalDrawCount());
+            }
         });
     }
 
