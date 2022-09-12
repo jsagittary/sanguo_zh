@@ -4,8 +4,10 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
-import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.SuperMineDataManager;
+import com.gryphpoem.game.zw.manager.WarDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.resource.constant.ActParamConstant;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
@@ -13,20 +15,19 @@ import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
+import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.server.AppGameServer;
 import com.gryphpoem.game.zw.service.BerlinWarService;
-import com.gryphpoem.game.zw.service.HeroService;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
 import org.springframework.util.ObjectUtils;
-import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 
-import javax.xml.crypto.Data;
 import java.util.Date;
-import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @ClassName GameDataManager.java
@@ -69,6 +70,9 @@ public class GameDataManager {
 
         //处理被合服删除的活动
         handleRemovedAct();
+
+        // 填充武将列传初始信息
+        fillingInitHeroBiography();
 
         LogUtil.start("数据处理逻辑结束");
     }
@@ -221,4 +225,19 @@ public class GameDataManager {
 			throw new MwException("临时修复逻辑出错", e);
 		}
 	}
+
+    /**
+     * 填充武将列传初始化信息
+     *
+     * @throws MwException
+     */
+	private void fillingInitHeroBiography() throws MwException {
+        Optional.ofNullable(DataResource.ac.getBean(PlayerDataManager.class).getAllPlayer()).ifPresent(allPlayer -> {
+            allPlayer.values().forEach(player -> {
+                if (CheckNull.isNull(player)) return;
+                if (Objects.nonNull(player.playerHero)) return;
+                player.playerHero = new PlayerHero(player.roleId);
+            });
+        });
+    }
 }

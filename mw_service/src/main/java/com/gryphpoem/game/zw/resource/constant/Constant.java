@@ -276,7 +276,7 @@ public final class Constant {
     /**
      * 黑鹰计划招募将领ID
      */
-    public static int BLACKHAWK_HERO_ID;
+    public static List<Integer> BLACKHAWK_HERO_ID;
     /**
      * 黑鹰计划招募将领信物所需个数
      */
@@ -1112,7 +1112,7 @@ public final class Constant {
         BLACKHAWK_REFRESH_INTERVAL = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_REFRESH_INTERVAL, 18000);
         BLACKHAWK_INIT_PAY_GOLD = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_INIT_PAY_GOLD, 10);
         BLACKHAWK_INCR_GOLD = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_INCR_GOLD, 10);
-        BLACKHAWK_HERO_ID = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_HERO_ID, 0);
+        // BLACKHAWK_HERO_ID = SystemTabLoader.getListIntSystemValue(SystemId.BLACKHAWK_HERO_ID, "[]");
         BLACKHAWK_NEED_TOKEN = SystemTabLoader.getIntegerSystemValue(SystemId.BLACKHAWK_NEED_TOKEN, 7);
         ACQ_HERO_REQUIRE = SystemTabLoader.getListIntSystemValue(SystemId.ACQ_HERO_REQUIRE, "[]");
         COMMANDO_HERO_REQUIRE = SystemTabLoader.getListIntSystemValue(SystemId.COMMANDO_HERO_REQUIRE, "[]");
@@ -1405,8 +1405,9 @@ public final class Constant {
         int OTHER = 9;//科技、其它
         int SEASON = 10;//宝具
         int CASTLE_SKIN = 11;// 城堡皮肤
-        int TREASURE_WARE = 13;//宝具
         int TOTEM = 12;//阵法图腾
+        int TREASURE_WARE = 13;//宝具
+        int HERO_BIOGRAPHY = 14;    // 武将列传
     }
 
     /**

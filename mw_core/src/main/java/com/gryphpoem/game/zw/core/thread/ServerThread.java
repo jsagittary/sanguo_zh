@@ -1,7 +1,5 @@
 package com.gryphpoem.game.zw.core.thread;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 import com.gryphpoem.game.zw.core.ICommand;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
@@ -12,6 +10,8 @@ import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.RpcException;
+
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ServerThread extends Thread {
 	// 日志
@@ -111,7 +111,7 @@ public class ServerThread extends Thread {
 							handler.sendErrorMsgToPlayer(error.getCode());
 						}
 					} else {
-						LogUtil.error(command.getClass().getSimpleName() + " Not Hand  Exception -->" + e.getMessage(), e);
+						LogUtil.error(command.getClass().getSimpleName(), " Not Hand  Exception -->", e);
 						if (command instanceof AbsClientHandler) { // 返回错误消息
 							AbsClientHandler handler = (AbsClientHandler) command;
 							handler.sendErrorMsgToPlayer(GameError.UNKNOWN_ERROR.getCode());

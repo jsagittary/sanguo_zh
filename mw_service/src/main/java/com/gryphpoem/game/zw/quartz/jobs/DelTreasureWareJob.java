@@ -9,7 +9,9 @@ public class DelTreasureWareJob extends AbsMainLogicThreadJob {
 
     @Override
     protected void executeInMain(JobExecutionContext context) {
-        LogUtil.debug("===start delete expired decomposed treasureWare>>>");
+        LogUtil.debug("------------DelTreasureWareJob整点处理start-------------");
         DataResource.ac.getBean(TreasureWareService.class).timedClearDecomposeTreasureWare();
+        LogUtil.debug("------------DelTreasureWareJob整点处理end-------------");
     }
+
 }

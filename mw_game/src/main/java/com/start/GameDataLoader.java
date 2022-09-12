@@ -1,14 +1,18 @@
 package com.start;
 
-import com.gryphpoem.game.zw.server.AppGameServer;
-import com.hotfix.GameAgent;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.server.AppGameServer;
 import com.gryphpoem.game.zw.server.HotfixService;
+import com.gryphpoem.game.zw.service.EventRegisterService;
 import com.gryphpoem.game.zw.service.LoadService;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.hotfix.GameAgent;
+
+import java.util.Map;
 
 /**
  * @ClassName GameDataLoader.java
@@ -68,6 +72,17 @@ public class GameDataLoader {
     private void serverStartLogic() throws MwException {
         // 章节任务
         AppGameServer.ac.getBean(ChapterTaskDataManager.class).checkAllPlayerChapterTask();
+        registerServiceEvent();
+    }
+
+    /**
+     * 注册eventBus
+     */
+    private void registerServiceEvent() {
+        Map<String, EventRegisterService> serviceMap = AppGameServer.ac.getBeansOfType(EventRegisterService.class);
+        if (CheckNull.nonEmpty(serviceMap)) {
+            serviceMap.values().forEach(service -> service.registerEvent());
+        }
     }
 
     private void loadPlayerData() throws MwException {

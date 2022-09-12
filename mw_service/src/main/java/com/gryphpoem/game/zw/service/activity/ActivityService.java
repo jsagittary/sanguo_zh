@@ -261,7 +261,7 @@ public class ActivityService {
                     }
                 } else if (activityType == ActivityConst.ACT_7DAY) {// 七日活动
                     int cRoleDay = playerDataManager.getCreateRoleDay(player, now);
-                    if (cRoleDay > 7) continue; // 过期不显示
+                    if (cRoleDay > 10) continue; // 过期不显示
                     if (player.day7Act == null) continue; // 没有初始化也不显示
                     tips = player.day7Act.getCanRecvKeyId().size();
                 } else if (ActivityConst.ACT_PAY_7DAY == activityType) {// 七日充值
@@ -403,12 +403,12 @@ public class ActivityService {
                     tips = activityDataManager.getCurActTips(player, activityType);
                 } else if (ActivityConst.ACT_DEDICATED_CUSTOMER_SERVICE == activityType) {
                     long createTime = activity.getStatusCnt().getOrDefault(0, 0L);
-                    if (createTime > 0L) {
-                        long disPlayTime = TimeHelper.getSomeDayAfter(TimeHelper.secondToDate((int) createTime), ActParamConstant.ACT_DEDICATED_CUSTOMER_SERVICE_CONF.get(1).get(0) - 1, 23, 59, 59) * TimeHelper.SECOND_MS;
-                        actBase = copyActiviyBase(actBase, player.account.getCreateDate(), new Date(disPlayTime));
-                        if (now.getTime() > disPlayTime) {
-                            continue;
-                        }
+                    if (createTime <= 0)
+                        continue;
+                    long disPlayTime = TimeHelper.getSomeDayAfter(TimeHelper.secondToDate((int) createTime), ActParamConstant.ACT_DEDICATED_CUSTOMER_SERVICE_CONF.get(1).get(0) - 1, 23, 59, 59) * TimeHelper.SECOND_MS;
+                    actBase = copyActiviyBase(actBase, player.account.getCreateDate(), new Date(disPlayTime));
+                    if (now.getTime() > disPlayTime) {
+                        continue;
                     }
                 } else if(ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType){
                     tips = 1;
@@ -426,13 +426,12 @@ public class ActivityService {
                 if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType)) { // 部分活动结束后还显示
                     continue;
                 }
-                boolean cangetAward = true;// 可领奖，不可领奖
                 int tips_ = AbsSimpleActivityService.getTipsInActList(player, activityType);
                 tips = tips_ == 0 ? tips : tips_;
-                if(ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType){
-                    builder.addActivity(activityChristmasService.buildActivityPb(activity,actBase,cangetAward,tips));
-                }else {
-                    builder.addActivity(PbHelper.createActivityPb(actBase, cangetAward, tips));
+                if (ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType) {
+                    builder.addActivity(activityChristmasService.buildActivityPb(activity, actBase, true, tips));
+                } else {
+                    builder.addActivity(PbHelper.createActivityPb(actBase, true, tips));
                 }
             } catch (Exception error) {
                 LogUtil.error("---------警告活动列表出错----------- actType:", actBase.getActivityType());
@@ -1659,6 +1658,7 @@ public class ActivityService {
         builder.addAllActActive(atkCityActActives);
         builder.addAllActTask(atkCityActTasks);
         builder.setDay(dayiy);
+
         return builder.build();
     }
 
@@ -1739,7 +1739,7 @@ public class ActivityService {
 //            throw new MwException(GameError.NO_CONFIG.getCode(), "找不到配置, roleId:,", roleId);
             dayiy = 0;
         } else {
-            if (dayiy <= 7) {
+            if (dayiy <= 10) {
                 for (StaticDay7Act e : staticDay7ActList) {
                     if (e.getDay() > dayiy) {
                         continue;
@@ -1767,6 +1767,8 @@ public class ActivityService {
         GetDay7ActRs.Builder builder = GetDay7ActRs.newBuilder();
         builder.setDay(dayiy);
         builder.addAllDay7Acts(listDay7Act);
+        builder.setBeginTime(TimeHelper.dateToSecond(beginTime));
+        builder.setEndTime(TimeHelper.afterSecondTime(beginTime, 10 * 24 * 60 * 60));
         return builder.build();
     }
 

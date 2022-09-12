@@ -69,8 +69,11 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
 
         Map<Integer, StaticDrawHeoPlan> drawHeoPlanMap = staticIniDao.selectStaticDrawHeoPlanMap();
         if (CheckNull.nonEmpty(drawHeoPlanMap)) {
-            this.drawHeoPlanMap = drawHeoPlanMap.values().stream().filter(staticData -> Objects.nonNull(staticData) && CheckNull.nonEmpty(staticData.getServerIdList()) &&
-                    checkServerId(serverId, staticData.getServerIdList()) && staticData.initPlan()).collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
+            Date now = new Date();
+            this.drawHeoPlanMap = drawHeoPlanMap.values().stream().filter(staticData ->
+                    Objects.nonNull(staticData) && CheckNull.nonEmpty(staticData.getServerIdList()) &&
+                    checkServerId(serverId, staticData.getServerIdList()) && staticData.initPlan() &&
+                            now.before(staticData.getEndTime())).collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
         }
 
         List<StaticDrawCardWeight> drawCardWeightList_ = staticIniDao.selectStaticDrawCardWeightList();
@@ -193,6 +196,20 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * 随机保底武将
+     *
+     * @param config
+     * @param weightPool
+     * @param now
+     * @return
+     */
+    public StaticHeroSearch randomGuaranteeHero(StaticDrawCardWeight config, List<List<Integer>> weightPool, Date now) {
+        DrawCardRewardType type = randomCardRewardType(weightPool);
+        if (CheckNull.isNull(type)) return null;
+        return randomSpecifyType(config, type, now);
     }
 
     /**
@@ -390,6 +407,30 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
             }
         }
         return list;
+    }
+
+    /**
+     * 从随机池中随机武将类型
+     *
+     * @param list
+     * @return
+     */
+    private DrawCardRewardType randomCardRewardType(List<List<Integer>> list) {
+        if (CheckNull.isEmpty(list)) return null;
+
+        int totalWeight = list.stream().mapToInt(list_ -> list_.get(1)).sum();
+        int temp = 0;
+        int random = RandomHelper.randomInSize(totalWeight);
+        if (!CheckNull.isEmpty(list)) {
+            for (List<Integer> shs : list) {
+                temp += shs.get(1);
+                if (temp >= random) {
+                    return DrawCardRewardType.convertTo(shs.get(0));
+                }
+            }
+        }
+
+        return null;
     }
 
     @Override

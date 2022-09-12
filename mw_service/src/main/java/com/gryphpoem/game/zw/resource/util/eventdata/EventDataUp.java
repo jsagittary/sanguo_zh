@@ -14,6 +14,7 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Account;
@@ -21,14 +22,17 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
+import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -633,24 +637,67 @@ public class EventDataUp {
         });
     }
 
+    // /**
+    //  * 单个武将兵力变化上报
+    //  *
+    //  * @param account
+    //  * @param lord
+    //  * @param from
+    //  * @param armyType
+    //  * @param add
+    //  * @param current
+    //  */
+    // public static void heroArmy(Account account, Lord lord, AwardFrom from, int armyType, int add, int current) {
+    //     if (Objects.isNull(account) || CheckNull.isNull(lord)) {
+    //         return;
+    //     }
+    //     // 检测数数上报的功能
+    //     if (functionUnlock(account)) {
+    //         return;
+    //     }
+    //     Java8Utils.invokeNoExceptionICommand(() -> {
+    //         Map<String, Object> common = getCommonParams(account, lord);
+    //         common.put("@public_data", "");
+    //         common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
+    //         common.put("money", lord.getGold());
+    //         common.put("faction", lord.getCamp());
+    //         common.put("army_type", armyType);
+    //         int changeType = add > 0 ? 1 : 2;
+    //         common.put("army_change_type", changeType);
+    //         common.put("army_nums", add);
+    //         common.put("army_after_nums", current);
+    //         common.put("army_change_reason", CheckNull.isNull(from) ? "" : from.getCode());
+    //
+    //         Map<String, Object> propertyMap = getPropertyParams(account, lord, common, "army");
+    //         Map<String, Object> properties = new HashMap<>();
+    //         properties.put("type", "track");
+    //         properties.put("data", propertyMap);
+    //         request(0, properties);
+    //     });
+    // }
+
+
     /**
-     * 兵力变化上报
-     *
-     * @param account
-     * @param lord
+     * 玩家整体兵力变化上报
+     * @param player
      * @param from
      * @param armyType
      * @param add
      * @param current
      */
-    public static void heroArmy(Account account, Lord lord, AwardFrom from, int armyType, int add, int current) {
-        if (Objects.isNull(account) || CheckNull.isNull(lord)) {
+    public static void playerArmy(Player player, AwardFrom from, int armyType, int add, int current) {
+        if (Objects.isNull(player) || Objects.isNull(player.account) || Objects.isNull(player.lord)) {
             return;
         }
+
+        Account account = player.account;
+        Lord lord = player.lord;
+
         // 检测数数上报的功能
-        if (functionUnlock(account)) {
+        if (functionUnlock(player.account)) {
             return;
         }
+
         Java8Utils.invokeNoExceptionICommand(() -> {
             Map<String, Object> common = getCommonParams(account, lord);
             common.put("@public_data", "");
@@ -835,6 +882,63 @@ public class EventDataUp {
 
             Map<String, Object> propertyMap = getPropertyParams(player.account, player.lord, common, "equip_advanced");
             Map<String, Object> properties = new HashMap<>(); //固定格式
+            properties.put("type", "track");
+            properties.put("data", propertyMap);
+            request(0, properties);
+        });
+    }
+
+    /**
+     * 宝具养成时数据上报（分解、获取、强化、被洗炼消耗、洗炼）
+     * @param player
+     * @param treasureWare
+     * @param reason
+     */
+    public static void treasureCultivate(Player player, TreasureWare treasureWare, AwardFrom reason, int attrType) {
+        if (CheckNull.isNull(player.lord) || CheckNull.isNull(player.account) || CheckNull.isNull(treasureWare))
+            return;
+        // 检测数数上报的功能
+        if (functionUnlock(player.account)) {
+            return;
+        }
+
+        Java8Utils.invokeNoExceptionICommand(() -> {
+            Map<String, Object> common = getCommonParams(player.account, player.lord);
+            common.put("main_group_id", DataResource.ac.getBean(ServerSetting.class).getServerID());
+            // 宝具变更原因：分解、获取、强化、被洗练消耗、洗炼等
+            common.put("treasure_change_reason", String.valueOf(reason.getCode()));
+            // 宝具变更后评级
+            common.put("treasure_after_rate", String.valueOf(treasureWare.getRank()));
+            // 宝具类型：攻击、防御、平衡、赛季等
+            common.put("treasure_type", String.valueOf(attrType));
+            // 宝具名称id
+            common.put("treasure_nameid", String.valueOf(treasureWare.getProfileId()));
+            // 宝具唯一id
+            common.put("treasure_keyid", String.valueOf(treasureWare.getKeyId()));
+            // 宝具品质：蓝、紫、橙、红、远古
+            common.put("treasure_quality", String.valueOf(treasureWare.getQuality()));
+            // 宝具专属属性ID
+            common.put("treasure_exclusiveld", String.valueOf(treasureWare.getSpecialId()));
+            // 宝具专属属性数值（宝具不一定有专属属性）
+            common.put("treasure_exclusive_nums", CollectionUtils.isEmpty(treasureWare.getSpecialAttr()) ? 0 : treasureWare.getSpecialAttr().get(0).getB());
+            // 宝具等级
+            common.put("treasure_level", treasureWare.getLevel());
+            // 宝具当前基础属性（破城、守城、破甲）
+            Map<Integer, TreasureWareAttrItem> attrs = treasureWare.getAttrs();
+            Object[] objects = new Object[3];
+            for (Map.Entry<Integer, TreasureWareAttrItem> entry : attrs.entrySet()) {
+                TreasureWareAttrItem treasureWareAttrItem = entry.getValue();
+                Map<String, Object> map = new HashMap<>();
+                map.put("index", treasureWareAttrItem.getIndex());
+                map.put("attrId", treasureWareAttrItem.getAttrId());
+                map.put("stage", treasureWareAttrItem.getStage());
+                map.put("value", treasureWareAttrItem.getValue());
+                objects[entry.getKey() - 1] = map;
+            }
+            common.put("treasure_basic_attribute", objects);
+
+            Map<String, Object> propertyMap = getPropertyParams(player.account, player.lord, common, "treasure");
+            Map<String, Object> properties = new HashMap<>(); // 固定格式
             properties.put("type", "track");
             properties.put("data", propertyMap);
             request(0, properties);

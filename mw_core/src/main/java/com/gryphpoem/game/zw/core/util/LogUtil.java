@@ -90,7 +90,9 @@ public class LogUtil {
 
     public static void debug(Object... message) {
         if (canPrint(Level.DEBUG)) {
-            COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message));
+            getLogThread().addCommand(() -> {
+                COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message));
+            });
         }
     }
 

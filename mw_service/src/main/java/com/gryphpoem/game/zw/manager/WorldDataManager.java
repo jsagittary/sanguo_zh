@@ -661,8 +661,8 @@ public class WorldDataManager {
                     Integer realCnt = lvAndCnt.get(lv);
                     realCnt = realCnt == null ? 0 : realCnt; // 地图上数据
                     int needCnt = cnt - realCnt;
-                    LogUtil.world("----------刷流寇  区域:", area, ", 大地图的块:", mapBlock, ", 本区域块:", b, ", 流寇等级:", lv,
-                            ", 配置数量:", cnt, ", 地图上的数量:", realCnt, ", 需要刷的数量:", needCnt, "----------");
+//                    LogUtil.world("----------刷流寇  区域:", area, ", 大地图的块:", mapBlock, ", 本区域块:", b, ", 流寇等级:", lv,
+//                            ", 配置数量:", cnt, ", 地图上的数量:", realCnt, ", 需要刷的数量:", needCnt, "----------");
                     if (needCnt > 0) {
                         List<Integer> emptyPos = randomEmptyByAreaBlock(area, b, needCnt);
                         emptyPos.forEach(pos -> {
@@ -672,8 +672,8 @@ public class WorldDataManager {
                                 StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
                                 banditMapTmp.put(pos, sBandit);
                                 Turple<Integer, Integer> xy = MapHelper.reducePos(pos);
-                                LogUtil.world("---------- 新增流寇 位置:", pos, " [x=", xy.getA(), ",y=", xy.getB(), "] lv:",
-                                        sBandit.getLv(), "----------");
+//                                LogUtil.world("---------- 新增流寇 位置:", pos, " [x=", xy.getA(), ",y=", xy.getB(), "] lv:",
+//                                        sBandit.getLv(), "----------");
                             }
                         });
                     }

@@ -242,6 +242,11 @@ public class WorldConstant {
     private static List<List<Integer>> BERLIN_BATTLE_FRENZY_EXT_HURT;
 
     /**
+     * 关平增援赠送指定品阶关平
+     */
+    public static List<Integer> GUAN_PING_RESCUE_REWARD;
+
+    /**
      * 柏林会战预显示时间(定时器)
      */
     public static String PRE_VIEW_CRON;
@@ -643,6 +648,7 @@ public class WorldConstant {
         BERLIN_BATTLE_FRENZY_TRIGGER_CONF = SystemTabLoader.getListIntSystemValue(SystemId.BERLIN_BATTLE_FRENZY_TRIGGER_CONF, "[3000,6000,9000]");
         BERLIN_BATTLE_FRENZY_MAX_ROUND = SystemTabLoader.getIntegerSystemValue(SystemId.BERLIN_BATTLE_FRENZY_MAX_ROUND, 60);
         BERLIN_BATTLE_FRENZY_EXT_HURT = SystemTabLoader.getListListIntSystemValue(SystemId.BERLIN_BATTLE_FRENZY_EXT_HURT, "[[11,13,50]]");
+        GUAN_PING_RESCUE_REWARD = SystemTabLoader.getListIntSystemValue(SystemId.GUAN_PING_RESCUE_REWARD, "[]");
         PRE_VIEW_CRON = SystemTabLoader.getStringSystemValue(SystemId.PRE_VIEW_CRON, "0 * 12 * * 4");
         BERLIN_BEGIN_CRON = SystemTabLoader.getStringSystemValue(SystemId.BERLIN_BEGIN_CRON, "0/3 * 20-21 * * 5");
         BERLIN_WIN_OF_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.BERLIN_WIN_OF_TIME, 1800);

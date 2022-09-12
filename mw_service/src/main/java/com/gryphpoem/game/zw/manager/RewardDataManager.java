@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.manager;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
@@ -117,6 +118,10 @@ public class RewardDataManager {
     private TitleService titleService;
     @Autowired
     private DrawCardService drawCardService;
+    @Autowired
+    private TreasureWareService treasureWareService;
+    @Autowired
+    private HeroService heroService;
 
     /**
      * 合并奖励
@@ -434,6 +439,9 @@ public class RewardDataManager {
             case AwardType.HERO:
                 addHero(player, id, from, param);
                 break;
+            case AwardType.HERO_DESIGNATED_GRADE:
+                addHeroDesignatedGrade(player, id, count, from, param);
+                break;
             case AwardType.PROP:
                 addProp(player, id, (int) count, from, param);
                 break;
@@ -587,6 +595,59 @@ public class RewardDataManager {
             changeInfo.addChangeType(AwardType.HERO_FRAGMENT, id);
             syncRoleResChanged(player, changeInfo);
         }
+
+        // 武将碎片变更
+        LogLordHelper.heroFragment(
+                from,
+                player.account,
+                player.lord,
+                id,
+                count > 0 ? Constant.ACTION_ADD : Constant.ACTION_SUB,
+                count,
+                player.getDrawCardData().getFragmentData().get(id)
+        );
+    }
+
+    /**
+     * 增加指定武将品阶碎片
+     *
+     * @param player
+     * @param id
+     * @param gradeKeyId
+     * @param from
+     * @param operation
+     * @param sync
+     * @param param
+     */
+    private void operationDesignatedHeroGradeFragment(Player player, int id, int gradeKeyId, AwardFrom from, boolean operation, boolean sync, Object... param) {
+        if (gradeKeyId <= 0)
+            return;
+        Integer costFragment = StaticHeroDataMgr.heroUpgradeCostFragment(id, gradeKeyId);
+        if (CheckNull.isNull(costFragment)) {
+            LogUtil.error(String.format("heroId:%d, gradeKeyId:%d, found no fragment", id, gradeKeyId));
+            return;
+        }
+
+        costFragment = Math.abs(costFragment);
+        costFragment = operation ? costFragment + HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS :
+                -costFragment - HeroConstant.DRAW_DUPLICATE_HERO_TO_TRANSFORM_FRAGMENTS;
+        player.getDrawCardData().getFragmentData().merge(id, costFragment, Integer::sum);
+        if (sync) {
+            ChangeInfo changeInfo = ChangeInfo.newIns();
+            changeInfo.addChangeType(AwardType.HERO_FRAGMENT, id);
+            syncRoleResChanged(player, changeInfo);
+        }
+
+        // 武将碎片变更
+        LogLordHelper.heroFragment(
+                from,
+                player.account,
+                player.lord,
+                id,
+                costFragment > 0 ? Constant.ACTION_ADD : Constant.ACTION_SUB,
+                costFragment,
+                player.getDrawCardData().getFragmentData().get(id)
+        );
     }
 
     /**
@@ -629,6 +690,9 @@ public class RewardDataManager {
                 break;
             case AwardType.HERO:
                 addHero(player, id, from, param);
+                break;
+            case AwardType.HERO_DESIGNATED_GRADE:
+                addHeroDesignatedGrade(player, id, count, from, param);
                 break;
             case AwardType.PROP:
                 addProp(player, id, (int) count, from, param);
@@ -821,9 +885,23 @@ public class RewardDataManager {
 
         treasureWare.setStatus(TreasureWareConst.TREASURE_IN_USING);
 
+        int quality = treasureWare.getQuality();
+        // 获取宝具名id
+        int profileId = StaticTreasureWareDataMgr.getProfileId(treasureWareService.getAttrType(treasureWare), quality, treasureWare.getSpecialId());
         // 记录玩家获得新宝具
-        LogLordHelper.treasureWare(from, player.account, player.lord, treasureWareId, keyId, Constant.ACTION_ADD,
-                treasureWare.getQuality(), treasureWare.logAttrs(), CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
+        LogLordHelper.treasureWare(
+                from,
+                player.account,
+                player.lord,
+                treasureWareId,
+                keyId,
+                Constant.ACTION_ADD,
+                profileId,
+                quality,
+                treasureWare.logAttrs(),
+                CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(),
+                param
+        );
     }
 
     /**
@@ -2351,6 +2429,32 @@ public class RewardDataManager {
     }
 
     /**
+     * 发送武将奖励
+     *
+     * @param player
+     * @param type
+     * @param id
+     * @param count
+     * @param from
+     * @param param
+     * @return
+     */
+    public Hero sendHeroAward(Player player, int type, int id, int count, AwardFrom from,
+                              Object... param) {
+        Hero hero = null;
+        switch (type) {
+            case AwardType.HERO:
+                hero = addHero(player, id, from, param);
+                break;
+            case AwardType.HERO_DESIGNATED_GRADE:
+                hero = addHeroDesignatedGrade(player, id, count, from, param);
+                break;
+        }
+
+        return hero;
+    }
+
+    /**
      * 给玩家奖励将领
      *
      * @param player
@@ -2384,8 +2488,124 @@ public class RewardDataManager {
             hero.setHeroId(heroId);
             hero.setHeroType(staticHero.getHeroType());
             hero.setQuality(staticHero.getQuality());
+            // 设置武将初始等级（武将初始等级自适应配置的最大值与玩家等级的取小
+            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId);
+
+            if (CheckNull.nonEmpty(appoint)) {
+                int minLv = appoint.get(0); // 武将初始等级下限
+                int maxLv = appoint.get(1); // 武将初始等级上限
+                int lordLevel = player.lord.getLevel(); // 玩家当前等级
+                int targetLevel = Math.min(Math.max(minLv, maxLv), lordLevel);// 目标要升至的等级
+                hero.setLevel(targetLevel);
+            }
+
             // 初始化将领品阶数据
             hero.initHeroGrade();
+            //如果是赛季英雄则初始化英雄技能
+            if (staticHero.getSeason() > 0) {
+                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+                if (Objects.nonNull(skillMap)) {
+                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+                        int skillId = entry.getKey();
+                        int initLv = entry.getValue().firstKey();
+                        hero.getSkillLevels().put(skillId, initLv);
+                    }
+                }
+                hero.setCgyStage(1);
+                hero.setCgyLv(0);
+
+                //获得英雄发聊天公告
+                chatDataManager.sendSysChat(ChatConst.SEASON_GET_HERO, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), hero.getHeroId());
+            }
+            CalculateUtil.processAttr(player, hero);
+            player.heros.put(heroId, hero);
+            // 获取没有的武将, 处理救援奖励邮件
+            drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
+
+            // 记录玩家获得新将领
+            LogLordHelper.hero(from, player.account, player.lord, heroId, Constant.ACTION_ADD, param);
+
+            //貂蝉任务-拥有英雄X个X品质
+            ActivityDiaoChanService.completeTask(player, ETask.OWN_HERO);
+            TaskService.processTask(player, ETask.OWN_HERO);
+            //任务 - 获得指定英雄
+            TaskService.handleTask(player, ETask.GET_HERO);
+            ActivityDiaoChanService.completeTask(player, ETask.GET_HERO);
+            TaskService.processTask(player, ETask.GET_HERO);
+
+            activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO);
+            activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_HERO_QUALITY_UPGRADE_CNT);
+            taskDataManager.updTask(player, TaskType.COND_26, 1, hero.getHeroId());
+            taskDataManager.updTask(player, TaskType.COND_27, 1, hero.getType());
+            taskDataManager.updTask(player, TaskType.COND_514, 1, hero.getLevel());
+            if (!ActParamConstant.ACT_TRIGGER_HERO_IGNORE.contains(staticHero.getHeroId())) {
+                // 触发第一次增加紫橙将领
+                activityTriggerService.awardHeroTriggerGift(player, hero.getQuality());
+            }
+            //触发获得某英雄后相关礼包
+            activityTriggerService.getAnyHero(player, staticHero.getHeroType());
+            return hero;
+        } catch (Exception e) {
+            LogUtil.error(String.format("add hero error, player:%d, heroId:%d, e:%s", player.roleId, heroId, e));
+            return hero;
+        }
+    }
+
+    /**
+     * 添加指定品阶武将
+     *
+     * @param player
+     * @param heroId
+     * @param from
+     * @param param
+     * @return
+     */
+    public Hero addHeroDesignatedGrade(Player player, int heroId, int gradeKeyId, AwardFrom from, Object... param) {
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+        if (null == staticHero) {
+            LogUtil.error("将领id未配置，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+            return null;
+        }
+
+        // 校验玩家是否还可以获得此英雄或英雄碎片
+        Hero hero = player.heros.get(heroId);
+        if (!drawCardService.checkHero(player, hero, from)) {
+            return null;
+        }
+
+        try {
+            if (null != hero) {
+                // 获取没有的武将, 处理救援奖励邮件
+                drawCardService.handleRepeatedHeroAndRescueAward(player, hero, from);
+                // 重复英雄转化为碎片
+                operationDesignatedHeroGradeFragment(player, heroId, gradeKeyId, AwardFrom.SAME_TYPE_HERO, true, true, param);
+                LogUtil.error("玩家已有该高级品阶将领类型，跳过奖励, roleId:", player.roleId, ", heroId:", heroId, ", from:", from.getCode());
+                return drawCardService.containAwardFrom(from) ? hero : null;
+            }
+
+            StaticHeroUpgrade staticData = StaticHeroDataMgr.getStaticHeroUpgrade(gradeKeyId);
+            if (CheckNull.isNull(staticData)) {
+                LogUtil.error("heroId:%d, 不存在此品阶, gradeKeyId:%d", heroId, gradeKeyId);
+                return null;
+            }
+
+            hero = new Hero();
+            hero.setHeroId(heroId);
+            hero.setHeroType(staticHero.getHeroType());
+            hero.setQuality(staticHero.getQuality());
+            // 设置武将初始等级（武将初始等级自适应配置的最大值与玩家等级的取小
+            List<Integer> appoint = StaticHeroDataMgr.getInitHeroAppoint(heroId);
+
+            if (CheckNull.nonEmpty(appoint)) {
+                int minLv = appoint.get(0); // 武将初始等级下限
+                int maxLv = appoint.get(1); // 武将初始等级上限
+                int lordLevel = player.lord.getLevel(); // 玩家当前等级
+                int targetLevel = Math.min(Math.max(minLv, maxLv), lordLevel);// 目标要升至的等级
+                hero.setLevel(targetLevel);
+            }
+
+            // 初始化将领品阶数据
+            hero.setGradeKeyId(gradeKeyId);
             //如果是赛季英雄则初始化英雄技能
             if (staticHero.getSeason() > 0) {
                 Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
@@ -2467,16 +2687,36 @@ public class RewardDataManager {
             return;
         }
 
+
         if (treasureWare.getQuality() >= TreasureWareConst.PURPLE_QUALITY) {
             treasureWare.setStatus(TreasureWareConst.TREASURE_HAS_DECOMPOSED);
             treasureWare.setDecomposeTime(TimeHelper.getCurrentSecond());
         } else {
             player.treasureWares.remove(keyId);
-            // 记录玩家减少的宝具
-            LogLordHelper.treasureWare(from, player.account, player.lord, treasureWare.getEquipId(), treasureWare.getKeyId(),
-                    Constant.ACTION_SUB, treasureWare.getQuality(), treasureWare.logAttrs(),
-                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(), param);
         }
+
+        // 添加到后台执行日志打印
+        DataResource.logicServer.addCommandByType(() -> {
+            // 获取宝具名id
+            int profileId = StaticTreasureWareDataMgr.getProfileId(treasureWareService.getAttrType(treasureWare), treasureWare.getQuality(), treasureWare.getSpecialId());
+            // 记录玩家减少的宝具
+            LogLordHelper.treasureWare(
+                    from,
+                    player.account,
+                    player.lord,
+                    treasureWare.getEquipId(),
+                    treasureWare.getKeyId(),
+                    Constant.ACTION_SUB,
+                    profileId,
+                    treasureWare.getQuality(),
+                    treasureWare.logAttrs(),
+                    CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId(),
+                    param
+            );
+
+            // 宝具事件上报
+            EventDataUp.treasureCultivate(player, treasureWare, AwardFrom.TREASURE_WARE_TRAIN, treasureWareService.getAttrType(treasureWare));
+        }, DealType.BACKGROUND);
     }
 
     private void modifyResource(Player player, int type, int id, long count, float factor, AwardFrom from) {

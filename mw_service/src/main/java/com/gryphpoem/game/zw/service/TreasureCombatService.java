@@ -281,8 +281,8 @@ public class TreasureCombatService implements GmCmdService {
             throw new MwException(GameError.PARAM_ERROR, "宝具副本挑战关卡 - 上阵英雄错误; roleId = " + player.getLordId() + "heroIdList = " + heroIds);
         }
 
-        TreasureChallengePlayer treasureChallengePlayer = treasureChallengePlayerService.getAndRefreshChallengePlayerData(player);
-        treasureChallengePlayer.setBattleHeroList(heroList);
+//        TreasureChallengePlayer treasureChallengePlayer = treasureChallengePlayerService.getAndRefreshChallengePlayerData(player);
+//        treasureChallengePlayer.setBattleHeroList(heroList);
     }
 
     /**
@@ -509,6 +509,9 @@ public class TreasureCombatService implements GmCmdService {
                         }
                     });
                 }
+                break;
+            case "restOnHook":
+                player.getTreasureCombat().getOnHook().setStartTime(TimeHelper.getCurrentSecond());
                 break;
         }
     }

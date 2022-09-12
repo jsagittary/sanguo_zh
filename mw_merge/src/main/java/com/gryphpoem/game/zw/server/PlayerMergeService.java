@@ -61,6 +61,8 @@ public class PlayerMergeService {
     @Autowired
     private CommonDao commonDao;
     @Autowired
+    private PlayerHeroDao playerHeroDao;
+    @Autowired
     private PayDao payDao;
     @Autowired
     private ResourceDao resourceDao;
@@ -129,6 +131,7 @@ public class PlayerMergeService {
             resourceDao.save(role.getResource());
             mailDao.save(role.getMailData());
             commonDao.save(role.getCommon());
+            playerHeroDao.save(role.getDbPlayerHero());
             dataDao.save(role.getData());
             // pay数据保存
             if (player instanceof MergePlayer) {
@@ -454,6 +457,7 @@ public class PlayerMergeService {
         tasks.add(() -> loadResource(tmpPlayerMap, serverId));
         tasks.add(() -> loadCommon(tmpPlayerMap, serverId));
         tasks.add(() -> loadPay(tmpPlayerMap, serverId));
+        tasks.add(() -> loadPlayerHero(tmpPlayerMap, serverId));
         execService.invokeAll(tasks);
         execService.shutdown();
         LogUtil.common("异步的方式加载数据完成------ serverId", serverId);
@@ -520,6 +524,20 @@ public class PlayerMergeService {
             Player player = tmpPlayerMap.get(common.getLordId());
             if (player != null) {
                 player.common = common;
+            }
+        }
+        return true;
+    }
+
+    private boolean loadPlayerHero(Map<Long, Player> tmpPlayerMap, int serverId) {
+        DynamicDataSource.DataSourceContextHolder.setDBType(MergeConstant.getSrcDatasourceKey(serverId));
+        List<DbPlayerHero> list = playerHeroDao.load();
+        for (DbPlayerHero dbPlayerHero : list) {
+            Player player = tmpPlayerMap.get(dbPlayerHero.getLordId());
+            try {
+                player.playerHero = new PlayerHero(dbPlayerHero);
+            } catch (Exception e) {
+                LogUtil.error(e, "roleId:", dbPlayerHero.getLordId());
             }
         }
         return true;

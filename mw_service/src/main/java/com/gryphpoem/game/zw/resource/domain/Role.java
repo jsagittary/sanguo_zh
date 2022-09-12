@@ -1,12 +1,9 @@
 package com.gryphpoem.game.zw.resource.domain;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.resource.domain.p.Building;
-import com.gryphpoem.game.zw.resource.domain.p.Common;
-import com.gryphpoem.game.zw.resource.domain.p.DataNew;
-import com.gryphpoem.game.zw.resource.domain.p.Lord;
-import com.gryphpoem.game.zw.resource.domain.p.MailData;
-import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.p.*;
+
+import java.util.Objects;
 
 public class Role {
     public static final int SAVE_MODE_DEFAULT = 0;
@@ -19,6 +16,7 @@ public class Role {
     private Common common;
     private MailData mailData;
     private int saveMode = SAVE_MODE_DEFAULT; // 保存的的模式, 0默认模式, 1.不会保存战报信息
+    private DbPlayerHero dbPlayerHero;
 
     public Role(Player player, int saveMode) {
         roleId = player.roleId;
@@ -31,12 +29,17 @@ public class Role {
         if (player.common != null) {
             common = (Common) player.common.clone();
         } else {
-            LogUtil.error("Role保存前数据common=" + player.common + ",roleId=" + roleId);
+            LogUtil.error("Role保存前数据common = null" + ", roleId=" + roleId);
         }
         data = player.serNewData();
         mailData = player.serMailData();
         lord = (Lord) player.lord.clone();
         this.saveMode = saveMode;
+        if (Objects.nonNull(player.playerHero)) {
+            this.dbPlayerHero = player.playerHero.createPb(true);
+        } else {
+            LogUtil.error("Role保存前数据 playerHero = null" + ", roleId=" + roleId);
+        }
     }
 
     public Role(Player player) {
@@ -103,4 +106,11 @@ public class Role {
         return saveMode;
     }
 
+    public DbPlayerHero getDbPlayerHero() {
+        return dbPlayerHero;
+    }
+
+    public void setDbPlayerHero(DbPlayerHero dbPlayerHero) {
+        this.dbPlayerHero = dbPlayerHero;
+    }
 }
