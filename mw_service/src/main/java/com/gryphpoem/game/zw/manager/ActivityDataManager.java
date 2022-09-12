@@ -21,7 +21,6 @@ import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.FriendService;
@@ -1447,8 +1446,7 @@ public class ActivityDataManager {
             case ActivityConst.ACT_TASK_CUMULATIVE_RESIDENT_DRAW_CARD:
                 DrawCardData drawCardData = player.getDrawCardData();
                 if (Objects.nonNull(drawCardData)) {
-                    lvMax += drawCardData.getTotalDrawCount() + player.getFunctionPlanData().
-                            getExtData(PlanFunction.DRAW_CARD.getFunctionId());
+                    lvMax += drawCardData.getTotalDrawCount() + player.getFunctionPlanData().getTotalDrawCount();
                 }
                 break;
             default:

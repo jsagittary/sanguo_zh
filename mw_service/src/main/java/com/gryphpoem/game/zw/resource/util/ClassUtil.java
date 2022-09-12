@@ -9,11 +9,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -353,4 +349,19 @@ public class ClassUtil {
         return clazz;
     }
 
+    /**
+     * 获取所有父类
+     *
+     * @param clazz
+     * @return
+     */
+    public static List<Class<?>> getSuperClass(Class<?> clazz) {
+        List<Class<?>> classes = new ArrayList<>();
+        Class<?> suCl = clazz.getSuperclass();
+        while (suCl != null) {
+            classes.add(suCl);
+            suCl = suCl.getSuperclass();
+        }
+        return classes;
+    }
 }

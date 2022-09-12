@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Description:
@@ -38,9 +35,14 @@ public class FunctionPlanDataManager {
             FunctionPlan functionPlan = clazz.getAnnotation(FunctionPlan.class);
             if (CheckNull.isNull(functionPlan))
                 continue;
-            if (!FunctionPlanData.class.equals(clazz.getSuperclass()) || ObjectUtils.isEmpty(functionPlan.functions())) {
+
+            List<Class<?>> superClasses = ClassUtil.getSuperClass(clazz);
+            if (CheckNull.isEmpty(superClasses)) continue;
+            if (ObjectUtils.isEmpty(functionPlan.functions())) {
                 continue;
             }
+            if (!superClasses.contains(FunctionPlanData.class))
+                continue;
             for (PlanFunction enumT : functionPlan.functions()) {
                 functionClassMap.put(enumT, clazz);
             }

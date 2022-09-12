@@ -4,7 +4,6 @@ import com.gryphpoem.game.zw.pb.ActivityPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.FunctionPlan;
-import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
  * createTime: 2022-06-15 13:48
  */
 @FunctionPlan(functions = PlanFunction.DRAW_CARD)
-public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<ActivityPb.TimeLimitedDrawCardActData> {
+public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<ActivityPb.TimeLimitedDrawCardActData> {
     /** 进度下标*/
     private static final int PROGRESS_INDEX = -1000;
     /** 领取状态下标*/
@@ -41,6 +40,11 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
 
     public DrawCardTimeLimitedFunctionPlanData(Integer keyId) {
         super(keyId);
+    }
+
+    @Override
+    public int getTotalDrawCount() {
+        return this.saveMap.getOrDefault(TOTAL_HERO_DRAW_COUNT_INDEX, 0);
     }
 
     public Map<Integer, Integer> getSaveMap() {
@@ -113,7 +117,6 @@ public class DrawCardTimeLimitedFunctionPlanData extends FunctionPlanData<Activi
 
     public void addTotalDrawHeroCount(PlayerFunctionPlanData data) {
         this.saveMap.merge(TOTAL_HERO_DRAW_COUNT_INDEX, 1, Integer::sum);
-        data.getExtDataMap().merge(PlanFunction.DRAW_CARD.getFunctionId(), 1, Integer::sum);
     }
 
     public String toDebugStr() {
