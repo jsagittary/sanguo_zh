@@ -1,11 +1,11 @@
 package com.gryphpoem.game.zw.core.executor;
 
-import java.util.concurrent.*;
-
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
 import com.gryphpoem.game.zw.core.handler.Handler;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+
+import java.util.concurrent.*;
 
 public class NonOrderedQueuePoolExecutor extends ThreadPoolExecutor {
 	public NonOrderedQueuePoolExecutor(int corePoolSize) {
@@ -30,6 +30,12 @@ public class NonOrderedQueuePoolExecutor extends ThreadPoolExecutor {
 		}
 
 		public void run() {
+			Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+				@Override
+				public void uncaughtException(Thread t, Throwable e) {
+					LogUtil.error(String.format("thread:%s, e:%s", t.getName(), e));
+				}
+			});
 			long start = System.currentTimeMillis();
 			try {
 				command.action();

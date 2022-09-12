@@ -30,7 +30,7 @@ public class Mail {
 	private List<String> tParam;
 	private List<String> cParam;
 	private List<Award> rewardList;
-//	private Report report;
+	private CommonPb.Report report;
 	private List<Award> dropList;
 	private MailCollect collect;
 	private MailScout scout;
@@ -300,5 +300,13 @@ public class Mail {
 
 	public void setOriginator(long originator) {
 		this.originator = originator;
+	}
+
+	public CommonPb.Report getReport() {
+		return report;
+	}
+
+	public void setReport(CommonPb.Report report) {
+		this.report = report;
 	}
 }

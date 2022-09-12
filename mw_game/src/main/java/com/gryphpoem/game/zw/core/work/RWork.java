@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.core.work;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
+import com.gryphpoem.game.zw.core.handler.AsyncGameHandler;
 import com.gryphpoem.game.zw.core.intercept.InterceptAspect;
 import com.gryphpoem.game.zw.core.message.MessagePool;
 import com.gryphpoem.game.zw.core.net.ConnectServer;
@@ -50,7 +51,8 @@ public class RWork extends AbstractWork {
 
             if (cmd == BeginGameRq.EXT_FIELD_NUMBER || cmd == GetNamesRq.EXT_FIELD_NUMBER) {
                 connectServer.actionExcutor.execute(handler);
-            } else if (handler instanceof DirectForwardClientHandler) { // 直接转发的handler
+            } else if (handler instanceof DirectForwardClientHandler || handler instanceof AsyncGameHandler) {
+                // 直接转发的handler 或 执行
                 connectServer.actionExcutor.execute(handler);
             } else {
                 // 所有玩家逻辑进入主线程执行队列
