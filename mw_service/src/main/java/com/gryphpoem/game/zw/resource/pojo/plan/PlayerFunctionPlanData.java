@@ -92,14 +92,14 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
      * @return
      */
     public int getTotalDrawCount() {
-        if (CheckNull.isEmpty(this.functionPlanDataMap)) return 0;
-
         int total = 0;
-        for (FunctionPlanData data : this.functionPlanDataMap.values()) {
-            if (CheckNull.isNull(data)) {
-                continue;
+        if (CheckNull.nonEmpty(this.functionPlanDataMap)) {
+            for (FunctionPlanData data : this.functionPlanDataMap.values()) {
+                if (CheckNull.isNull(data)) {
+                    continue;
+                }
+                if (data instanceof DrawCardFunctionData == true) total += ((DrawCardFunctionData) data).getTotalDrawCount();
             }
-            if (data instanceof DrawCardFunctionData == true) total += ((DrawCardFunctionData) data).getTotalDrawCount();
         }
 
         Map<Integer, Integer> dataMap = extDataMap.get(PlanFunction.DRAW_CARD);
