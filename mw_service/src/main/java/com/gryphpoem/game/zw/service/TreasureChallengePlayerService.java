@@ -63,7 +63,9 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.setRemainingForPlayer(challengePlayer.getRemainingForPlayer());
         builder.setRemainingRefreshTime(challengePlayer.getRemainingRefreshTime());
         builder.setNeedRefreshChallengePlayer(challengePlayer.isNeedRefreshChallengePlayer());
-        builder.addAllBattleHero(challengePlayer.getBattleHeroList());
+        List<Integer> battlePos = player.heroBattlePos.get(HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE);
+        if (Objects.nonNull(battlePos))
+            builder.addAllBattleHero(battlePos);
         return builder.build();
     }
 
@@ -258,7 +260,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
             throw new MwException(GameError.TREASURE_CHALLENGE_NUM_FOR_PLAYER_NOT_ENOUGH, "宝具副本挑战玩家 - 对同一玩家挑战次数达到上限; roleId = " + player.getLordId());
         }
         // 更新上阵阵容至最新
-        challengePlayer.setBattleHeroList(heroList);
+//        challengePlayer.setBattleHeroList(heroList);
     }
 
     /**

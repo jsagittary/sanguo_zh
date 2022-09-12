@@ -7,13 +7,11 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSearch;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
-import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
+import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * Description:
@@ -86,5 +84,6 @@ public abstract class AbsDrawCardPlanService extends AbsFunctionPlanService{
      * @return
      * @throws MwException
      */
-    public abstract StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData drawCardData, StaticDrawHeoPlan planData, Date now, StaticDrawCardWeight config) throws MwException;
+    public abstract StaticHeroSearch randomPriorityReward(long roleId, FunctionPlanData drawCardData, StaticDrawHeoPlan planData,
+                                                          Date now, StaticDrawCardWeight config, PlayerFunctionPlanData functionPlanData) throws MwException;
 }

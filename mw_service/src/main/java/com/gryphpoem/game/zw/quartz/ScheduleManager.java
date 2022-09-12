@@ -117,6 +117,9 @@ public class ScheduleManager {
         // 世界争霸 每周结束领取奖励
         addJob(sched, "WorldWarWeekJob", "WorldWarWeekJob", WorldWarWeekJob.class, "45 59 23 ? * 4");
 
+        // 过期宝具定时清除
+        addJob(sched, "DelTreasureWareJob", "DelTreasureWareJob", DelTreasureWareJob.class, "5 0 * * * ? *");// 整点处理, 有五秒的偏移, [21:00:5, 22:00:5, 23:00:5, 00:00:5]
+
         initBerlinJob();
         initLightningWarJob();
         // addJob(sched, jobName, jobGroupName, jobClass, startAt);

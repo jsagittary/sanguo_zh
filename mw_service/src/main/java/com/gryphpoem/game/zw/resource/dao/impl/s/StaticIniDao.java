@@ -180,4 +180,12 @@ public class StaticIniDao extends BaseDao {
     public List<StaticActTreasureWareJourney> selectStaticActTreasureWareJourney() {
         return getMapper(StaticIniMapper.class).selectStaticActTreasureWareJourney();
     }
+
+    public List<StaticHeroBiographyAttr> selectStaticHeroBiographyAttrList() {
+        return getMapper(StaticIniMapper.class).selectStaticHeroBiographyAttrList();
+    }
+
+    public Map<Integer, StaticHeroBiographyShow> selectStaticHeroBiographyShowList() {
+        return getMapper(StaticIniMapper.class).selectStaticHeroBiographyShowMap();
+    }
 }

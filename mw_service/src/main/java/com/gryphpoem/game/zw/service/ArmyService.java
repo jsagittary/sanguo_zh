@@ -21,7 +21,6 @@ import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,8 +170,17 @@ public class ArmyService {
                 // rewardDataManager.subArmyResource(player, armType, add, AwardFrom.REPLENISH, "补兵");
                 // 增加武将兵力
                 hero.setCount(hero.getCount() + add);
-                LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
-                        Constant.ACTION_ADD);
+                // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
+                //         Constant.ACTION_ADD);
+
+                // 上报玩家兵力变化
+//                LogLordHelper.playerArm(
+//                        AwardFrom.REPLENISH,
+//                        player,
+//                        armType,
+//                        Constant.ACTION_ADD,
+//                        add
+//                );
             }
 
             builder.addHero(PbHelper.createTwoIntPb(heroId, hero.getCount()));
@@ -230,8 +238,16 @@ public class ArmyService {
         rewardDataManager.subArmyResource(player, armType, add, AwardFrom.REPLENISH);
         // 增加武将兵力
         hero.setCount(hero.getCount() + add);
-        LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, hero.getHeroId(), hero.getCount(), add, armType,
-                Constant.ACTION_ADD);
+        // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, hero.getHeroId(), hero.getCount(), add, armType,
+        //         Constant.ACTION_ADD);
+
+        // 上报玩家兵力变化
+//        LogLordHelper.playerArm(
+//                AwardFrom.REPLENISH,
+//                player, armType,
+//                Constant.ACTION_ADD,
+//                add
+//        );
     }
 
     /**

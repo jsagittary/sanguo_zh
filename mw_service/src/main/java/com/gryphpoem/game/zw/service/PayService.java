@@ -1181,7 +1181,7 @@ public class PayService {
             }
             // 发邮件
             mailDataManager.sendNormalMail(player, maillMoldId, TimeHelper.getCurrentSecond(),
-                    String.valueOf(topUp + extraGold), String.valueOf(topUp + extraGold));
+                    String.valueOf(topUp + extraGold), String.valueOf(topUp + extraGold), extraGold);
 
             // 充值成功的同步数据
             syncPaybackSuc(player, pay.getSerialId(), pay.getAmount(), sPay.getBanFlag(), topUp + extraGold,

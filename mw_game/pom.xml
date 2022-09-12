@@ -26,7 +26,7 @@
 			<artifactId>hotfix</artifactId>
 			<version>1.0.0</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/src/main/resources/lib/hotfix.jar</systemPath>
+			<systemPath>${basedir}/src/main/resources/lib/game-agent.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>mx4j</groupId>

@@ -142,6 +142,11 @@ public class Player {
     private Cia cia;
 
     /**
+     * 武将相关
+     */
+    public PlayerHero playerHero;
+
+    /**
      * 教官相关
      */
     private MentorInfo mentorInfo = new MentorInfo();
@@ -1443,7 +1448,7 @@ public class Player {
      * @return
      */
     public boolean isOnAcqHero(int heroId) {
-        for (int pos = 0; pos < heroBattle.length; pos++) {
+        for (int pos = 0; pos < heroAcq.length; pos++) {
             if (heroAcq[pos] == heroId) {
                 return true;
             }

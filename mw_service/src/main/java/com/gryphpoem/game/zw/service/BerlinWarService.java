@@ -1512,8 +1512,16 @@ public class BerlinWarService {
 
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
             if (Objects.nonNull(staticHero)) {
-                LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
-                        Constant.ACTION_SUB);
+                int armType = staticHero.getType();// 获取将领对应类型的兵力
+
+                // 上报玩家兵力变化
+                LogLordHelper.playerArm(
+                        from,
+                        player,
+                        armType,
+                        Constant.ACTION_SUB,
+                        -lost
+                );
             }
         }
         if (force.killed > 0) {

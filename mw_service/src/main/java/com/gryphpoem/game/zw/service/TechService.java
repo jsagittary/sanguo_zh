@@ -233,9 +233,9 @@ public class TechService {
 //            if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
 //                throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
 //            }
-            if (!techDataManager.isAdvanceTechGain(player)) {
-                throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
-            }
+//            if (!techDataManager.isAdvanceTechGain(player)) {
+//                throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
+//            }
         }
 
         Tech tech = player.tech;

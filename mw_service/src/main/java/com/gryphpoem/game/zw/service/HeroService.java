@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.cross.activity.CrossRechargeActivityService;
 import com.gryphpoem.cross.constants.PlayerUploadTypeDefine;
 import com.gryphpoem.cross.player.RpcPlayerService;
-import com.gryphpoem.cross.player.dto.PlayerLordDto;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -13,30 +12,21 @@ import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.CommonPb.SearchHero;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.resource.constant.*;
-import com.gryphpoem.game.zw.resource.constant.task.TaskCone517Type;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Common;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
-import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
-import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.*;
-import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
-import com.gryphpoem.game.zw.resource.util.random.HeroSearchRandom;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
@@ -48,7 +38,6 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author TanDonghai
@@ -334,10 +323,20 @@ public class HeroService implements GmCmdService {
             int sub = battleHero.getCount();
             battleHero.setCount(0);
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
-            if (Objects.nonNull(staticHero)) {
-                LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, hero.getCount(), -sub, staticHero.getType(),
-                        Constant.ACTION_ADD);
-            }
+//            if (Objects.nonNull(staticHero)) {
+//                int armType = staticHero.getType();// 获取将领对应类型的兵力
+                // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, hero.getCount(), -sub, staticHero.getType(),
+                //         Constant.ACTION_ADD);
+
+                // 上报玩家兵力变化
+//                LogLordHelper.playerArm(
+//                        AwardFrom.HERO_DOWN,
+//                        player, armType,
+//                        Constant.ACTION_ADD,
+//                        -sub,
+//                        playerDataManager.getArmCount(player.resource, armType)
+//                );
+//            }
 
             rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
 
@@ -426,7 +425,7 @@ public class HeroService implements GmCmdService {
         Player player = playerDataManager.getPlayer(roleId);
         Set<Integer> check = new HashSet<>();
         int posType = req.getPosType();
-        if (posType < HeroConstant.CHANGE_POS_TYPE || posType > HeroConstant.CHANGE_BATTLE_POS_TYPE) {
+        if (posType < HeroConstant.CHANGE_POS_TYPE || posType > HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId :", roleId);
         }
         for (TwoInt kv : req.getHerosList()) {
@@ -458,8 +457,12 @@ public class HeroService implements GmCmdService {
             }
         }
 
-        if (posType == HeroConstant.CHANGE_POS_TYPE || posType == HeroConstant.CHANGE_DEFEND_POS_TYPE) {
-            int[] heroArray = posType == HeroConstant.CHANGE_POS_TYPE ? player.heroBattle : player.heroDef;
+        if (posType == HeroConstant.CHANGE_POS_TYPE ||
+                posType == HeroConstant.CHANGE_DEFEND_POS_TYPE ||
+                posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
+            int[] heroArray = posType == HeroConstant.CHANGE_POS_TYPE ||
+                    posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE ?
+                    player.heroBattle : player.heroDef;
             Set<Integer> set = Arrays.stream(heroArray).filter(heroId -> heroId > 0).boxed().collect(Collectors.toSet());
             if (req.getHerosCount() != set.size()) {
                 throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId :%d, hero arrays :%s", roleId, Arrays.toString(heroArray)));
@@ -475,7 +478,9 @@ public class HeroService implements GmCmdService {
 
         GamePb1.HeroPosSetRs.Builder builder = GamePb1.HeroPosSetRs.newBuilder();
         List<Integer> posList = player.heroBattlePos.get(posType);
-        if (posType == HeroConstant.CHANGE_COMBAT_POS_TYPE || posType == HeroConstant.CHANGE_BATTLE_POS_TYPE) {
+        if (posType == HeroConstant.CHANGE_COMBAT_POS_TYPE ||
+                posType == HeroConstant.CHANGE_BATTLE_POS_TYPE ||
+                posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
             if (posList == null) {
                 posList = new ArrayList<>();
                 player.heroBattlePos.put(posType, posList);
@@ -837,7 +842,7 @@ public class HeroService implements GmCmdService {
      * @param maxLv   最高等级
      * @return 返回实际增加经验
      */
-    private int addHeroExp(int quality, Hero hero, int addExp, int maxLv) {
+    public int addHeroExp(int quality, Hero hero, int addExp, int maxLv) {
         int add = 0;
         while (addExp > 0 && hero.getLevel() < maxLv) {
             int need = StaticHeroDataMgr.getExperByQuality(quality, hero.getLevel() + 1);
@@ -865,7 +870,7 @@ public class HeroService implements GmCmdService {
     /**
      * 将领升到指定等级所需经验
      */
-    private int heroUpLvNeedExp(int quality, Hero hero, int curLv, int maxLv) {
+    public int heroUpLvNeedExp(int quality, Hero hero, int curLv, int maxLv) {
         int add = 0;
         while (curLv < maxLv) {
             curLv += 1;

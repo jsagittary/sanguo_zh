@@ -163,17 +163,32 @@ public class CrossWarFireBattleCallbackServiceImpl extends CrossErrorCallback im
                             //记录玩家兵力变化信息
                             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
                             if (Objects.nonNull(staticHero)) {
-                                LogLordHelper.filterHeroArm(AwardFrom.CROSS_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), -heroFightSummary.getLost(),
-                                        Constant.ACTION_SUB, staticHero.getType(), hero.getQuality());
+                                // 上报玩家兵力变化信息
+                                LogLordHelper.playerArm(
+                                        AwardFrom.CROSS_BATTLE,
+                                        player,
+                                        staticHero.getType(),
+                                        Constant.ACTION_SUB,
+                                        -heroFightSummary.getLost()
+                                );
                             }
+
                             DataResource.getBean(WarService.class).addCrossBattleHeroExp(heroFightSummary, player, AwardFrom.CROSS_BATTLE_AWARD);
                             int heroArmyCapacity = hero.getAttr()[HeroConstant.ATTR_LEAD];
                             int addArm = heroFightSummary.getRecover() + hero.getCount() >= heroArmyCapacity
                                     ? heroArmyCapacity - hero.getCount() : heroFightSummary.getRecover();
                             hero.addArm(addArm);//返还兵力
-                            //记录玩家兵力变化信息
-                            LogLordHelper.filterHeroArm(AwardFrom.CROSS_BATTLE, player.account, player.lord, hero.getHeroId(), hero.getCount(), addArm,
-                                    Constant.ACTION_ADD, staticHero.getType(), hero.getQuality());
+                            if (Objects.nonNull(staticHero)) {
+                                // 上报玩家兵力变化信息
+                                LogLordHelper.playerArm(
+                                        AwardFrom.CROSS_BATTLE,
+                                        player,
+                                        staticHero.getType(),
+                                        Constant.ACTION_ADD,
+                                        addArm
+                                );
+                            }
+
                             break;
                         case Constant.Role.WALL:
                             int pos = heroFightSummary.getPos();

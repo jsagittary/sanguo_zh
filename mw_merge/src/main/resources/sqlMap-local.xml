@@ -91,4 +91,6 @@
 		parent="pBaseDao" />
 	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CrossMapDao"
 		parent="pBaseDao" />
+	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PlayerHeroDao"
+		  parent="pBaseDao" />
 </beans>

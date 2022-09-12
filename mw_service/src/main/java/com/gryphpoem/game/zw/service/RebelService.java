@@ -4,13 +4,13 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -32,12 +32,12 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRebelBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRebelRound;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRebelShop;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.GlobalRebellion;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -888,8 +888,17 @@ public class RebelService extends BaseAwkwardDataManager {
                             LogUtil.debug("匪军叛乱回复兵力 roleId:", defPlayer.roleId, ", heroId:", hero.getHeroId(),
                                     ", recArm:", addArm);
                             //记录玩家兵力变化信息
-                            LogLordHelper.filterHeroArm(AwardFrom.REBEL_BUFF_ACTION, defPlayer.account, defPlayer.lord, hero.getHeroId(), hero.getCount(), addArm,
-                                    Constant.ACTION_ADD, armyType, hero.getQuality());
+                            // LogLordHelper.filterHeroArm(AwardFrom.REBEL_BUFF_ACTION, defPlayer.account, defPlayer.lord, hero.getHeroId(), hero.getCount(), addArm,
+                            //         Constant.ACTION_ADD, armyType, hero.getQuality());
+
+                            // 上报玩家兵力变化
+                            LogLordHelper.playerArm(
+                                    AwardFrom.REBEL_BUFF_ACTION,
+                                    defPlayer,
+                                    armyType,
+                                    Constant.ACTION_ADD,
+                                    addArm
+                            );
                         }
                     }
                 }

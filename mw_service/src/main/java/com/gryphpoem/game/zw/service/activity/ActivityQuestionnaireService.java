@@ -8,7 +8,10 @@ import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.pb.*;
+import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
@@ -18,13 +21,13 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticActQuestionnaire;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.service.EventRegisterService;
 import com.gryphpoem.game.zw.service.PlayerService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * createTime: 2022-05-25 18:01
  */
 @Component
-public class ActivityQuestionnaireService extends AbsSimpleActivityService {
+public class ActivityQuestionnaireService extends AbsSimpleActivityService implements EventRegisterService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -77,11 +80,6 @@ public class ActivityQuestionnaireService extends AbsSimpleActivityService {
             getActivityData(activityBase.getPlanKeyId()).remove(player.lord.getLordId());
         }
         return builder;
-    }
-
-    @PostConstruct
-    public void init() {
-        EventBus.getDefault().register(this);
     }
 
     /**

@@ -2471,9 +2471,21 @@ public class WarService {
                     }
                     lost = hero.subArm(force.totalLost);
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                    if (Objects.nonNull(staticHero))
-                        LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
-                                Constant.ACTION_SUB);
+                    if (Objects.nonNull(staticHero)) {
+                        // 获取武将对应类型的兵力
+                        int armType = staticHero.getType();
+                        // LogLordHelper.heroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -lost, staticHero.getType(),
+                        //         Constant.ACTION_SUB);
+
+                        // 上报玩家兵力变化
+                        LogLordHelper.playerArm(
+                                from,
+                                player,
+                                armType,
+                                Constant.ACTION_SUB,
+                                -lost
+                        );
+                    }
 
                     info = changeMap.get(force.ownerId);
                     if (null == info) {

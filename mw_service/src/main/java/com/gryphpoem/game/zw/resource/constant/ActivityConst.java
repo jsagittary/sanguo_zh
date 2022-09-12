@@ -1,8 +1,6 @@
 package com.gryphpoem.game.zw.resource.constant;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ActivityConst {
 
@@ -382,6 +380,8 @@ public class ActivityConst {
     public static final int ACT_TASK_AGENT_STAR_CNT = 55;
     // 击败指定等级的多人叛军x个
     public static final int ACT_TASK_MULTI_BANDIT_CNT = 56;
+    // 累计常驻寻访X次
+    public static final int ACT_TASK_CUMULATIVE_RESIDENT_DRAW_CARD = 57;
     /* ======================== 触发式礼包类型,对应数据库的s_trigger_rule  ========================*/
     public static final int TRIGGER_GIFT_HERO_WASH = 1;// 将领免费特训次数减为0
     public static final int TRIGGER_GIFT_EQUIP_BAPTIZE = 2;// 装备改造次数减为0

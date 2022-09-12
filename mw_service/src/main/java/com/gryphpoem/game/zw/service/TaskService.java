@@ -351,7 +351,8 @@ public class TaskService {
                 if (aliceAwardTime == 0 || aliceAwardTime > now) {
                     throw new MwException(GameError.ALICE_AWARD_ERROR.getCode(), "救援爱丽丝, 前置条件未完成, 或者时间未达到, aliceAwardTime:", aliceAwardTime);
                 }
-                Hero hero = rewardDataManager.addHero(player, Constant.ALICE_RESCUE_MISSION_TASK.get(1), AwardFrom.ALICE_AWARD);
+                Hero hero = rewardDataManager.sendHeroAward(player, WorldConstant.GUAN_PING_RESCUE_REWARD.get(0),
+                        WorldConstant.GUAN_PING_RESCUE_REWARD.get(1), WorldConstant.GUAN_PING_RESCUE_REWARD.get(2), AwardFrom.ALICE_AWARD);
                 if (hero == null) {
                     throw new MwException(GameError.ALICE_AWARD_RECEIVED.getCode(), "救援爱丽丝, 奖励已经领取");
                 }

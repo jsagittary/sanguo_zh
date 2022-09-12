@@ -1322,6 +1322,11 @@ public class SystemId {
     public static final int BERLIN_BATTLE_FRENZY_EXT_HURT = 372;
 
     /**
+     * 关平增援赠送指定品阶关平
+     */
+    public static final int GUAN_PING_RESCUE_REWARD = 373;
+
+    /**
      * 玩家登录刷新流寇距上次离线时间间隔
      */
     public static final int REFRESH_BANDITS_OFFLINE_TIME = 1008;
@@ -1785,6 +1790,11 @@ public class SystemId {
      * 限时寻访击败叛军次数和免费次数
      */
     public static int TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = 661;
+
+    /**
+     * 寻访武将保底紫橙品质权重
+     */
+    public static final int DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = 779;
 
     /**
      * 全部英雄品阶等级上限

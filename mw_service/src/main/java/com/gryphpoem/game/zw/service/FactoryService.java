@@ -21,6 +21,7 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -608,6 +609,15 @@ public class FactoryService {
                 activityDataManager.updActivity(player, ActivityConst.ACT_TRAINED_SOLDIERS, addNum, BuildingType.getResourceByBuildingType(type), true);
                 // 更新募兵数量
                 activityDataManager.updActivity(player, ActivityConst.ACT_TRAINED_SOLDIERS_DAILY, addNum, BuildingType.getResourceByBuildingType(type), true);
+
+                // 上报玩家兵力变化信息
+                LogLordHelper.playerArm(
+                        AwardFrom.GAIN_ARM,
+                        player,
+                        BuildingType.getResourceByBuildingType(type),
+                        Constant.ACTION_ADD,
+                        addNum
+                );
             }
             builder.setAddNum(addNum);
             builder.setId(id);

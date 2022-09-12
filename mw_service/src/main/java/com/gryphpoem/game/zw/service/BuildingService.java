@@ -394,9 +394,9 @@ public class BuildingService {
 //                if (player.shop == null || !player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG)) {
 //                    throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(), "roleId:", roleId, " 没有购买科技快研礼包");
 //                }
-                if (!techDataManager.isAdvanceTechGain(player)) {
-                    throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
-                }
+//                if (!techDataManager.isAdvanceTechGain(player)) {
+//                    throw new MwException(GameError.NOT_ADVANCE_TECH_GAIN.getCode(), "roleId:", roleId, " 没有雇佣高级研究院");
+//                }
                 /*// 检测购买过vip礼包5
                 if (player.shop == null) {// shop为null
                     throw new MwException(GameError.BUILD_NOT_TECH_QUICK_VIP_BAG.getCode(),
@@ -2037,9 +2037,9 @@ public class BuildingService {
         // 获取当前任务id
         // List<Integer> curTaskIds = taskDataManager.getCurTask(player);
         List<StaticTask> buildTask =  player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
-                .filter(t -> t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
+                .filter(t -> Objects.nonNull(t) && (t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
                         || t.getCond() == TaskType.COND_RES_OIL_CNT || t.getCond() == TaskType.COND_RES_ELE_CNT
-                        || t.getCond() == TaskType.COND_RES_ORE_CNT)
+                        || t.getCond() == TaskType.COND_RES_ORE_CNT))
                 // 过滤未完成的任务
                 .filter(t -> {
                     int taskId = t.getTaskId();
@@ -2350,13 +2350,13 @@ public class BuildingService {
                     return false;
                 } else {
                     // 购买vip5礼包,同时雇佣了高级研究院
-                    if (!(
+//                    if (!(
 //                            player.shop.getVipId().contains(Constant.TECH_QUICK_VIP_BAG) &&
-                            techDataManager
-                            .isAdvanceTechGain(player))) {
-                        LogUtil.debug("科研所正在研究,不能升级  roleId:" + roleId);
-                        return false;
-                    }
+//                            techDataManager
+//                            .isAdvanceTechGain(player))) {
+//                        LogUtil.debug("科研所正在研究,不能升级  roleId:" + roleId);
+//                        return false;
+//                    }
                 }
             }
         }

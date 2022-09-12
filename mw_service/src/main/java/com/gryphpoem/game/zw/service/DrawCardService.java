@@ -49,6 +49,8 @@ public class DrawCardService implements GmCmdService {
     private TaskDataManager taskDataManager;
     @Autowired
     private MailDataManager mailDataManager;
+    @Autowired
+    private ActivityDataManager activityDataManager;
 
     /**
      * 获取抽卡详情
@@ -159,6 +161,8 @@ public class DrawCardService implements GmCmdService {
 
         taskDataManager.updTask(player, TaskType.COND_997, drawCardCount.getCount());
         taskDataManager.updTask(player, TaskType.COND_1000, drawCardCount.getCount());
+        // 更新七日活动 - 常驻抽卡
+        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_CUMULATIVE_RESIDENT_DRAW_CARD);
         builder.setCount(HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO - drawCardData.getHeroDrawCount());
         builder.setCdTime((int) (drawCardData.getCdFreeTime() / 1000l));
         builder.setWishHero(PbHelper.createTwoIntPb(drawCardData.getWishHero().getA(), drawCardData.getWishHero().getB()));
@@ -284,7 +288,7 @@ public class DrawCardService implements GmCmdService {
             if (drawCardData.getFragmentDrawCount() + 1 >= HeroConstant.DRAW_ORANGE_HERO_FRAGMENT_GUARANTEED_TIMES) {
                 drawCardData.setFragmentDrawCount(0);
                 drawCardData.addHeroDrawCount();
-                staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO_FRAGMENT, now);
+                staticData = dataMgr.randomGuaranteeHero(config, HeroConstant.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, now);
                 LogUtil.debug(String.format("drawCard===player:%d, 碎片保底：%s", roleId, staticData.getRewardList()));
                 return staticData;
             }

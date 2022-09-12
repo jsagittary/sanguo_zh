@@ -2648,4 +2648,14 @@
 	<select id="selectHeroUpgradeList" resultMap="staticHeroUpgrade" >
 		SELECT * FROM s_hero_upgrade
 	</select>
+
+	<resultMap id="StaticHeroAppoint" type="StaticHeroAppoint">
+		<id column="heroID" property="heroId" />
+		<result column="appoint" property="appoint"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+		<result column="desc" property="desc"/>
+	</resultMap>
+	<select id="selectHeroAppointList" resultMap="StaticHeroAppoint">
+		SELECT * FROM s_hero_appoint
+	</select>
 </mapper>

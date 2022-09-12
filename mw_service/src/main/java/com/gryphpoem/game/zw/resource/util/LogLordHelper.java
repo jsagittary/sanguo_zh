@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.resource.util;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
@@ -13,9 +14,11 @@ import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import org.apache.commons.lang3.StringUtils;
@@ -238,7 +241,7 @@ public class LogLordHelper {
             return;
         }
 
-        EventDataUp.heroArmy(account, lord, from, armyType, add, count);
+        // EventDataUp.heroArmy(account, lord, from, armyType, add, count);
         if (quality < HeroConstant.QUALITY_ORANGE_HERO)
             return;
         StringBuffer message = getCommonParams("heroArm", from, account, lord).append("|").append(heroId).append("|")
@@ -264,7 +267,7 @@ public class LogLordHelper {
         StringBuffer message = getCommonParams("heroArm", from, account, lord).append("|").append(heroId).append("|")
                 .append(count).append("|").append(add).append("|").append(action);
         GAME_LOGGER.info(message);
-        EventDataUp.heroArmy(account, lord, from, armyType, add, count);
+        // EventDataUp.heroArmy(account, lord, from, armyType, add, count);
     }
 
     private static void contactParamsOneByOne(StringBuffer message, Object... params) {
@@ -272,6 +275,37 @@ public class LogLordHelper {
             message.append("|");
             message.append(StringUtils.join(params, "|"));
         }
+    }
+
+    /**
+     * 玩家整体兵力变化记录
+     *
+     * @param from
+     * @param player
+     * @param armyType
+     * @param action
+     * @param add
+     * @param params
+     */
+    public static void playerArm(AwardFrom from, Player player, int armyType, int action, int add, Object... params) {
+        if (player == null) {
+            return;
+        }
+
+        LogUtil.getLogThread().addCommand(() -> {
+            int current = DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType);
+            for (Hero hero : player.heros.values()) {
+                if (CheckNull.isNull(hero)) continue;
+                StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+                if (CheckNull.isNull(staticHero)) continue;
+                if (staticHero.getType() != armyType) continue;
+                current += hero.getCount();
+            }
+            StringBuffer message = getCommonParams("heroArm", from, player.account, player.lord).append("|")
+                    .append(current).append("|").append(add).append("|").append(action);
+            GAME_LOGGER.info(message);
+            EventDataUp.playerArmy(player, from, armyType, add, current);
+        });
     }
 
     /*---------------------------------------RewardDataManager里的埋点日志start ---------------------------------------*/
@@ -415,6 +449,27 @@ public class LogLordHelper {
     }
 
     /**
+     * 武将碎片变更
+     *
+     * @param from
+     * @param account
+     * @param lord
+     * @param heroId  将领id
+     * @param action  加或减，1 获得，0 失去
+     */
+    public static void heroFragment(AwardFrom from, Account account, Lord lord, int heroId, int action, int count, Object... params) {
+        if (account == null || lord == null) {
+            return;
+        }
+        StringBuffer message = getCommonParams("heroFragment", from, account, lord).append("|")
+                .append(heroId).append("|")
+                .append(action);
+        contactParamsArr(message, params);
+        GAME_LOGGER.info(message);
+        EventDataUp.prop(from, account, lord, heroId, AwardType.HERO_FRAGMENT, count, action, heroId, Arrays.toString(params), params);
+    }
+
+    /**
      * 装备变更
      *
      * @param from
@@ -526,16 +581,16 @@ public class LogLordHelper {
      * @param action
      * @param params
      */
-    public static void treasureWare(AwardFrom from, Account account, Lord lord, int treasureWareId, int keyId, int action,
+    public static void treasureWare(AwardFrom from, Account account, Lord lord, int treasureWareId, int keyId, int action, int profileId,
                                     Object... params) {
         if (account == null || lord == null) {
             return;
         }
         StringBuffer message = getCommonParams("treasureWare", from, account, lord).append("|").append(treasureWareId).append("|")
-                .append(keyId).append("|").append(action);
+                .append(keyId).append("|").append(action).append("|").append(profileId);
         contactParamsArr(message, params);
         GAME_LOGGER.info(message);
-        EventDataUp.prop(from, account, lord, treasureWareId, AwardType.TREASURE_WARE, 1, action, keyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
+        EventDataUp.prop(from, account, lord, profileId, AwardType.TREASURE_WARE, 1, action, keyId, Arrays.toString(params), action == Constant.ACTION_ADD ? 1 : 0);
     }
 
     /**
