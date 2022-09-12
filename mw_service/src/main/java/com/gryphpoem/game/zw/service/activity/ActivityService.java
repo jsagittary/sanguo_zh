@@ -1658,6 +1658,7 @@ public class ActivityService {
         builder.addAllActActive(atkCityActActives);
         builder.addAllActTask(atkCityActTasks);
         builder.setDay(dayiy);
+
         return builder.build();
     }
 
@@ -1766,6 +1767,8 @@ public class ActivityService {
         GetDay7ActRs.Builder builder = GetDay7ActRs.newBuilder();
         builder.setDay(dayiy);
         builder.addAllDay7Acts(listDay7Act);
+        builder.setBeginTime(TimeHelper.dateToSecond(beginTime));
+        builder.setEndTime(TimeHelper.afterSecondTime(beginTime, 10 * 24 * 60 * 60));
         return builder.build();
     }
 
