@@ -95,9 +95,9 @@ public class FunctionPlanDataManager {
      * @param playerFunctionPlanData
      * @param planKeyId
      */
-    public void removeFunctionPlanData(PlayerFunctionPlanData playerFunctionPlanData, int planKeyId) {
+    public FunctionPlanData removeFunctionPlanData(PlayerFunctionPlanData playerFunctionPlanData, int planKeyId) {
         if (CheckNull.isNull(playerFunctionPlanData))
-            return;
-        playerFunctionPlanData.removeData(planKeyId);
+            return null;
+        return playerFunctionPlanData.removeData(planKeyId);
     }
 }
