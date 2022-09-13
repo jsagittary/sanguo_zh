@@ -309,6 +309,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (CheckNull.nonEmpty(pb.getFragmentDataList())) {
             pb.getFragmentDataList().forEach(data -> fragmentData.put(data.getV1(), data.getV2()));
         }
+        this.totalDrawCount = pb.getTotalDrawCount();
     }
 
     @Override
@@ -333,6 +334,7 @@ public class DrawCardData implements GamePb<SerializePb.SerDrawCardData> {
         if (CheckNull.nonEmpty(this.fragmentData)) {
             this.fragmentData.entrySet().forEach(entry -> builder.addFragmentData(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
         }
+        builder.setTotalDrawCount(this.totalDrawCount);
         return builder.build();
     }
 

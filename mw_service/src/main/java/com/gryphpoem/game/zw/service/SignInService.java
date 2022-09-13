@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -74,8 +75,9 @@ public class SignInService {
 
     /**
      * 初始化和清除签到数据
-     * @param player    玩家对象
-     * @param activity  活动对象
+     *
+     * @param player   玩家对象
+     * @param activity 活动对象
      */
     private SiginInfo clearInitData(Player player, Activity activity) {
 
@@ -89,32 +91,32 @@ public class SignInService {
             if (siginInfo.getActivityId() != activity.getActivityId()) {
                 siginInfo.setActivityId(activity.getActivityId());
             }
-            /*// 如果不是同一个月
-            if (!DateHelper.isMonth(new Date(siginInfo.getDate()), new Date())) {
-                siginInfo.setLevel(player.lord.getLevel());
-                siginInfo.setTimes(0);
-            }*/
-            
-            if(siginInfo.getPage()==0){
+            // 如果不是同一天
+            if (siginInfo.getDate() > 0 && !DateHelper.isToday(new Date(siginInfo.getDate()))) {
+                siginInfo.setDoubleReward(0);
+                siginInfo.setSignIn(0);
+                siginInfo.setDate(System.currentTimeMillis());
+            }
+
+            if (siginInfo.getPage() == 0) {
                 siginInfo.setPage(1);
             }
-            
+
             StaticActSign signConfig = StaticSignInDataMgr
                     .getSignConfig(siginInfo.getPage(), siginInfo.getLevel(), siginInfo.getTimes() + 1);
             //如果下一次的签到配置找不到，开始下一轮签到
-            if(signConfig==null && siginInfo.getSignIn()==0){
+            if (signConfig == null && siginInfo.getSignIn() == 0) {
                 siginInfo.setLevel(player.lord.getLevel());
                 siginInfo.setTimes(0);
                 int page = siginInfo.getPage();
                 //下一页签到配置
                 StaticActSign nextSignConfig = StaticSignInDataMgr
-                        .getSignConfig(page+1, siginInfo.getLevel(), siginInfo.getTimes() + 1);
+                        .getSignConfig(page + 1, siginInfo.getLevel(), siginInfo.getTimes() + 1);
                 if (nextSignConfig == null) {
                     siginInfo.setPage(page);
-                }else {
-                    siginInfo.setPage(page+1);
+                } else {
+                    siginInfo.setPage(page + 1);
                 }
-                
             }
         } else {
             ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activity.getActivityType());
@@ -123,7 +125,15 @@ public class SignInService {
             }
             int keyId = activityBase.getPlan().getKeyId();
             siginInfo = player.signInfoMap.get(activity.getActivityType());
-            // 不同档位或者s_actvity_plan表中的keyId不同, 就清除数据
+            // 如果不是同一天
+            if (Objects.nonNull(siginInfo) && siginInfo.getDate() > 0 &&
+                    !DateHelper.isToday(new Date(siginInfo.getDate()))) {
+                siginInfo.setDoubleReward(0);
+                siginInfo.setSignIn(0);
+                siginInfo.setDate(System.currentTimeMillis());
+            }
+
+            // 不同档位或者s_activity_plan表中的keyId不同, 就清除数据
             if (siginInfo == null || siginInfo.getActivityId() != activity.getActivityId() || keyId != siginInfo.getKeyId()) {
                 siginInfo = new SiginInfo();
                 siginInfo.setKeyId(keyId);
@@ -140,18 +150,12 @@ public class SignInService {
             siginInfo.setLevel(player.lord.getLevel());
         }
 
-        // 如果不是同一天
-        if (!DateHelper.isToday(new Date(siginInfo.getDate()))) {
-            siginInfo.setDoubleReward(0);
-            siginInfo.setSignIn(0);
-            siginInfo.setDate(System.currentTimeMillis());
-        }
         //为避免重复获得。判断奖励是不是武将，并且已经获得。修改为已签到状态
-        if(checkHasPet(player,siginInfo,activity) && siginInfo.getSignIn() == 0) {
+        if (checkHasPet(player, siginInfo, activity) && siginInfo.getSignIn() == 0) {
             siginInfo.setSignIn(1);
             siginInfo.setTimes(siginInfo.getTimes() + 1);
         }
-        
+
 
         return siginInfo;
     }
@@ -200,11 +204,12 @@ public class SignInService {
 
     /**
      * 获取签到奖励
-     * @param siginInfo     签到信息
-     * @param player        玩家对象
-     * @param activityBase  活动基础信息
-     * @return              奖励
-     * @throws MwException  自定义异常
+     *
+     * @param siginInfo    签到信息
+     * @param player       玩家对象
+     * @param activityBase 活动基础信息
+     * @return 奖励
+     * @throws MwException 自定义异常
      */
     private List<List<Integer>> getSignInAward(SiginInfo siginInfo, Player player, ActivityBase activityBase) throws MwException {
 
@@ -281,9 +286,10 @@ public class SignInService {
 
     /**
      * 红点
-     * @param player    玩家对象
-     * @param activity  活动对象
-     * @return  红点
+     *
+     * @param player   玩家对象
+     * @param activity 活动对象
+     * @return 红点
      */
     public int getRedPoint(Player player, Activity activity) {
         SiginInfo siginInfo = clearInitData(player, activity);
@@ -299,7 +305,9 @@ public class SignInService {
             if (sActLogin != null) {
                 List<List<Integer>> signInAward = sActLogin.getAwardList();
                 if (CheckNull.isEmpty(signInAward) || CheckNull.isEmpty(signInAward.get(0))) return false;
-                if (signInAward.get(0).get(0) != AwardType.HERO) return false;
+                if (signInAward.get(0).get(0) != AwardType.HERO
+                        && signInAward.get(0).get(0) != AwardType.HERO_DESIGNATED_GRADE)
+                    return false;
                 Hero hero = player.heros.get(signInAward.get(0).get(1));
                 if (CheckNull.isNull(hero)) return false;
                 return !hero.isShowClient();
