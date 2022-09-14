@@ -111,7 +111,7 @@ public class ServerThread extends Thread {
 							handler.sendErrorMsgToPlayer(error.getCode());
 						}
 					} else {
-						LogUtil.error(command.getClass().getSimpleName(), " Not Hand  Exception -->", e);
+						LogUtil.error(command.getClass().getSimpleName() + " Not Hand  Exception -->", e);
 						if (command instanceof AbsClientHandler) { // 返回错误消息
 							AbsClientHandler handler = (AbsClientHandler) command;
 							handler.sendErrorMsgToPlayer(GameError.UNKNOWN_ERROR.getCode());
