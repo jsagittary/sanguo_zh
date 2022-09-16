@@ -127,7 +127,7 @@ public class DbGlobal implements DbSerializeId {
     }
 
     @Override
-    public int getSerializeIdId() {
+    public long getSerializeIdId() {
         return globalId;
     }
 }

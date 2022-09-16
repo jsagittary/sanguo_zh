@@ -81,7 +81,7 @@ public class DbCrossMap implements DbSerializeId{
     }
 
     @Override
-    public int getSerializeIdId() {
+    public long getSerializeIdId() {
         return mapId;
     }
 

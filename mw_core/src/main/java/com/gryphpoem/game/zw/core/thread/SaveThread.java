@@ -30,6 +30,8 @@ public abstract class SaveThread extends Thread {
 
 	abstract public void add(Object object);
 
+	public void remove(Object obj) {}
+
 	public boolean workDone() {
 		return done;
 	}

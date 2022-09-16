@@ -1,10 +1,10 @@
 package com.gryphpoem.game.zw.core;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
 import com.gryphpoem.game.zw.core.thread.SaveThread;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+
+import java.util.HashMap;
+import java.util.Iterator;
 
 public abstract class SaveServer implements Runnable {
     private long createTime;
@@ -41,6 +41,8 @@ public abstract class SaveServer implements Runnable {
     }
 
     abstract public void saveData(Object object);
+
+    public void removeData(Object obj) {}
 
     public boolean saveDone() {
         Iterator<SaveThread> it = threadPool.values().iterator();

@@ -1,18 +1,15 @@
 package com.gryphpoem.game.zw.resource.util;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb.SerMail;
 import com.gryphpoem.game.zw.pb.SerializePb.SerReport;
-import com.gryphpoem.game.zw.resource.domain.ActivityAuctionParam;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.MailData;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
-import com.gryphpoem.game.zw.resource.pojo.MailReportMap;
-import org.springframework.util.ObjectUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @ClassName PlayerMailSerHelper.java
@@ -35,12 +32,12 @@ public class PlayerSerHelper {
         for (Mail mail : mails.values()) {
             int idx = mail.getKeyId() & MailData.MASK;
             tempSerMailMap.get(idx).addMail(PbHelper.saveMailPb(mail, player));
-            MailReportMap mailReportMap = player.getMailReportMap(mail.getMoldId());
-            if (Objects.nonNull(mailReportMap)) {
-                CommonPb.Report report = mailReportMap.getReport(mail.getKeyId());
-                if (Objects.nonNull(report))
-                    reportsBuilder.addReport(report);
-            }
+//            MailReportMap mailReportMap = player.getMailReportMap(mail.getMoldId());
+//            if (Objects.nonNull(mailReportMap)) {
+//                CommonPb.Report report = mailReportMap.getReport(mail.getKeyId());
+//                if (Objects.nonNull(report))
+//                    reportsBuilder.addReport(report);
+//            }
         }
 
         mailData.setMails(tempSerMailMap.get(0).build().toByteArray());
@@ -90,12 +87,12 @@ public class PlayerSerHelper {
         dserMails(data.getMails14(), mails);
         dserMails(data.getMails15(), mails);
 
-        if (data.getReports() != null) {
-            Map<Integer, MailReportMap> mailReportMapMap = player.mailReport;
-            mailReportMapMap.clear();
-            SerReport ser = SerReport.parseFrom(data.getReports());
-            dserReports(mails, player, ser);
-        }
+//        if (data.getReports() != null) {
+//            Map<Integer, MailReportMap> mailReportMapMap = player.mailReport;
+//            mailReportMapMap.clear();
+//            SerReport ser = SerReport.parseFrom(data.getReports());
+//            dserReports(mails, player, ser);
+//        }
     }
 
     private static void dserMails(byte[] mailsByteData, Map<Integer, Mail> mails)
@@ -107,19 +104,19 @@ public class PlayerSerHelper {
         }
     }
 
-    private static void dserReports(Map<Integer, Mail> mails, Player player, SerReport ser) {
-        if (ObjectUtils.isEmpty(ser.getReportList())) {
-           return;
-        }
-
-        List<CommonPb.Report> list = ser.getReportList().stream().sorted(Comparator.
-                comparingInt(CommonPb.Report::getTime)).collect(Collectors.toList());
-        for (CommonPb.Report report : list) {
-            Mail mail = mails.get(report.getKeyId());
-            if (CheckNull.isNull(mail))
-                continue;
-
-            player.addReport(mail.getMoldId(), report, mails);
-        }
-    }
+//    private static void dserReports(Map<Integer, Mail> mails, Player player, SerReport ser) {
+//        if (ObjectUtils.isEmpty(ser.getReportList())) {
+//           return;
+//        }
+//
+//        List<CommonPb.Report> list = ser.getReportList().stream().sorted(Comparator.
+//                comparingInt(CommonPb.Report::getTime)).collect(Collectors.toList());
+//        for (CommonPb.Report report : list) {
+//            Mail mail = mails.get(report.getKeyId());
+//            if (CheckNull.isNull(mail))
+//                continue;
+//
+//            player.addReport(mail.getMoldId(), report, mails);
+//        }
+//    }
 }

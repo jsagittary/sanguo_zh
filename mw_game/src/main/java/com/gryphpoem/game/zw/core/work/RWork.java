@@ -51,7 +51,8 @@ public class RWork extends AbstractWork {
 
             if (cmd == BeginGameRq.EXT_FIELD_NUMBER || cmd == GetNamesRq.EXT_FIELD_NUMBER) {
                 connectServer.actionExcutor.execute(handler);
-            } else if (handler instanceof DirectForwardClientHandler || handler instanceof AsyncGameHandler) {
+            } else if (handler instanceof DirectForwardClientHandler ||
+                    handler instanceof AsyncGameHandler) {
                 // 直接转发的handler 或 执行
                 connectServer.actionExcutor.execute(handler);
             } else {

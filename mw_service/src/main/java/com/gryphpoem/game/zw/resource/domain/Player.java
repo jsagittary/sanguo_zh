@@ -371,7 +371,7 @@ public class Player {
     /**
      * 邮件战报 (moldId, Queue<战报>)
      */
-    public Map<Integer, MailReportMap> mailReport = new ConcurrentHashMap<>();
+//    public Map<Integer, MailReportMap> mailReport = new ConcurrentHashMap<>();
 
     /**
      * 操作记录
@@ -3499,62 +3499,62 @@ public class Player {
         addReport(mail.getMoldId(), report, mails);
     }
 
-    public void addReport(int moldId, Report report, Map<Integer, Mail> mails) {
-        if (CheckNull.isNull(report)) {
-            return;
-        }
-        getMailReportMap(moldId).addReport(report, mails);
-    }
+//    public void addReport(int moldId, Report report, Map<Integer, Mail> mails) {
+//        if (CheckNull.isNull(report)) {
+//            return;
+//        }
+//        getMailReportMap(moldId).addReport(report, mails);
+//    }
 
-    public MailReportMap getMailReportMap(int moldId) {
-        MailReportMap reportQueue = mailReport.get(moldId);
-        if (ObjectUtils.isEmpty(reportQueue)) {
-            synchronized (mailReport) {
-                reportQueue = mailReport.get(moldId);
-                if (ObjectUtils.isEmpty(reportQueue)) {
-                    reportQueue = new MailReportMap();
-                    mailReport.put(moldId, reportQueue);
-                }
-            }
-        }
+//    public MailReportMap getMailReportMap(int moldId) {
+//        MailReportMap reportQueue = mailReport.get(moldId);
+//        if (ObjectUtils.isEmpty(reportQueue)) {
+//            synchronized (mailReport) {
+//                reportQueue = mailReport.get(moldId);
+//                if (ObjectUtils.isEmpty(reportQueue)) {
+//                    reportQueue = new MailReportMap();
+//                    mailReport.put(moldId, reportQueue);
+//                }
+//            }
+//        }
+//
+//        return reportQueue;
+//    }
 
-        return reportQueue;
-    }
+//    public Report getMailReport(Mail mail) {
+//        MailReportMap mailReportMap = getMailReportMap(mail.getMoldId());
+//        if (Objects.nonNull(mailReportMap)) {
+//            return mailReportMap.getReport(mail.getKeyId());
+//        }
+//
+//        return null;
+//    }
 
-    public Report getMailReport(Mail mail) {
-        MailReportMap mailReportMap = getMailReportMap(mail.getMoldId());
-        if (Objects.nonNull(mailReportMap)) {
-            return mailReportMap.getReport(mail.getKeyId());
-        }
+//    public void expiredMail(Map<Integer, List<Integer>> delMailIds) {
+//        if (ObjectUtils.isEmpty(delMailIds)) {
+//            return;
+//        }
+//
+//        delMailIds.forEach((moldId, list) -> {
+//            MailReportMap mailReportMap = getMailReportMap(moldId);
+//            if (Objects.nonNull(mailReportMap)) {
+//                mailReportMap.expiredMail(list);
+//            }
+//        });
+//    }
 
-        return null;
-    }
-
-    public void expiredMail(Map<Integer, List<Integer>> delMailIds) {
-        if (ObjectUtils.isEmpty(delMailIds)) {
-            return;
-        }
-
-        delMailIds.forEach((moldId, list) -> {
-            MailReportMap mailReportMap = getMailReportMap(moldId);
-            if (Objects.nonNull(mailReportMap)) {
-                mailReportMap.expiredMail(list);
-            }
-        });
-    }
-
-    public void expiredMailReport(Map<Integer, List<Integer>> delMailIds) {
-        if (ObjectUtils.isEmpty(delMailIds)) {
-            return;
-        }
-
-        delMailIds.forEach((moldId, list) -> {
-            MailReportMap mailReportMap = getMailReportMap(moldId);
-            if (Objects.nonNull(mailReportMap)) {
-                mailReportMap.expiredReport(list, mails);
-            }
-        });
-    }
+//    public void expiredMailReport(Map<Integer, List<Integer>> delMailIds) {
+//        if (ObjectUtils.isEmpty(delMailIds)) {
+//            return;
+//        }
+//
+//        delMailIds.forEach((moldId, list) -> {
+//            MailReportMap mailReportMap = getMailReportMap(moldId);
+//            if (Objects.nonNull(mailReportMap)) {
+//                mailReportMap.expiredReport(list, mails);
+//            }
+//        });
+//    }
 
     public TotemData getTotemData() {
         return totemData;

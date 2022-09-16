@@ -7,5 +7,5 @@ package com.gryphpoem.game.zw.resource.domain.p;
  * @date 2019年4月2日
  */
 public interface DbSerializeId {
-    int getSerializeIdId();
+    long getSerializeIdId();
 }

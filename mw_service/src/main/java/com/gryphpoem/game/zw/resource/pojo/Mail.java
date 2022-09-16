@@ -30,7 +30,6 @@ public class Mail {
 	private List<String> tParam;
 	private List<String> cParam;
 	private List<Award> rewardList;
-	private CommonPb.Report report;
 	private List<Award> dropList;
 	private MailCollect collect;
 	private MailScout scout;
@@ -38,7 +37,7 @@ public class Mail {
 	private List<Award> recoverList;
 	private CommonPb.SandTableEnrollMailInfo enrollMailInfo;
 	private CommonPb.SandTableRoundOverMailInfo roundOverMailInfo;
-	private int reportStatus;
+	private volatile int reportStatus;
 	private boolean isCross;
 
 	public Mail() {
@@ -300,13 +299,5 @@ public class Mail {
 
 	public void setOriginator(long originator) {
 		this.originator = originator;
-	}
-
-	public CommonPb.Report getReport() {
-		return report;
-	}
-
-	public void setReport(CommonPb.Report report) {
-		this.report = report;
 	}
 }
