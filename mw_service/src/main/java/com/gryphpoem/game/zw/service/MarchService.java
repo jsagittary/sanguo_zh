@@ -598,7 +598,7 @@ public class MarchService {
                 guaranteedConfigRule = l;
                 break;
             }
-            if (tmp != null) {
+            if (CheckNull.nonEmpty(tmp)) {
                 dropList.addAll(tmp);
                 if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
                     List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
