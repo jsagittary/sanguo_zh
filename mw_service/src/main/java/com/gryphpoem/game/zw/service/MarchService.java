@@ -591,9 +591,107 @@ public class MarchService {
             int drawingNum = activityDataManager.getActBanditDrawing(player);
             tmp = rewardDataManager.sendReward(player, staticBandit.getAwardDrawing(), drawingNum,
                     AwardFrom.BANDIT_DROP);
-            if (tmp != null) {
-                dropList.addAll(tmp);
+            List<List<Integer>> guaranteedConfigList = SystemTabLoader.getListListIntSystemValue(675, "[[]]");
+            List<Integer> guaranteedConfigRule = null;
+            for (List<Integer> l : guaranteedConfigList) {
+                if (CheckNull.isEmpty(l) || l.size() != 2 || l.get(0) != staticBandit.getLv()) continue;
+                guaranteedConfigRule = l;
+                break;
             }
+            if (CheckNull.nonEmpty(tmp)) {
+                dropList.addAll(tmp);
+                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
+                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
+                    if (CheckNull.isNull(guaranteedDrops)) {
+                        guaranteedDrops = new ArrayList<>();
+                        player.typeInfo.put(2, guaranteedDrops);
+                    }
+                    History rebelHistory = null;
+                    if (CheckNull.nonEmpty(guaranteedDrops)) {
+                        for (History history : guaranteedDrops) {
+                            if (CheckNull.isNull(history) || history.getId() != staticBandit.getLv())
+                                continue;
+                            rebelHistory = history;
+                            break;
+                        }
+                    }
+                    if (Objects.nonNull(rebelHistory)) {
+                        rebelHistory.setParam(0);
+                    }
+                }
+            } else {
+                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
+                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
+                    if (CheckNull.isNull(guaranteedDrops)) {
+                        guaranteedDrops = new ArrayList<>();
+                        player.typeInfo.put(2, guaranteedDrops);
+                    }
+                    History rebelHistory = null;
+                    if (CheckNull.nonEmpty(guaranteedDrops)) {
+                        for (History history : guaranteedDrops) {
+                            if (CheckNull.isNull(history) || history.getId() != staticBandit.getLv())
+                                continue;
+                            rebelHistory = history;
+                            break;
+                        }
+                    }
+                    if (CheckNull.isNull(rebelHistory)) {
+                        rebelHistory = new History(staticBandit.getLv(), 0);
+                        guaranteedDrops.add(rebelHistory);
+                    }
+
+                    int guaranteedRebelDrops = CheckNull.isNull(rebelHistory) ? 0 : rebelHistory.getParam();
+                    if (guaranteedRebelDrops < guaranteedConfigRule.get(1) - 1) {
+                        rebelHistory.setParam(++guaranteedRebelDrops);
+                    } else {
+                        // 必中图纸
+                        CommonPb.Award award = null;
+                        if (staticBandit.getAwardDrawing().size() == 1 && staticBandit.getAwardDrawing().get(0).size() >= 3) {
+                            List<Integer> dropItem = staticBandit.getAwardDrawing().get(0);
+                            award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                        } else {
+                            if (staticBandit.getLv() < 8) {
+                                int totalWeight = 0;
+                                for (List<Integer> l : staticBandit.getAwardDrawing()) {
+                                    if (CheckNull.isEmpty(l) || l.size() < 4)
+                                        continue;
+                                    totalWeight += l.get(3);
+                                }
+                                int randomNum = RandomHelper.randomInSize(totalWeight);
+                                int temp = 0;
+                                for (List<Integer> dropItem : staticBandit.getAwardDrawing()) {
+                                    if (CheckNull.isEmpty(dropItem) || dropItem.size() < 4)
+                                        continue;
+                                    temp += dropItem.get(3);
+                                    if (temp >= randomNum) {
+                                        award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                // 8级及8级以上的叛军只掉落绿色图纸
+                                List<Integer> dropItem = null;
+                                for (List<Integer> l : staticBandit.getAwardDrawing()) {
+                                    if (CheckNull.isEmpty(l) || l.size() < 3)
+                                        continue;
+                                    StaticProp staticProp = StaticPropDataMgr.getPropMap(l.get(1));
+                                    if (CheckNull.isNull(staticProp) || staticProp.getQuality() != Constant.Quality.green)
+                                        continue;
+                                    dropItem = l;
+                                    break;
+                                }
+                                if (CheckNull.nonEmpty(dropItem)) {
+                                    award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                                }
+                            }
+                        }
+                        // 加入叛军掉落信息中
+                        if (Objects.nonNull(award)) dropList.add(award);
+                        rebelHistory.setParam(0);
+                    }
+                }
+            }
+
             int moveNum = activityDataManager.getActBanditMove(player);
             tmp = rewardDataManager.sendReward(player, staticBandit.getAwardProp(), moveNum, AwardFrom.BANDIT_DROP);
             if (tmp != null) {
