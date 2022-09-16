@@ -601,7 +601,12 @@ public class MarchService {
                     }
                     History rebelHistory = null;
                     if (CheckNull.nonEmpty(guaranteedDrops)) {
-                        rebelHistory = guaranteedDrops.stream().filter(h -> Objects.nonNull(h) && h.getId() == staticBandit.getLv()).findFirst().orElse(null);
+                        for (History history : guaranteedDrops) {
+                            if (CheckNull.isNull(history) || history.getId() != staticBandit.getLv())
+                                continue;
+                            rebelHistory = history;
+                            break;
+                        }
                     }
                     if (Objects.nonNull(rebelHistory)) {
                         rebelHistory.setParam(0);
@@ -616,7 +621,12 @@ public class MarchService {
                     }
                     History rebelHistory = null;
                     if (CheckNull.nonEmpty(guaranteedDrops)) {
-                        rebelHistory = guaranteedDrops.stream().filter(h -> Objects.nonNull(h) && h.getId() == staticBandit.getLv()).findFirst().orElse(null);
+                        for (History history : guaranteedDrops) {
+                            if (CheckNull.isNull(history) || history.getId() != staticBandit.getLv())
+                                continue;
+                            rebelHistory = history;
+                            break;
+                        }
                     }
                     if (CheckNull.isNull(rebelHistory)) {
                         rebelHistory = new History(staticBandit.getLv(), 0);
@@ -634,7 +644,12 @@ public class MarchService {
                             List<Integer> dropItem = staticBandit.getAwardDrawing().get(0);
                             award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
                         } else {
-                            int totalWeight = staticBandit.getAwardDrawing().stream().filter(l -> CheckNull.nonEmpty(l) && l.size() >= 4).mapToInt(l -> l.get(3)).sum();
+                            int totalWeight = 0;
+                            for (List<Integer> l : staticBandit.getAwardDrawing()) {
+                                if (CheckNull.isEmpty(l) || l.size() < 4)
+                                    continue;
+                                totalWeight += l.get(3);
+                            }
                             int randomNum = RandomHelper.randomInSize(totalWeight);
                             int temp = 0;
                             for (List<Integer> dropItem : staticBandit.getAwardDrawing()) {
@@ -653,6 +668,7 @@ public class MarchService {
                     }
                 }
             }
+
             int moveNum = activityDataManager.getActBanditMove(player);
             tmp = rewardDataManager.sendReward(player, staticBandit.getAwardProp(), moveNum, AwardFrom.BANDIT_DROP);
             if (tmp != null) {
