@@ -648,7 +648,7 @@ public class MarchService {
                         CommonPb.Award award = null;
                         if (staticBandit.getAwardDrawing().size() == 1 && staticBandit.getAwardDrawing().get(0).size() >= 3) {
                             List<Integer> dropItem = staticBandit.getAwardDrawing().get(0);
-                            award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                            award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2) * drawingNum, AwardFrom.BANDIT_DROP);
                         } else {
                             if (staticBandit.getLv() < 8) {
                                 int totalWeight = 0;
@@ -664,7 +664,7 @@ public class MarchService {
                                         continue;
                                     temp += dropItem.get(3);
                                     if (temp >= randomNum) {
-                                        award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                                        award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2) * drawingNum, AwardFrom.BANDIT_DROP);
                                         break;
                                     }
                                 }
@@ -681,7 +681,7 @@ public class MarchService {
                                     break;
                                 }
                                 if (CheckNull.nonEmpty(dropItem)) {
-                                    award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                                    award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2) * drawingNum, AwardFrom.BANDIT_DROP);
                                 }
                             }
                         }
