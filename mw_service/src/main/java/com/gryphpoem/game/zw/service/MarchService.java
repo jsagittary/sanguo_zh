@@ -593,6 +593,65 @@ public class MarchService {
                     AwardFrom.BANDIT_DROP);
             if (tmp != null) {
                 dropList.addAll(tmp);
+                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing())) {
+                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
+                    if (CheckNull.isNull(guaranteedDrops)) {
+                        guaranteedDrops = new ArrayList<>();
+                        player.typeInfo.put(2, guaranteedDrops);
+                    }
+                    History rebelHistory = null;
+                    if (CheckNull.nonEmpty(guaranteedDrops)) {
+                        rebelHistory = guaranteedDrops.stream().filter(h -> Objects.nonNull(h) && h.getId() == staticBandit.getLv()).findFirst().orElse(null);
+                    }
+                    if (Objects.nonNull(rebelHistory)) {
+                        rebelHistory.setParam(0);
+                    }
+                }
+            } else {
+                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing())) {
+                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
+                    if (CheckNull.isNull(guaranteedDrops)) {
+                        guaranteedDrops = new ArrayList<>();
+                        player.typeInfo.put(2, guaranteedDrops);
+                    }
+                    History rebelHistory = null;
+                    if (CheckNull.nonEmpty(guaranteedDrops)) {
+                        rebelHistory = guaranteedDrops.stream().filter(h -> Objects.nonNull(h) && h.getId() == staticBandit.getLv()).findFirst().orElse(null);
+                    }
+                    if (CheckNull.isNull(rebelHistory)) {
+                        rebelHistory = new History(staticBandit.getLv(), 0);
+                        guaranteedDrops.add(rebelHistory);
+                    }
+
+                    int guaranteedRebelDrops = CheckNull.isNull(rebelHistory) ? 0 : rebelHistory.getParam();
+                    int guaranteedConfigCount = SystemTabLoader.getIntegerSystemValue(675, 4);
+                    if (guaranteedRebelDrops < guaranteedConfigCount - 1) {
+                        rebelHistory.setParam(++guaranteedRebelDrops);
+                    } else {
+                        // 必中图纸
+                        CommonPb.Award award = null;
+                        if (staticBandit.getAwardDrawing().size() == 1 && staticBandit.getAwardDrawing().get(0).size() >= 3) {
+                            List<Integer> dropItem = staticBandit.getAwardDrawing().get(0);
+                            award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                        } else {
+                            int totalWeight = staticBandit.getAwardDrawing().stream().filter(l -> CheckNull.nonEmpty(l) && l.size() >= 4).mapToInt(l -> l.get(3)).sum();
+                            int randomNum = RandomHelper.randomInSize(totalWeight);
+                            int temp = 0;
+                            for (List<Integer> dropItem : staticBandit.getAwardDrawing()) {
+                                if (CheckNull.isEmpty(dropItem) || dropItem.size() < 4)
+                                    continue;
+                                temp += dropItem.get(3);
+                                if (temp >= randomNum) {
+                                    award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                                    break;
+                                }
+                            }
+                        }
+                        // 加入叛军掉落信息中
+                        if (Objects.nonNull(award)) dropList.add(award);
+                        rebelHistory.setParam(0);
+                    }
+                }
             }
             int moveNum = activityDataManager.getActBanditMove(player);
             tmp = rewardDataManager.sendReward(player, staticBandit.getAwardProp(), moveNum, AwardFrom.BANDIT_DROP);

@@ -1514,6 +1514,8 @@ public final class Constant {
      */
     public interface TypeInfo {
         int TYPE_1 = 1;// 官员招募记录
+        // 叛军掉落保底次数
+        int REBEL_DROP_GUARANTEED_TIMES = 2;
     }
 
     public interface ArmyType {
