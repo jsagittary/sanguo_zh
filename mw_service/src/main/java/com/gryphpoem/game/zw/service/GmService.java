@@ -2,19 +2,19 @@ package com.gryphpoem.game.zw.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.gryphpoem.cross.gameplay.gm.data.g2c.StaticDataService;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.cross.serivce.CrossGamePlayService;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.service.CrossAttackService;
 import com.gryphpoem.game.zw.gameplay.local.service.newyork.NewYorkWarService;
+import com.gryphpoem.game.zw.gameplay.local.service.worldwar.*;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.MapEntityGenerator;
 import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
@@ -25,14 +25,12 @@ import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
 import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
-import com.gryphpoem.game.zw.dataMgr.*;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mail;
 import com.gryphpoem.game.zw.pb.GamePb1.DoSomeRq;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRq;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -71,12 +69,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class GmService{
@@ -2805,6 +2801,16 @@ public class GmService{
 
                 gActDate.getRanks().remove(activityType);
                 AbsRankActivityService.loadActRankAct(activityBase, gActDate);
+            }
+        } else if ("clearPlayerCampChat".equalsIgnoreCase(str)) {
+            LinkedList<CommonPb.Chat> chats = chatDataManager.getCampChat(player.lord.getCamp());
+            if (CheckNull.nonEmpty(chats)) {
+                Iterator<CommonPb.Chat> chatIterator = chats.iterator();
+                while (chatIterator.hasNext()) {
+                    CommonPb.Chat chat = chatIterator.next();
+                    if (CheckNull.isNull(chat)) continue;
+                    if (chat.getTime() == count) chatIterator.remove();
+                }
             }
         }
     }
