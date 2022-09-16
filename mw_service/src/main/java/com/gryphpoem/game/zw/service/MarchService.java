@@ -591,9 +591,16 @@ public class MarchService {
             int drawingNum = activityDataManager.getActBanditDrawing(player);
             tmp = rewardDataManager.sendReward(player, staticBandit.getAwardDrawing(), drawingNum,
                     AwardFrom.BANDIT_DROP);
+            List<List<Integer>> guaranteedConfigList = SystemTabLoader.getListListIntSystemValue(675, "[[]]");
+            List<Integer> guaranteedConfigRule = null;
+            for (List<Integer> l : guaranteedConfigList) {
+                if (CheckNull.isEmpty(l) || l.size() != 2 || l.get(0) != staticBandit.getLv()) continue;
+                guaranteedConfigRule = l;
+                break;
+            }
             if (tmp != null) {
                 dropList.addAll(tmp);
-                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing())) {
+                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
                     List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
                     if (CheckNull.isNull(guaranteedDrops)) {
                         guaranteedDrops = new ArrayList<>();
@@ -613,7 +620,7 @@ public class MarchService {
                     }
                 }
             } else {
-                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing())) {
+                if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
                     List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
                     if (CheckNull.isNull(guaranteedDrops)) {
                         guaranteedDrops = new ArrayList<>();
@@ -634,8 +641,7 @@ public class MarchService {
                     }
 
                     int guaranteedRebelDrops = CheckNull.isNull(rebelHistory) ? 0 : rebelHistory.getParam();
-                    int guaranteedConfigCount = SystemTabLoader.getIntegerSystemValue(675, 4);
-                    if (guaranteedRebelDrops < guaranteedConfigCount - 1) {
+                    if (guaranteedRebelDrops < guaranteedConfigRule.get(1) - 1) {
                         rebelHistory.setParam(++guaranteedRebelDrops);
                     } else {
                         // 必中图纸
@@ -644,21 +650,38 @@ public class MarchService {
                             List<Integer> dropItem = staticBandit.getAwardDrawing().get(0);
                             award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
                         } else {
-                            int totalWeight = 0;
-                            for (List<Integer> l : staticBandit.getAwardDrawing()) {
-                                if (CheckNull.isEmpty(l) || l.size() < 4)
-                                    continue;
-                                totalWeight += l.get(3);
-                            }
-                            int randomNum = RandomHelper.randomInSize(totalWeight);
-                            int temp = 0;
-                            for (List<Integer> dropItem : staticBandit.getAwardDrawing()) {
-                                if (CheckNull.isEmpty(dropItem) || dropItem.size() < 4)
-                                    continue;
-                                temp += dropItem.get(3);
-                                if (temp >= randomNum) {
-                                    award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                            if (staticBandit.getLv() < 8) {
+                                int totalWeight = 0;
+                                for (List<Integer> l : staticBandit.getAwardDrawing()) {
+                                    if (CheckNull.isEmpty(l) || l.size() < 4)
+                                        continue;
+                                    totalWeight += l.get(3);
+                                }
+                                int randomNum = RandomHelper.randomInSize(totalWeight);
+                                int temp = 0;
+                                for (List<Integer> dropItem : staticBandit.getAwardDrawing()) {
+                                    if (CheckNull.isEmpty(dropItem) || dropItem.size() < 4)
+                                        continue;
+                                    temp += dropItem.get(3);
+                                    if (temp >= randomNum) {
+                                        award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                // 8级及8级以上的叛军只掉落绿色图纸
+                                List<Integer> dropItem = null;
+                                for (List<Integer> l : staticBandit.getAwardDrawing()) {
+                                    if (CheckNull.isEmpty(l) || l.size() < 3)
+                                        continue;
+                                    StaticProp staticProp = StaticPropDataMgr.getPropMap(l.get(1));
+                                    if (CheckNull.isNull(staticProp) || staticProp.getQuality() != Constant.Quality.green)
+                                        continue;
+                                    dropItem = l;
                                     break;
+                                }
+                                if (CheckNull.nonEmpty(dropItem)) {
+                                    award = rewardDataManager.sendRewardSignle(player, dropItem.get(0), dropItem.get(1), dropItem.get(2), AwardFrom.BANDIT_DROP);
                                 }
                             }
                         }
