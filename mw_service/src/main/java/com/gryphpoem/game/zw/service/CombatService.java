@@ -1029,11 +1029,11 @@ public class CombatService {
 
         int cnt = player.lord.getPower() / staticCombat.getCost();
         // 西点军校没有开启只能
-        if (!buildingDataManager.checkBuildingLock(player, BuildingType.WAR_FACTORY) && cnt < 5) {
-            activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_ACT, player);
-            throw new MwException(GameError.ACT_NOT_ENOUGH.getCode(),
-                    "西点军校没开启 , 扫荡副本体力不足, roleId:" + roleId + ",combatId:" + combatId, ",cnt:", cnt);
-        }
+//        if (!buildingDataManager.checkBuildingLock(player, BuildingType.WAR_FACTORY) && cnt < 5) {
+//            activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_DOCOMBAT_ACT, player);
+//            throw new MwException(GameError.ACT_NOT_ENOUGH.getCode(),
+//                    "西点军校没开启 , 扫荡副本体力不足, roleId:" + roleId + ",combatId:" + combatId, ",cnt:", cnt);
+//        }
         if (cnt > 0) {
             cnt = cnt >= 5 ? 5 : cnt;
             rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.ACT,
