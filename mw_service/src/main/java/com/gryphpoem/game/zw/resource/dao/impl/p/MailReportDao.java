@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.resource.dao.impl.p;
 import com.gryphpoem.game.zw.resource.dao.BaseDao;
 import com.gryphpoem.game.zw.resource.dao.sqlMap.p.MailReportMapper;
 import com.gryphpoem.game.zw.resource.domain.p.DbMailReport;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
 /**
  * Description:
@@ -18,14 +19,15 @@ public class MailReportDao extends BaseDao {
         return this.getMapper(MailReportMapper.class).update(dbMailReport);
     }
 
-    public int replaceMailReport(DbMailReport dbMailReport) {
-        return this.getMapper(MailReportMapper.class).insert(dbMailReport);
+    public void replaceMailReport(DbMailReport dbMailReport) {
+        if (this.getMapper(MailReportMapper.class).insert(dbMailReport) > 0) {
+            dbMailReport.setExpireTime(TimeHelper.getCurrentSecond() + 1 * TimeHelper.MINUTE);
+        }
     }
 
 
     public void save(DbMailReport dbMailReport) {
-        if (updateMailReport(dbMailReport) == 0) {
-            replaceMailReport(dbMailReport);
-        }
+        replaceMailReport(dbMailReport);
     }
+
 }

@@ -134,6 +134,8 @@ public class LogicServer extends AbsLogicServer {
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new CheckTimer());
         // 延时执行定时器
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new DelayRunTimer());
+        // 移除内存中的战报定时器
+        threadPool.get(DealType.BACKGROUND.getCode()).addTimerEvent(new RemoveMailReportTimer());
     }
 
     public void addCommand(Handler handler) {

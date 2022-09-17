@@ -27,5 +27,5 @@
 	<!-- <import resource="jmxConf.xml"/> -->
 	<!-- 调度工厂 -->
 	<bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"/>
-
+	<aop:aspectj-autoproxy expose-proxy="true" />
 </beans>
