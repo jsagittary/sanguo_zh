@@ -44,6 +44,7 @@
 	<mappers>
 		<mapper class="com.gryphpoem.game.zw.resource.dao.sqlMap.s.StaticIniMapper" />
 		<mapper class="com.gryphpoem.game.zw.resource.dao.sqlMap.p.PlayerHeroMapper" />
+		<mapper class="com.gryphpoem.game.zw.resource.dao.sqlMap.p.MailReportMapper" />
 	</mappers>
 
 </configuration>

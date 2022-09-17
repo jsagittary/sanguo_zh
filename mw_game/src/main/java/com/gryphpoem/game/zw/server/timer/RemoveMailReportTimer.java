@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.server.timer;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.timer.TimerEvent;
 import com.gryphpoem.game.zw.manager.MailReportDataManager;
+import com.gryphpoem.game.zw.server.AppGameServer;
 
 /**
  * Description:
@@ -16,6 +16,6 @@ public class RemoveMailReportTimer extends TimerEvent {
 
     @Override
     public void action() throws Exception {
-        DataResource.ac.getBean(MailReportDataManager.class).runSec();
+        AppGameServer.ac.getBean(MailReportDataManager.class).runSec();
     }
 }

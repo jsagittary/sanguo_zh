@@ -6,12 +6,9 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BasePb;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
-import com.gryphpoem.game.zw.pb.GamePb2;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
-import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb3.SendCampMailRq;
 import com.gryphpoem.game.zw.pb.GamePb3.SendCampMailRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -20,11 +17,12 @@ import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
+import com.gryphpoem.game.zw.resource.domain.p.DbMailReport;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.server.SaveMailReportServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,6 +49,8 @@ public class MailService {
     private ServerSetting serverSetting;
     @Autowired
     private ActivityDataManager activityDataManager;
+    @Autowired
+    private MailReportDataManager mailReportDataManager;
 
     public void deleteCampMail(long lordId, int moldId) {
         GamePb3.SyncChatMailChangeRs.Builder syncBuilder = GamePb3.SyncChatMailChangeRs.newBuilder();
@@ -354,11 +354,9 @@ public class MailService {
      */
     public DelMailRs delMail(long roleId, DelMailRq req) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-
         List<Integer> keyIdList = req.getKeyIdList();
         if (!CheckNull.isEmpty(keyIdList)) {
             Mail mail;
-            Map<Integer, List<Integer>> existKeyIdList = new HashMap<>();
             for (Integer keyId : keyIdList) {
                 mail = player.mails.get(keyId);
                 if (null == mail) {
@@ -374,13 +372,12 @@ public class MailService {
                         continue;
                     } else {
                         player.mails.remove(keyId);
-                        existKeyIdList.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                        if (mail.getReportStatus() == MailConstant.EXISTENCE_REPORT) {
+                            SaveMailReportServer.getIns().removeData(new DbMailReport(roleId, mail.getKeyId(), null));
+                        }
                     }
                 }
             }
-
-            if (!ObjectUtils.isEmpty(existKeyIdList))
-                player.expiredMail(existKeyIdList);
         }
 
         DelMailRs.Builder builder = DelMailRs.newBuilder();
@@ -606,43 +603,41 @@ public class MailService {
     public void delExpiredMail() {
         LogUtil.debug("mailService delExpiredMail ==start== ");
         // 在此时间之前的发送邮件都删除
-        int reportExpiredTime;
         int mailExpiredTime = TimeHelper.getCurrentSecond() - Constant.DEL_MAIL_DAY * TimeHelper.DAY_S;
-        int now = TimeHelper.getCurrentSecond();
         Map<Long, Player> players = playerDataManager.getPlayers();
         Iterator<Player> playersIt = players.values().iterator();
         Player player;
         Iterator<Mail> mailIt;
         Mail mail;
-        Map<Integer, List<Integer>> delMailIds = null;
-        Map<Integer, List<Integer>> delMailReportIds = null;
 
         while (playersIt.hasNext()) {
             player = playersIt.next();
+            if (CheckNull.isNull(player) || CheckNull.isNull(player.lord)) continue;
             mailIt = player.mails.values().iterator();
             while (mailIt.hasNext()) {
                 mail = mailIt.next();
                 if (mail.getTime() <= mailExpiredTime) {
                     mailIt.remove();
-                    delMailIds = delMailIds == null ? new HashMap<>() : delMailIds;
-                    delMailIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                    // 添加删除的战报信息
+                    DbMailReport dbMailReport = new DbMailReport();
+                    dbMailReport.setLordId(player.lord.getLordId());
+                    dbMailReport.setKeyId(mail.getKeyId());
+                    SaveMailReportServer.getIns().removeData(dbMailReport);
                     //删除邮件，即删除战报
                     continue;
                 }
 
-                reportExpiredTime = now - getExpiredTimeInterval(mail.getMoldId());
-                if (mail.getTime() <= reportExpiredTime && MailConstant.EXPIRED_REPORT != mail.getReportStatus()) {
-                    delMailReportIds = delMailReportIds == null ? new HashMap<>() : delMailReportIds;
-                    delMailReportIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
-                }
+//                reportExpiredTime = now - getExpiredTimeInterval(mail.getMoldId());
+//                if (mail.getTime() <= reportExpiredTime && MailConstant.EXPIRED_REPORT != mail.getReportStatus()) {
+//                    delMailReportIds = delMailReportIds == null ? new HashMap<>() : delMailReportIds;
+//                    delMailReportIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+//                }
             }
 
-            player.expiredMail(delMailIds);
-            player.expiredMailReport(delMailReportIds);
-            if (!ObjectUtils.isEmpty(delMailIds))
-                delMailIds.clear();
-            if (!ObjectUtils.isEmpty(delMailReportIds))
-                delMailReportIds.clear();
+//            if (!ObjectUtils.isEmpty(delMailIds))
+//                delMailIds.clear();
+//            if (!ObjectUtils.isEmpty(delMailReportIds))
+//                delMailReportIds.clear();
         }
     }
 

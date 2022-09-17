@@ -9,6 +9,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
+import com.gryphpoem.game.zw.manager.MailReportDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
 import com.gryphpoem.game.zw.pb.SerializePb;
@@ -3496,7 +3497,10 @@ public class Player {
 
     public void addMail(Mail mail, Report report) {
         mails.put(mail.getKeyId(), mail);
-        addReport(mail.getMoldId(), report, mails);
+        DataResource.ac.getBean(MailReportDataManager.class).addReport(lord.getLordId(), mail.getKeyId(), report);
+        if (Objects.nonNull(report)) {
+            mail.setReportStatus(MailConstant.EXISTENCE_REPORT);
+        }
     }
 
 //    public void addReport(int moldId, Report report, Map<Integer, Mail> mails) {

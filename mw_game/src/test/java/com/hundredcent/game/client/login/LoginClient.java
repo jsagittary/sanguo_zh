@@ -40,12 +40,12 @@ public class LoginClient extends BaseClient {
      */
     private BeginGameRs beginGame() {
         BeginGameRq.Builder builder = BeginGameRq.newBuilder();
-        builder.setServerId(28);
+        builder.setServerId(120);
 //        builder.setKeyId(53231);
 //        builder.setToken("a331443cdc1f4284a2b9f5d871e1fb22");
 
-        builder.setKeyId(59715);
-        builder.setToken("40a9317ced2f48f581f8bc99543c869b");
+        builder.setKeyId(59979);
+        builder.setToken("00aa27da6ade4f7fafcb013bed533bb3");
 //        builder.setKeyId(59690);
 //        builder.setToken("645025379fbd4e3c9e2072921189960b");
 
@@ -68,7 +68,7 @@ public class LoginClient extends BaseClient {
         // 游戏服务器IP
         String serverIp = "127.0.0.1";
         // 游戏服务器端口
-        int port = 9201;
+        int port = 9203;
         if (null != args && args.length >= 2) {
             serverIp = args[0].trim();
             port = Integer.parseInt(args[1].trim());
@@ -120,9 +120,9 @@ public class LoginClient extends BaseClient {
 //        client.getCrossWarFireRanks();
 //        client.getPlayerShow();
 //        client.sendCrossChat();
-        client.getGamePlayChatRoom();
-        client.getChatRoomMsg();
-
+//        client.getGamePlayChatRoom();
+//        client.getChatRoomMsg();
+          client.getAsyncMailReport();
 
 //        client.drawSmallGameAwardRq();
 //        client.getSmallGame();
@@ -231,6 +231,14 @@ public class LoginClient extends BaseClient {
         builder.setMemberId(1);
         Base.Builder baseBuilder = PbHelper.createRqBase(SendChatRq.EXT_FIELD_NUMBER, null,
                 SendChatRq.ext, builder.build());
+        sendMsgToServer(baseBuilder);
+    }
+
+    private void getAsyncMailReport(){
+        GamePb5.GetMailReportRq.Builder builder = GamePb5.GetMailReportRq.newBuilder();
+        builder.setMailKeyId(48);
+        Base.Builder baseBuilder = PbHelper.createRqBase(GamePb5.GetMailReportRq.EXT_FIELD_NUMBER, null,
+                GamePb5.GetMailReportRq.ext, builder.build());
         sendMsgToServer(baseBuilder);
     }
 

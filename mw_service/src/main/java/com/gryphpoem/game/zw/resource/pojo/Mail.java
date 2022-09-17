@@ -37,6 +37,7 @@ public class Mail {
 	private List<Award> recoverList;
 	private CommonPb.SandTableEnrollMailInfo enrollMailInfo;
 	private CommonPb.SandTableRoundOverMailInfo roundOverMailInfo;
+	/** 战报状态 1: 邮件存在战报 2: 邮件战报已删除*/
 	private volatile int reportStatus;
 	private boolean isCross;
 

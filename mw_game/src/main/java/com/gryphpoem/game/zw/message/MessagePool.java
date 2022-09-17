@@ -1361,6 +1361,9 @@ public class MessagePool implements IMessagePool {
         // 武将列传相关
         registerC(GamePb5.GetHeroBiographyInfoRq.EXT_FIELD_NUMBER, GetHeroBiographyInfoRs.EXT_FIELD_NUMBER, GetHeroBiographyInfoHandler.class);
         registerC(GamePb5.UpgradeHeroBiographyRq.EXT_FIELD_NUMBER, UpgradeHeroBiographyRs.EXT_FIELD_NUMBER, UpgradeHeroBiographyHandler.class);
+
+        // 异步获取战报信息
+        registerC(GetMailReportRq.EXT_FIELD_NUMBER, GetMailReportRs.EXT_FIELD_NUMBER, GetMailReportHandler.class);
     }
 
     /**

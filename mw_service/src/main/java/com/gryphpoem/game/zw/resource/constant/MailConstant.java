@@ -132,9 +132,13 @@ public class MailConstant {
 
     /************* 邮件战报状态 **************/
     /**
+     * 邮件存在战报
+     */
+    public static final int EXISTENCE_REPORT = 1;
+    /**
      * 过期邮件战报
      */
-    public static final int EXPIRED_REPORT = 1;
+    public static final int EXPIRED_REPORT = 2;
 
     /************* 邮件模版id开始 **************/
     /**

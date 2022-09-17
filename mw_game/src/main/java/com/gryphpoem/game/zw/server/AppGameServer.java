@@ -79,6 +79,7 @@ public class AppGameServer extends Server {
     private SaveCrossMapServer saveCrossMapServer;
     private SendMsgServer sendMsgServer;
     private SendEventDataServer sendEventDataServer;
+    private SaveMailReportServer saveMailReportServer;
 
     private boolean startSuccess = false;// 记录游戏进程启动是否成功，用于启动失败退出时，跳过数据保存
 
@@ -397,6 +398,7 @@ public class AppGameServer extends Server {
         savePartyServer = SavePartyServer.getIns();
         saveActivityServer = SaveGlobalActivityServer.getIns();
         saveCrossMapServer = SaveCrossMapServer.getIns();
+        saveMailReportServer = SaveMailReportServer.getIns();
         sendMsgServer = SendMsgServer.getIns(connectServer);
         sendEventDataServer = SendEventDataServer.getIns();
 
@@ -406,6 +408,7 @@ public class AppGameServer extends Server {
         startServerThread(saveActivityServer);
         startServerThread(saveCrossMapServer);
         startServerThread(sendEventDataServer);
+        startServerThread(saveMailReportServer);
         // quartz 任务启动
         ScheduleManager.getInstance().initRegisterJob();
     }
@@ -486,13 +489,6 @@ public class AppGameServer extends Server {
 
     @Override
     protected void stop() {
-//        try {
-//            DubboShutdownHook.destroyAll();
-//            LogUtil.stop("成功停止dubbo服务");
-//        } catch (Exception e) {
-//            LogUtil.error("关闭dubbo 服务 失败!!!", e);
-//        }
-
         try {
             long stopMillis = System.currentTimeMillis();
             if (mainLogicServer != null) {
@@ -511,39 +507,28 @@ public class AppGameServer extends Server {
             }
 
             if (savePlayerServer != null) {
-//                savePlayerServer.setLogFlag();
-//                savePlayerServer.saveAllPlayer();
-//                savePlayerServer.stop();
                 savePlayerServer.stopServer();
             }
 
             if (saveGlobalServer != null) {
-//                saveGlobalServer.setLogFlag();
-//                saveGlobalServer.saveAll();
-//                saveGlobalServer.stop();
                 saveGlobalServer.stopServer();
             }
 
             if (savePartyServer != null) {
-//                savePartyServer.setLogFlag();
-//                savePartyServer.saveAllParty();
-//                savePartyServer.stop();
                 savePartyServer.stopServer();
             }
 
             if (saveActivityServer != null) {
-//                saveActivityServer.setLogFlag();
-//                saveActivityServer.saveAllActivity();
-//                saveActivityServer.stop();
                 saveActivityServer.stopServer();
             }
 
             if (saveCrossMapServer != null) {
-//                saveCrossMapServer.setLogFlag();
-//                saveCrossMapServer.saveAll();
-//                saveCrossMapServer.stop();
                 saveCrossMapServer.stopServer();
             }
+            if (saveMailReportServer != null) {
+                saveMailReportServer.stopServer();
+            }
+
             if (sendEventDataServer != null) {
                 sendEventDataServer.setLogFlag();
                 //上报未上报的数据

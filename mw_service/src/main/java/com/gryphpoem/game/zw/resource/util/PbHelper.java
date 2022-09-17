@@ -1318,10 +1318,10 @@ public class PbHelper {
 
         if (mail.getRewardList() != null) builder.addAllAward(mail.getRewardList());
 
-        Report mailReport = player.getMailReport(mail);
-        if (Objects.nonNull(mailReport)) {
-            builder.setReport(mailReport);
-        }
+//        Report mailReport = player.getMailReport(mail);
+//        if (Objects.nonNull(mailReport)) {
+//            builder.setReport(mailReport);
+//        }
 
         if (mail.gettParam() != null) {
             builder.addAllTParam(mail.gettParam());

@@ -21,7 +21,7 @@ public abstract class SaveCommonServer<DbData extends DbSerializeId> extends Sav
     public void saveData(Object object) {
         @SuppressWarnings("unchecked")
         DbData data = (DbData) object;
-        SaveThread thread = threadPool.get((data.getSerializeIdId() % threadNum));
+        SaveThread thread = threadPool.get(Integer.valueOf((int) (data.getSerializeIdId() % threadNum)));
         thread.add(object);
     }
 

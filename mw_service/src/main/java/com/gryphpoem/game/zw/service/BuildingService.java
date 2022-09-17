@@ -1721,15 +1721,15 @@ public class BuildingService {
             builder.addAllAward(awards);
             builder.setIsAdvance(player.isAdvanceAward());
             Mail mail = player.mails.values().stream()
-                    .filter(m -> m.getMoldId() == MailConstant.MOLD_DEF_CITY_FAIL && player.getMailReport(m) != null)
+                    .filter(m -> m.getMoldId() == MailConstant.MOLD_DEF_CITY_FAIL)
                     .max(Comparator.comparingInt(Mail::getTime))
                     .orElse(null);
             if (mail != null) {
                 // 最近的一次防守失败
                 int battleTime = mail.getTime();
-                CommonPb.Report report = player.getMailReport(mail);
-                builder.setAtkCamp(report.getRptPlayer().getAtkSum().getCamp());
-                builder.setAtkName(report.getRptPlayer().getAttack().getName());
+//                CommonPb.Report report = player.getMailReport(mail);
+//                builder.setAtkCamp(report.getRptPlayer().getAtkSum().getCamp());
+//                builder.setAtkName(report.getRptPlayer().getAttack().getName());
                 builder.setQuickBuyArmyCnt(player.getMixtureDataById(PlayerConstant.DAILY_QUICK_BUY_ARMY));
                 builder.setBattleTime(battleTime);
             }

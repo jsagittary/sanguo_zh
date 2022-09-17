@@ -11,7 +11,7 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.server.SaveMailReportServer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,12 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * Author: zhangpeng
  * createTime: 2022-09-15 17:27
  */
-@Component
+@Service
 public class MailReportDataManager implements DelayInvokeEnvironment {
     @Autowired
     private MailReportDao mailReportDao;
 
-    /** 战报临时存储 存在MAIN线程中执行, 删除在*/
+    /** 战报临时存储 所有操作MAIN线程中执行*/
     private ConcurrentHashMap<Long, ConcurrentHashMap<Integer, CommonPb.Report>> reportMap = new ConcurrentHashMap<>();
     /** 需要删除的战报延迟队列 所有操作放在background线程队列中执行*/
     private DelayQueue<DbMailReport> expireReportQueue = new DelayQueue<>(this);
@@ -40,6 +40,7 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
      */
     @ClientThreadMode
     public void addReport(long roleId, int mailKeyId, CommonPb.Report report) {
+        if (CheckNull.isNull(report)) return;
         reportMap.computeIfAbsent(roleId, m -> new ConcurrentHashMap<>()).computeIfAbsent(mailKeyId, r -> report);
         SaveMailReportServer.getIns().saveData(new DbMailReport(roleId, mailKeyId, report.toByteArray()));
     }
@@ -92,6 +93,14 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
         ConcurrentHashMap<Integer, CommonPb.Report> reportMap_ = reportMap.get(roleId);
         if (CheckNull.isNull(reportMap_)) return null;
         return reportMap_.get(mailKeyId);
+    }
+
+    public void saveMailReport(DbMailReport dbMailReport) {
+        this.mailReportDao.save(dbMailReport);
+    }
+
+    public void deleteMailReport(DbMailReport dbMailReport) {
+        this.mailReportDao.deleteMailReport(dbMailReport);
     }
 
 

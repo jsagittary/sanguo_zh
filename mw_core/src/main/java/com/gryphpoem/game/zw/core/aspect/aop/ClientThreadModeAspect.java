@@ -20,10 +20,10 @@ import java.util.Objects;
  * Author: zhangpeng
  * createTime: 2022-09-17 15:31
  */
-@Aspect
 @Component
+@Aspect
 public class ClientThreadModeAspect {
-    @Pointcut("execution(@com.gryphpoem.game.zw.core.aspect.ClientThreadMode * *(..))")
+    @Pointcut("@annotation(com.gryphpoem.game.zw.core.aspect.ClientThreadMode)")
     public void pointCut() {
     }
 

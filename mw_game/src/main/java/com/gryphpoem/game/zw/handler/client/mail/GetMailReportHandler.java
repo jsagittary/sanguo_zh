@@ -41,7 +41,7 @@ public class GetMailReportHandler extends AsyncGameHandler {
         CommonPb.Report report = DataResource.ac.getBean(MailReportDataManager.class).getReport(getRoleId(), req.getMailKeyId());
         if (CheckNull.isNull(report)) {
             DbMailReport dbMailReport = DataResource.ac.getBean(MailReportDao.class).selectMailReport(getRoleId(), req.getMailKeyId());
-            if (!ObjectUtils.isEmpty(dbMailReport.getReport())) {
+            if (Objects.nonNull(dbMailReport) && !ObjectUtils.isEmpty(dbMailReport.getReport())) {
                 report = CommonPb.Report.parseFrom(dbMailReport.getReport());
             }
         }

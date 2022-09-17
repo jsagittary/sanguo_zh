@@ -4,6 +4,8 @@ import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayRun;
 import com.gryphpoem.game.zw.manager.MailReportDataManager;
 
+import java.util.Objects;
+
 /**
  * Description:
  * Author: zhangpeng
@@ -47,6 +49,9 @@ public class DbMailReport implements DbSerializeId, DelayRun {
         this.expireTime = expireTime;
     }
 
+    public DbMailReport() {
+    }
+
     public DbMailReport(long lordId, int keyId, byte[] report) {
         this.lordId = lordId;
         this.keyId = keyId;
@@ -67,5 +72,18 @@ public class DbMailReport implements DbSerializeId, DelayRun {
     public void deadRun(int runTime, DelayInvokeEnvironment env) {
         MailReportDataManager mailReportDataManager = (MailReportDataManager) env;
         mailReportDataManager.removeOneReport(this.lordId, this.keyId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DbMailReport that = (DbMailReport) o;
+        return lordId == that.lordId && keyId == that.keyId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lordId, keyId);
     }
 }
