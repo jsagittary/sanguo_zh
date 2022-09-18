@@ -56,6 +56,13 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
      * @param report
      */
     @ClientThreadMode
+    public void addReportInMain(long roleId, int mailKeyId, CommonPb.Report report, boolean save, Object... objects) {
+        if (CheckNull.isNull(report)) return;
+        reportMap.computeIfAbsent(roleId, m -> new ConcurrentHashMap<>()).computeIfAbsent(mailKeyId, r -> report);
+        if (save)
+            SaveMailReportServer.getIns().saveData(new DbMailReport(roleId, mailKeyId, report.toByteArray()));
+    }
+
     public void addReport(long roleId, int mailKeyId, CommonPb.Report report, boolean save, Object... objects) {
         if (CheckNull.isNull(report)) return;
         reportMap.computeIfAbsent(roleId, m -> new ConcurrentHashMap<>()).computeIfAbsent(mailKeyId, r -> report);

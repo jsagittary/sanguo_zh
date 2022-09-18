@@ -45,7 +45,7 @@ public class LoginClient extends BaseClient {
 //        builder.setToken("a331443cdc1f4284a2b9f5d871e1fb22");
 
         builder.setKeyId(59979);
-        builder.setToken("813118cf2feb463bbec1a85ef651f365");
+        builder.setToken("31dadc42718c439b80767823f87e70cd");
 //        builder.setKeyId(59690);
 //        builder.setToken("645025379fbd4e3c9e2072921189960b");
 
@@ -235,9 +235,9 @@ public class LoginClient extends BaseClient {
     }
 
     private void getAsyncMailReport() {
-        for (int i=0; i < 30; i++) {
+        for (int i=0; i < 20; i++) {
             GamePb5.GetMailReportRq.Builder builder = GamePb5.GetMailReportRq.newBuilder();
-            builder.setMailKeyId(50);
+            builder.setMailKeyId(52);
             Base.Builder baseBuilder = PbHelper.createRqBase(GamePb5.GetMailReportRq.EXT_FIELD_NUMBER, null,
                     GamePb5.GetMailReportRq.ext, builder.build());
             sendMsgToServer(baseBuilder);

@@ -41,24 +41,40 @@ public class GetMailReportHandler extends AsyncGameHandler {
         }
 
         // 先从缓存中查, 若未找到则在数据库中查
+        DbMailReport dbMailReport = null;
         MailReportDataManager mailReportDataManager = DataResource.ac.getBean(MailReportDataManager.class);
         CommonPb.Report report = mailReportDataManager.getReport(getRoleId(), req.getMailKeyId());
         if (CheckNull.isNull(report)) {
-            DbMailReport dbMailReport = DataResource.ac.getBean(MailReportDao.class).selectMailReport(getRoleId(), req.getMailKeyId());
-            // 若数据库中查找不到战报, 则将战报置为过期战报
-            if (CheckNull.isNull(dbMailReport)) mail.setReportStatus(MailConstant.EXPIRED_REPORT);
-            if (Objects.nonNull(dbMailReport) && !ObjectUtils.isEmpty(dbMailReport.getReport())) {
-                report = CommonPb.Report.parseFrom(dbMailReport.getReport());
+            synchronized (player.getLock()) {
+                if (mail.getReportStatus() == MailConstant.EXPIRED_REPORT) {
+                    throw new MwException(GameError.PARAM_ERROR.getCode(), "邮件战报已过期, roleId:", getRoleId(), ", keyId: ", req.getMailKeyId());
+                }
+
+                report = mailReportDataManager.getReport(getRoleId(), req.getMailKeyId());
+                if (CheckNull.isNull(report)) {
+                    dbMailReport = DataResource.ac.getBean(MailReportDao.class).selectMailReport(getRoleId(), req.getMailKeyId());
+                    // 若数据库中查找不到战报, 则将战报置为过期战报
+                    if (CheckNull.isNull(dbMailReport)) mail.setReportStatus(MailConstant.EXPIRED_REPORT);
+                    if (Objects.nonNull(dbMailReport) && !ObjectUtils.isEmpty(dbMailReport.getReport())) {
+                        report = CommonPb.Report.parseFrom(dbMailReport.getReport());
+                        LongAdder counter = mailReportDataManager.dataBaseCount(getRoleId(), req.getMailKeyId());
+                        if (counter.longValue() >= 10) {
+                            LogUtil.debug(String.format("roleId:%d, mailKeyId:%d, 已在数据库中查询10次此封邮件!", getRoleId(), req.getMailKeyId()));
+                            // 暂时存放在缓存中
+                            mailReportDataManager.addReport(getRoleId(), req.getMailKeyId(), report, false);
+                            dbMailReport.setExpireTime(TimeHelper.getCurrentSecond() + 3 * TimeHelper.MINUTE);
+                            mailReportDataManager.addRemoveDelayQueue(dbMailReport);
+                        }
+                    }
+                }
+            }
+
+            if (Objects.nonNull(dbMailReport)) {
                 LongAdder counter = mailReportDataManager.dataBaseCount(getRoleId(), req.getMailKeyId());
                 if (counter.longValue() < 10) {
                     counter.increment();
                 } else {
-                    LogUtil.error(String.format("roleId:%d, mailKeyId:%d, 已在数据库中查询10次此封邮件!", getRoleId(), req.getMailKeyId()));
-                    // 暂时存放在缓存中
                     counter.reset();
-                    mailReportDataManager.addReport(getRoleId(), req.getMailKeyId(), report, false);
-                    dbMailReport.setExpireTime(TimeHelper.getCurrentSecond() + 3 * TimeHelper.MINUTE);
-                    mailReportDataManager.addRemoveDelayQueue(dbMailReport);
                 }
             }
         }

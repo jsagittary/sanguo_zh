@@ -18,7 +18,7 @@ public class SaveMailReportThread extends SaveThread {
     private LinkedBlockingQueue<DbMailReport> saveQueue = new LinkedBlockingQueue<>();
     /** 删除queue*/
     private LinkedBlockingQueue<DbMailReport> removeQueue = new LinkedBlockingQueue<>();
-    private static int MAX_SIZE = 10000;
+    private static int MAX_SIZE = 20000;
 
     public SaveMailReportThread(String threadName) {
         super(threadName);

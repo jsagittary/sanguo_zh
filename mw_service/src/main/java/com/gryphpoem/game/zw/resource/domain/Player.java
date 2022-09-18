@@ -755,6 +755,8 @@ public class Player {
      */
     private MakeTreasureWare makeTreasureWare = new MakeTreasureWare();
 
+    private Object lock = new Object();
+
     public MakeTreasureWare getMakeTreasureWare() {
         return makeTreasureWare;
     }
@@ -1111,6 +1113,10 @@ public class Player {
 
     public DrawCardData getDrawCardData() {
         return drawCardData;
+    }
+
+    public Object getLock() {
+        return lock;
     }
 
     /**
@@ -3497,7 +3503,7 @@ public class Player {
 
     public void addMail(Mail mail, Report report) {
         mails.put(mail.getKeyId(), mail);
-        DataResource.ac.getBean(MailReportDataManager.class).addReport(lord.getLordId(), mail.getKeyId(), report, true);
+        DataResource.ac.getBean(MailReportDataManager.class).addReportInMain(lord.getLordId(), mail.getKeyId(), report, true);
         if (Objects.nonNull(report)) {
             mail.setReportStatus(MailConstant.EXISTENCE_REPORT);
         }
