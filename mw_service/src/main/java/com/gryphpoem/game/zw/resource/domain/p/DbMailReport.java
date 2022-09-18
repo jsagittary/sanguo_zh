@@ -14,7 +14,7 @@ import java.util.Objects;
 public class DbMailReport implements DbSerializeId, DelayRun {
     private long lordId;
     private int keyId;
-    private int expireTime;
+    private volatile int expireTime;
     private byte[] report;
 
     public long getLordId() {

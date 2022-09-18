@@ -3497,7 +3497,7 @@ public class Player {
 
     public void addMail(Mail mail, Report report) {
         mails.put(mail.getKeyId(), mail);
-        DataResource.ac.getBean(MailReportDataManager.class).addReport(lord.getLordId(), mail.getKeyId(), report);
+        DataResource.ac.getBean(MailReportDataManager.class).addReport(lord.getLordId(), mail.getKeyId(), report, true);
         if (Objects.nonNull(report)) {
             mail.setReportStatus(MailConstant.EXISTENCE_REPORT);
         }

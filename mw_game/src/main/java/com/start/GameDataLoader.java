@@ -138,6 +138,9 @@ public class GameDataLoader {
             // 本地跨服数据加载
             AppGameServer.ac.getBean(CrossWorldMapDataManager.class).init();
             LogUtil.start("本地跨服数据加载");
+
+            AppGameServer.ac.getBean(MailReportDataManager.class).load();
+            LogUtil.start("加载完成: 战报队列代理");
             
             LogUtil.start("服务器热更钩子 game-agent : "+ GameAgent.inst);
         } catch (Exception e) {

@@ -49,8 +49,6 @@ public class MailService {
     private ServerSetting serverSetting;
     @Autowired
     private ActivityDataManager activityDataManager;
-    @Autowired
-    private MailReportDataManager mailReportDataManager;
 
     public void deleteCampMail(long lordId, int moldId) {
         GamePb3.SyncChatMailChangeRs.Builder syncBuilder = GamePb3.SyncChatMailChangeRs.newBuilder();

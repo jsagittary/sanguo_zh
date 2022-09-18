@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.manager;
 
 import com.gryphpoem.game.zw.core.aspect.ClientThreadMode;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Description:
@@ -26,10 +28,25 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
     @Autowired
     private MailReportDao mailReportDao;
 
-    /** 战报临时存储 所有操作MAIN线程中执行*/
+    /**
+     * 战报临时存储 所有操作MAIN线程中执行
+     */
     private ConcurrentHashMap<Long, ConcurrentHashMap<Integer, CommonPb.Report>> reportMap = new ConcurrentHashMap<>();
-    /** 需要删除的战报延迟队列 所有操作放在background线程队列中执行*/
-    private DelayQueue<DbMailReport> expireReportQueue = new DelayQueue<>(this);
+    /**
+     * 需要删除的战报延迟队列 所有操作放在background线程队列中执行
+     */
+    private DelayQueue<DbMailReport> expireReportQueue = null;
+    /**
+     * 防止一直请求数据库屏障
+     */
+    private ConcurrentHashMap<Long, ConcurrentHashMap<Integer, LongAdder>> cacheBreakdown = new ConcurrentHashMap<>();
+
+    /**
+     * 初始化队列实例
+     */
+    public void load() {
+        expireReportQueue = new DelayQueue<>(DataResource.ac.getBean(MailReportDataManager.class));
+    }
 
     /**
      * 添加战报
@@ -39,10 +56,11 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
      * @param report
      */
     @ClientThreadMode
-    public void addReport(long roleId, int mailKeyId, CommonPb.Report report) {
+    public void addReport(long roleId, int mailKeyId, CommonPb.Report report, boolean save, Object... objects) {
         if (CheckNull.isNull(report)) return;
         reportMap.computeIfAbsent(roleId, m -> new ConcurrentHashMap<>()).computeIfAbsent(mailKeyId, r -> report);
-        SaveMailReportServer.getIns().saveData(new DbMailReport(roleId, mailKeyId, report.toByteArray()));
+        if (save)
+            SaveMailReportServer.getIns().saveData(new DbMailReport(roleId, mailKeyId, report.toByteArray()));
     }
 
     /**
@@ -53,6 +71,7 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
     @ClientThreadMode(threadMode = DealType.BACKGROUND)
     public void addRemoveDelayQueue(DbMailReport dbMailReport) {
         if (CheckNull.isNull(dbMailReport)) return;
+        if (expireReportQueue.getQueue().contains(dbMailReport)) return;
         this.expireReportQueue.add(dbMailReport);
     }
 
@@ -103,6 +122,9 @@ public class MailReportDataManager implements DelayInvokeEnvironment {
         this.mailReportDao.deleteMailReport(dbMailReport);
     }
 
+    public LongAdder dataBaseCount(long roleId, int keyId) {
+        return this.cacheBreakdown.computeIfAbsent(roleId, m -> new ConcurrentHashMap<>()).computeIfAbsent(keyId, l -> new LongAdder());
+    }
 
     @Override
     public DelayQueue getDelayQueue() {

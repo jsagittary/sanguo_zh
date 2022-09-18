@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.*;
  * createTime: 2022-09-15 14:37
  */
 public interface MailReportMapper {
-    @Select("select * from p_mail_report where lord_id = #{lordId} and key_id = #{keyId}")
+    @Select("select lord_id, key_id, report from p_mail_report where lord_id = #{lordId} and key_id = #{keyId}")
     DbMailReport selectByLordId(@Param("lordId") long lordId, @Param("keyId") int keyId);
 
     @Insert({"replace into p_mail_report(lord_id, key_id, report) values(#{lordId},#{keyId},#{report})"})

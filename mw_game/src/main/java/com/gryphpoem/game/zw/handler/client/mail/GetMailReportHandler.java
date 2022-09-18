@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.handler.client.mail;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AsyncGameHandler;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.MailReportDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -15,9 +16,11 @@ import com.gryphpoem.game.zw.resource.domain.p.DbMailReport;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Description:
@@ -38,11 +41,25 @@ public class GetMailReportHandler extends AsyncGameHandler {
         }
 
         // 先从缓存中查, 若未找到则在数据库中查
-        CommonPb.Report report = DataResource.ac.getBean(MailReportDataManager.class).getReport(getRoleId(), req.getMailKeyId());
+        MailReportDataManager mailReportDataManager = DataResource.ac.getBean(MailReportDataManager.class);
+        CommonPb.Report report = mailReportDataManager.getReport(getRoleId(), req.getMailKeyId());
         if (CheckNull.isNull(report)) {
             DbMailReport dbMailReport = DataResource.ac.getBean(MailReportDao.class).selectMailReport(getRoleId(), req.getMailKeyId());
+            // 若数据库中查找不到战报, 则将战报置为过期战报
+            if (CheckNull.isNull(dbMailReport)) mail.setReportStatus(MailConstant.EXPIRED_REPORT);
             if (Objects.nonNull(dbMailReport) && !ObjectUtils.isEmpty(dbMailReport.getReport())) {
                 report = CommonPb.Report.parseFrom(dbMailReport.getReport());
+                LongAdder counter = mailReportDataManager.dataBaseCount(getRoleId(), req.getMailKeyId());
+                if (counter.longValue() < 10) {
+                    counter.increment();
+                } else {
+                    LogUtil.error(String.format("roleId:%d, mailKeyId:%d, 已在数据库中查询10次此封邮件!", getRoleId(), req.getMailKeyId()));
+                    // 暂时存放在缓存中
+                    counter.reset();
+                    mailReportDataManager.addReport(getRoleId(), req.getMailKeyId(), report, false);
+                    dbMailReport.setExpireTime(TimeHelper.getCurrentSecond() + 3 * TimeHelper.MINUTE);
+                    mailReportDataManager.addRemoveDelayQueue(dbMailReport);
+                }
             }
         }
 
