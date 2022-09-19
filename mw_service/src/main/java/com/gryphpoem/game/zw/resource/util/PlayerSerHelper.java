@@ -1,14 +1,14 @@
 package com.gryphpoem.game.zw.resource.util;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.manager.MailReportDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb.SerMail;
 import com.gryphpoem.game.zw.pb.SerializePb.SerReport;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.p.DbMailReport;
 import com.gryphpoem.game.zw.resource.domain.p.MailData;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
+import com.gryphpoem.game.zw.server.SaveMailReportServer;
 import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
@@ -103,10 +103,9 @@ public class PlayerSerHelper {
            return;
         }
 
-        MailReportDataManager mailReportDataManager = DataResource.ac.getBean(MailReportDataManager.class);
         for (CommonPb.Report report : ser.getReportList()) {
             if (CheckNull.isNull(report)) continue;
-            mailReportDataManager.addReportInMain(player.lord.getLordId(), report.getKeyId(), report, true);
+            SaveMailReportServer.getIns().saveData(new DbMailReport(player.lord.getLordId(), report.getKeyId(), report.toByteArray()));
         }
     }
 }
