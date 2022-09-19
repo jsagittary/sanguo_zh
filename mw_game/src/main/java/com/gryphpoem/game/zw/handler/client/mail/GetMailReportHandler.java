@@ -37,7 +37,7 @@ public class GetMailReportHandler extends AsyncGameHandler {
             throw new MwException(GameError.MAIL_NOT_EXIST.getCode(), "获取邮件列表为空, roleId:", getRoleId());
         }
         if (mail.getReportStatus() == MailConstant.EXPIRED_REPORT) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "邮件战报已过期, roleId:", getRoleId(), ", keyId: ", req.getMailKeyId());
+            throw new MwException(GameError.MAIL_REPORT_EXPIRED.getCode(), "邮件战报已过期, roleId:", getRoleId(), ", keyId: ", req.getMailKeyId());
         }
 
         // 先从缓存中查, 若未找到则在数据库中查
@@ -47,7 +47,7 @@ public class GetMailReportHandler extends AsyncGameHandler {
         if (CheckNull.isNull(report)) {
             synchronized (player.getLock()) {
                 if (mail.getReportStatus() == MailConstant.EXPIRED_REPORT) {
-                    throw new MwException(GameError.PARAM_ERROR.getCode(), "邮件战报已过期, roleId:", getRoleId(), ", keyId: ", req.getMailKeyId());
+                    throw new MwException(GameError.MAIL_REPORT_EXPIRED.getCode(), "邮件战报已过期, roleId:", getRoleId(), ", keyId: ", req.getMailKeyId());
                 }
 
                 report = mailReportDataManager.getReport(getRoleId(), req.getMailKeyId());
