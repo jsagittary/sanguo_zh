@@ -123,10 +123,12 @@ public class BanditService extends AbsGameService implements GmCmdService {
                     // 没有找到叛军, 则刷新一个叛军在地图上
                     int banditLv = worldDataManager.getBanditIdByPos(pos);
                     if (banditLv != req.getLevel()) {
+                        LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
                         // 随机生成点位叛军
                         builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
                     }
                 } else {
+                    LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
                     // 随机生成点位叛军
                     builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
                 }
