@@ -537,10 +537,10 @@ public class WorldDataManager {
         for (int boundary = 1; boundary <= maxRadius; boundary++) {
             List<Integer> posList = MapHelper.getExcludedRoundPos(player.lord.getPos(), boundary, boundary - 1);
             List<Integer> emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
-            if (CheckNull.isEmpty(emptyPos)) return -1;
+            if (CheckNull.isEmpty(emptyPos)) continue;
 
             int playerPos = player.lord.getPos();
-            int nearestPos = nearestPos(posList, playerPos);
+            int nearestPos = nearestPos(emptyPos, playerPos);
             if (nearestPos == Integer.MAX_VALUE) continue;
 
             StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
@@ -896,7 +896,7 @@ public class WorldDataManager {
     /**
      * 获取某个城池的空点位置
      *
-     * @param cityPos
+     * @param sCity
      * @param cnt     预计需要的空点
      * @return
      */
