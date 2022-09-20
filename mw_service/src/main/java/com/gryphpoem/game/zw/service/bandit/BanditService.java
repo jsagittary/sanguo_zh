@@ -2,7 +2,6 @@ package com.gryphpoem.game.zw.service.bandit;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
@@ -113,29 +112,27 @@ public class BanditService extends AbsGameService implements GmCmdService {
                 return;
             }
 
-            Java8Utils.syncMethodInvoke(() -> {
-                Player player_ = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
-                GamePb5.SearchBanditRs.Builder builder = GamePb5.SearchBanditRs.
-                        newBuilder().
-                        setType(req.getType()).
-                        setLevel(req.getLevel()).setPos(pos);
-                if (pos < Integer.MAX_VALUE) {
-                    // 没有找到叛军, 则刷新一个叛军在地图上
-                    int banditLv = worldDataManager.getBanditIdByPos(pos);
-                    if (banditLv != req.getLevel()) {
-                        LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
-                        // 随机生成点位叛军
-                        builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
-                    }
-                } else {
+            Player player_ = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
+            GamePb5.SearchBanditRs.Builder builder = GamePb5.SearchBanditRs.
+                    newBuilder().
+                    setType(req.getType()).
+                    setLevel(req.getLevel()).setPos(pos);
+            if (pos < Integer.MAX_VALUE) {
+                // 没有找到叛军, 则刷新一个叛军在地图上
+                int banditLv = worldDataManager.getBanditIdByPos(pos);
+                if (banditLv != req.getLevel()) {
                     LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
                     // 随机生成点位叛军
                     builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
                 }
+            } else {
+                LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
+                // 随机生成点位叛军
+                builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+            }
 
-                playerService.syncMsgToPlayer(PbHelper.createRsBase(
-                        GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, GamePb5.SearchBanditRs.ext, builder.build()).build(), player_);
-            });
+            playerService.syncMsgToPlayer(PbHelper.createRsBase(
+                    GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, GamePb5.SearchBanditRs.ext, builder.build()).build(), player_);
         });
     }
 
