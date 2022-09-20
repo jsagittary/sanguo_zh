@@ -6,11 +6,11 @@ import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb2.SyncWorldChgRs;
@@ -507,7 +507,7 @@ public class WorldDataManager {
                 .post(new Events.AreaChangeNoticeEvent(newBanditPos, Events.AreaChangeNoticeEvent.CLEAR_CACHE_TYPE));
     }
 
-    private StaticBanditArea getStaticBanditAreaByWorldProgress(int areaOrder) {
+    public StaticBanditArea getStaticBanditAreaByWorldProgress(int areaOrder) {
         int currWorldSchedule = worldScheduleService.getCurrentSchduleId();
         List<StaticBanditArea> staticBanditAreaList = StaticBanditDataMgr.getStaticBanditAreaByAreaOrder(areaOrder);
         if (!CheckNull.isEmpty(staticBanditAreaList)) {
@@ -516,6 +516,64 @@ public class WorldDataManager {
                     .findFirst().orElse(null);
         }
         return null;
+    }
+
+    /**
+     *
+     * 在一定范围内创建一个叛军
+     * @param maxRadius
+     * @param banditLv
+     * @param player
+     * @return
+     */
+    public int refreshOneBanditByPlayer(int maxRadius, int banditLv, Player player) {
+        if (maxRadius < 1) return -1;
+        List<StaticBandit> banditList =  StaticBanditDataMgr.getBanditByLv(banditLv);
+        if (CheckNull.isEmpty(banditList)) return -1;
+        StaticArea staticArea = StaticWorldDataMgr.getAreaMap().get(player.lord.getArea());
+        if (staticArea == null) return -1;
+        StaticBanditArea staticBanditArea = this.getStaticBanditAreaByWorldProgress(staticArea.getOpenOrder());
+        if (CheckNull.isNull(staticBanditArea)) return -1;
+        for (int boundary = 1; boundary <= maxRadius; boundary++) {
+            List<Integer> posList = MapHelper.getExcludedRoundPos(player.lord.getPos(), boundary, boundary - 1);
+            List<Integer> emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
+            if (CheckNull.isEmpty(emptyPos)) return -1;
+
+            int playerPos = player.lord.getPos();
+            int nearestPos = nearestPos(posList, playerPos);
+            if (nearestPos == Integer.MAX_VALUE) continue;
+
+            StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
+            if (CheckNull.isNull(sBandit)) return -1;
+            addBandit(nearestPos, sBandit);
+            return nearestPos;
+        }
+
+        return -1;
+    }
+
+    /**
+     * 点位离玩家点位最近的pos
+     *
+     * @param posList
+     * @param playerPos
+     * @return
+     */
+    public int nearestPos(List<Integer> posList, int playerPos) {
+        if (CheckNull.isEmpty(posList)) return Integer.MAX_VALUE;
+        if (posList.size() == 1) return posList.get(0);
+
+        int nearestPos = 0;
+        int minDistance = Integer.MAX_VALUE;
+        for (int pos : posList) {
+            int distance = MapHelper.calcDistance(playerPos, pos);
+            if (minDistance > distance) {
+                minDistance = distance;
+                nearestPos = pos;
+            }
+        }
+
+        return nearestPos;
     }
 
     /**
@@ -1073,7 +1131,6 @@ public class WorldDataManager {
     /**
      * 获取名城Buff
      *
-     * @param army
      * @return
      */
     public double getCityBuffer(CommonPb.TwoInt cityStatus, int buffType, long roleId) {

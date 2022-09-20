@@ -1792,6 +1792,11 @@ public class SystemId {
     public static int TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = 661;
 
     /**
+     * 叛军掉落图纸保底配置
+     */
+    public static int REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = 675;
+
+    /**
      * 寻访武将保底紫橙品质权重
      */
     public static final int DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = 779;

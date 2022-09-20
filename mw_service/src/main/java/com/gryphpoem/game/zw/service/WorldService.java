@@ -1563,6 +1563,10 @@ public class WorldService {
         // 科技加成
         TechDataManager techDataManager = DataResource.ac.getBean(TechDataManager.class);
         double addRatio = techDataManager.getTechEffect4SingleVal(player, TechConstant.TYPE_6);
+        if (worldDataManager.getBanditIdByPos(pos) > 0 || worldDataManager.getAirshipWorldDataMap().get(pos) != null) {
+            addRatio *= 2;
+        }
+
         // 柏林官员
         double berlinJobEffect = BerlinWar.getBerlinBuffVal(player.roleId, BerlinWarConstant.BUFF_TYPE_MARCH_TIME);
         // 赛季天赋:行军加速

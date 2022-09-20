@@ -457,14 +457,16 @@ public class LogLordHelper {
      * @param heroId  将领id
      * @param action  加或减，1 获得，0 失去
      */
-    public static void heroFragment(AwardFrom from, Account account, Lord lord, int heroId, int action, int count, Object... params) {
+    public static void heroFragment(AwardFrom from, Account account, Lord lord, int heroId, int action, int count, int curCount, Object... params) {
         if (account == null || lord == null) {
             return;
         }
         StringBuffer message = getCommonParams("heroFragment", from, account, lord).append("|")
                 .append(heroId).append("|")
-                .append(action);
-        contactParamsArr(message, params);
+                .append(action).append("|")
+                .append(curCount).append("|")
+                .append(count);
+//        contactParamsArr(message, params);
         GAME_LOGGER.info(message);
         EventDataUp.prop(from, account, lord, heroId, AwardType.HERO_FRAGMENT, count, action, heroId, Arrays.toString(params), params);
     }
