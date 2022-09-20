@@ -40,7 +40,7 @@ public class GetMailReportHandler extends AsyncGameHandler {
 
         Mail mail = player.mails.get(req.getMailKeyId());
         if (CheckNull.isNull(mail)) {
-            throw new MwException(GameError.MAIL_NOT_EXIST.getCode(), "获取邮件列表为空, roleId:", getRoleId());
+            throw new MwException(GameError.MAIL_NOT_EXIST.getCode(), "获取邮件列表为空, roleId:", req.hasTargetRoleId() ? req.getTargetRoleId() : getRoleId());
         }
 
         GamePb5.GetMailReportRs.Builder builder = GamePb5.GetMailReportRs.newBuilder().setMailKeyId(req.getMailKeyId());
@@ -49,27 +49,32 @@ public class GetMailReportHandler extends AsyncGameHandler {
             sendMsgToPlayer(PbHelper.createRsBase(GamePb5.GetMailReportRs.EXT_FIELD_NUMBER, GamePb5.GetMailReportRs.ext, builder.build()));
             return;
         }
+        // 此封邮件不包含战报的状态
+        if (mail.getReportStatus() != MailConstant.EXISTENCE_REPORT) {
+            sendMsgToPlayer(PbHelper.createRsBase(GamePb5.GetMailReportRs.EXT_FIELD_NUMBER, GamePb5.GetMailReportRs.ext, builder.build()));
+            return;
+        }
 
         // 先从缓存中查, 若未找到则在数据库中查
         DbMailReport dbMailReport = null;
         MailReportDataManager mailReportDataManager = DataResource.ac.getBean(MailReportDataManager.class);
-        CommonPb.Report report = mailReportDataManager.getReport(getRoleId(), req.getMailKeyId());
+        CommonPb.Report report = mailReportDataManager.getReport(player.lord.getLordId(), req.getMailKeyId());
         if (CheckNull.isNull(report)) {
             synchronized (player.getLock()) {
                 if (mail.getReportStatus() != MailConstant.EXPIRED_REPORT) {
-                    report = mailReportDataManager.getReport(getRoleId(), req.getMailKeyId());
+                    report = mailReportDataManager.getReport(player.lord.getLordId(), req.getMailKeyId());
                     if (CheckNull.isNull(report)) {
-                        dbMailReport = DataResource.ac.getBean(MailReportDao.class).selectMailReport(getRoleId(), req.getMailKeyId());
+                        dbMailReport = DataResource.ac.getBean(MailReportDao.class).selectMailReport(player.lord.getLordId(), req.getMailKeyId());
 
                         // 若数据库中查找不到战报, 则将战报置为过期战报
                         if (CheckNull.isNull(dbMailReport)) mail.setReportStatus(MailConstant.EXPIRED_REPORT);
                         if (Objects.nonNull(dbMailReport) && !ObjectUtils.isEmpty(dbMailReport.getReport())) {
                             report = CommonPb.Report.parseFrom(dbMailReport.getReport());
-                            LongAdder counter = mailReportDataManager.dataBaseCount(getRoleId(), req.getMailKeyId());
+                            LongAdder counter = mailReportDataManager.dataBaseCount(player.lord.getLordId(), req.getMailKeyId());
                             if (counter.longValue() >= 10) {
-                                LogUtil.debug(String.format("roleId:%d, mailKeyId:%d, 已在数据库中查询10次此封邮件!", getRoleId(), req.getMailKeyId()));
+                                LogUtil.debug(String.format("roleId:%d, mailKeyId:%d, 已在数据库中查询10次此封邮件!", player.lord.getLordId(), req.getMailKeyId()));
                                 // 暂时存放在缓存中
-                                mailReportDataManager.addReport(getRoleId(), req.getMailKeyId(), report, false);
+                                mailReportDataManager.addReport(player.lord.getLordId(), req.getMailKeyId(), report, false);
                                 dbMailReport.setExpireTime(TimeHelper.getCurrentSecond() + 3 * TimeHelper.MINUTE);
                                 mailReportDataManager.addRemoveDelayQueue(dbMailReport);
                             }
@@ -79,7 +84,7 @@ public class GetMailReportHandler extends AsyncGameHandler {
             }
 
             if (Objects.nonNull(dbMailReport)) {
-                LongAdder counter = mailReportDataManager.dataBaseCount(getRoleId(), req.getMailKeyId());
+                LongAdder counter = mailReportDataManager.dataBaseCount(player.lord.getLordId(), req.getMailKeyId());
                 if (counter.longValue() < 10) {
                     counter.increment();
                 } else {
