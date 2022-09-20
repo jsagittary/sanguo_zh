@@ -61,6 +61,9 @@ public class BanditService extends AbsGameService implements GmCmdService {
         if (player.lord.getPos() < 0) {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, 还未进入世界地图", roleId));
         }
+        if (req.getLevel() <= 0) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, 搜索叛军等级参数错误, req:%d", roleId, req.getLevel()));
+        }
         if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.SEARCH_BANDIT)) {
             throw new MwException(GameError.FUNCTION_LOCK, String.format("roleId:%d, function lock", roleId));
         }
