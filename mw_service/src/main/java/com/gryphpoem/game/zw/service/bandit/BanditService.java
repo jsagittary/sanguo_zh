@@ -12,8 +12,10 @@ import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticAirship;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBanditArea;
+import com.gryphpoem.game.zw.resource.pojo.world.AirshipWorldData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
@@ -36,9 +38,13 @@ import java.util.stream.Collectors;
  */
 @Component
 public class BanditService extends AbsGameService implements GmCmdService {
-    /** 普通叛军*/
+    /**
+     * 普通叛军
+     */
     private static final int COMMON_REBEL = 1;
-    /** 精英叛军*/
+    /**
+     * 精英叛军
+     */
     private static final int ELITE_REBELS = 2;
 
     @Autowired
@@ -66,7 +72,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
         if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.SEARCH_BANDIT)) {
             throw new MwException(GameError.FUNCTION_LOCK, String.format("roleId:%d, function lock", roleId));
         }
-        if (req.getType() != COMMON_REBEL) {
+        if (req.getType() != COMMON_REBEL && req.getType() != ELITE_REBELS) {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, 发送参数错误, req:%d", req.getType()));
         }
 
@@ -81,57 +87,102 @@ public class BanditService extends AbsGameService implements GmCmdService {
         switch (req.getType()) {
             case COMMON_REBEL:
                 if (req.getLevel() > staticBanditArea.getMaxlv()) {
-                    throw new MwException(GameError.SEARCH_FOR_REBELS_TOO_HIGH, "搜索叛军等级过高, searchLv:%d, maxLv:%d", req.getLevel(), staticBanditArea.getMaxlv());
+                    throw new MwException(GameError.SEARCH_FOR_REBELS_TOO_HIGH, String.format("搜索叛军等级过高, searchLv:%d, maxLv:%d", req.getLevel(), staticBanditArea.getMaxlv()));
                 }
                 int curLv = player.trophy.getOrDefault(TrophyConstant.TROPHY_1, 0);
                 if (curLv + 1 < req.getLevel()) {
-                    throw new MwException(GameError.SEARCH_FOR_REBELS_TOO_HIGH, "搜索叛军等级比当前玩家最高等级高, searchLv:%d, maxLv:%d", req.getLevel(), curLv);
+                    throw new MwException(GameError.SEARCH_FOR_REBELS_TOO_HIGH, String.format("搜索叛军等级比当前玩家最高等级高, searchLv:%d, maxLv:%d", req.getLevel(), curLv));
                 }
-            default:
-                break;
-        }
-
-        List<Integer> allPosList = MapHelper.getRoundPos(player.lord.getPos(), 10);
-        if (CheckNull.isEmpty(allPosList)) {
-            throw new MwException(GameError.PARAM_ERROR, String.format("未在玩家周围找到任何点位, pos:%d", player.lord.getPos()));
+            case ELITE_REBELS:
+                if (CheckNull.isEmpty(worldDataManager.getAllAirshipWorldData())) {
+                    throw new MwException(GameError.SEARCH_NO_ELITE_REBELS, "没有搜索到精英叛军, req:%d", req.getLevel());
+                }
         }
 
         // 异步获取441个点位是否有符合条件的叛军
-        CompletableFuture.supplyAsync(() -> allPosList.stream().filter(pos -> {
-            switch (req.getType()) {
-                case COMMON_REBEL:
-                    return worldDataManager.getBanditIdByPos(pos) == req.getLevel();
-            }
-            return false;
-        }).collect(Collectors.toList()), SendMsgServer.getIns().getConnectServer().sendExcutor).thenApply(posList -> {
+        CompletableFuture.supplyAsync(() -> {
+                    List<Integer> posList = MapHelper.getRoundPos(player.lord.getPos(), 10);
+                    if (CheckNull.isEmpty(posList))
+                        return null;
+
+                    return posList.stream().filter(pos -> {
+                                switch (req.getType()) {
+                                    case COMMON_REBEL:
+                                        return worldDataManager.getBanditIdByPos(pos) == req.getLevel();
+                                    case ELITE_REBELS:
+                                        AirshipWorldData airshipWorld = worldDataManager.getAirshipWorldDataMap().get(pos);
+                                        if (CheckNull.isNull(airshipWorld)) return false;
+                                        StaticAirship sAirship = StaticWorldDataMgr.getAirshipMap().get(airshipWorld.getId());
+                                        if (CheckNull.isNull(sAirship)) return false;
+                                        return req.getLevel() == sAirship.getLv();
+                                    default:
+                                        return false;
+                                }
+                            }
+                    ).collect(Collectors.toList());
+                }
+                , SendMsgServer.getIns().getConnectServer().sendExcutor).thenApply(posList -> {
+            if (posList == null)
+                throw new MwException(GameError.PARAM_ERROR, String.format("玩家点位周围没有点位, pos:%d", player.lord.getPos()));
+            // 查找离玩家最近的点位
             if (CheckNull.isEmpty(posList)) return -1;
             if (posList.size() == 1) return posList.get(0);
             return worldDataManager.nearestPos(posList, player.lord.getPos());
         }).whenComplete((pos, t) -> {
+            Player player_ = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
             if (t != null) {
                 LogUtil.error("", t);
-                handAsyncInvokeException(GameError.SERVER_EXCEPTION.getCode(), t, player);
+                handAsyncInvokeException(GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, t, player_);
                 return;
             }
 
-            Player player_ = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
             GamePb5.SearchBanditRs.Builder builder = GamePb5.SearchBanditRs.
                     newBuilder().
                     setType(req.getType()).
                     setLevel(req.getLevel()).setPos(pos);
             if (pos != -1) {
-                // 校验当前点位上是否是对应等级的叛军
-                int banditLv = worldDataManager.getBanditIdByPos(pos);
-                if (banditLv != req.getLevel()) {
-                    LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
-                    // 随机生成点位叛军
-                    builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+                switch (req.getType()) {
+                    case COMMON_REBEL:
+                        // 校验当前点位上是否是对应等级的叛军
+                        int banditLv = worldDataManager.getBanditIdByPos(pos);
+                        if (banditLv != req.getLevel()) {
+                            LogUtil.error(String.format("异步找到地图上的指定叛军的点不存在, pos:%d", pos));
+                            // 随机生成点位叛军
+                            builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+                        }
+                        break;
+                    case ELITE_REBELS:
+                        AirshipWorldData airshipWorld = worldDataManager.getAirshipWorldDataMap().get(pos);
+                        if (CheckNull.isNull(airshipWorld)) {
+                            LogUtil.error(String.format("异步查找的精英叛军不存在, role:%d, pos:%d", roleId, pos));
+                            builder.setPos(-1);
+                            break;
+                        }
+                        StaticAirship sAirship = StaticWorldDataMgr.getAirshipMap().get(airshipWorld.getId());
+                        if (CheckNull.isNull(sAirship)) {
+                            LogUtil.error(String.format("异步查找的精英叛军配置不存在, role:%d, pos:%d", roleId, pos));
+                            builder.setPos(-1);
+                            break;
+                        }
+                        if (sAirship.getLv() != req.getLevel()) {
+                            LogUtil.error(String.format("异步查找的精英叛军等级不匹配, role:%d, req:%d, lv:%d", roleId, req.getLevel(), sAirship.getLv()));
+                            builder.setPos(-1);
+                            break;
+                        }
+                        break;
                 }
             } else {
-                // 没有找到叛军, 则刷新一个叛军在地图上
+                // 没有找到叛军或精英叛军
                 LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
-                // 随机生成点位叛军
-                builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+                switch (req.getType()) {
+                    case COMMON_REBEL:
+                        // 刷新一个叛军在地图上
+                        // 随机生成点位叛军
+                        builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+                        break;
+                    case ELITE_REBELS:
+                        break;
+                }
             }
 
             playerService.syncMsgToPlayer(PbHelper.createRsBase(
