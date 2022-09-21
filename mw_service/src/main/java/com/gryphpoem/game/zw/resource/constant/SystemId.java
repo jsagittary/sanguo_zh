@@ -1847,6 +1847,11 @@ public class SystemId {
     public static final int TREASURE_WARE_RES_OUTPUT_TIME_UNIT = 1096;
 
     /**
+     * 搜索叛军范围（以自身城池为中心）
+     */
+    public static final int SEARCH_THE_RANGE_OF_THE_REBELS = 1112;
+
+    /**
      * 品质与万能碎片的兑换
      */
     public static final int EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = 4001;

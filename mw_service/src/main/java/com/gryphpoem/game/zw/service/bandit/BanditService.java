@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticAirship;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
@@ -101,7 +102,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
 
         // 异步获取441个点位是否有符合条件的叛军
         CompletableFuture.supplyAsync(() -> {
-                    List<Integer> posList = MapHelper.getRoundPos(player.lord.getPos(), 10);
+                    List<Integer> posList = MapHelper.getRoundPos(player.lord.getPos(), WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS);
                     if (CheckNull.isEmpty(posList))
                         return null;
 
@@ -148,7 +149,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
                         if (banditLv != req.getLevel()) {
                             LogUtil.error(String.format("异步找到地图上的指定叛军的点不存在, pos:%d", pos));
                             // 随机生成点位叛军
-                            builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+                            builder.setPos(worldDataManager.refreshOneBanditByPlayer(WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS, req.getLevel(), player_));
                         }
                         break;
                     case ELITE_REBELS:
@@ -178,7 +179,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
                     case COMMON_REBEL:
                         // 刷新一个叛军在地图上
                         // 随机生成点位叛军
-                        builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
+                        builder.setPos(worldDataManager.refreshOneBanditByPlayer(WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS, req.getLevel(), player_));
                         break;
                     case ELITE_REBELS:
                         break;
