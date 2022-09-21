@@ -11,22 +11,64 @@ import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
+import com.gryphpoem.game.zw.manager.BattlePassDataManager;
+import com.gryphpoem.game.zw.manager.ChatDataManager;
+import com.gryphpoem.game.zw.manager.MedalDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.WarPlaneDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1;
-import com.gryphpoem.game.zw.pb.GamePb1.*;
+import com.gryphpoem.game.zw.pb.GamePb1.ChooseWishHeroRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetHeroBattlePosRs;
+import com.gryphpoem.game.zw.pb.GamePb1.HeroDecoratedRq;
+import com.gryphpoem.game.zw.pb.GamePb1.HeroDecoratedRs;
+import com.gryphpoem.game.zw.pb.GamePb1.HeroQuickUpRq;
+import com.gryphpoem.game.zw.pb.GamePb1.HeroQuickUpRs;
+import com.gryphpoem.game.zw.pb.GamePb1.ReceiveRecruitRewardRs;
+import com.gryphpoem.game.zw.pb.GamePb1.SaveHeroWashRq;
+import com.gryphpoem.game.zw.pb.GamePb1.SaveHeroWashRs;
 import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.ChatConst;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
+import com.gryphpoem.game.zw.resource.constant.PropConstant;
+import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEquip;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroDecorated;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearchExtAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
+import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
+import com.gryphpoem.game.zw.resource.util.AccountHelper;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
@@ -35,8 +77,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +151,10 @@ public class HeroService implements GmCmdService {
     private CrossRechargeActivityService crossRechargeActivityService;
     @Autowired
     private RpcPlayerService crossPlayerService;
+    @Autowired
+    private TreasureWareService treasureWareService;
+    @Autowired
+    private MedalService medalService;
 
     /**
      * 获取所有将领
@@ -267,6 +322,17 @@ public class HeroService implements GmCmdService {
             swapPlane = req.getSwapPlane();
         }
 
+        // 替换宝具标识
+        boolean swapTreasure = false;
+        if (req.hasSwapTreasure()) {
+            swapTreasure = req.getSwapTreasure();
+        }
+        // 替换兵书标识
+        boolean swapMedal = false;
+        if (req.hasSwapMedal()) {
+            swapMedal = req.getSwapMedal();
+        }
+
         // 检查pos位是否正常
         if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
             throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:",
@@ -303,6 +369,7 @@ public class HeroService implements GmCmdService {
             defPos = battleHero.getDefPos();
         }
         ChangeInfo change = ChangeInfo.newIns();
+        boolean sysClientUpdateMedal = false;
         if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
             if (!battleHero.isIdle()) {
                 throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
@@ -316,8 +383,16 @@ public class HeroService implements GmCmdService {
             } else {
                 downHeroAllPlane(player, battleHero); // 下阵将领, 把战机也下阵
             }
+            if (swapTreasure) {// 如果需要替换宝具，执行宝具替换的逻辑
+                swapHeroTreasure(player, battleHero, hero);
+            }
+            if (swapMedal) {// 如果需要替换兵书，执行兵书替换的逻辑
+                sysClientUpdateMedal = swapHeroMedal(player, battleHero, hero);
+            }
             battleHero.onBattle(0);// 将领下阵，pos设置为0
             battleHero.onDef(0);// 防守将领下阵, pos设置为0
+            // 告诉客户端武将兵书是否有更新
+            builder.setUpdateMedal(sysClientUpdateMedal);
 
             // 士兵回营
             int sub = battleHero.getCount();
@@ -596,6 +671,63 @@ public class HeroService implements GmCmdService {
                 equipService.heroOnEquip(player, h2, i, equipKeyId);
             }
         }
+    }
+
+    /**
+     * 武将上阵时，交换两个武将的宝具
+     *
+     * @param player
+     * @param oldHero
+     * @param newHero
+     */
+    public void swapHeroTreasure(Player player, Hero oldHero, Hero newHero) {
+        int oldHeroTreasureWare = oldHero.getTreasureWare() == null ? -1 : oldHero.getTreasureWare();
+        int newHeroTreasureWare = newHero.getTreasureWare() == null ? -1 : newHero.getTreasureWare();
+
+        if (oldHeroTreasureWare > 0) {
+            treasureWareService.downEquip(player, oldHero, oldHeroTreasureWare, new ArrayList<>(), false);
+            treasureWareService.heroOnTreasureWare(player, newHero, oldHeroTreasureWare, new ArrayList<>(), false);
+        }
+
+        if (newHeroTreasureWare > 0) {
+            treasureWareService.downEquip(player, newHero, newHeroTreasureWare, new ArrayList<>(), false);
+            treasureWareService.heroOnTreasureWare(player, oldHero, newHeroTreasureWare, new ArrayList<>(), false);
+        }
+    }
+
+    /**
+     * 武将上阵时，交换两个武将的兵书
+     *
+     * @param player
+     * @param oldHero
+     * @param newHero
+     */
+    public boolean swapHeroMedal(Player player, Hero oldHero, Hero newHero) {
+        boolean sysClientUpdateMedal = false;
+
+        List<Medal> medalListOnOldHero = DataResource.ac.getBean(MedalDataManager.class).getHeroMedalByHeroId(player, oldHero.getHeroId());
+        Medal medalOnOldHero = null;
+        if (medalListOnOldHero != null && medalListOnOldHero.size() > 0) {
+            medalOnOldHero = medalListOnOldHero.get(0);
+        }
+
+        List<Medal> medalListOnNewHero = DataResource.ac.getBean(MedalDataManager.class).getHeroMedalByHeroId(player, newHero.getHeroId());
+        Medal medalOnNewHero = null;
+        if (medalListOnNewHero != null && medalListOnNewHero.size() > 0) {
+            medalOnNewHero = medalListOnNewHero.get(0);
+        }
+
+        if (medalOnOldHero != null) {
+            medalOnOldHero.setHeroId(newHero.getHeroId());
+            sysClientUpdateMedal = true;
+        }
+
+        if (medalOnNewHero != null) {
+            medalOnNewHero.setHeroId(oldHero.getHeroId());
+            sysClientUpdateMedal = true;
+        }
+
+        return sysClientUpdateMedal;
     }
 
     /**
@@ -1811,7 +1943,6 @@ public class HeroService implements GmCmdService {
 //                builder.getHero().getHeroId(), heroTokenCount, costCount, searchType == HeroConstant.SEARCH_TYPE_NORMAL ? common.getNormalHero() : common.getSuperHero());
 //        return builder.build();
 //    }
-
     private boolean realSearchType(int searchType) {
         return searchType == HeroConstant.SEARCH_TYPE_NORMAL || searchType == HeroConstant.SEARCH_TYPE_SUPER;
     }
@@ -1846,7 +1977,6 @@ public class HeroService implements GmCmdService {
 //        }
 //
 //    }
-
     private void pushWashHeroMsg(Player p) {
         /*if (!p.hasPushRecord(String.valueOf(PushConstant.WASH_HERO_IS_FULL))) {
             PushMessageUtil.pushMessage(p.account, PushConstant.WASH_HERO_IS_FULL);
@@ -2248,6 +2378,7 @@ public class HeroService implements GmCmdService {
 
     /**
      * 指定品质英雄到指定等级
+     *
      * @param player
      * @param quality
      * @return

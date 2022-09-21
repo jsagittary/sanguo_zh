@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4.FixWallRs;
@@ -357,7 +358,7 @@ public class WallService {
      * @return
      * @throws MwException
      */
-    public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap) throws MwException {
+    public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         // 检测是否满足开启天策府
         if (player.building.getWar() < Constant.CABINET_CONDITION.get(1)) {
@@ -425,11 +426,19 @@ public class WallService {
                     // rewardDataManager.checkBagCnt(player);
                     heroService.swapHeroEquip(player, hero, battleHero);
                 }
+                if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
+                    heroService.swapHeroTreasure(player, battleHero, hero);
+                }
+                if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
+                    heroService.swapHeroMedal(player, battleHero, hero);
+                }
                 downWallHeroAndBackRes(player, battleHero);
                 // 重新计算并更新将领属性
                 CalculateUtil.processAttr(player, battleHero);
                 // 下阵
-                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
+                CommonPb.Hero downHeroPb = PbHelper.createHeroPb(battleHero, player);
+                downHeroPb.toBuilder().setMedalKeyId(battleHero.getMedalKeyId());
+                builder.setDownHero(downHeroPb);
             }
 
             List<TwoInt> seasonTalentAttr = null;
@@ -448,8 +457,9 @@ public class WallService {
                     seasonTalentAttr = new ArrayList<>(janitorAttr);
                 }
             }
-
-            builder.setUpHero(PbHelper.createHeroPb(hero, player, seasonTalentAttr));
+            CommonPb.Hero upHeroPb = PbHelper.createHeroPb(hero, player, seasonTalentAttr);
+            upHeroPb.toBuilder().setMedalKeyId(hero.getMedalKeyId());
+            builder.setUpHero(upHeroPb);
         } else {
             // 下阵
             int myPos = 0;
@@ -471,7 +481,9 @@ public class WallService {
                 // 重新计算并更新将领属性
                 CalculateUtil.processAttr(player, battleHero);
                 // 下阵
-                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
+                CommonPb.Hero downHeroPb = PbHelper.createHeroPb(battleHero, player);
+                downHeroPb.toBuilder().setMedalKeyId(battleHero.getMedalKeyId());
+                builder.setDownHero(downHeroPb);
             }
         }
         for (int i = 1; i < player.heroWall.length; i++) {

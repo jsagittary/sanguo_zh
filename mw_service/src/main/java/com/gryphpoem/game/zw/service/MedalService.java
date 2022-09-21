@@ -268,7 +268,7 @@ public class MedalService {
      * @param index     勋章位置索引
      * @throws MwException  自定义异常
      */
-    private void upMedal(Player player, Hero hero, Medal medal, int index) throws MwException {
+    public void upMedal(Player player, Hero hero, Medal medal, int index) throws MwException {
         long roleId = player.roleId;
         int heroId = hero.getHeroId();
         int keyId = medal.getKeyId();

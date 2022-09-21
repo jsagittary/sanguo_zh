@@ -176,7 +176,7 @@ public class StaticPropDataMgr {
      * 装备扩展初始化
      */
     private static void initEquipExtra() {
-       StaticPropDataMgr.ringStrengthenMap = staticDataDao.selectRingStrengthenList().stream()
+        StaticPropDataMgr.ringStrengthenMap = staticDataDao.selectRingStrengthenList().stream()
                 .collect(Collectors.groupingBy(StaticRingStrengthen::getEquipId, HashMap::new,
                         Collectors.toMap(StaticRingStrengthen::getLevel, conf -> conf)));
         StaticPropDataMgr.RING_STRENGTHEN_MAX = StaticPropDataMgr.ringStrengthenMap.values().stream()
@@ -217,6 +217,7 @@ public class StaticPropDataMgr {
 
     /**
      * 根据道具id, 获取道具广播配置
+     *
      * @param propId
      * @return
      */
@@ -266,9 +267,10 @@ public class StaticPropDataMgr {
 
     /**
      * 根据部位和唯一key, 获取装备技能上的配置
-     * @param attrId    唯一key
-     * @param lv        等级
-     * @param part      部位
+     *
+     * @param attrId 唯一key
+     * @param lv     等级
+     * @param part   部位
      * @return
      */
     public static StaticEquipExtra getEuqipExtraByIdAndLv(int attrId, int lv, int part) {
@@ -279,8 +281,31 @@ public class StaticPropDataMgr {
         return null;
     }
 
+    /**
+     * 根据神器类型获取对应神器的配置
+     *
+     * @param type 对应数据库中sanguo_ini_dev.s_super_quip的type字段
+     * @return
+     */
     public static StaticSuperEquip getSuperEquip(int type) {
         return superEquipMap.get(type);
+    }
+
+    /**
+     * 根据神器消耗的道具id获取神器类型
+     *
+     * @param materialId 对应数据库中sanguo_ini_dev.s_super_quip的material字段的0号索引位置的1号索引出的的值，如：[[4,4901,1]]中的4901
+     * @return
+     */
+    public static Integer getSuperEquipType(int materialId) {
+        Integer type = null;
+        for (Map.Entry<Integer, StaticSuperEquip> superEquipEntry : superEquipMap.entrySet()) {
+            if (superEquipEntry.getValue().getMaterial().get(0).get(1) == materialId) {
+                type = superEquipEntry.getKey();
+            }
+        }
+
+        return type;
     }
 
     public static StaticSuperEquipLv getSuperEquipLv(int type, int lv) {

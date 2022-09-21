@@ -18,8 +18,10 @@ public class AcqHeroSetHandler extends ClientHandler {
     public void action() throws MwException {
         AcqHeroSetRq req = msg.getExtension(AcqHeroSetRq.ext);
         WarFactoryService service = getService(WarFactoryService.class);
-        boolean swap = req.hasSwap() ? req.getSwap() : false;
-        AcqHeroSetRs resp = service.acqHeroSet(getRoleId(), req.getPos(), req.getHeroId(), req.getType(), swap);
+        boolean swap = req.hasSwap() && req.getSwap();
+        boolean swapTreasure = req.hasSwapTreasure() && req.getSwapTreasure();
+        boolean swapMedal = req.hasSwapMedal() && req.getSwapMedal();
+        AcqHeroSetRs resp = service.acqHeroSet(getRoleId(), req.getPos(), req.getHeroId(), req.getType(), swap, swapTreasure, swapMedal);
         if (null != resp) sendMsgToPlayer(AcqHeroSetRs.ext, resp);
     }
 

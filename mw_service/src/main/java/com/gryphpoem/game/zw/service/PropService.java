@@ -35,6 +35,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWeightBoxProp;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
+import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -184,6 +185,9 @@ public class PropService {
             useChooseHeroFragment(count, staticProp, player, prop, params, roleId, propId, listAward, change);
         } else if (staticProp.getPropType() == PropConstant.PropType.ADD_TREASURE_WARE_PROP) {
             DataResource.getBean(TreasureCombatService.class).useProp(count, player, staticProp.getRewardList(), propId, listAward, change);
+        } else if (staticProp.getPropType() == PropConstant.PropType.SUPPER_EQUIP_CHIP) {
+            // 神器碎片出售处理
+            useSuperEquipChip(count, staticProp, player, listAward, params);
         } else {
             for (int i = 0; i < count; i++) {
                 if (!CheckNull.isEmpty(staticProp.getRewardList())) {
@@ -264,6 +268,58 @@ public class PropService {
         // 填充equip值
         fillEquipVal(player, builder, listAward);
         return builder.build();
+    }
+
+    /**
+     * 出售多余的神器碎片
+     *
+     * @param count      要出售的数量
+     * @param staticProp 道具配置
+     * @param player     玩家信息
+     * @param listAward  奖励列表
+     */
+    private void useSuperEquipChip(int count,
+                                   StaticProp staticProp,
+                                   Player player,
+                                   List<Award> listAward,
+                                   Object params) {
+        // 判断玩家该神器是否已合成
+        int propId = staticProp.getPropId();
+        Integer superEquipType = StaticPropDataMgr.getSuperEquipType(propId);
+        SuperEquip superEquip = player.supEquips.get(superEquipType);
+        if (superEquip == null) {
+            throw new MwException(GameError.EQUIP_NOT_FOUND.getCode(), "神器还未打造, roleId:", player.roleId, ", type:", superEquipType);
+        }
+
+        // 判断玩家要出售的碎片数量是否足够，主逻辑已校验
+
+        // 兑换奖励
+        List<List<Integer>> rewardList = staticProp.getRewardList();
+        if (CheckNull.isEmpty(rewardList)) {
+            throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(player.roleId, propId));
+        }
+
+        List<Integer> reward = null;
+        List<List<Integer>> rewardArr;
+        for (List<Integer> tmpReward : rewardList) {
+            if (CheckNull.isEmpty(tmpReward) || tmpReward.size() < 3) {
+                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(player.roleId, propId));
+            }
+            if (tmpReward.get(1) == propId) {
+                reward = tmpReward;
+                break;
+            }
+        }
+        if (ObjectUtils.isEmpty(reward)) {
+            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(player.roleId, propId));
+        }
+
+        rewardArr = new ArrayList<>();
+        rewardArr.add(reward);
+        listAward.addAll(rewardDataManager.sendReward(player, rewardArr, count, AwardFrom.USE_PROP));
+
+        // 扣减神器碎片数量
+        rewardDataManager.subProp(player, propId, count, AwardFrom.USE_PROP, params);
     }
 
     /**
