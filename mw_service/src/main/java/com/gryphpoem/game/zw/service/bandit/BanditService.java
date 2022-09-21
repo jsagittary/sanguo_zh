@@ -87,6 +87,8 @@ public class BanditService extends AbsGameService implements GmCmdService {
                 if (curLv + 1 < req.getLevel()) {
                     throw new MwException(GameError.SEARCH_FOR_REBELS_TOO_HIGH, "搜索叛军等级比当前玩家最高等级高, searchLv:%d, maxLv:%d", req.getLevel(), curLv);
                 }
+            default:
+                break;
         }
 
         List<Integer> allPosList = MapHelper.getRoundPos(player.lord.getPos(), 10);
