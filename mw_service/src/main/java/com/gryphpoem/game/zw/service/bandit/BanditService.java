@@ -102,7 +102,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
             }
             return false;
         }).collect(Collectors.toList()), SendMsgServer.getIns().getConnectServer().sendExcutor).thenApply(posList -> {
-            if (CheckNull.isEmpty(posList)) return Integer.MAX_VALUE;
+            if (CheckNull.isEmpty(posList)) return -1;
             if (posList.size() == 1) return posList.get(0);
             return worldDataManager.nearestPos(posList, player.lord.getPos());
         }).whenComplete((pos, t) -> {
