@@ -296,8 +296,11 @@ public class HeroUpgradeService implements GmCmdService {
         rewardDataManager.checkAndSubPlayerRes(player, configList, 1, AwardFrom.UPGRADE_HERO, String.valueOf(gradeKeyId));
     }
 
+    @GmCmd("upgradeHero")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
-
+        if ("resetAllPurple".equalsIgnoreCase(params[0])) {
+            
+        }
     }
 }

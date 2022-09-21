@@ -8,14 +8,13 @@ import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.GamePb5;
-import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticAirship;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBanditArea;
+import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipWorldData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
@@ -29,7 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -106,10 +108,27 @@ public class BanditService extends AbsGameService implements GmCmdService {
                     if (CheckNull.isEmpty(posList))
                         return null;
 
+                    // 搜索普通叛军时, 若有前往该点的行军线
+                    Map<Integer, Army> armyMap = null;
+                    if (req.getType() == COMMON_REBEL) {
+                        Map<Integer, March> marchMap = worldDataManager.getMarchMap().get(player.lord.getArea());
+                        if (Objects.nonNull(marchMap)) {
+                            armyMap = marchMap.values().stream().map(March::getArmy).collect(Collectors.toMap(Army::getTarget, Function.identity(), (key1, key2) -> key2));
+                        }
+                    }
+
+                    Map<Integer, Army> finalArmyMap = armyMap;
                     return posList.stream().filter(pos -> {
                                 switch (req.getType()) {
                                     case COMMON_REBEL:
-                                        return worldDataManager.getBanditIdByPos(pos) == req.getLevel();
+                                        if (worldDataManager.getBanditIdByPos(pos) != req.getLevel())
+                                            return false;
+
+                                        Army army;
+                                        if (Objects.nonNull(finalArmyMap) && (army = finalArmyMap.get(pos)) != null) {
+                                            if (army.getState() != ArmyConstant.ARMY_STATE_RETREAT) return false;
+                                        }
+                                        return true;
                                     case ELITE_REBELS:
                                         AirshipWorldData airshipWorld = worldDataManager.getAirshipWorldDataMap().get(pos);
                                         if (CheckNull.isNull(airshipWorld)) return false;
