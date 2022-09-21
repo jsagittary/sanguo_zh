@@ -519,8 +519,8 @@ public class WorldDataManager {
     }
 
     /**
-     *
      * 在玩家点位maxRadius范围内创建一个叛军
+     *
      * @param maxRadius
      * @param banditLv
      * @param player
@@ -528,28 +528,49 @@ public class WorldDataManager {
      */
     public int refreshOneBanditByPlayer(int maxRadius, int banditLv, Player player) {
         if (maxRadius < 1) return -1;
-        List<StaticBandit> banditList =  StaticBanditDataMgr.getBanditByLv(banditLv);
+
+        List<StaticBandit> banditList = StaticBanditDataMgr.getBanditByLv(banditLv);
         if (CheckNull.isEmpty(banditList)) return -1;
         StaticArea staticArea = StaticWorldDataMgr.getAreaMap().get(player.lord.getArea());
         if (staticArea == null) return -1;
         StaticBanditArea staticBanditArea = this.getStaticBanditAreaByWorldProgress(staticArea.getOpenOrder());
         if (CheckNull.isNull(staticBanditArea)) return -1;
-        for (int boundary = 1; boundary <= maxRadius; boundary++) {
-            List<Integer> posList = MapHelper.getExcludedRoundPos(player.lord.getPos(), boundary, boundary - 1);
-            List<Integer> emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
-            if (CheckNull.isEmpty(emptyPos)) continue;
 
-            int playerPos = player.lord.getPos();
-            int nearestPos = nearestPos(emptyPos, playerPos);
-            if (nearestPos == -1) continue;
+        int randomPos = shufflePosInRadius(maxRadius, player.lord.getPos());
+        if (randomPos == -1) return randomPos;
 
-            StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
-            if (CheckNull.isNull(sBandit)) continue;
-            addBandit(nearestPos, sBandit);
-            return nearestPos;
+        StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
+        addBandit(randomPos, sBandit);
+        return randomPos;
+    }
+
+    /**
+     * 在一定范围内随机点位
+     *
+     * @param maxRadius
+     * @param playerPos
+     * @return
+     */
+    public int shufflePosInRadius(int maxRadius, int playerPos) {
+        List<Integer> emptyPos = null;
+        // 先在一半区域里找
+        List<Integer> posList = MapHelper.getRoundPos(playerPos, maxRadius / 2);
+        if (CheckNull.nonEmpty(posList)) {
+            emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
+            if (CheckNull.isEmpty(emptyPos)) {
+                // 一半区域里没位置则在一半以外的区域找
+                posList = MapHelper.getExcludedRoundPos(playerPos, maxRadius, maxRadius / 2);
+                emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
+            }
+        } else {
+            // 一半区域没有pos, 在一半以外里找
+            posList = MapHelper.getExcludedRoundPos(playerPos, maxRadius, maxRadius / 2);
+            if (CheckNull.nonEmpty(posList))
+                emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
         }
-
-        return -1;
+        if (CheckNull.isEmpty(emptyPos)) return -1;
+        Collections.shuffle(emptyPos);
+        return emptyPos.get(0);
     }
 
     /**
@@ -897,7 +918,7 @@ public class WorldDataManager {
      * 获取某个城池的空点位置
      *
      * @param sCity
-     * @param cnt     预计需要的空点
+     * @param cnt   预计需要的空点
      * @return
      */
     public List<Integer> randomEmptyByKingCityPos(StaticCity sCity, int cnt) {
@@ -2217,7 +2238,7 @@ public class WorldDataManager {
 //            }
 //        }
 
-        try{
+        try {
             Map<Integer, Integer> errorMap = new HashMap<>();
             for (Entry<Integer, List<Army>> entry : armyMap.entrySet()) {
                 List<Army> list = entry.getValue();
@@ -2238,7 +2259,7 @@ public class WorldDataManager {
             if (!errorMap.isEmpty()) {
                 LogUtil.error2Sentry(String.format("armyMap 剩余异常驻防数据 :%s", errorMap));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             LogUtil.error("", e);
         }
         return cnt;
