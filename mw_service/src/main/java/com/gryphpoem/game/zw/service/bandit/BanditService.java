@@ -94,7 +94,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
             throw new MwException(GameError.PARAM_ERROR, String.format("未在玩家周围找到任何点位, pos:%d", player.lord.getPos()));
         }
 
-        // 异步获取400个点位是否有符合条件的叛军
+        // 异步获取441个点位是否有符合条件的叛军
         CompletableFuture.supplyAsync(() -> allPosList.stream().filter(pos -> {
             switch (req.getType()) {
                 case COMMON_REBEL:
@@ -117,8 +117,8 @@ public class BanditService extends AbsGameService implements GmCmdService {
                     newBuilder().
                     setType(req.getType()).
                     setLevel(req.getLevel()).setPos(pos);
-            if (pos < Integer.MAX_VALUE) {
-                // 没有找到叛军, 则刷新一个叛军在地图上
+            if (pos != -1) {
+                // 校验当前点位上是否是对应等级的叛军
                 int banditLv = worldDataManager.getBanditIdByPos(pos);
                 if (banditLv != req.getLevel()) {
                     LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
@@ -126,6 +126,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
                     builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));
                 }
             } else {
+                // 没有找到叛军, 则刷新一个叛军在地图上
                 LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
                 // 随机生成点位叛军
                 builder.setPos(worldDataManager.refreshOneBanditByPlayer(10, req.getLevel(), player_));

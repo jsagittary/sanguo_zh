@@ -520,7 +520,7 @@ public class WorldDataManager {
 
     /**
      *
-     * 在一定范围内创建一个叛军
+     * 在玩家点位maxRadius范围内创建一个叛军
      * @param maxRadius
      * @param banditLv
      * @param player
@@ -541,10 +541,10 @@ public class WorldDataManager {
 
             int playerPos = player.lord.getPos();
             int nearestPos = nearestPos(emptyPos, playerPos);
-            if (nearestPos == Integer.MAX_VALUE) continue;
+            if (nearestPos == -1) continue;
 
             StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
-            if (CheckNull.isNull(sBandit)) return -1;
+            if (CheckNull.isNull(sBandit)) continue;
             addBandit(nearestPos, sBandit);
             return nearestPos;
         }
@@ -560,10 +560,10 @@ public class WorldDataManager {
      * @return
      */
     public int nearestPos(List<Integer> posList, int playerPos) {
-        if (CheckNull.isEmpty(posList)) return Integer.MAX_VALUE;
+        if (CheckNull.isEmpty(posList)) return -1;
         if (posList.size() == 1) return posList.get(0);
 
-        int nearestPos = 0;
+        int nearestPos = -1;
         int minDistance = Integer.MAX_VALUE;
         for (int pos : posList) {
             int distance = MapHelper.calcDistance(playerPos, pos);
