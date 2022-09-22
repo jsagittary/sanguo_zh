@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service.bandit;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
@@ -151,64 +152,71 @@ public class BanditService extends AbsGameService implements GmCmdService {
             if (posList.size() == 1) return posList.get(0);
             return worldDataManager.nearestPos(posList, player.lord.getPos());
         }).whenComplete((pos, t) -> {
-            Player player_ = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
-            if (t != null) {
-                LogUtil.error("", t);
-                handAsyncInvokeException(GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, t, player_);
-                return;
-            }
-
-            GamePb5.SearchBanditRs.Builder builder = GamePb5.SearchBanditRs.
-                    newBuilder().
-                    setType(req.getType()).
-                    setLevel(req.getLevel()).setPos(pos);
-            if (pos != -1) {
-                switch (req.getType()) {
-                    case COMMON_REBEL:
-                        // 校验当前点位上是否是对应等级的叛军
-                        int banditLv = worldDataManager.getBanditIdByPos(pos);
-                        if (banditLv != req.getLevel()) {
-                            LogUtil.error(String.format("异步找到地图上的指定叛军的点不存在, pos:%d", pos));
-                            // 随机生成点位叛军
-                            builder.setPos(worldDataManager.refreshOneBanditByPlayer(WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS, req.getLevel(), player_));
-                        }
-                        break;
-                    case ELITE_REBELS:
-                        AirshipWorldData airshipWorld = worldDataManager.getAirshipWorldDataMap().get(pos);
-                        if (CheckNull.isNull(airshipWorld)) {
-                            LogUtil.error(String.format("异步查找的精英叛军不存在, role:%d, pos:%d", roleId, pos));
-                            builder.setPos(-1);
-                            break;
-                        }
-                        StaticAirship sAirship = StaticWorldDataMgr.getAirshipMap().get(airshipWorld.getId());
-                        if (CheckNull.isNull(sAirship)) {
-                            LogUtil.error(String.format("异步查找的精英叛军配置不存在, role:%d, pos:%d", roleId, pos));
-                            builder.setPos(-1);
-                            break;
-                        }
-                        if (sAirship.getLv() != req.getLevel()) {
-                            LogUtil.error(String.format("异步查找的精英叛军等级不匹配, role:%d, req:%d, lv:%d", roleId, req.getLevel(), sAirship.getLv()));
-                            builder.setPos(-1);
-                            break;
-                        }
-                        break;
+            Java8Utils.syncMethodInvoke(() -> {
+                Player player_ = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(roleId);
+                if (t != null) {
+                    LogUtil.error("", t);
+                    handAsyncInvokeException(GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, t, player_);
+                    return;
                 }
-            } else {
-                // 没有找到叛军或精英叛军
-                LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
-                switch (req.getType()) {
-                    case COMMON_REBEL:
-                        // 刷新一个叛军在地图上
-                        // 随机生成点位叛军
-                        builder.setPos(worldDataManager.refreshOneBanditByPlayer(WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS, req.getLevel(), player_));
-                        break;
-                    case ELITE_REBELS:
-                        break;
-                }
-            }
 
-            playerService.syncMsgToPlayer(PbHelper.createRsBase(
-                    GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, GamePb5.SearchBanditRs.ext, builder.build()).build(), player_);
+                try {
+                    GamePb5.SearchBanditRs.Builder builder = GamePb5.SearchBanditRs.
+                            newBuilder().
+                            setType(req.getType()).
+                            setLevel(req.getLevel()).setPos(pos);
+                    if (pos != -1) {
+                        switch (req.getType()) {
+                            case COMMON_REBEL:
+                                // 校验当前点位上是否是对应等级的叛军
+                                int banditLv = worldDataManager.getBanditIdByPos(pos);
+                                if (banditLv != req.getLevel()) {
+                                    LogUtil.error(String.format("异步找到地图上的指定叛军的点不存在, pos:%d", pos));
+                                    // 随机生成点位叛军
+                                    builder.setPos(worldDataManager.refreshOneBanditByPlayer(WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS, req.getLevel(), player_));
+                                }
+                                break;
+                            case ELITE_REBELS:
+                                AirshipWorldData airshipWorld = worldDataManager.getAirshipWorldDataMap().get(pos);
+                                if (CheckNull.isNull(airshipWorld)) {
+                                    LogUtil.error(String.format("异步查找的精英叛军不存在, role:%d, pos:%d", roleId, pos));
+                                    builder.setPos(-1);
+                                    break;
+                                }
+                                StaticAirship sAirship = StaticWorldDataMgr.getAirshipMap().get(airshipWorld.getId());
+                                if (CheckNull.isNull(sAirship)) {
+                                    LogUtil.error(String.format("异步查找的精英叛军配置不存在, role:%d, pos:%d", roleId, pos));
+                                    builder.setPos(-1);
+                                    break;
+                                }
+                                if (sAirship.getLv() != req.getLevel()) {
+                                    LogUtil.error(String.format("异步查找的精英叛军等级不匹配, role:%d, req:%d, lv:%d", roleId, req.getLevel(), sAirship.getLv()));
+                                    builder.setPos(-1);
+                                    break;
+                                }
+                                break;
+                        }
+                    } else {
+                        // 没有找到叛军或精英叛军
+                        LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
+                        switch (req.getType()) {
+                            case COMMON_REBEL:
+                                // 刷新一个叛军在地图上
+                                // 随机生成点位叛军
+                                builder.setPos(worldDataManager.refreshOneBanditByPlayer(WorldConstant.SEARCH_THE_RANGE_OF_THE_REBELS, req.getLevel(), player_));
+                                break;
+                            case ELITE_REBELS:
+                                break;
+                        }
+                    }
+
+                    playerService.syncMsgToPlayer(PbHelper.createRsBase(
+                            GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, GamePb5.SearchBanditRs.ext, builder.build()).build(), player_);
+                } catch (Exception e) {
+                    LogUtil.error(e);
+                    handAsyncInvokeException(GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, t, player_);
+                }
+            });
         });
     }
 
