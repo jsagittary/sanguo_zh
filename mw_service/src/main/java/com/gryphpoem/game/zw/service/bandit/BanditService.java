@@ -113,7 +113,9 @@ public class BanditService extends AbsGameService implements GmCmdService {
                     if (req.getType() == COMMON_REBEL) {
                         Map<Integer, March> marchMap = worldDataManager.getMarchMap().get(player.lord.getArea());
                         if (Objects.nonNull(marchMap)) {
-                            armyMap = marchMap.values().stream().map(March::getArmy).collect(Collectors.toMap(Army::getTarget, Function.identity(), (key1, key2) -> key2));
+                            armyMap = marchMap.values().stream().map(March::getArmy).filter(
+                                            army -> Objects.nonNull(army) && army.getState() != ArmyConstant.ARMY_STATE_RETREAT).
+                                    collect(Collectors.toMap(Army::getTarget, Function.identity(), (key1, key2) -> key2));
                         }
                     }
 
