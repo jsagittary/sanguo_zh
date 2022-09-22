@@ -18,6 +18,7 @@ import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -303,15 +304,23 @@ public class HeroUpgradeService implements GmCmdService {
         if ("resetAllPurple".equalsIgnoreCase(params[0])) {
             Java8Utils.syncMethodInvoke(() -> {
                 long startTime = System.nanoTime();
+                HeroBiographyService service = DataResource.ac.getBean(HeroBiographyService.class);
                 playerDataManager.getAllPlayer().values().forEach(p -> {
-                    resetOneHeroGrade(p);
+                    if (resetOneHeroGrade(p)) {
+                        service.recalculateHeroBiography(p);
+                        CalculateUtil.reCalcAllHeroAttr(p);
+                    }
                 });
                 LogUtil.debug("重置玩家紫将品阶耗时: ", (System.nanoTime() - startTime) / 100000);
             });
         }
         if ("resetOnePurple".equalsIgnoreCase(params[0])) {
             Java8Utils.syncMethodInvoke(() -> {
-                resetOneHeroGrade(player);
+                HeroBiographyService service = DataResource.ac.getBean(HeroBiographyService.class);
+                if (resetOneHeroGrade(player)) {
+                    service.recalculateHeroBiography(player);
+                    CalculateUtil.reCalcAllHeroAttr(player);
+                }
             });
         }
     }
@@ -321,13 +330,13 @@ public class HeroUpgradeService implements GmCmdService {
      *
      * @param p
      */
-    private void resetOneHeroGrade(Player p) {
-        if (CheckNull.isNull(p)) return;
-        if (CheckNull.isEmpty(p.heros)) return;
+    private boolean resetOneHeroGrade(Player p) {
+        if (CheckNull.isNull(p)) return false;
+        if (CheckNull.isEmpty(p.heros)) return false;
 
         List<Hero> heroList = p.heros.values().stream().filter(hero ->
                 hero.getQuality() == HeroConstant.QUALITY_PURPLE_HERO).collect(Collectors.toList());
-        if (CheckNull.isEmpty(heroList)) return;
+        if (CheckNull.isEmpty(heroList)) return false;
 
         LogUtil.debug("--------------修复玩家部队状态 开始  roleId:", p.roleId);
         // 未返回的部队将领id
@@ -413,6 +422,6 @@ public class HeroUpgradeService implements GmCmdService {
         if (CheckNull.nonEmpty(heroFragment)) {
             heroFragment.forEach((heroId, count) -> rewardDataManager.addAwardSignle(p, AwardType.HERO_FRAGMENT, heroId, count, AwardFrom.DO_SOME));
         }
-        CalculateUtil.reCalcAllHeroAttr(p);
+        return CheckNull.nonEmpty(heroFragment);
     }
 }

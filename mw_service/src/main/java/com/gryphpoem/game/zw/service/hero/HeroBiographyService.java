@@ -31,10 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Description:
@@ -134,6 +131,51 @@ public class HeroBiographyService implements GmCmdService, EventRegisterService 
             attrList.addAll(staticData.getAttr());
         }
         return attrList;
+    }
+
+    /**
+     * 武将品阶往后退重新计算武将列传
+     *
+     * @param player
+     */
+    public void recalculateHeroBiography(Player player) {
+        if (CheckNull.isNull(player) || CheckNull.isNull(player.playerHero) ||
+                CheckNull.isNull(player.playerHero.getBiography()) || CheckNull.isEmpty(player.playerHero.getBiography().getLevelMap()))
+            return;
+        Map<Integer, Integer> lvMap = new HashMap<>(player.playerHero.getBiography().getLevelMap());
+        lvMap.forEach((type, lv) -> {
+            StaticHeroBiographyShow biographyShow = staticHeroBiographyDataMgr.getBiographyShow(type);
+            if (CheckNull.isNull(biographyShow)) return;
+            TreeMap<Integer, StaticHeroBiographyAttr> treeMap = staticHeroBiographyDataMgr.getStaticHeroBiographyAttrMap(type);
+            if (CheckNull.isEmpty(treeMap)) return;
+
+            int maxLv = 0;
+            int activeGradeCount = 0;
+            for (Map.Entry<Integer, StaticHeroBiographyAttr> entry : treeMap.entrySet()) {
+                for (Integer heroId : biographyShow.getHeroId()) {
+                    Hero hero = player.heros.get(heroId);
+                    if (CheckNull.isNull(hero)) {
+                        continue;
+                    }
+                    StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+                    if (CheckNull.isNull(staticHeroUpgrade))
+                        continue;
+                    if (staticHeroUpgrade.getGrade() >= entry.getValue().getActiveGrade())
+                        activeGradeCount++;
+                }
+                if (activeGradeCount < entry.getValue().getActiveNum()) {
+                    break;
+                }
+                if (maxLv < entry.getKey())
+                    maxLv = entry.getKey();
+                activeGradeCount = 0;
+            }
+
+            if (maxLv == 0)
+                player.playerHero.getBiography().getLevelMap().remove(type);
+            else
+                player.playerHero.getBiography().getLevelMap().put(type, maxLv);
+        });
     }
 
     /**
