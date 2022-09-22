@@ -41,6 +41,7 @@ import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
 import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
 import com.gryphpoem.game.zw.resource.constant.PropConstant;
 import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
@@ -64,6 +65,7 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
+import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.util.AccountHelper;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -387,7 +389,8 @@ public class HeroService implements GmCmdService {
                 swapHeroTreasure(player, battleHero, hero);
             }
             if (swapMedal) {// 如果需要替换兵书，执行兵书替换的逻辑
-                sysClientUpdateMedal = swapHeroMedal(player, battleHero, hero);
+                swapHeroMedal(player, battleHero, hero);
+                sysClientUpdateMedal = true; // 只要玩家选择交互，则默认通知客户端需要重新拉取兵书信息
             }
             battleHero.onBattle(0);// 将领下阵，pos设置为0
             battleHero.onDef(0);// 防守将领下阵, pos设置为0
@@ -684,13 +687,19 @@ public class HeroService implements GmCmdService {
         int oldHeroTreasureWare = oldHero.getTreasureWare() == null ? -1 : oldHero.getTreasureWare();
         int newHeroTreasureWare = newHero.getTreasureWare() == null ? -1 : newHero.getTreasureWare();
 
+        // 卸下旧宝具
         if (oldHeroTreasureWare > 0) {
             treasureWareService.downEquip(player, oldHero, oldHeroTreasureWare, new ArrayList<>(), false);
-            treasureWareService.heroOnTreasureWare(player, newHero, oldHeroTreasureWare, new ArrayList<>(), false);
         }
-
         if (newHeroTreasureWare > 0) {
             treasureWareService.downEquip(player, newHero, newHeroTreasureWare, new ArrayList<>(), false);
+        }
+
+        // 穿戴新宝具
+        if (oldHeroTreasureWare > 0) {
+            treasureWareService.heroOnTreasureWare(player, newHero, oldHeroTreasureWare, new ArrayList<>(), false);
+        }
+        if (newHeroTreasureWare > 0) {
             treasureWareService.heroOnTreasureWare(player, oldHero, newHeroTreasureWare, new ArrayList<>(), false);
         }
     }
@@ -702,32 +711,32 @@ public class HeroService implements GmCmdService {
      * @param oldHero
      * @param newHero
      */
-    public boolean swapHeroMedal(Player player, Hero oldHero, Hero newHero) {
-        boolean sysClientUpdateMedal = false;
-
+    public void swapHeroMedal(Player player, Hero oldHero, Hero newHero) {
+        // 分别获取新旧武将穿戴的兵书
         List<Medal> medalListOnOldHero = DataResource.ac.getBean(MedalDataManager.class).getHeroMedalByHeroId(player, oldHero.getHeroId());
         Medal medalOnOldHero = null;
         if (medalListOnOldHero != null && medalListOnOldHero.size() > 0) {
             medalOnOldHero = medalListOnOldHero.get(0);
         }
-
+        int indexOfOldMedal = medalListOnOldHero instanceof RedMedal ? MedalConst.HERO_MEDAL_INDEX_1 : MedalConst.HERO_MEDAL_INDEX_0;
         List<Medal> medalListOnNewHero = DataResource.ac.getBean(MedalDataManager.class).getHeroMedalByHeroId(player, newHero.getHeroId());
         Medal medalOnNewHero = null;
         if (medalListOnNewHero != null && medalListOnNewHero.size() > 0) {
             medalOnNewHero = medalListOnNewHero.get(0);
         }
+        int indexOfNewMedal = medalOnNewHero instanceof RedMedal ? MedalConst.HERO_MEDAL_INDEX_1 : MedalConst.HERO_MEDAL_INDEX_0;
 
+        // 卸下旧兵书
+        medalService.downMedal(player, oldHero, medalOnOldHero, indexOfOldMedal);
+        medalService.downMedal(player, newHero, medalOnNewHero, indexOfNewMedal);
+
+        // 穿戴新兵书
         if (medalOnOldHero != null) {
-            medalOnOldHero.setHeroId(newHero.getHeroId());
-            sysClientUpdateMedal = true;
+            medalService.upMedal(player, newHero, medalOnOldHero, indexOfNewMedal);
         }
-
         if (medalOnNewHero != null) {
-            medalOnNewHero.setHeroId(oldHero.getHeroId());
-            sysClientUpdateMedal = true;
+            medalService.upMedal(player, oldHero, medalOnNewHero, indexOfOldMedal);
         }
-
-        return sysClientUpdateMedal;
     }
 
     /**

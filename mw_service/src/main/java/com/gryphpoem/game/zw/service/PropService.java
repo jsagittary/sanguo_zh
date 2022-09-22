@@ -11,7 +11,11 @@ import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.ChatDataManager;
+import com.gryphpoem.game.zw.manager.MailDataManager;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -23,7 +27,17 @@ import com.gryphpoem.game.zw.pb.GamePb1.GetPropsRs;
 import com.gryphpoem.game.zw.pb.GamePb1.UsePropRs;
 import com.gryphpoem.game.zw.pb.GamePb1.UsePropRs.Builder;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncBuffRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.EffectConstant;
+import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.MentorConstant;
+import com.gryphpoem.game.zw.resource.constant.PropConstant;
+import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -35,9 +49,14 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWeightBoxProp;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.RandomHelper;
+import com.gryphpoem.game.zw.resource.util.RandomUtil;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import com.gryphpoem.game.zw.service.totem.TotemService;
@@ -47,8 +66,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 /**
  * @author TanDonghai
@@ -185,9 +211,6 @@ public class PropService {
             useChooseHeroFragment(count, staticProp, player, prop, params, roleId, propId, listAward, change);
         } else if (staticProp.getPropType() == PropConstant.PropType.ADD_TREASURE_WARE_PROP) {
             DataResource.getBean(TreasureCombatService.class).useProp(count, player, staticProp.getRewardList(), propId, listAward, change);
-        } else if (staticProp.getPropType() == PropConstant.PropType.SUPPER_EQUIP_CHIP) {
-            // 神器碎片出售处理
-            useSuperEquipChip(count, staticProp, player, listAward, params);
         } else {
             for (int i = 0; i < count; i++) {
                 if (!CheckNull.isEmpty(staticProp.getRewardList())) {
@@ -268,58 +291,6 @@ public class PropService {
         // 填充equip值
         fillEquipVal(player, builder, listAward);
         return builder.build();
-    }
-
-    /**
-     * 出售多余的神器碎片
-     *
-     * @param count      要出售的数量
-     * @param staticProp 道具配置
-     * @param player     玩家信息
-     * @param listAward  奖励列表
-     */
-    private void useSuperEquipChip(int count,
-                                   StaticProp staticProp,
-                                   Player player,
-                                   List<Award> listAward,
-                                   Object params) {
-        // 判断玩家该神器是否已合成
-        int propId = staticProp.getPropId();
-        Integer superEquipType = StaticPropDataMgr.getSuperEquipType(propId);
-        SuperEquip superEquip = player.supEquips.get(superEquipType);
-        if (superEquip == null) {
-            throw new MwException(GameError.EQUIP_NOT_FOUND.getCode(), "神器还未打造, roleId:", player.roleId, ", type:", superEquipType);
-        }
-
-        // 判断玩家要出售的碎片数量是否足够，主逻辑已校验
-
-        // 兑换奖励
-        List<List<Integer>> rewardList = staticProp.getRewardList();
-        if (CheckNull.isEmpty(rewardList)) {
-            throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(player.roleId, propId));
-        }
-
-        List<Integer> reward = null;
-        List<List<Integer>> rewardArr;
-        for (List<Integer> tmpReward : rewardList) {
-            if (CheckNull.isEmpty(tmpReward) || tmpReward.size() < 3) {
-                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(player.roleId, propId));
-            }
-            if (tmpReward.get(1) == propId) {
-                reward = tmpReward;
-                break;
-            }
-        }
-        if (ObjectUtils.isEmpty(reward)) {
-            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(player.roleId, propId));
-        }
-
-        rewardArr = new ArrayList<>();
-        rewardArr.add(reward);
-        listAward.addAll(rewardDataManager.sendReward(player, rewardArr, count, AwardFrom.USE_PROP));
-
-        // 扣减神器碎片数量
-        rewardDataManager.subProp(player, propId, count, AwardFrom.USE_PROP, params);
     }
 
     /**

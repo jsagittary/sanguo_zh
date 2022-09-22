@@ -291,23 +291,6 @@ public class StaticPropDataMgr {
         return superEquipMap.get(type);
     }
 
-    /**
-     * 根据神器消耗的道具id获取神器类型
-     *
-     * @param materialId 对应数据库中sanguo_ini_dev.s_super_quip的material字段的0号索引位置的1号索引出的的值，如：[[4,4901,1]]中的4901
-     * @return
-     */
-    public static Integer getSuperEquipType(int materialId) {
-        Integer type = null;
-        for (Map.Entry<Integer, StaticSuperEquip> superEquipEntry : superEquipMap.entrySet()) {
-            if (superEquipEntry.getValue().getMaterial().get(0).get(1) == materialId) {
-                type = superEquipEntry.getKey();
-            }
-        }
-
-        return type;
-    }
-
     public static StaticSuperEquipLv getSuperEquipLv(int type, int lv) {
         return superEquipLvMap.get(type + "_" + lv);
     }

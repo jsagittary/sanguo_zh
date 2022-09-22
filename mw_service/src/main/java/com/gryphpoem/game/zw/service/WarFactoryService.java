@@ -292,6 +292,7 @@ import java.util.stream.Collectors;
         // 将领是否存在
         ChangeInfo change = null;
         AcqHeroSetRs.Builder builder = AcqHeroSetRs.newBuilder();
+        boolean sysClientUpdateMedal = false;
         if (1 == type) {// 上阵
             Hero hero = heroService.checkHeroIsExist(player, heroId);
             // 判断该将领是否在武将上阵
@@ -310,12 +311,13 @@ import java.util.stream.Collectors;
                 if (swap) {// 如果需要交换装备，执行交换装备的逻辑
                     // rewardDataManager.checkBagCnt(player);
                     heroService.swapHeroEquip(player, hero, downHero);
+                }
                 if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
                     heroService.swapHeroTreasure(player, downHero, hero);
                 }
                 if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
                     heroService.swapHeroMedal(player, downHero, hero);
-                }
+                    sysClientUpdateMedal = true;
                 }
                 change = downAcqHeroAndBackRes(player, downHero);
                 // 记录返回下阵将领
@@ -380,6 +382,7 @@ import java.util.stream.Collectors;
                 builder.addHeroIds(player.heroAcq[i]);
         }
 
+        builder.setUpdateMedal(sysClientUpdateMedal);
         return builder.build();
     }
 

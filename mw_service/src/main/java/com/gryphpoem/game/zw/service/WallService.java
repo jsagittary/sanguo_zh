@@ -6,13 +6,39 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.manager.BuildingDataManager;
+import com.gryphpoem.game.zw.manager.MailDataManager;
+import com.gryphpoem.game.zw.manager.MedalDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.pb.GamePb1.*;
+import com.gryphpoem.game.zw.pb.GamePb1.GetWallRq;
+import com.gryphpoem.game.zw.pb.GamePb1.GetWallRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallCallBackRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallGetOutRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallHelpInfoRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallHelpRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallNpcArmyRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallNpcAutoRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallNpcFullRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallNpcLvUpRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallNpcRs;
+import com.gryphpoem.game.zw.pb.GamePb1.WallSetRs;
 import com.gryphpoem.game.zw.pb.GamePb4.FixWallRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
@@ -25,14 +51,24 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.RandomUtil;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -409,6 +445,7 @@ public class WallService {
 
         Hero hero = heroService.checkHeroIsExist(player, heroId);
         WallSetRs.Builder builder = WallSetRs.newBuilder();
+        boolean sysClientUpdateMedal = false;
         if (type == 1) {
             // 判断该将领是否在武将上阵
             if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId)) {
@@ -431,14 +468,13 @@ public class WallService {
                 }
                 if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
                     heroService.swapHeroMedal(player, battleHero, hero);
+                    sysClientUpdateMedal = true;
                 }
                 downWallHeroAndBackRes(player, battleHero);
                 // 重新计算并更新将领属性
                 CalculateUtil.processAttr(player, battleHero);
                 // 下阵
-                CommonPb.Hero downHeroPb = PbHelper.createHeroPb(battleHero, player);
-                downHeroPb.toBuilder().setMedalKeyId(battleHero.getMedalKeyId());
-                builder.setDownHero(downHeroPb);
+                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
             }
 
             List<TwoInt> seasonTalentAttr = null;
@@ -457,9 +493,8 @@ public class WallService {
                     seasonTalentAttr = new ArrayList<>(janitorAttr);
                 }
             }
-            CommonPb.Hero upHeroPb = PbHelper.createHeroPb(hero, player, seasonTalentAttr);
-            upHeroPb.toBuilder().setMedalKeyId(hero.getMedalKeyId());
-            builder.setUpHero(upHeroPb);
+
+            builder.setUpHero(PbHelper.createHeroPb(hero, player, seasonTalentAttr));
         } else {
             // 下阵
             int myPos = 0;
@@ -481,15 +516,15 @@ public class WallService {
                 // 重新计算并更新将领属性
                 CalculateUtil.processAttr(player, battleHero);
                 // 下阵
-                CommonPb.Hero downHeroPb = PbHelper.createHeroPb(battleHero, player);
-                downHeroPb.toBuilder().setMedalKeyId(battleHero.getMedalKeyId());
-                builder.setDownHero(downHeroPb);
+                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
             }
         }
         for (int i = 1; i < player.heroWall.length; i++) {
             if (player.heroWall[i] != 0)
                 builder.addHeroIds(player.heroWall[i]);
         }
+
+        builder.setUpdateMedal(sysClientUpdateMedal);
         return builder.build();
     }
 
