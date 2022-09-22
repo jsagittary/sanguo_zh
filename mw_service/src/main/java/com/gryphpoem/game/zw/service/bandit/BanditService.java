@@ -214,7 +214,7 @@ public class BanditService extends AbsGameService implements GmCmdService {
                             GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, GamePb5.SearchBanditRs.ext, builder.build()).build(), player_);
                 } catch (Exception e) {
                     LogUtil.error(e);
-                    handAsyncInvokeException(GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, t, player_);
+                    handAsyncInvokeException(GamePb5.SearchBanditRs.EXT_FIELD_NUMBER, e, player_);
                 }
             });
         });
