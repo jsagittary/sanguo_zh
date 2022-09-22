@@ -686,7 +686,8 @@ public class WorldService {
         long tarLordId = 0;
         int battleType = 0;// 1 闪电战，2 奔袭战，3 远征战
         int now = TimeHelper.getCurrentSecond();
-        int marchTime = marchTime(player, pos);
+        int marchTime = marchTime(player, pos, worldDataManager.getBanditIdByPos(pos) > 0 ||
+                worldDataManager.getAirshipWorldDataMap().get(pos) != null);
         // 记录行军消耗
         List<Award> marchConsume = new ArrayList<>();
         // 子类型
@@ -1556,7 +1557,7 @@ public class WorldService {
      * @param pos
      * @return
      */
-    public int marchTime(Player player, int pos) {
+    public int marchTime(Player player, int pos, Object... params) {
         int distance = calcDistance(player.lord.getPos(), pos);
 
         int baseRatio = Constant.MARCH_TIME_RATIO;
@@ -1566,7 +1567,7 @@ public class WorldService {
         // 科技加成
         TechDataManager techDataManager = DataResource.ac.getBean(TechDataManager.class);
         double addRatio = techDataManager.getTechEffect4SingleVal(player, TechConstant.TYPE_6);
-        if (worldDataManager.getBanditIdByPos(pos) > 0 || worldDataManager.getAirshipWorldDataMap().get(pos) != null) {
+        if (!ObjectUtils.isEmpty(params) && (boolean) params[0]) {
             addRatio *= 2;
         }
 
@@ -1582,15 +1583,6 @@ public class WorldService {
             player.getMarchType().remove(pos);
         }
         //********************减少行军时间****************************
-
-        // 城堡加成
-//        StaticCastleSkin sCastleSkin = player.getOwnCastleSkin().stream()
-//                .map(StaticLordDataMgr::getCastleSkinMapById)
-//                .filter(castleSkinCfg -> castleSkinCfg != null
-//                        && castleSkinCfg.getEffectType() == StaticCastleSkin.EFFECT_TYPE_WALK_SPEED)
-//                .findFirst()
-//                //.map(castleSkinCfg -> castleSkinCfg.getEffectVal() / Constant.TEN_THROUSAND)
-//                .orElse(null);
         int skinAdd = 0;
         Map<Integer, BaseDressUpEntity> castleSkinMap = dressUpDataManager.getDressUpByType(player, AwardType.CASTLE_SKIN);
         if (!CheckNull.isEmpty(castleSkinMap)) {
@@ -4412,7 +4404,7 @@ public class WorldService {
             }
         }
         // 部队返回直接取去的时候的时间， 以免暴露被击飞后的坐标, 走多远返回就多远
-        int marchTime = marchTime(player, army.getTarget());
+        int marchTime = marchTime(player, army.getTarget(), army.getType() == ArmyConstant.ARMY_TYPE_ATK_BANDIT);
         // 半路撤回
         marchTime = berlinWarService.getMarchTime(player, army, marchTime);
         marchTime = gestapoService.getGestapoMarchTime(army, marchTime);
