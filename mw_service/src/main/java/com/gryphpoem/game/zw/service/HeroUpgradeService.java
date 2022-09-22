@@ -340,11 +340,20 @@ public class HeroUpgradeService implements GmCmdService {
 
         LogUtil.debug("--------------修复玩家部队状态 开始  roleId:", p.roleId);
         // 未返回的部队将领id
+        int now = TimeHelper.getCurrentSecond();
         WarDataManager warDataManager = DataResource.ac.getBean(WarDataManager.class);
         WarService warService = DataResource.ac.getBean(WarService.class);
+        WorldService worldService = DataResource.ac.getBean(WorldService.class);
         long roleId = p.roleId;
         for (Army army : p.armys.values()) {
-            worldService.retreatArmy(p, army, TimeHelper.getCurrentSecond(), ArmyConstant.MOVE_BACK_TYPE_2);
+            if (CheckNull.isNull(army)) continue;
+            int armyState = army.getState();
+            if (armyState == ArmyConstant.ARMY_STATE_COLLECT) {
+                // 部队采集中，结算采集
+                worldService.retreatSettleCollect(army, 0, p, now, roleId);
+            }
+
+            worldService.retreatArmy(p, army, now, ArmyConstant.MOVE_BACK_TYPE_2);
             LogUtil.debug("--------------返回部队成功: ", army);
             int keyId = army.getKeyId();
             try {
@@ -355,14 +364,19 @@ public class HeroUpgradeService implements GmCmdService {
                         int camp = p.lord.getCamp();
                         int armCount = army.getArmCount();
                         battle.updateArm(camp, -armCount);
-                        if (battle.getType() == WorldConstant.BATTLE_TYPE_CITY) { // 城战 打玩家
-                            if (battle.getSponsor() != null && battle.getSponsor().roleId == roleId) {// 如果是发起者撤退
+                        if (battle.getType() == WorldConstant.BATTLE_TYPE_CITY) {
+                            // 城战 打玩家
+                            if (battle.getSponsor() != null && battle.getSponsor().roleId == roleId) {
+                                // 如果是发起者撤退
                                 // 玩家发起的城战，发起人撤回部队，城战取消
                                 warService.cancelCityBattle(army.getTarget(), true, battle, true);
                             } else {
                                 // 不是发起者,移除battle的兵力
                                 worldService.removeBattleArmy(battle, roleId, keyId, battle.getAtkCamp() == camp);
                             }
+                        } else if (battle.getType() == WorldConstant.BATTLE_TYPE_MINE_GUARD) {
+                            //采集驻守撤回, 半路撤回部队，取消战斗提示
+                            warDataManager.removeBattleByIdNoSync(battleId);
                         } else {// 阵营战
                             worldService.removeBattleArmy(battle, roleId, keyId, battle.getAtkCamp() == camp);
                         }
@@ -381,11 +395,17 @@ public class HeroUpgradeService implements GmCmdService {
                         }
                     }
                 }
+
+                //不管采矿当前部队是否带有战斗, 一律撤回被攻击提示
+                if (armyState == ArmyConstant.ARMY_STATE_COLLECT) {
+                    //取消采矿被攻击提示
+                    worldService.cancelMineBattle(army.getTarget(), now, p);
+                }
             } catch (Exception e) {
-                LogUtil.debug(e);
-                e.printStackTrace();
+                LogUtil.error(e);
             }
         }
+
         for (int i = 1; i < p.heroBattle.length; i++) {
             int heroId = p.heroBattle[i];
             Hero hero = p.heros.get(heroId);
@@ -404,6 +424,7 @@ public class HeroUpgradeService implements GmCmdService {
         }
         LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", p.roleId);
 
+        // 计算返还碎片
         Map<Integer, Integer> heroFragment = new HashMap<>();
         heroList.forEach(hero -> {
             if (hero.getGradeKeyId() == 0) return;
@@ -421,7 +442,9 @@ public class HeroUpgradeService implements GmCmdService {
 
         if (CheckNull.nonEmpty(heroFragment)) {
             heroFragment.forEach((heroId, count) -> rewardDataManager.addAwardSignle(p, AwardType.HERO_FRAGMENT, heroId, count, AwardFrom.DO_SOME));
+            return true;
         }
-        return CheckNull.nonEmpty(heroFragment);
+
+        return false;
     }
 }

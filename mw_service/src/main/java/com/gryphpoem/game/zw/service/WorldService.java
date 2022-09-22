@@ -1858,7 +1858,7 @@ public class WorldService {
         synRetreatArmy(player, army, now); // 同步army状态
     }
 
-    private void retreatSettleCollect(Army army, int type, Player player, int now, long roleId) {
+    public void retreatSettleCollect(Army army, int type, Player player, int now, long roleId) {
         type = 0;
         int pos = army.getTarget();
         // 采集结算
