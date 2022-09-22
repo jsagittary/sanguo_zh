@@ -1005,6 +1005,11 @@ public final class Constant {
      * 征战自选箱掉落上限
      */
     public static List<List<Integer>> BATTLE_PICK_BOX_DROP_CAP;
+
+    /**
+     * 叛军掉落图纸保底配置
+     */
+    public static List<List<Integer>> REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION;
     /**
      * s_system表中定义的常量初始化
      */
@@ -1306,6 +1311,7 @@ public final class Constant {
         CROSS_WAR_FIRE_WINNER_PORTRAIT = SystemTabLoader.getListIntSystemValue(SystemId.CROSS_WAR_FIRE_WINNER_PORTRAIT, "[9,20,2592000]");
         EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = SystemTabLoader.getListListIntSystemValue(SystemId.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT, "[[]]");
         BATTLE_PICK_BOX_DROP_CAP = SystemTabLoader.getListListIntSystemValue(SystemId.BATTLE_PICK_BOX_DROP_CAP, "[[]]");
+        REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = SystemTabLoader.getListListIntSystemValue(SystemId.REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION, "[[]]");
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

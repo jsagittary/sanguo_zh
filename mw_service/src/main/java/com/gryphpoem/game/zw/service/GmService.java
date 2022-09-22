@@ -75,7 +75,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
-public class GmService{
+public class GmService {
 
     @Autowired
     private ActivityDiaoChanService activityDiaoChanService;
@@ -299,7 +299,7 @@ public class GmService{
             } else if ("open".equalsIgnoreCase(cmd)) {
                 gmOpen(player, type, Integer.valueOf(count), lv);
             } else if ("clear".equalsIgnoreCase(cmd)) {
-                gmClear(player, type,Integer.parseInt(count));
+                gmClear(player, type, Integer.parseInt(count));
             } else if ("build".equalsIgnoreCase(cmd)) {
                 gmBuild(player, Integer.parseInt(type), Integer.parseInt(count));
             } else if ("party".equalsIgnoreCase(cmd)) {
@@ -316,7 +316,7 @@ public class GmService{
 //
 //                LogUtil.gm("{" + player.roleId + "} send mail {" + mail + "}");
 //                gmMail(mail, type);
-                mailService.gm(player,words);
+                mailService.gm(player, words);
             } else if ("platMail".equalsIgnoreCase(cmd)) {
                 Mail mail = null;
                 if (req.hasMail()) {
@@ -329,8 +329,8 @@ public class GmService{
             } else if ("kick".equalsIgnoreCase(cmd)) {
                 gmKick(type);
             } else if ("apicmd".equalsIgnoreCase(cmd)) {//kickoffline
-                apicmd(type,roleId,words);
-            }else if ("silence".equalsIgnoreCase(cmd)) {
+                apicmd(type, roleId, words);
+            } else if ("silence".equalsIgnoreCase(cmd)) {
                 gmSilence(type, Integer.valueOf(count));
             } else if ("ganVip".equalsIgnoreCase(cmd)) {
                 gmVip(Integer.valueOf(type), player);
@@ -386,26 +386,26 @@ public class GmService{
             else if ("newYorkWar".equalsIgnoreCase(cmd)) {
                 gmInitNewYorkWar(type, count);
             } else if ("sandtable".equalsIgnoreCase(cmd)) {
-                if(type.equalsIgnoreCase("addscore")){
+                if (type.equalsIgnoreCase("addscore")) {
                     player.setSandTableScore(player.getSandTableScore() + Integer.parseInt(count));
-                    if(player.getSandTableScore() < 0){
+                    if (player.getSandTableScore() < 0) {
                         player.setSandTableScore(0);
                     }
-                    LogLordHelper.sandTableScore(AwardFrom.DO_SOME,player,Integer.parseInt(count));
-                }else {
+                    LogLordHelper.sandTableScore(AwardFrom.DO_SOME, player, Integer.parseInt(count));
+                } else {
                     gm_sandtable(type, player);
                 }
-            }else if("updateServerArmyCount".equalsIgnoreCase(cmd)) {
+            } else if ("updateServerArmyCount".equalsIgnoreCase(cmd)) {
                 armyService.updateServerArmyCount(Integer.parseInt(type), Integer.parseInt(count));
-            }else if("diaochan".equalsIgnoreCase(cmd)){//貂蝉活动
-                activityDiaoChanService.test_protocol(player,words);
-            }else if("onhook".equalsIgnoreCase(cmd)){
-                playerService.test_onHook(player, Arrays.copyOfRange(words,1,words.length));
-            }else if("season".equalsIgnoreCase(cmd)){
-                seasonService.test_protocol(player,words);
-            }else if ("dressUp".equalsIgnoreCase(cmd)) {
+            } else if ("diaochan".equalsIgnoreCase(cmd)) {//貂蝉活动
+                activityDiaoChanService.test_protocol(player, words);
+            } else if ("onhook".equalsIgnoreCase(cmd)) {
+                playerService.test_onHook(player, Arrays.copyOfRange(words, 1, words.length));
+            } else if ("season".equalsIgnoreCase(cmd)) {
+                seasonService.test_protocol(player, words);
+            } else if ("dressUp".equalsIgnoreCase(cmd)) {
                 gmDressUp(player, type, id, count, lv);
-            }else if("auction".equalsIgnoreCase(cmd)) {
+            } else if ("auction".equalsIgnoreCase(cmd)) {
                 DataResource.getBean(ActivityAuctionService.class).checkTimer();
             } else if ("sendChat".equalsIgnoreCase(cmd)) {
                 GamePb3.SendChatRq.Builder builder = GamePb3.SendChatRq.newBuilder();
@@ -462,8 +462,7 @@ public class GmService{
                     Map<Integer, BaseDressUpEntity> dressUpMap = dressUpDataManager.getDressUpByType(player, Integer.valueOf(id));
                     if (!CheckNull.isEmpty(dressUpMap)) {
                         BaseDressUpEntity baseDressUpEntity = dressUpMap.get(Integer.valueOf(count));
-                        if (Objects.nonNull(baseDressUpEntity) && Objects.nonNull(StaticLordDataMgr.getMarchLine(Integer.valueOf(count))))
-                        {
+                        if (Objects.nonNull(baseDressUpEntity) && Objects.nonNull(StaticLordDataMgr.getMarchLine(Integer.valueOf(count)))) {
                             dressUpDataManager.syncDressUp(player, dressUpMap.get(Integer.valueOf(count)), DressUpDataManager.UPDATE_EVENT);
                         }
                     }
@@ -473,8 +472,7 @@ public class GmService{
                     Map<Integer, BaseDressUpEntity> dressUpMap = dressUpDataManager.getDressUpByType(player, AwardType.MARCH_SPECIAL_EFFECTS);
                     if (!CheckNull.isEmpty(dressUpMap)) {
                         BaseDressUpEntity baseDressUpEntity = dressUpMap.get(Integer.valueOf(count));
-                        if (Objects.nonNull(baseDressUpEntity) && Objects.nonNull(StaticLordDataMgr.getMarchLine(Integer.valueOf(count))))
-                        {
+                        if (Objects.nonNull(baseDressUpEntity) && Objects.nonNull(StaticLordDataMgr.getMarchLine(Integer.valueOf(count)))) {
                             player.getDressUp().setCurMarchEffect(Integer.valueOf(count));
                             dressUpDataManager.syncDressUp(player, dressUpMap.get(Integer.valueOf(count)), DressUpDataManager.UPDATE_EVENT);
                         }
@@ -1249,6 +1247,7 @@ public class GmService{
             WarService warService = DataResource.ac.getBean(WarService.class);
             long roleId = player.roleId;
             for (Army army : player.armys.values()) {
+                int armyState = army.getState();
                 worldService.retreatArmy(player, army, TimeHelper.getCurrentSecond(), ArmyConstant.MOVE_BACK_TYPE_2);
                 LogUtil.debug("--------------返回部队成功: ", army);
                 int keyId = army.getKeyId();
@@ -1268,6 +1267,9 @@ public class GmService{
                                     // 不是发起者,移除battle的兵力
                                     worldService.removeBattleArmy(battle, roleId, keyId, battle.getAtkCamp() == camp);
                                 }
+                            } else if (battle.getType() == WorldConstant.BATTLE_TYPE_MINE_GUARD) {
+                                //采集驻守撤回, 半路撤回部队，取消战斗提示
+                                warDataManager.removeBattleByIdNoSync(battleId);
                             } else {// 阵营战
                                 worldService.removeBattleArmy(battle, roleId, keyId, battle.getAtkCamp() == camp);
                             }
@@ -1285,6 +1287,12 @@ public class GmService{
                                 sm.removeCollectArmy(player.roleId, keyId);
                             }
                         }
+                    }
+
+                    //不管采矿当前部队是否带有战斗, 一律撤回被攻击提示
+                    if (armyState == ArmyConstant.ARMY_STATE_COLLECT) {
+                        //取消采矿被攻击提示
+                        worldService.cancelMineBattle(army.getTarget(), TimeHelper.getCurrentSecond(), player);
                     }
                 } catch (Exception e) {
                     LogUtil.debug(e);
@@ -1405,7 +1413,7 @@ public class GmService{
 
         } else if (str.equalsIgnoreCase("playerListKey")) {
             PlayerConstant.CLEAN_LIST_KEY.clear();
-        }  else if (str.equalsIgnoreCase("clearAndInitCity")) {
+        } else if (str.equalsIgnoreCase("clearAndInitCity")) {
             CrossWorldMap cMap = crossWorldMapDataManager.getCrossWorldMapById(CrossWorldMapConstant.CROSS_MAP_ID);
             MapEntityGenerator mapEntityGenerator = cMap.getMapEntityGenerator();
             mapEntityGenerator.clearAndInitCity();
@@ -1441,7 +1449,7 @@ public class GmService{
                 }
 
             }
-        }  else if (str.equalsIgnoreCase("rebel")) {
+        } else if (str.equalsIgnoreCase("rebel")) {
             Map<Integer, Integer> nextOpenMap = globalDataManager.getGameGlobal().getMixtureDataById(GlobalConstant.REBEL_NEXT_OPEN_TIME);
             // 记录的下次开放时间
             int nextTime = nextOpenMap.getOrDefault(0, 0);
@@ -1555,8 +1563,7 @@ public class GmService{
                 LogUtil.debug("gm fix maxKeyId, lordId: ", player.getLordId(), ", originMaxKeyId: ", player.getMaxKey(), ", newMaxKeyId: ", maxKeyId);
                 player.setMaxKey(maxKeyId);
             }
-        }
-        else if (str.equalsIgnoreCase("removeBattle")) {
+        } else if (str.equalsIgnoreCase("removeBattle")) {
             List<Battle> rallyBattleList = warDataManager.getBattlePosMap()
                     .values()
                     .stream()
@@ -1679,13 +1686,12 @@ public class GmService{
     }
 
     private void gmAdd(Player player, String str, int id, int count, int lv, int refitLv) {
-        if(str.equalsIgnoreCase("seasonscore")){
+        if (str.equalsIgnoreCase("seasonscore")) {
             rewardDataManager.sendRewardSignle(player, AwardType.SPECIAL, AwardType.Special.SEASON_SCORE, count, AwardFrom.DO_SOME);
         }
-        if(str.equalsIgnoreCase("biyuescore")){
+        if (str.equalsIgnoreCase("biyuescore")) {
             rewardDataManager.sendRewardSignle(player, AwardType.SPECIAL, AwardType.Special.DIAOCHAN_SCORE, count, AwardFrom.DO_SOME);
-        }
-        else if (str.equalsIgnoreCase("sandtablescore")) {
+        } else if (str.equalsIgnoreCase("sandtablescore")) {
             rewardDataManager.sendRewardSignle(player, AwardType.SANDTABLE_SCORE, id, count, AwardFrom.DO_SOME);
         } else if (str.equalsIgnoreCase("hero")) {
             rewardDataManager.sendRewardSignle(player, AwardType.HERO, count, count, AwardFrom.DO_SOME);
@@ -1867,7 +1873,7 @@ public class GmService{
             }
         } else if (str.equalsIgnoreCase("skin")) {
             rewardDataManager.addAward(player, AwardType.CASTLE_SKIN, id, count, AwardFrom.DO_SOME);
-        }else if (str.equalsIgnoreCase("anyMoney")) {
+        } else if (str.equalsIgnoreCase("anyMoney")) {
             // 添加货币下的任意资源
             rewardDataManager.sendRewardSignle(player, AwardType.MONEY, id, count, AwardFrom.DO_SOME);
         }
@@ -2233,7 +2239,7 @@ public class GmService{
         if (count <= 0) {
             return;
         }
-         if (str.equalsIgnoreCase("combat")) {
+        if (str.equalsIgnoreCase("combat")) {
             player.combats.clear();
             player.combatFb.clear();
             player.lord.combatId = 0;
@@ -2347,7 +2353,7 @@ public class GmService{
             loadService.loadChat();
         } else if (str.equalsIgnoreCase("mergeBanner")) {
             loadService.loadBanner();
-        }else if (str.equalsIgnoreCase("loadNewArea")) {
+        } else if (str.equalsIgnoreCase("loadNewArea")) {
             StaticWorldDataMgr.init("loadNewArea");
             LogUtil.common("重新加载数据：世界地图相关配置数据,完成...");
             worldDataManager.initNewWorldData();
@@ -2408,7 +2414,7 @@ public class GmService{
             Java8Utils.syncMethodInvoke(() -> {
                 Arrays.stream(Constant.Camp.camps).forEach(camp -> {
                     Camp party = campDataManager.getParty(camp);
-                    Optional.ofNullable(StaticPartyDataMgr.getHonorGift(3,party.getPartyLv()))
+                    Optional.ofNullable(StaticPartyDataMgr.getHonorGift(3, party.getPartyLv()))
                             .ifPresent(sConf -> {
                                 party.setBuild(sConf.getBuild());
                                 party.setCityBattle(sConf.getCityBattle());
@@ -2443,21 +2449,22 @@ public class GmService{
 
     /**
      * 用于处理账号服调用
+     *
      * @param type
      * @param roleId
      */
-    public void apicmd(String type,long roleId,String...params){
+    public void apicmd(String type, long roleId, String... params) {
         //根据角色id踢玩家下线
-        if(type.equalsIgnoreCase("kickoffline")){
+        if (type.equalsIgnoreCase("kickoffline")) {
             Player player = playerDataManager.getPlayer(roleId);
-            if(Objects.nonNull(player) && player.isLogin){
+            if (Objects.nonNull(player) && player.isLogin) {
                 LogUtil.debug("kick offline ,roleId=" + roleId + ", nick=" + player.lord.getNick());
                 GamePb4.SyncForceUpdateRs.Builder builder = GamePb4.SyncForceUpdateRs.newBuilder();
                 builder.setType(0);
                 builder.setParam("0");
-                BasePb.Base base = PbHelper.createSynBase(GamePb4.SyncForceUpdateRs.EXT_FIELD_NUMBER, GamePb4.SyncForceUpdateRs.ext,builder.build()).build();
+                BasePb.Base base = PbHelper.createSynBase(GamePb4.SyncForceUpdateRs.EXT_FIELD_NUMBER, GamePb4.SyncForceUpdateRs.ext, builder.build()).build();
 //                MsgDataManager.getIns().add(new Msg(player.ctx, base.build(), player.roleId));
-                playerService.syncMsgToPlayer(base,player);
+                playerService.syncMsgToPlayer(base, player);
 //                if(Objects.nonNull(player.ctx)){
 //                    player.ctx.close();
 //                }
@@ -2487,7 +2494,7 @@ public class GmService{
 
     public void gmVip(int s, Player player) {
 //        player.lord.setVip(s);
-        vipDataManager.setVip(player,s);
+        vipDataManager.setVip(player, s);
     }
 
     private void gmTopup(String name, int s) {
@@ -2504,7 +2511,7 @@ public class GmService{
         }
     }
 
-    private void gmClear(Player player, String str,int count) {
+    private void gmClear(Player player, String str, int count) {
         if (str.equalsIgnoreCase("mails")) {
             player.mails.clear();
         } else if (str.equalsIgnoreCase("exchange")) {
@@ -2736,10 +2743,10 @@ public class GmService{
         } else if (str.equalsIgnoreCase("warFireEvent")) {
             CrossWorldMap cMap = crossWorldMapDataManager.getCrossWorldMapById(CrossWorldMapConstant.CROSS_MAP_ID);
             GlobalWarFire gwf = cMap != null ? cMap.getGlobalWarFire() : null;
-            if (Objects.nonNull(gwf)){
+            if (Objects.nonNull(gwf)) {
                 gwf.gmClearWarfireEvents(player);
             }
-        }else if (str.equalsIgnoreCase("warFireDate")) {
+        } else if (str.equalsIgnoreCase("warFireDate")) {
             CrossWorldMap cMap = crossWorldMapDataManager.getCrossWorldMapById(CrossWorldMapConstant.CROSS_MAP_ID);
             GlobalWarFire gwf = cMap != null ? cMap.getGlobalWarFire() : null;
             if (Objects.nonNull(gwf)) {
@@ -2749,22 +2756,22 @@ public class GmService{
                     entry.getValue().getMixtureData().remove(PlayerConstant.LEAVE_WAR_FIRE_TIME);
                 }
             }
-        }else if(str.equalsIgnoreCase("agents")){
+        } else if (str.equalsIgnoreCase("agents")) {
             player.getCia().getFemaleAngets().clear();
         } else if (str.equalsIgnoreCase("dressup")) {
 //            player.getChatBubbles().clear();
 //            player.getChatBubbles().add(0);
 //            player.setCurChatBubble(0);
-            if(count == AwardType.CHAT_BUBBLE){
+            if (count == AwardType.CHAT_BUBBLE) {
                 player.getDressUp().getDressUpEntityMapByType(AwardType.CHAT_BUBBLE).clear();
             }
-            if(count == AwardType.PORTRAIT_FRAME){
+            if (count == AwardType.PORTRAIT_FRAME) {
                 player.getDressUp().getDressUpEntityMapByType(AwardType.PORTRAIT_FRAME).clear();
             }
-            if(count == AwardType.NAMEPLATE){
+            if (count == AwardType.NAMEPLATE) {
                 player.getDressUp().getDressUpEntityMapByType(AwardType.NAMEPLATE).clear();
             }
-            if(count == AwardType.MARCH_SPECIAL_EFFECTS){
+            if (count == AwardType.MARCH_SPECIAL_EFFECTS) {
                 player.getDressUp().getDressUpEntityMapByType(AwardType.MARCH_SPECIAL_EFFECTS).clear();
             }
         } else if (str.equalsIgnoreCase("errorSuperMineGuard")) {
@@ -2891,7 +2898,7 @@ public class GmService{
     private void gmClearPlayer(String name, String str) {
         Player player = playerDataManager.getPlayer(name);
         if (player != null) {
-            gmClear(player, str,0);
+            gmClear(player, str, 0);
         }
     }
 
@@ -2900,7 +2907,7 @@ public class GmService{
         while (it.hasNext()) {
             Player player = it.next();
             try {
-                gmClear(player, str,0);
+                gmClear(player, str, 0);
             } catch (Exception e) {
                 LogUtil.error(e + str + "|" + player.lord.getNick() + "|" + player.lord.getLordId());
             }
@@ -3014,12 +3021,13 @@ public class GmService{
 
     /**
      * 热更修复游戏数据，放入主线程中修复
+     *
      * @param player
      * @param params
      */
     @GmCmd("hotfixMain")
-    public void hotfixMain(Player player,String...params){
-        String paramStr = String.join(" ",params);
-        DataResource.logicServer.addCommandByMainType(() -> this.doSome(DoSomeRq.newBuilder().setStr(paramStr).build(),player.roleId));
+    public void hotfixMain(Player player, String... params) {
+        String paramStr = String.join(" ", params);
+        DataResource.logicServer.addCommandByMainType(() -> this.doSome(DoSomeRq.newBuilder().setStr(paramStr).build(), player.roleId));
     }
 }

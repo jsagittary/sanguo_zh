@@ -20,6 +20,7 @@ import com.gryphpoem.game.zw.handler.client.army.AutoAddArmyHandler;
 import com.gryphpoem.game.zw.handler.client.army.GetArmyHandler;
 import com.gryphpoem.game.zw.handler.client.army.QuickBuyArmyHandler;
 import com.gryphpoem.game.zw.handler.client.army.ReplenishHandler;
+import com.gryphpoem.game.zw.handler.client.bandit.SearchBanditHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.BuyBattlePassLvHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.GetBattlePassHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveBPAwardHandler;
@@ -35,7 +36,10 @@ import com.gryphpoem.game.zw.handler.client.chemical.ChemicalRecruitHandler;
 import com.gryphpoem.game.zw.handler.client.chemical.GetChemicalHandler;
 import com.gryphpoem.game.zw.handler.client.cia.*;
 import com.gryphpoem.game.zw.handler.client.combat.*;
-import com.gryphpoem.game.zw.handler.client.common.*;
+import com.gryphpoem.game.zw.handler.client.common.ActionPointHandler;
+import com.gryphpoem.game.zw.handler.client.common.DoSomeHandler;
+import com.gryphpoem.game.zw.handler.client.common.GetBannerHandler;
+import com.gryphpoem.game.zw.handler.client.common.GetTimeHandler;
 import com.gryphpoem.game.zw.handler.client.cross.*;
 import com.gryphpoem.game.zw.handler.client.cross.activity.GetCrossRechargeActivityRankHandler;
 import com.gryphpoem.game.zw.handler.client.cross.chat.GetChatRoomMsgHandler;
@@ -67,7 +71,10 @@ import com.gryphpoem.game.zw.handler.client.newcross.*;
 import com.gryphpoem.game.zw.handler.client.newcross.crosswarfire.*;
 import com.gryphpoem.game.zw.handler.client.party.*;
 import com.gryphpoem.game.zw.handler.client.plane.*;
-import com.gryphpoem.game.zw.handler.client.player.*;
+import com.gryphpoem.game.zw.handler.client.player.OnHookGetAwardHandler;
+import com.gryphpoem.game.zw.handler.client.player.OnHookGetInfoHandler;
+import com.gryphpoem.game.zw.handler.client.player.OnHookOperateHandler;
+import com.gryphpoem.game.zw.handler.client.player.OnHookReplenishHandler;
 import com.gryphpoem.game.zw.handler.client.prop.*;
 import com.gryphpoem.game.zw.handler.client.rebellion.BuyRebelBuffHandler;
 import com.gryphpoem.game.zw.handler.client.rebellion.BuyRebelShopHandler;
@@ -1361,6 +1368,9 @@ public class MessagePool implements IMessagePool {
         // 武将列传相关
         registerC(GamePb5.GetHeroBiographyInfoRq.EXT_FIELD_NUMBER, GetHeroBiographyInfoRs.EXT_FIELD_NUMBER, GetHeroBiographyInfoHandler.class);
         registerC(GamePb5.UpgradeHeroBiographyRq.EXT_FIELD_NUMBER, UpgradeHeroBiographyRs.EXT_FIELD_NUMBER, UpgradeHeroBiographyHandler.class);
+
+        // 搜索叛军
+        registerC(SearchBanditRq.EXT_FIELD_NUMBER, SearchBanditRs.EXT_FIELD_NUMBER, SearchBanditHandler.class);
     }
 
     /**

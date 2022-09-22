@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.service.CrossArmyService;
 import com.gryphpoem.game.zw.gameplay.local.service.CrossAttackService;
@@ -15,7 +16,6 @@ import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.BaseMapBattle;
-import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
@@ -599,6 +599,7 @@ public class WorldService {
 
     /**
      * 计算矿点剩余资源数
+     *
      * @param player
      * @param pos
      * @param now
@@ -685,7 +686,8 @@ public class WorldService {
         long tarLordId = 0;
         int battleType = 0;// 1 闪电战，2 奔袭战，3 远征战
         int now = TimeHelper.getCurrentSecond();
-        int marchTime = marchTime(player, pos);
+        int marchTime = marchTime(player, pos, worldDataManager.getBanditIdByPos(pos) > 0 ||
+                worldDataManager.getAirshipWorldDataMap().get(pos) != null);
         // 记录行军消耗
         List<Award> marchConsume = new ArrayList<>();
         // 子类型
@@ -830,7 +832,7 @@ public class WorldService {
             // 给被攻击玩家推送消息（应用外推送）
             PushMessageUtil.pushMessage(target.account, PushConstant.ENEMIES_ARE_APPROACHING);
             // 保护取消
-            removeProTect(player,AwardFrom.ATTACK_PLAYER_BATTLE,battle.getPos());
+            removeProTect(player, AwardFrom.ATTACK_PLAYER_BATTLE, battle.getPos());
         } else if (worldDataManager.isCabinetLeadPos(pos)) {// 攻击点兵统领
             checkSameArea(player, pos);
             type = ArmyConstant.ARMY_TYPE_ATK_CABINET_LEAD;
@@ -900,7 +902,7 @@ public class WorldService {
 
                 Guard guard = worldDataManager.getGuardByPos(pos);
                 if (guard.getPlayer().roleId != roleId) {
-                    removeProTect(player,AwardFrom.COLLECT_WAR,pos); // 移除保护罩
+                    removeProTect(player, AwardFrom.COLLECT_WAR, pos); // 移除保护罩
                     // 通知被攻击玩家
                     defArmCount = 0;
                     for (TwoInt tmp : guard.getArmy().getHero()) {
@@ -1023,6 +1025,7 @@ public class WorldService {
 
     /**
      * 校驗攻擊位置次數
+     *
      * @param player
      * @param pos
      */
@@ -1088,6 +1091,7 @@ public class WorldService {
 
     /**
      * 校验是否可以增加采集次数
+     *
      * @param player
      * @param pos
      * @return
@@ -1553,7 +1557,7 @@ public class WorldService {
      * @param pos
      * @return
      */
-    public int marchTime(Player player, int pos) {
+    public int marchTime(Player player, int pos, Object... params) {
         int distance = calcDistance(player.lord.getPos(), pos);
 
         int baseRatio = Constant.MARCH_TIME_RATIO;
@@ -1563,6 +1567,10 @@ public class WorldService {
         // 科技加成
         TechDataManager techDataManager = DataResource.ac.getBean(TechDataManager.class);
         double addRatio = techDataManager.getTechEffect4SingleVal(player, TechConstant.TYPE_6);
+        if (!ObjectUtils.isEmpty(params) && (boolean) params[0]) {
+            addRatio *= 2;
+        }
+
         // 柏林官员
         double berlinJobEffect = BerlinWar.getBerlinBuffVal(player.roleId, BerlinWarConstant.BUFF_TYPE_MARCH_TIME);
         // 赛季天赋:行军加速
@@ -1575,15 +1583,6 @@ public class WorldService {
             player.getMarchType().remove(pos);
         }
         //********************减少行军时间****************************
-
-        // 城堡加成
-//        StaticCastleSkin sCastleSkin = player.getOwnCastleSkin().stream()
-//                .map(StaticLordDataMgr::getCastleSkinMapById)
-//                .filter(castleSkinCfg -> castleSkinCfg != null
-//                        && castleSkinCfg.getEffectType() == StaticCastleSkin.EFFECT_TYPE_WALK_SPEED)
-//                .findFirst()
-//                //.map(castleSkinCfg -> castleSkinCfg.getEffectVal() / Constant.TEN_THROUSAND)
-//                .orElse(null);
         int skinAdd = 0;
         Map<Integer, BaseDressUpEntity> castleSkinMap = dressUpDataManager.getDressUpByType(player, AwardType.CASTLE_SKIN);
         if (!CheckNull.isEmpty(castleSkinMap)) {
@@ -1642,8 +1641,8 @@ public class WorldService {
         if (time < 1) {
             time = 1;
         }
-        LogUtil.debug("实际时间=", distance, ", 科技等加成=", addRatio, ", 风字令=", addRatio1, ", 军曹官=", addRatio2, ", 柏林战前buff=",
-                addRatio3, ", 柏林官员=", berlinJobEffect, ", 名城Buff=", cityBuffer, ", 最终时间=", time);
+        LogUtil.debug("roleId:", player.lord.getLordId(), ", 实际时间 = ", distance, ", 科技等加成=", addRatio, ", 风字令=", addRatio1, ", 军曹官=", addRatio2, ", 柏林战前buff=",
+                addRatio3, ", 柏林官员=", berlinJobEffect, ", 名城Buff=", cityBuffer, ", 皮肤加成", addRatio4, ", 行军特效加成: ", addRatio5, "最终时间 = ", time);
         return time;
     }
 
@@ -1851,7 +1850,7 @@ public class WorldService {
         synRetreatArmy(player, army, now); // 同步army状态
     }
 
-    private void retreatSettleCollect(Army army, int type, Player player, int now, long roleId) {
+    public void retreatSettleCollect(Army army, int type, Player player, int now, long roleId) {
         type = 0;
         int pos = army.getTarget();
         // 采集结算
@@ -1894,6 +1893,7 @@ public class WorldService {
 
     /**
      * 取消当前矿点所有战斗提示
+     *
      * @param pos
      * @param now
      * @param player
@@ -1938,8 +1938,8 @@ public class WorldService {
      * @return true是最后一只
      */
     public boolean checkArmyOnPosLast(Battle battle, int pos) {
-        Player player=battle.getSponsor();
-        for (Army army : player.armys.values().stream().filter(s->s.getBattleId()!=null&&s.getBattleId()==battle.getBattleId()).collect(Collectors.toList())) {
+        Player player = battle.getSponsor();
+        for (Army army : player.armys.values().stream().filter(s -> s.getBattleId() != null && s.getBattleId() == battle.getBattleId()).collect(Collectors.toList())) {
             if (army.getTarget() == pos && !army.isRetreat()) {
                 return false;
             }
@@ -2433,7 +2433,7 @@ public class WorldService {
 
         // 破护盾 攻击方
         if (camp == battle.getAtkCamp()) {
-            removeProTect(player,AwardFrom.JOIN_BATTLE_WAR,pos);
+            removeProTect(player, AwardFrom.JOIN_BATTLE_WAR, pos);
             battle.getAtkRoles().add(roleId);
         } else if (camp == battle.getDefCamp()) {
             battle.getDefRoles().add(roleId);
@@ -2838,7 +2838,7 @@ public class WorldService {
      *
      * @param atk
      */
-    public void removeProTect(Player atk,AwardFrom from,int pos) {
+    public void removeProTect(Player atk, AwardFrom from, int pos) {
         Effect effect = atk.getEffect().get(EffectConstant.PROTECT);
         if (effect == null || effect.getEndTime() < TimeHelper.getCurrentSecond()) {
             return;
@@ -2846,7 +2846,7 @@ public class WorldService {
         effect.setEndTime(TimeHelper.getCurrentSecond() - 1);
         atk.rmEffect(EffectConstant.PROTECT);
         LogUtil.debug(atk.roleId + ",护盾消失" + effect + ",当前护罩" + atk.getEffect().get(EffectConstant.PROTECT));
-        LogLordHelper.logRemoveProtect(atk,from,pos);
+        LogLordHelper.logRemoveProtect(atk, from, pos);
         syncProTectRs(atk);
     }
 
@@ -3083,7 +3083,7 @@ public class WorldService {
                         heroId, player.lord.getNick(), heroId);
             }
             //清空所有驻防部队
-            if (CheckNull.nonEmpty(guradArays)){
+            if (CheckNull.nonEmpty(guradArays)) {
                 LogUtil.error("clear roleId: {}, pos: {} all error guard army", player.roleId, prePos);
                 worldDataManager.removePlayerGuard(prePos);
             }
@@ -3378,7 +3378,7 @@ public class WorldService {
                         heroId, player.lord.getNick(), heroId);
             }
             //清空所有驻防部队
-            if (CheckNull.nonEmpty(guradArays)){
+            if (CheckNull.nonEmpty(guradArays)) {
                 LogUtil.error("clear roleId: {}, pos: {} all error guard army", roleId, prePos);
                 worldDataManager.removePlayerGuard(prePos);
             }
@@ -3695,8 +3695,8 @@ public class WorldService {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
@@ -3760,15 +3760,15 @@ public class WorldService {
         CommonPb.Report.Builder report = createAtkPlayerReport(rpt.build(), now);
 
         //上报数数(攻击方)
-        EventDataUp.battle(atkplayer.account, atkplayer.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
-                String.valueOf(fightLogic.getWinState()),atkplayer.roleId, rpt.getAtkHeroList());
+        EventDataUp.battle(atkplayer.account, atkplayer.lord, attacker, "atk", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
+                String.valueOf(fightLogic.getWinState()), atkplayer.roleId, rpt.getAtkHeroList());
         //上报数数(防守方)
-        EventDataUp.battle(defPlayer.account, defPlayer.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
-                String.valueOf(fightLogic.getWinState()),atkplayer.roleId, rpt.getDefHeroList());
+        EventDataUp.battle(defPlayer.account, defPlayer.lord, defender, "def", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),
+                String.valueOf(fightLogic.getWinState()), atkplayer.roleId, rpt.getDefHeroList());
 
         //进攻方胜利或者防守方兵力为0，防守方结束采集
         boolean collectEnd = false;
-        if(isSuccess || Objects.isNull(defender.getAliveForce())){
+        if (isSuccess || Objects.isNull(defender.getAliveForce())) {
             // 防御方采集结算
             int resource = calcCollect(defPlayer, guard.getArmy(), now);
             // 将领采集经验 采集增加将领经验 = 采集时间分钟 * 20
@@ -3806,8 +3806,8 @@ public class WorldService {
             synRetreatArmy(defPlayer, guard.getArmy(), now);
 
             //貂蝉任务-采集资源
-            ActivityDiaoChanService.completeTask(defPlayer, ETask.COLLECT_RES,guard.getGrab().get(0).getId(),guard.getGrab().get(0).getCount());
-            TaskService.processTask(defPlayer, ETask.COLLECT_RES,guard.getGrab().get(0).getId(),guard.getGrab().get(0).getCount());
+            ActivityDiaoChanService.completeTask(defPlayer, ETask.COLLECT_RES, guard.getGrab().get(0).getId(), guard.getGrab().get(0).getCount());
+            TaskService.processTask(defPlayer, ETask.COLLECT_RES, guard.getGrab().get(0).getId(), guard.getGrab().get(0).getCount());
 
             collectEnd = true;
         }
@@ -3841,7 +3841,7 @@ public class WorldService {
             mailDataManager.sendCollectMail(atkplayer, report, MailConstant.MOLD_COLLECT_ATK_FAIL, null, now,
                     recoverArmyAwardMap, atkLord.getNick(), defLord.getNick(), atkLord.getNick(), atkPos.getA(),
                     atkPos.getB(), defLord.getNick(), defPos.getA(), defPos.getB());
-            if(!collectEnd){
+            if (!collectEnd) {
                 mailDataManager.sendCollectMail(defPlayer, report, MailConstant.MOLD_COLLECT_DEF_SUCC, null, now,
                         recoverArmyAwardMap, defLord.getNick(), atkLord.getNick(), atkLord.getNick(), atkPos.getA(),
                         atkPos.getB(), defLord.getNick(), defPos.getA(), defPos.getB());
@@ -3974,6 +3974,7 @@ public class WorldService {
 
     /**
      * 同步矿点战斗提示
+     *
      * @param pos
      * @param army
      * @param now
@@ -4041,6 +4042,7 @@ public class WorldService {
 
     /**
      * 创建矿点战斗对象
+     *
      * @param defencePlayer
      * @param attackPlayer
      * @param pos
@@ -4109,8 +4111,8 @@ public class WorldService {
             pushMsgCollect(player, grab.get(0));
 
             //貂蝉任务-采集资源
-            ActivityDiaoChanService.completeTask(player, ETask.COLLECT_RES,staticMine.getMineType(),grab.get(0).getCount());
-            TaskService.processTask(player, ETask.COLLECT_RES,staticMine.getMineType(),grab.get(0).getCount());
+            ActivityDiaoChanService.completeTask(player, ETask.COLLECT_RES, staticMine.getMineType(), grab.get(0).getCount());
+            TaskService.processTask(player, ETask.COLLECT_RES, staticMine.getMineType(), grab.get(0).getCount());
         } catch (Exception e) {
             LogUtil.error("采集完成 出错 roleId:", player.roleId, ", army:", guard.getArmy());
         }
@@ -4402,7 +4404,7 @@ public class WorldService {
             }
         }
         // 部队返回直接取去的时候的时间， 以免暴露被击飞后的坐标, 走多远返回就多远
-        int marchTime = marchTime(player, army.getTarget());
+        int marchTime = marchTime(player, army.getTarget(), army.getType() == ArmyConstant.ARMY_TYPE_ATK_BANDIT);
         // 半路撤回
         marchTime = berlinWarService.getMarchTime(player, army, marchTime);
         marchTime = gestapoService.getGestapoMarchTime(army, marchTime);
@@ -4478,7 +4480,7 @@ public class WorldService {
         for (Force force : defender.forces) {
             int award = 0;
             if (calAward) {
-                award =  (int) (force.killed * 0.8f + force.totalLost * 0.2f);
+                award = (int) (force.killed * 0.8f + force.totalLost * 0.2f);
             }
             Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
             if (CheckNull.isNull(tmpP)) {
@@ -4501,7 +4503,7 @@ public class WorldService {
         for (Force force : defender.forces) {
             int award = 0;
             if (calAward) {
-                award =  (int) (force.killed * 0.8f + force.totalLost * 0.2f);
+                award = (int) (force.killed * 0.8f + force.totalLost * 0.2f);
             }
             Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
             if (CheckNull.isNull(tmpP)) {
@@ -4591,56 +4593,56 @@ public class WorldService {
                         }
                     }
                     // 战斗的key
-                    Integer battleId = army.getBattleId();
-                    if (ArmyConstant.ARMY_TYPE_BERLIN_WAR != army.getType()
-                            && ArmyConstant.ARMY_TYPE_BATTLE_FRONT_WAR != army.getType()
-                            && ArmyConstant.ARMY_TYPE_ATK_SUPERMINE != army.getType()
-                            && army.getState() != ArmyConstant.ARMY_STATE_RETREAT
-                            && ArmyConstant.ARMY_TYPE_COLLECT != army.getType()
-                            && battleId != null && battleId > 0 && now >= army.getBattleTime() && !warDataManager.getBattleMap().containsKey(battleId)) {
-                        LogUtil.debug("--------------修复玩家部队状态 开始  roleId:", player.roleId);
-                        // 未返回的部队将领id
-                        retreatArmy(player, army, TimeHelper.getCurrentSecond(), ArmyConstant.MOVE_BACK_TYPE_2);
-                        // 同步army状态
-                        synRetreatArmy(player, army, now); // 同步army状态
-                        LogUtil.debug("--------------返回部队成功: ", army);
-                        int keyId = army.getKeyId();
-                        // 采集状态的处理
-                        if (army.getType() == ArmyConstant.ARMY_TYPE_COLLECT) {
-                            worldDataManager.removeMineGuard(army.getTarget());
-                        } else if (army.getType() == ArmyConstant.ARMY_TYPE_COLLECT_SUPERMINE) {
-                            SuperMine sm = worldDataManager.getSuperMineMap().get(army.getTarget());
-                            if (Objects.nonNull(sm)) {
-                                sm.removeCollectArmy(player.roleId, keyId);
-                            }
-                        }
-                        Set<Integer> ids = army.getHero().stream().map(TwoInt::getV1).collect(Collectors.toSet());
-                        for (int i = 1; i < player.heroBattle.length; i++) {
-                            int heroId = player.heroBattle[i];
-                            // 不在army中
-                            if (!ids.contains(heroId)) {
-                                continue;
-                            }
-                            Hero hero = player.heros.get(heroId);
-                            if (hero != null) {
-                                hero.setState(HeroConstant.HERO_STATE_IDLE);
-                            }
-                            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-                        }
-                        for (int i = 1; i < player.heroAcq.length; i++) {
-                            int heroId = player.heroAcq[i];
-                            // 不在army中
-                            if (!ids.contains(heroId)) {
-                                continue;
-                            }
-                            Hero hero = player.heros.get(heroId);
-                            if (hero != null) {
-                                hero.setState(HeroConstant.HERO_STATE_IDLE);
-                            }
-                            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-                        }
-                        LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", player.roleId);
-                    }
+//                    Integer battleId = army.getBattleId();
+//                    if (ArmyConstant.ARMY_TYPE_BERLIN_WAR != army.getType()
+//                            && ArmyConstant.ARMY_TYPE_BATTLE_FRONT_WAR != army.getType()
+//                            && ArmyConstant.ARMY_TYPE_ATK_SUPERMINE != army.getType()
+//                            && army.getState() != ArmyConstant.ARMY_STATE_RETREAT
+//                            && ArmyConstant.ARMY_TYPE_COLLECT != army.getType()
+//                            && battleId != null && battleId > 0 && now >= army.getBattleTime() && !warDataManager.getBattleMap().containsKey(battleId)) {
+//                        LogUtil.debug("--------------修复玩家部队状态 开始  roleId:", player.roleId);
+//                        // 未返回的部队将领id
+//                        retreatArmy(player, army, TimeHelper.getCurrentSecond(), ArmyConstant.MOVE_BACK_TYPE_2);
+//                        // 同步army状态
+//                        synRetreatArmy(player, army, now); // 同步army状态
+//                        LogUtil.debug("--------------返回部队成功: ", army);
+//                        int keyId = army.getKeyId();
+//                        // 采集状态的处理
+//                        if (army.getType() == ArmyConstant.ARMY_TYPE_COLLECT) {
+//                            worldDataManager.removeMineGuard(army.getTarget());
+//                        } else if (army.getType() == ArmyConstant.ARMY_TYPE_COLLECT_SUPERMINE) {
+//                            SuperMine sm = worldDataManager.getSuperMineMap().get(army.getTarget());
+//                            if (Objects.nonNull(sm)) {
+//                                sm.removeCollectArmy(player.roleId, keyId);
+//                            }
+//                        }
+//                        Set<Integer> ids = army.getHero().stream().map(TwoInt::getV1).collect(Collectors.toSet());
+//                        for (int i = 1; i < player.heroBattle.length; i++) {
+//                            int heroId = player.heroBattle[i];
+//                            // 不在army中
+//                            if (!ids.contains(heroId)) {
+//                                continue;
+//                            }
+//                            Hero hero = player.heros.get(heroId);
+//                            if (hero != null) {
+//                                hero.setState(HeroConstant.HERO_STATE_IDLE);
+//                            }
+//                            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
+//                        }
+//                        for (int i = 1; i < player.heroAcq.length; i++) {
+//                            int heroId = player.heroAcq[i];
+//                            // 不在army中
+//                            if (!ids.contains(heroId)) {
+//                                continue;
+//                            }
+//                            Hero hero = player.heros.get(heroId);
+//                            if (hero != null) {
+//                                hero.setState(HeroConstant.HERO_STATE_IDLE);
+//                            }
+//                            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
+//                        }
+//                        LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", player.roleId);
+//                    }
                 }
             } catch (Exception e) {
                 LogUtil.error("行军结束，操作报错, roleIdId:" + player.lord.getLordId() + ", army:" + army + Arrays.toString(e.getStackTrace()));
@@ -4755,11 +4757,9 @@ public class WorldService {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         InitiateGatherEntranceRs.Builder initiateGatherEntranceRs = InitiateGatherEntranceRs.newBuilder().setStatus(false);
         int schdule = worldScheduleService.getCurrentSchduleId();
-        if (schdule < ScheduleConstant.SCHEDULE_ID_6)
-        {
+        if (schdule < ScheduleConstant.SCHEDULE_ID_6) {
             LogUtil.error("世界进程不匹配! 当前时间进程:" + schdule);
-            if (player.getMixtureData().containsKey(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE))
-            {
+            if (player.getMixtureData().containsKey(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE)) {
                 player.cleanMixtureData(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE);
             }
             return initiateGatherEntranceRs.build();
@@ -4769,18 +4769,14 @@ public class WorldService {
         // 检查军团是否开启了选举
         if (!camp.isInEceltion()) {
             LogUtil.error("玩家投票，军团未开启投票, status:" + camp.getStatus());
-            if (player.getMixtureData().containsKey(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE))
-            {
+            if (player.getMixtureData().containsKey(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE)) {
                 player.cleanMixtureData(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE);
             }
             return initiateGatherEntranceRs.build();
         }
-        if (player.getMixtureData().containsKey(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE))
-        {
+        if (player.getMixtureData().containsKey(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE)) {
             initiateGatherEntranceRs.setStatus(player.getMixtureDataById(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE) != 0);
-        }
-        else
-        {
+        } else {
             initiateGatherEntranceRs.setStatus(true);
             player.setMixtureData(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE, 1);
         }
@@ -4880,8 +4876,7 @@ public class WorldService {
         //推送同阵营集结信息
         this.sendSameCampAssembleInfo(player);
         //关闭世界界面发起集结入口banner
-        if (player.getMixtureDataById(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE) != 0)
-        {
+        if (player.getMixtureDataById(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE) != 0) {
             player.setMixtureData(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE, 0);
         }
         return builder.build();
@@ -5036,7 +5031,7 @@ public class WorldService {
                             heroId, player.lord.getNick(), heroId);
                 }
                 //清空所有驻防部队
-                if (CheckNull.nonEmpty(guardArrays)){
+                if (CheckNull.nonEmpty(guardArrays)) {
                     LogUtil.error("clear roleId: {}, pos: {} all error guard army", lordId, prePos);
                     worldDataManager.removePlayerGuard(prePos);
                 }
@@ -5087,8 +5082,7 @@ public class WorldService {
                     .post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_AREA_TYPE));
 
             //关闭响应人的世界界面 发起集结入口banner
-            if (player.getMixtureDataById(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE) != 0)
-            {
+            if (player.getMixtureDataById(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE) != 0) {
                 player.setMixtureData(PlayerConstant.WHETHER_ASSEMBLY_ENTRANCE, 0);
             }
             return builder.build();

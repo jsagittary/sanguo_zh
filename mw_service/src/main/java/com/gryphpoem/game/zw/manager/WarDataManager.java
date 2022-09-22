@@ -21,11 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
+ * @author TanDonghai
  * @ClassName WarDataManager.java
  * @Description 城战、阵营战等数据管理类
- * @author TanDonghai
  * @date 创建时间：2017年4月12日 下午2:38:04
- *
  */
 @Component
 public class WarDataManager {
@@ -41,19 +40,29 @@ public class WarDataManager {
     @Autowired
     private CampService campService;
 
-    /** 分坐标保存战斗信息, key:pos */
+    /**
+     * 分坐标保存战斗信息, key:pos
+     */
     private Map<Integer, LinkedList<Battle>> battlePosMap = new ConcurrentHashMap<>();
 
-    /** key:battleId */
+    /**
+     * key:battleId
+     */
     private Map<Integer, Battle> battleMap = new ConcurrentHashMap<>();
 
-    /** 存储特殊战斗对象,Example 闪电战(activityType:14) */
+    /**
+     * 存储特殊战斗对象,Example 闪电战(activityType:14)
+     */
     private Map<Integer, Battle> specialBattleMap = new ConcurrentHashMap<>();
 
-    /** 分区域保存战斗坐标, key:areaId, value:Set<pos> */
+    /**
+     * 分区域保存战斗坐标, key:areaId, value:Set<pos>
+     */
     private Map<Integer, Set<Integer>> battleAreaMap = new ConcurrentHashMap<>();
 
-    /** 匪军攻城战斗缓存战斗 key:roleId,value:battleId */
+    /**
+     * 匪军攻城战斗缓存战斗 key:roleId,value:battleId
+     */
     private Map<Long, Integer> rebelBattleCacheMap = new ConcurrentHashMap<>();
 
     public Map<Integer, Battle> getBattleMap() {
@@ -85,6 +94,14 @@ public class WarDataManager {
         return battle;
     }
 
+    public Battle removeBattleByIdNoSync(int battleId) {
+        Battle battle = battleMap.remove(battleId);
+        if (null != battle) {
+            removePosBattleById(battle.getPos(), battleId);
+        }
+        return battle;
+    }
+
     public Battle removeSuperMineBattleById(int battleId) {
         Battle battle = battleMap.remove(battleId);
         if (null != battle) {
@@ -103,7 +120,7 @@ public class WarDataManager {
 
     /**
      * 移除某个坐标点的某场战斗
-     * 
+     *
      * @param pos
      * @param battleId
      */
@@ -215,7 +232,7 @@ public class WarDataManager {
 
     /**
      * 移除坐标点上的所有城战信息
-     * 
+     *
      * @param pos
      */
     public void removePosAllCityBattle(int pos) {
@@ -233,6 +250,7 @@ public class WarDataManager {
 
     /**
      * 移除坐标点上的所有战斗信息, 并处理特殊战斗
+     *
      * @param oldPos
      * @param newPos
      */
@@ -266,6 +284,7 @@ public class WarDataManager {
 
     /**
      * 添加战斗
+     *
      * @param battle
      */
     public void addBattle(Player player, Battle battle) {
@@ -275,8 +294,15 @@ public class WarDataManager {
         putPosBattle(battle);
     }
 
+    public void addBattleNoSync(Player player, Battle battle) {
+        LogUtil.debug("添加战斗=" + battle);
+        battleMap.put(battle.getBattleId(), battle);
+        putPosBattle(battle);
+    }
+
     /**
      * 添加特殊战斗
+     *
      * @param specialBattle
      */
     public void addSpecialBattle(Battle specialBattle) {
@@ -324,6 +350,7 @@ public class WarDataManager {
 
     /**
      * 玩家有没有被反攻德意志BOSS打
+     *
      * @param player
      * @return
      */
@@ -381,7 +408,7 @@ public class WarDataManager {
 
     /**
      * 检测该玩家是否已经对该位置发起了战斗
-     * 
+     *
      * @param pos
      * @param player
      * @return
@@ -400,6 +427,14 @@ public class WarDataManager {
 
     public Map<Long, Integer> getRebelBattleCacheMap() {
         return rebelBattleCacheMap;
+    }
+
+    public void clearAllBattle() {
+        this.battlePosMap.clear();
+        this.battleMap.clear();
+        this.specialBattleMap.clear();
+        this.battleAreaMap.clear();
+        this.rebelBattleCacheMap.clear();
     }
 
 }

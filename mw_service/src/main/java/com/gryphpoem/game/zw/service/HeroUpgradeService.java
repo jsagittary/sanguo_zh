@@ -1,30 +1,28 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
+import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.pojo.world.Battle;
+import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
+import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +43,10 @@ public class HeroUpgradeService implements GmCmdService {
     private ChatDataManager chatDataManager;
     @Autowired
     private TaskDataManager taskDataManager;
+    @Autowired
+    private WorldService worldService;
+    @Autowired
+    private WorldDataManager worldDataManager;
 
     /**
      * 升级英雄品阶
@@ -296,8 +298,154 @@ public class HeroUpgradeService implements GmCmdService {
         rewardDataManager.checkAndSubPlayerRes(player, configList, 1, AwardFrom.UPGRADE_HERO, String.valueOf(gradeKeyId));
     }
 
+    @GmCmd("upgradeHero")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
+        if ("resetAllPurple".equalsIgnoreCase(params[0])) {
+            Java8Utils.syncMethodInvoke(() -> {
+                long startTime = System.nanoTime();
+                HeroBiographyService service = DataResource.ac.getBean(HeroBiographyService.class);
+                playerDataManager.getAllPlayer().values().forEach(p -> {
+                    if (resetOneHeroGrade(p)) {
+                        service.recalculateHeroBiography(p);
+                        CalculateUtil.reCalcAllHeroAttr(p);
+                    }
+                });
+                DataResource.ac.getBean(WarDataManager.class).clearAllBattle();
+                LogUtil.debug("重置玩家紫将品阶耗时: ", (System.nanoTime() - startTime) / 100000);
+            });
+        }
+        if ("resetOnePurple".equalsIgnoreCase(params[0])) {
+            Java8Utils.syncMethodInvoke(() -> {
+                HeroBiographyService service = DataResource.ac.getBean(HeroBiographyService.class);
+                if (resetOneHeroGrade(player)) {
+                    service.recalculateHeroBiography(player);
+                    CalculateUtil.reCalcAllHeroAttr(player);
+                }
+            });
+        }
+    }
 
+    /**
+     * 重置单个将领品阶
+     *
+     * @param p
+     */
+    private boolean resetOneHeroGrade(Player p) {
+        if (CheckNull.isNull(p)) return false;
+        if (CheckNull.isEmpty(p.heros)) return false;
+
+        List<Hero> heroList = p.heros.values().stream().filter(hero ->
+                hero.getQuality() == HeroConstant.QUALITY_PURPLE_HERO).collect(Collectors.toList());
+        if (CheckNull.isEmpty(heroList)) return false;
+
+        LogUtil.debug("--------------修复玩家部队状态 开始  roleId:", p.roleId);
+        // 未返回的部队将领id
+        int now = TimeHelper.getCurrentSecond();
+        WarDataManager warDataManager = DataResource.ac.getBean(WarDataManager.class);
+        WarService warService = DataResource.ac.getBean(WarService.class);
+        WorldService worldService = DataResource.ac.getBean(WorldService.class);
+        long roleId = p.roleId;
+        for (Army army : p.armys.values()) {
+            if (CheckNull.isNull(army)) continue;
+            int armyState = army.getState();
+            if (armyState == ArmyConstant.ARMY_STATE_COLLECT) {
+                // 部队采集中，结算采集
+                worldService.retreatSettleCollect(army, 0, p, now, roleId);
+            }
+
+            worldService.retreatArmy(p, army, now, ArmyConstant.MOVE_BACK_TYPE_2);
+            LogUtil.debug("--------------返回部队成功: ", army);
+            int keyId = army.getKeyId();
+            try {
+                Integer battleId = army.getBattleId();
+                if (null != battleId && battleId > 0) {
+                    Battle battle = warDataManager.getBattleMap().get(battleId);
+                    if (null != battle) {
+                        int camp = p.lord.getCamp();
+                        int armCount = army.getArmCount();
+                        battle.updateArm(camp, -armCount);
+                        if (battle.getType() == WorldConstant.BATTLE_TYPE_CITY) {
+                            // 城战 打玩家
+                            if (battle.getSponsor() != null && battle.getSponsor().roleId == roleId) {
+                                // 如果是发起者撤退
+                                // 玩家发起的城战，发起人撤回部队，城战取消
+                                warService.cancelCityBattle(army.getTarget(), true, battle, true);
+                            } else {
+                                // 不是发起者,移除battle的兵力
+                                worldService.removeBattleArmy(battle, roleId, keyId, battle.getAtkCamp() == camp);
+                            }
+                        } else if (battle.getType() == WorldConstant.BATTLE_TYPE_MINE_GUARD) {
+                            //采集驻守撤回, 半路撤回部队，取消战斗提示
+                            warDataManager.removeBattleByIdNoSync(battleId);
+                        } else {// 阵营战
+                            worldService.removeBattleArmy(battle, roleId, keyId, battle.getAtkCamp() == camp);
+                        }
+                        HashSet<Integer> battleIds = p.battleMap.get(battle.getPos());
+                        if (battleIds != null) {
+                            battleIds.remove(battleId);
+                        }
+                    }
+                } else {
+                    if (army.getType() == ArmyConstant.ARMY_TYPE_COLLECT) {
+                        worldDataManager.removeMineGuard(army.getTarget());
+                    } else if (army.getType() == ArmyConstant.ARMY_TYPE_COLLECT_SUPERMINE) {
+                        SuperMine sm = worldDataManager.getSuperMineMap().get(army.getTarget());
+                        if (Objects.nonNull(sm)) {
+                            sm.removeCollectArmy(p.roleId, keyId);
+                        }
+                    }
+                }
+
+                //不管采矿当前部队是否带有战斗, 一律撤回被攻击提示
+                if (armyState == ArmyConstant.ARMY_STATE_COLLECT) {
+                    //取消采矿被攻击提示
+                    worldService.cancelMineBattle(army.getTarget(), now, p);
+                }
+            } catch (Exception e) {
+                LogUtil.error(e);
+            }
+        }
+
+        for (int i = 1; i < p.heroBattle.length; i++) {
+            int heroId = p.heroBattle[i];
+            Hero hero = p.heros.get(heroId);
+            if (hero != null) {
+                hero.setState(HeroConstant.HERO_STATE_IDLE);
+            }
+            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
+        }
+        for (int i = 1; i < p.heroAcq.length; i++) {
+            int heroId = p.heroAcq[i];
+            Hero hero = p.heros.get(heroId);
+            if (hero != null) {
+                hero.setState(HeroConstant.HERO_STATE_IDLE);
+            }
+            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
+        }
+        LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", p.roleId);
+
+        // 计算返还碎片
+        Map<Integer, Integer> heroFragment = new HashMap<>();
+        heroList.forEach(hero -> {
+            if (hero.getGradeKeyId() == 0) return;
+            StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getInitHeroUpgrade(hero.getHeroId());
+            if (CheckNull.isNull(staticHeroUpgrade)) {
+                hero.setGradeKeyId(0);
+                return;
+            }
+            Integer costNum = StaticHeroDataMgr.heroUpgradeCostFragment(hero.getHeroId(), hero.getGradeKeyId());
+            if (Objects.nonNull(costNum) && costNum > 0) {
+                heroFragment.put(hero.getHeroId(), costNum);
+            }
+            hero.setGradeKeyId(staticHeroUpgrade.getKeyId());
+        });
+
+        if (CheckNull.nonEmpty(heroFragment)) {
+            heroFragment.forEach((heroId, count) -> rewardDataManager.addAwardSignle(p, AwardType.HERO_FRAGMENT, heroId, count, AwardFrom.DO_SOME));
+            return true;
+        }
+
+        return false;
     }
 }

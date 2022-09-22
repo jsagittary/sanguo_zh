@@ -229,7 +229,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
     }
 
     @Override
-    public CommonPb.SearchHero onceDraw(Player player, FunctionPlanData drawCardData,  StaticDrawHeoPlan planData, int costCount, DrawCardOperation.DrawCardCount drawCardCount, DrawCardOperation.DrawCardCostType drawCardCostType, StaticDrawCardWeight config, Date now) throws MwException {
+    public CommonPb.SearchHero onceDraw(Player player, FunctionPlanData drawCardData, StaticDrawHeoPlan planData, int costCount, DrawCardOperation.DrawCardCount drawCardCount, DrawCardOperation.DrawCardCostType drawCardCostType, StaticDrawCardWeight config, Date now) throws MwException {
         // 记录随机到的奖励信息
         StaticHeroSearch shs = randomPriorityReward(player.roleId, drawCardData, planData, now, config, player.getFunctionPlanData());
         if (CheckNull.isNull(shs) || CheckNull.isEmpty(shs.getRewardList())) {
@@ -300,7 +300,6 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
             if (drawCardData.getHeroDrawCount() + 1 >= HeroConstant.DRAW_MINIMUM_NUMBER_OF_ORANGE_HERO) {
                 drawCardData.clearHeroDrawCount();
                 staticData = dataMgr.randomSpecifyType(config, DrawCardRewardType.ORANGE_HERO, now);
-                LogUtil.debug(String.format("drawAcrCard===player:%d, 限时橙色武将保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
                 return staticData;
             }
             // 碎片保底
@@ -308,7 +307,6 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                 drawCardData.clearFragmentDrawCount();
                 drawCardData.addHeroDrawCount();
                 staticData = dataMgr.randomGuaranteeHero(config, HeroConstant.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, now);
-                LogUtil.debug(String.format("drawAcrCard===player:%d, 限时碎片保底：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
                 return staticData;
             }
 
@@ -317,7 +315,6 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
             drawCardData.addFragmentDrawCount();
             // 随机奖励
             staticData = dataMgr.randomReward(config, now);
-            LogUtil.debug(String.format("drawAcrCard===player:%d, 限时随机抽卡：%s, drawData:%s", roleId, staticData.getRewardList(), drawCardData.toDebugStr()));
             return staticData;
         } finally {
             drawCardData.addTotalDrawHeroCount(playerFunctionPlanData);

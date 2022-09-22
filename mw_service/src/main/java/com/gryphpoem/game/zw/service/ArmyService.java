@@ -270,7 +270,7 @@ public class ArmyService {
             form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
             armCount += hero.getCount();
         }
-        int marchTime = worldService.marchTime(player, pos);
+        int marchTime = worldService.marchTime(player, pos, armyType == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP);
         marchTime = airshipService.getAirShipMarchTime(player, marchTime);
         int needFood = worldService.checkMarchFood(player, marchTime, armCount); // 检查补给
         rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood,
