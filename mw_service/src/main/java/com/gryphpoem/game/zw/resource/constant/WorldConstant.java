@@ -469,6 +469,11 @@ public class WorldConstant {
     public static int CROSS_WAR_FIRE_ENTER_CD;
 
     /**
+     * 搜索叛军范围（以自身城池为中心）
+     */
+    public static int SEARCH_THE_RANGE_OF_THE_REBELS;
+
+    /**
      * 根据次数来获取消耗金币数量
      *
      * @param arr
@@ -710,6 +715,7 @@ public class WorldConstant {
         WAR_FIRE_MARCH_TIME_COEF = SystemTabLoader.getIntegerSystemValue(SystemId.WAR_FIRE_MARCH_TIME_COEF, 25000);
         CROSS_WAR_FIRE_KILL_SCORE = SystemTabLoader.getListIntSystemValue(SystemId.CROSS_WAR_FIRE_KILL_SCORE, "[10000,800]");
         CROSS_WAR_FIRE_ENTER_CD = SystemTabLoader.getIntegerSystemValue(SystemId.CROSS_WAR_FIRE_ENTER_CD, 900);
+        SEARCH_THE_RANGE_OF_THE_REBELS = SystemTabLoader.getIntegerSystemValue(SystemId.SEARCH_THE_RANGE_OF_THE_REBELS, 10);
     }
 
     // 4个都城id

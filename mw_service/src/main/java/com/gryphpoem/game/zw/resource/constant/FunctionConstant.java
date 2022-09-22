@@ -126,6 +126,10 @@ public class FunctionConstant {
      */
     public static final int FUNC_ID_TOTEM = 1046;
     /**
+     * 搜索叛军
+     */
+    public static final int SEARCH_BANDIT = 1052;
+    /**
      * 功能：战令
      */
     public static final int FUNC_ID_BATTLE_PASS = 2025;

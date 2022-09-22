@@ -1792,6 +1792,11 @@ public class SystemId {
     public static int TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = 661;
 
     /**
+     * 叛军掉落图纸保底配置
+     */
+    public static int REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = 675;
+
+    /**
      * 寻访武将保底紫橙品质权重
      */
     public static final int DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = 779;
@@ -1840,6 +1845,11 @@ public class SystemId {
      * 宝具副本产出单位时间
      */
     public static final int TREASURE_WARE_RES_OUTPUT_TIME_UNIT = 1096;
+
+    /**
+     * 搜索叛军范围（以自身城池为中心）
+     */
+    public static final int SEARCH_THE_RANGE_OF_THE_REBELS = 1112;
 
     /**
      * 品质与万能碎片的兑换

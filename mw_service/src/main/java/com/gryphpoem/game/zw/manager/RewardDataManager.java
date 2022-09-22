@@ -597,6 +597,7 @@ public class RewardDataManager {
         }
 
         // 武将碎片变更
+        int curCount = player.getDrawCardData().getFragmentData().get(id);
         LogLordHelper.heroFragment(
                 from,
                 player.account,
@@ -604,7 +605,8 @@ public class RewardDataManager {
                 id,
                 count > 0 ? Constant.ACTION_ADD : Constant.ACTION_SUB,
                 count,
-                player.getDrawCardData().getFragmentData().get(id)
+                curCount,
+                curCount
         );
     }
 
@@ -639,6 +641,7 @@ public class RewardDataManager {
         }
 
         // 武将碎片变更
+        int curCount = player.getDrawCardData().getFragmentData().get(id);
         LogLordHelper.heroFragment(
                 from,
                 player.account,
@@ -646,7 +649,8 @@ public class RewardDataManager {
                 id,
                 costFragment > 0 ? Constant.ACTION_ADD : Constant.ACTION_SUB,
                 costFragment,
-                player.getDrawCardData().getFragmentData().get(id)
+                curCount,
+                curCount
         );
     }
 

@@ -71,6 +71,11 @@ public class StaticHeroBiographyDataMgr extends AbsStaticIniService {
         return attrTreeMap.get(level);
     }
 
+    public TreeMap<Integer, StaticHeroBiographyAttr> getStaticHeroBiographyAttrMap(int type) {
+        if (CheckNull.isEmpty(attrMap)) return null;
+        return attrMap.get(type);
+    }
+
     @Override
     public void check() {
         if (CheckNull.isEmpty(attrMap) || CheckNull.isEmpty(showMap)) {
