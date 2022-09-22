@@ -1649,8 +1649,8 @@ public class WorldService {
         if (time < 1) {
             time = 1;
         }
-        LogUtil.debug("实际时间=", distance, ", 科技等加成=", addRatio, ", 风字令=", addRatio1, ", 军曹官=", addRatio2, ", 柏林战前buff=",
-                addRatio3, ", 柏林官员=", berlinJobEffect, ", 名城Buff=", cityBuffer, ", 最终时间=", time);
+        LogUtil.debug("roleId:", player.lord.getLordId(), ", 实际时间 = ", distance, ", 科技等加成=", addRatio, ", 风字令=", addRatio1, ", 军曹官=", addRatio2, ", 柏林战前buff=",
+                addRatio3, ", 柏林官员=", berlinJobEffect, ", 名城Buff=", cityBuffer, ", 皮肤加成", addRatio4, ", 行军特效加成: ", addRatio5, "最终时间 = ", time);
         return time;
     }
 
