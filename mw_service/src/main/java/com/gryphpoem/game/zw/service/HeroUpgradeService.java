@@ -311,6 +311,7 @@ public class HeroUpgradeService implements GmCmdService {
                         CalculateUtil.reCalcAllHeroAttr(p);
                     }
                 });
+                DataResource.ac.getBean(WarDataManager.class).clearAllBattle();
                 LogUtil.debug("重置玩家紫将品阶耗时: ", (System.nanoTime() - startTime) / 100000);
             });
         }

@@ -429,4 +429,12 @@ public class WarDataManager {
         return rebelBattleCacheMap;
     }
 
+    public void clearAllBattle() {
+        this.battlePosMap.clear();
+        this.battleMap.clear();
+        this.specialBattleMap.clear();
+        this.battleAreaMap.clear();
+        this.rebelBattleCacheMap.clear();
+    }
+
 }
