@@ -341,6 +341,91 @@ public class MapHelper {
     }
 
     /**
+     * 获取过滤掉的格子
+     *
+     * @param pos
+     * @param radius
+     * @param excludedRadius
+     * @return
+     */
+    public static List<Integer> getExcludedRoundPos(int pos, int radius, int excludedRadius) {
+        List<Integer> posList = new ArrayList<>();
+        if (radius < 1) {
+            return posList;
+        }
+        Turple<Integer, Integer> xy = reducePos(pos);
+        int x = xy.getA();
+        int y = xy.getB();
+        pos = x + y * 500;
+        int areaId = getAreaIdByPos(pos);
+
+        // 计算区域范围
+        Turple<Integer, Integer> beginXy = MapHelper.reduceXYInArea(areaId);
+        int xMin = beginXy.getA();
+        int yMin = beginXy.getB();
+        int xMax = xMin + 99;
+        int yMax = yMin + 99;
+
+        int xPBegin = x - radius;
+        int xPEnd = x + radius;
+        int yPBegin = y - radius;
+        int yPEnd = y + radius;
+
+        // 不能超过范围,四个角落的情况
+        if (xPBegin < xMin) { // 左边越界
+            xPBegin = xMin;
+            xPEnd = xPBegin + (2 * radius + 1);
+        }
+        if (xPEnd > xMax) {// 右边越界
+            xPEnd = xMax;
+            xPBegin = xPEnd - (2 * radius + 1);
+        }
+        if (yPBegin < yMin) {// 定边越界
+            yPBegin = yMin;
+            yPEnd = yPBegin + (2 * radius + 1);
+        }
+        if (yPEnd > yMax) {// 底边越界
+            yPEnd = yMax;
+            yPBegin = yPEnd - (2 * radius + 1);
+        }
+
+        int xPBegin_ = x - excludedRadius;
+        int xPEnd_ = x + excludedRadius;
+        int yPBegin_ = y - excludedRadius;
+        int yPEnd_ = y + excludedRadius;
+        if (excludedRadius >= 1) {
+            // 不能超过范围,四个角落的情况
+            if (xPBegin_ < xMin) { // 左边越界
+                xPBegin_ = xMin;
+                xPEnd_ = xPBegin_ + (2 * excludedRadius + 1);
+            }
+            if (xPEnd_ > xMax) {// 右边越界
+                xPEnd_ = xMax;
+                xPBegin_ = xPEnd_ - (2 * excludedRadius + 1);
+            }
+            if (yPBegin_ < yMin) {// 定边越界
+                yPBegin_ = yMin;
+                yPEnd_ = yPBegin_ + (2 * excludedRadius + 1);
+            }
+            if (yPEnd_ > yMax) {// 底边越界
+                yPEnd_ = yMax;
+                yPBegin_ = yPEnd_ - (2 * excludedRadius + 1);
+            }
+        }
+
+        for (int posY = yPBegin; posY <= yPEnd; posY++) {
+            for (int posX = xPBegin; posX <= xPEnd; posX++) {
+                if (excludedRadius >= 1 && posY >= yPBegin_ &&
+                        posY <= yPEnd_ && posX >= xPBegin_ && posX <= xPEnd_)
+                    continue;
+                int newPos = posX + posY * 500;
+                posList.add(newPos);
+            }
+        }
+        return posList;
+    }
+
+    /**
      * 皇城中某个城,的区域随机坐标
      *
      * @param kingCityPos 皇城中某个城坐标

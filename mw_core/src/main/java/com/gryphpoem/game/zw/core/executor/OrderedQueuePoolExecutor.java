@@ -1,17 +1,16 @@
 package com.gryphpoem.game.zw.core.executor;
 
+import com.gryphpoem.game.zw.core.structs.OrderedQueuePool;
+import com.gryphpoem.game.zw.core.structs.TasksQueue;
+import com.gryphpoem.game.zw.core.work.AbstractWork;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
-import com.gryphpoem.game.zw.core.structs.OrderedQueuePool;
-import com.gryphpoem.game.zw.core.structs.TasksQueue;
-import com.gryphpoem.game.zw.core.work.AbstractWork;
 
 public class OrderedQueuePoolExecutor extends ThreadPoolExecutor {
 
@@ -78,6 +77,7 @@ public class OrderedQueuePoolExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
 		super.afterExecute(r, t);
+		if (r instanceof AbstractWork == false) return;
 
 		AbstractWork work = (AbstractWork) r;
 		TasksQueue<AbstractWork> queue = work.getTasksQueue();

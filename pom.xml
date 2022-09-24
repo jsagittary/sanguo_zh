@@ -297,6 +297,10 @@
 					<groupId>org.apache.httpcomponents</groupId>
 					<artifactId>httpcore</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpcore-nio</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -304,7 +308,11 @@
 			<artifactId>httpcore</artifactId>
 			<version>4.4.10</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore-nio</artifactId>
+			<version>4.4.10</version>
+		</dependency>
 
 		<!-- <dependency> <groupId>org.apache.curator</groupId> <artifactId>curator-recipes</artifactId> 
 			<version>${curator-version}</version> <exclusions> <exclusion> <groupId>org.apache.zookeeper</groupId> 

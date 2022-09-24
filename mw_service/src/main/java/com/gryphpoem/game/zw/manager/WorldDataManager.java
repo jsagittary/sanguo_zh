@@ -6,11 +6,11 @@ import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb2.SyncWorldChgRs;
@@ -507,7 +507,7 @@ public class WorldDataManager {
                 .post(new Events.AreaChangeNoticeEvent(newBanditPos, Events.AreaChangeNoticeEvent.CLEAR_CACHE_TYPE));
     }
 
-    private StaticBanditArea getStaticBanditAreaByWorldProgress(int areaOrder) {
+    public StaticBanditArea getStaticBanditAreaByWorldProgress(int areaOrder) {
         int currWorldSchedule = worldScheduleService.getCurrentSchduleId();
         List<StaticBanditArea> staticBanditAreaList = StaticBanditDataMgr.getStaticBanditAreaByAreaOrder(areaOrder);
         if (!CheckNull.isEmpty(staticBanditAreaList)) {
@@ -516,6 +516,85 @@ public class WorldDataManager {
                     .findFirst().orElse(null);
         }
         return null;
+    }
+
+    /**
+     * 在玩家点位maxRadius范围内创建一个叛军
+     *
+     * @param maxRadius
+     * @param banditLv
+     * @param player
+     * @return
+     */
+    public int refreshOneBanditByPlayer(int maxRadius, int banditLv, Player player) {
+        if (maxRadius < 1) return -1;
+
+        List<StaticBandit> banditList = StaticBanditDataMgr.getBanditByLv(banditLv);
+        if (CheckNull.isEmpty(banditList)) return -1;
+        StaticArea staticArea = StaticWorldDataMgr.getAreaMap().get(player.lord.getArea());
+        if (staticArea == null) return -1;
+        StaticBanditArea staticBanditArea = this.getStaticBanditAreaByWorldProgress(staticArea.getOpenOrder());
+        if (CheckNull.isNull(staticBanditArea)) return -1;
+
+        int randomPos = shufflePosInRadius(maxRadius, player.lord.getPos());
+        if (randomPos == -1) return randomPos;
+
+        StaticBandit sBandit = banditList.get(RandomHelper.randomInSize(banditList.size()));
+        addBandit(randomPos, sBandit);
+        return randomPos;
+    }
+
+    /**
+     * 在一定范围内随机点位
+     *
+     * @param maxRadius
+     * @param playerPos
+     * @return
+     */
+    public int shufflePosInRadius(int maxRadius, int playerPos) {
+        List<Integer> emptyPos = null;
+        // 先在一半区域里找
+        List<Integer> posList = MapHelper.getRoundPos(playerPos, maxRadius / 2);
+        if (CheckNull.nonEmpty(posList)) {
+            emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
+            if (CheckNull.isEmpty(emptyPos)) {
+                // 一半区域里没位置则在一半以外的区域找
+                posList = MapHelper.getExcludedRoundPos(playerPos, maxRadius, maxRadius / 2);
+                emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
+            }
+        } else {
+            // 一半区域没有pos, 在一半以外里找
+            posList = MapHelper.getExcludedRoundPos(playerPos, maxRadius, maxRadius / 2);
+            if (CheckNull.nonEmpty(posList))
+                emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
+        }
+        if (CheckNull.isEmpty(emptyPos)) return -1;
+        if (emptyPos.size() == 1) return emptyPos.get(0);
+        return emptyPos.get(RandomHelper.randomInSize(emptyPos.size()));
+    }
+
+    /**
+     * 点位离玩家点位最近的pos
+     *
+     * @param posList
+     * @param playerPos
+     * @return
+     */
+    public int nearestPos(List<Integer> posList, int playerPos) {
+        if (CheckNull.isEmpty(posList)) return -1;
+        if (posList.size() == 1) return posList.get(0);
+
+        int nearestPos = -1;
+        int minDistance = Integer.MAX_VALUE;
+        for (int pos : posList) {
+            int distance = MapHelper.calcDistance(playerPos, pos);
+            if (minDistance > distance) {
+                minDistance = distance;
+                nearestPos = pos;
+            }
+        }
+
+        return nearestPos;
     }
 
     /**
@@ -838,8 +917,8 @@ public class WorldDataManager {
     /**
      * 获取某个城池的空点位置
      *
-     * @param cityPos
-     * @param cnt     预计需要的空点
+     * @param sCity
+     * @param cnt   预计需要的空点
      * @return
      */
     public List<Integer> randomEmptyByKingCityPos(StaticCity sCity, int cnt) {
@@ -1073,7 +1152,6 @@ public class WorldDataManager {
     /**
      * 获取名城Buff
      *
-     * @param army
      * @return
      */
     public double getCityBuffer(CommonPb.TwoInt cityStatus, int buffType, long roleId) {
@@ -2160,7 +2238,7 @@ public class WorldDataManager {
 //            }
 //        }
 
-        try{
+        try {
             Map<Integer, Integer> errorMap = new HashMap<>();
             for (Entry<Integer, List<Army>> entry : armyMap.entrySet()) {
                 List<Army> list = entry.getValue();
@@ -2181,7 +2259,7 @@ public class WorldDataManager {
             if (!errorMap.isEmpty()) {
                 LogUtil.error2Sentry(String.format("armyMap 剩余异常驻防数据 :%s", errorMap));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             LogUtil.error("", e);
         }
         return cnt;

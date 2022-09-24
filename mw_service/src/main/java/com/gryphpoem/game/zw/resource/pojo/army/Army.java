@@ -8,8 +8,8 @@ import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author TanDonghai
@@ -34,7 +34,7 @@ public class Army {
     /**
      * 当前状态
      */
-    private int state;
+    private volatile int state;
     /**
      * 记录将领id, v1为将领id, v2为兵力不可信任   【chenqi:只会有一个将领】
      */

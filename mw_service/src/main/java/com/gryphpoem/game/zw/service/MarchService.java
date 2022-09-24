@@ -591,9 +591,8 @@ public class MarchService {
             int drawingNum = activityDataManager.getActBanditDrawing(player);
             tmp = rewardDataManager.sendReward(player, staticBandit.getAwardDrawing(), drawingNum,
                     AwardFrom.BANDIT_DROP);
-            List<List<Integer>> guaranteedConfigList = SystemTabLoader.getListListIntSystemValue(675, "[[]]");
             List<Integer> guaranteedConfigRule = null;
-            for (List<Integer> l : guaranteedConfigList) {
+            for (List<Integer> l : Constant.REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION) {
                 if (CheckNull.isEmpty(l) || l.size() != 2 || l.get(0) != staticBandit.getLv()) continue;
                 guaranteedConfigRule = l;
                 break;
@@ -601,10 +600,10 @@ public class MarchService {
             if (CheckNull.nonEmpty(tmp)) {
                 dropList.addAll(tmp);
                 if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
-                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
+                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(Constant.TypeInfo.REBEL_DROP_GUARANTEED_TIMES, null);
                     if (CheckNull.isNull(guaranteedDrops)) {
                         guaranteedDrops = new ArrayList<>();
-                        player.typeInfo.put(2, guaranteedDrops);
+                        player.typeInfo.put(Constant.TypeInfo.REBEL_DROP_GUARANTEED_TIMES, guaranteedDrops);
                     }
                     History rebelHistory = null;
                     if (CheckNull.nonEmpty(guaranteedDrops)) {
@@ -621,10 +620,10 @@ public class MarchService {
                 }
             } else {
                 if (CheckNull.nonEmpty(staticBandit.getAwardDrawing()) && CheckNull.nonEmpty(guaranteedConfigRule)) {
-                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(2, null);
+                    List<History> guaranteedDrops = player.typeInfo.getOrDefault(Constant.TypeInfo.REBEL_DROP_GUARANTEED_TIMES, null);
                     if (CheckNull.isNull(guaranteedDrops)) {
                         guaranteedDrops = new ArrayList<>();
-                        player.typeInfo.put(2, guaranteedDrops);
+                        player.typeInfo.put(Constant.TypeInfo.REBEL_DROP_GUARANTEED_TIMES, guaranteedDrops);
                     }
                     History rebelHistory = null;
                     if (CheckNull.nonEmpty(guaranteedDrops)) {
