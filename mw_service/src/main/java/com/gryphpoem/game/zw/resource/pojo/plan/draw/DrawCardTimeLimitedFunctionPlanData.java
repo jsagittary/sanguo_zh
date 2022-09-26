@@ -34,6 +34,11 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
     private static final int TOTAL_HERO_DRAW_COUNT_INDEX = -1005;
 
     /**
+     * 限时寻访保底宝箱购买次数
+     */
+    private static final int TOTAL_GUARANTEED_OPTIONAL_BOX_PURCHASE_COUNT_INDEX = -1006;
+
+    /**
      * 存储任务完成进度
      */
     private Map<Integer, Integer> saveMap = new HashMap<>();
@@ -117,6 +122,14 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
 
     public void addTotalDrawHeroCount(PlayerFunctionPlanData data) {
         this.saveMap.merge(TOTAL_HERO_DRAW_COUNT_INDEX, 1, Integer::sum);
+    }
+
+    public int getTotalGuaranteedOptionalBoxPurchaseCount() {
+        return this.saveMap.getOrDefault(TOTAL_GUARANTEED_OPTIONAL_BOX_PURCHASE_COUNT_INDEX, 0);
+    }
+
+    public void addToTotalGuaranteedOptionalBoxPurchaseCount() {
+        this.saveMap.merge(TOTAL_GUARANTEED_OPTIONAL_BOX_PURCHASE_COUNT_INDEX, 1, Integer::sum);
     }
 
     public String toDebugStr() {

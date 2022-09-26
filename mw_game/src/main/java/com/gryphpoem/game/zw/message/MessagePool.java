@@ -60,6 +60,7 @@ import com.gryphpoem.game.zw.handler.client.factory.*;
 import com.gryphpoem.game.zw.handler.client.fish.*;
 import com.gryphpoem.game.zw.handler.client.friend.*;
 import com.gryphpoem.game.zw.handler.client.hero.*;
+import com.gryphpoem.game.zw.handler.client.hero.function.BuyOptionalBoxFromTimeLimitedDrawCardHandler;
 import com.gryphpoem.game.zw.handler.client.hero.function.DrawActHeroCardHandler;
 import com.gryphpoem.game.zw.handler.client.hero.function.GetDrawHeroCardActInfoHandler;
 import com.gryphpoem.game.zw.handler.client.hero.function.GetDrawHeroCardPlanListHandler;
@@ -1364,6 +1365,7 @@ public class MessagePool implements IMessagePool {
         registerC(GetDrawHeroCardActInfoRq.EXT_FIELD_NUMBER, GetDrawHeroCardActInfoRs.EXT_FIELD_NUMBER, GetDrawHeroCardActInfoHandler.class);
         registerC(GetDrawHeroCardPlanRq.EXT_FIELD_NUMBER, GetDrawHeroCardPlanRs.EXT_FIELD_NUMBER, GetDrawHeroCardPlanListHandler.class);
         registerC(ReceiveTimeLimitedDrawCountRq.EXT_FIELD_NUMBER, ReceiveTimeLimitedDrawCountRs.EXT_FIELD_NUMBER, ReceiveTimeLimitedDrawCountHandler.class);
+        registerC(BuyOptionalBoxFromTimeLimitedDrawCardRq.EXT_FIELD_NUMBER, BuyOptionalBoxFromTimeLimitedDrawCardRs.EXT_FIELD_NUMBER, BuyOptionalBoxFromTimeLimitedDrawCardHandler.class);
 
         // 武将列传相关
         registerC(GamePb5.GetHeroBiographyInfoRq.EXT_FIELD_NUMBER, GetHeroBiographyInfoRs.EXT_FIELD_NUMBER, GetHeroBiographyInfoHandler.class);
