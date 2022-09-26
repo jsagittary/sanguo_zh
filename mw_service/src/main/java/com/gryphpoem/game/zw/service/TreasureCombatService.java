@@ -10,13 +10,11 @@ import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
-import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
@@ -152,8 +150,8 @@ public class TreasureCombatService implements GmCmdService {
                 }
 
                 DataResource.getBean(ActivityTriggerService.class).doTreasureCombat(player, combatId);
-                taskDataManager.updTask(player,TaskType.COND_525,1);
-                taskDataManager.updTask(player,TaskType.COND_531,1,combatId);
+                taskDataManager.updTask(player, TaskType.COND_525, 1);
+                taskDataManager.updTask(player, TaskType.COND_531, 1, combatId);
 
                 // 宝具征程活动任务
                 TaskService.processTask(player, ETask.PASS_TREASURE_WARE_COMBAT_ID, combatId);
@@ -375,81 +373,6 @@ public class TreasureCombatService implements GmCmdService {
         builder.setStatus(2);
         builder.addAllAward(rewardDataManager.addAwardDelaySync(player, sectionAward, null, AwardFrom.TREASURE_ON_HOOK_AWARD));
         return builder.build();
-    }
-
-    /**
-     * 使用道具增加宝具副本相关道具
-     *
-     * @param propCount
-     * @param player
-     * @param addAward
-     * @param propId
-     * @param listAward
-     * @param change
-     * @throws MwException
-     */
-    public void useProp(int propCount, Player player, List<List<Integer>> addAward, int propId, List<CommonPb.Award> listAward, ChangeInfo change) throws MwException {
-        if (player.getTreasureCombat().getCurCombatId() <= 0) {
-            throw new MwException(GameError.COMBAT_PASS_BEFORE.getCode(), String.format("领取章节奖励时，当前关卡未通关, roleId: %s, curCombatId: %s, propId: %s",
-                    player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
-        }
-
-        StaticTreasureCombat sConf = StaticTreasureWareDataMgr.getTreasureCombatMap(player.getTreasureCombat().getCurCombatId());
-        if (Objects.isNull(sConf)) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), String.format("使用挂机奖励道具时, 无关卡配置, roleId: %s, combatId: %s, propId: %s",
-                    player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
-        }
-
-        int multiple = 0;
-        List<Integer> singleStaticAward = null;
-        List<Integer> singleRandomAward = null;
-        List<List<Integer>> singleAward = null;
-        for (List<Integer> awardTime : addAward) {
-            List<Integer> staticTmp = sConf.getMinuteAward().stream().filter(award -> award.get(0) == awardTime.get(0)
-                    && award.get(1) == awardTime.get(1)).findAny().orElse(null);
-            List<Integer> randomTmp = sConf.getMinuteRandomAward().stream().filter(award -> award.get(0) == awardTime.get(0)
-                    && award.get(1) == awardTime.get(1)).findAny().orElse(null);
-            if (ObjectUtils.isEmpty(staticTmp) && ObjectUtils.isEmpty(randomTmp))
-                continue;
-
-            //奖励次数
-            multiple = awardTime.get(2) / Constant.TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
-            if (multiple <= 0)
-                continue;
-
-            if (Objects.nonNull(staticTmp))
-                multiple *= propCount;
-
-            if (Objects.nonNull(staticTmp)) {
-                singleStaticAward = Arrays.asList(staticTmp.get(0), staticTmp.get(1), staticTmp.get(2) * multiple);
-            }
-            if (Objects.nonNull(randomTmp)) {
-                int count = (int) (randomTmp.get(2) * multiple * randomTmp.get(3) / Constant.TEN_THROUSAND);
-                if (count == 0)
-                    count = 1;
-                count *= propCount;
-                singleRandomAward = Arrays.asList(randomTmp.get(0), randomTmp.get(1), count);
-            }
-
-            singleAward = CheckNull.isNull(singleAward) ? new ArrayList<>() : singleAward;
-            if (!ObjectUtils.isEmpty(singleStaticAward)) {
-                if (ObjectUtils.isEmpty(singleRandomAward)) {
-                    singleAward.add(singleStaticAward);
-                } else {
-                    singleAward.add(Arrays.asList(singleStaticAward.get(0), singleStaticAward.get(1), singleStaticAward.get(2) + singleRandomAward.get(2)));
-                }
-            } else {
-                singleAward.add(singleRandomAward);
-            }
-        }
-
-        if (ObjectUtils.isEmpty(singleAward)) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), String.format("使用挂机奖励道具时, 没有相关资源增益, roleId: %s, combatId: %s, propId: %s",
-                    player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
-        }
-
-        listAward.addAll(rewardDataManager.addAwardDelaySync(player, singleAward, change,
-                AwardFrom.USE_PROP, propId));
     }
 
     /**

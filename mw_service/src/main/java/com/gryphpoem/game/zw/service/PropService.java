@@ -1,21 +1,17 @@
 package com.gryphpoem.game.zw.service;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
+import com.gryphpoem.game.zw.gameplay.local.prop.AbstractUseProp;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.MsgDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.prop.PropDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -27,36 +23,19 @@ import com.gryphpoem.game.zw.pb.GamePb1.GetPropsRs;
 import com.gryphpoem.game.zw.pb.GamePb1.UsePropRs;
 import com.gryphpoem.game.zw.pb.GamePb1.UsePropRs.Builder;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncBuffRs;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.EffectConstant;
-import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
-import com.gryphpoem.game.zw.resource.constant.MentorConstant;
-import com.gryphpoem.game.zw.resource.constant.PropConstant;
-import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.p.Mentor;
 import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
-import com.gryphpoem.game.zw.resource.domain.s.StaticRandomProp;
-import com.gryphpoem.game.zw.resource.domain.s.StaticWeightBoxProp;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.RandomUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import com.gryphpoem.game.zw.service.totem.TotemService;
@@ -64,17 +43,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 /**
  * @author TanDonghai
@@ -97,6 +68,8 @@ public class PropService {
     private ChatDataManager chatDataManager;
     @Autowired
     private CrossWorldMapDataManager crossWorldMapDataManager;
+    @Autowired
+    private PropDataManager propDataManager;
 
     private static final Integer PURPLE_PROP_TYPE = 68;
 
@@ -194,7 +167,8 @@ public class PropService {
         checkSpecialEquip(player, staticProp, count);
         // 效果道具检测,有更高效果的buff时不能使用低级效果buff
         checkEffectProp(player, staticProp);
-        if (staticProp.getPropType() == PropConstant.PropType.TREASURE_LOCK_BOX) {//带锁的宝箱
+        if (staticProp.getPropType() == PropConstant.PropType.TREASURE_LOCK_BOX) {
+            //带锁的宝箱
             checkAndSubTreasureBox(player, staticProp, prop, count);
         } else {
             rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.PROP, propId, count, AwardFrom.USE_PROP);
@@ -203,80 +177,36 @@ public class PropService {
         UsePropRs.Builder builder = UsePropRs.newBuilder();
         ChangeInfo change = ChangeInfo.newIns();
         List<CommonPb.Award> listAward = new ArrayList<>();
-        if (staticProp.getPropType() == PropConstant.PropType.CHOOSE_PROP_TYPE) {
-            //自选宝箱跑马灯判断
-            useChoosePropTreasure(count, staticProp, player, prop, params, roleId, propId, listAward, change);
-        } else if (staticProp.getPropType() == PropConstant.PropType.CHOOSE_HERO_FRAGMENT_LIMIT_HAVE) {
-            // 自选已拥有的武将碎片
-            useChooseHeroFragment(count, staticProp, player, prop, params, roleId, propId, listAward, change);
-        } else if (staticProp.getPropType() == PropConstant.PropType.ADD_TREASURE_WARE_PROP) {
-            DataResource.getBean(TreasureCombatService.class).useProp(count, player, staticProp.getRewardList(), propId, listAward, change);
-        } else {
-            for (int i = 0; i < count; i++) {
-                if (!CheckNull.isEmpty(staticProp.getRewardList())) {
-                    listAward.addAll(rewardDataManager.addAwardDelaySync(player, staticProp.getRewardList(), change,
-                            AwardFrom.USE_PROP));
-                }
-            }
-        }
+        AbstractUseProp absUseProp = propDataManager.useProp(staticProp.getPropType());
+        List<CommonPb.Award> awardList = absUseProp.useProp(count, staticProp, player, prop, params, roleId, propId, listAward, change);
 
-        // 检测道具是否需要发送跑马灯
-        if (!ObjectUtils.isEmpty(listAward))
+        if (CheckNull.nonEmpty(listAward)) {
+            // 检测道具是否需要发送跑马灯
             checkAndSendSysChat(propId, player, listAward);
-
-        if (count == 1 || checkAwardType(listAward)) {
-            // 暂时只有使用数量为1的时候, 允许限制奖励转换
-            builder.addAllAward(listAward);
-        } else {
-            Map<Integer, Map<Integer, Integer>> typeMap = new HashMap<>();
-            Map<Integer, Integer> idMap = null;
-            for (CommonPb.Award award : listAward) {
-                idMap = typeMap.computeIfAbsent(award.getType(), k -> new HashMap<>());
-                Integer val = idMap.get(award.getId());
-                val = val == null ? 0 : val;
-                idMap.put(award.getId(), val + award.getCount());
-            }
-            for (Entry<Integer, Map<Integer, Integer>> entry : typeMap.entrySet()) {
-                for (Entry<Integer, Integer> kv : entry.getValue().entrySet()) {
-                    builder.addAward(
-                            CommonPb.Award.newBuilder().setType(entry.getKey()).setId(kv.getKey()).setCount(kv.getValue()));
+            if (count == 1 || checkAwardType(listAward)) {
+                // 暂时只有使用数量为1的时候, 允许限制奖励转换
+                builder.addAllAward(listAward);
+            } else {
+                // 合并奖励
+                Map<Integer, Integer> idMap;
+                Map<Integer, Map<Integer, Integer>> typeMap = new HashMap<>();
+                for (CommonPb.Award award : listAward) {
+                    idMap = typeMap.computeIfAbsent(award.getType(), k -> new HashMap<>());
+                    Integer val = idMap.get(award.getId());
+                    val = val == null ? 0 : val;
+                    idMap.put(award.getId(), val + award.getCount());
                 }
-            }
-        }
-        // 随机材料箱子比较处理
-        if (staticProp.getPropType() == PropConstant.PropType.RANDMON_PROP_TYPE) {
-            StaticRandomProp sRandomProp = StaticPropDataMgr.getRandomPropById(staticProp.getPropId());
-            if (sRandomProp != null) {
-                for (int i = 0; i < count; i++) {
-                    // 比较那个找出物品数量最小
-                    int minPropId = sRandomProp.getCompare().stream().map(pId -> {
-                        Prop p = player.props.get(pId);
-                        int cnt = p == null ? 0 : p.getCount();
-                        return new Turple<>(pId, cnt);
-                    }).min(Comparator.comparingInt(Turple::getB)).get().getA();
-
-                    int minPropCnt = RandomHelper.randomInArea(sRandomProp.getRandomNum().get(0),
-                            sRandomProp.getRandomNum().get(1));
-                    builder.addAward(rewardDataManager.addAwardSignle(player, AwardType.PROP, minPropId, minPropCnt,
-                            AwardFrom.USE_PROP));
-                }
-            }
-        } else if (staticProp.getPropType() == PropConstant.PropType.WEIGHT_CNT_BOX_PROP_TYPE) {// 权重次数箱
-            StaticWeightBoxProp sWeightBoxProp = StaticPropDataMgr.getWeightBoxPropMapById(staticProp.getPropId());
-            if (sWeightBoxProp != null) {
-                for (int i = 0; i < count; i++) {
-                    List<Integer> maxMin = RandomUtil.getWeightByList(sWeightBoxProp.getRandomNum(), w -> w.get(2));
-                    if (!CheckNull.isEmpty(maxMin)) {
-                        int cnt = RandomHelper.randomInArea(maxMin.get(0), maxMin.get(1) + 1);
-                        if (cnt > 0) {
-                            builder.addAward(rewardDataManager.addAwardSignle(player, sWeightBoxProp.getReward().get(0),
-                                    sWeightBoxProp.getReward().get(1), cnt, AwardFrom.USE_PROP));
-                        }
+                for (Entry<Integer, Map<Integer, Integer>> entry : typeMap.entrySet()) {
+                    for (Entry<Integer, Integer> kv : entry.getValue().entrySet()) {
+                        builder.addAward(
+                                CommonPb.Award.newBuilder().setType(entry.getKey()).setId(kv.getKey()).setCount(kv.getValue()));
                     }
                 }
             }
-        } else if (staticProp.getPropType() == PropConstant.PropType.ONHOOK_CARD_TYPE) {//挂机卡
-            playerService.activateMonthCard(player, FunCard.CARD_TYPE[8], staticProp.getDuration() * count);
+        }
+
+        if (CheckNull.nonEmpty(awardList)) {
+            builder.addAllAward(awardList);
         }
 
         boolean hasEffect = processEffect(player, staticProp);
@@ -300,9 +230,6 @@ public class PropService {
      * @return
      */
     private boolean checkAwardType(List<CommonPb.Award> listAward) {
-        if (ObjectUtils.isEmpty(listAward))
-            return false;
-
         for (CommonPb.Award award : listAward) {
             if (ArrayUtils.contains(NOT_COMBINE_AWARD, award.getType())) {
                 return true;
@@ -316,131 +243,6 @@ public class PropService {
      * 不合并相同id奖励类型
      */
     private static final int[] NOT_COMBINE_AWARD = {AwardType.TREASURE_WARE};
-
-    /**
-     * 使用自选箱道具
-     * @param count
-     * @param staticProp
-     * @param player
-     * @param prop
-     * @param params
-     * @param roleId
-     * @param propId
-     * @param listAward
-     * @param change
-     * @throws MwException
-     */
-    private void useChoosePropTreasure(int count, StaticProp staticProp, Player player, Prop prop,
-                                       String params, long roleId, int propId, List<CommonPb.Award> listAward,
-                                       ChangeInfo change) throws MwException {
-        //因跑马灯在此判断，因此将判断加在这里
-        if (count != 1) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
-                    "usedCount: ", prop.getCount(), ", count = ", count);
-        }
-
-        Integer choosePropId;
-        try {
-            choosePropId = Integer.parseInt(params);
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage(), e);
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱参数错误, roleId:", player.roleId,
-                    "usedCount", prop.getCount(), ", params=" + params);
-        }
-        if (ObjectUtils.isEmpty(choosePropId)) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱参数错误, roleId:", player.roleId,
-                    "usedCount", prop.getCount(), ", params=" + params);
-        }
-
-        if (CheckNull.isEmpty(staticProp.getRewardList())) {
-            throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
-        }
-
-        List<Integer> reward = null;
-        List<List<Integer>> rewardArr;
-        for (List<Integer> tmp : staticProp.getRewardList()) {
-            if (CheckNull.isEmpty(tmp) || tmp.size() < 3) {
-                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
-            }
-            if (tmp.get(1) == choosePropId.intValue()) {
-                reward = tmp;
-                break;
-            }
-        }
-        if (ObjectUtils.isEmpty(reward)) {
-            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(roleId, propId));
-        }
-
-        rewardArr = new ArrayList<>();
-        rewardArr.add(reward);
-        listAward.addAll(rewardDataManager.addAwardDelaySync(player, rewardArr, change,
-                AwardFrom.USE_PROP));
-    }
-
-    /**
-     * 选择武将碎片自选箱
-     *
-     * @param count
-     * @param staticProp
-     * @param player
-     * @param prop
-     * @param params
-     * @param roleId
-     * @param propId
-     * @param listAward
-     * @param change
-     * @throws MwException
-     */
-    private void useChooseHeroFragment(int count, StaticProp staticProp, Player player, Prop prop,
-                                       String params, long roleId, int propId, List<CommonPb.Award> listAward,
-                                       ChangeInfo change) throws MwException {
-        //因跑马灯在此判断，因此将判断加在这里
-//        if (count != 1) {
-//            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
-//                    "usedCount: ", prop.getCount(), ", count = ", count);
-//        }
-
-        Integer choosePropId;
-        try {
-            choosePropId = Integer.parseInt(params);
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage(), e);
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱参数错误, roleId:", player.roleId,
-                    "usedCount", prop.getCount(), ", params=" + params);
-        }
-        if (ObjectUtils.isEmpty(choosePropId)) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱参数错误, roleId:", player.roleId,
-                    "usedCount", prop.getCount(), ", params=" + params);
-        }
-
-        // 必须拥有此武将才可以领取碎片
-        Hero hero = player.heros.get(choosePropId);
-        if (CheckNull.isNull(hero)) {
-            throw new MwException(GameError.HERO_NOT_FOUND, String.format("hero not found, heroId:%d, roleId:%d", choosePropId, player.roleId));
-        }
-        if (CheckNull.isEmpty(staticProp.getRewardList())) {
-            throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
-        }
-
-        List<Integer> reward = null;
-        List<List<Integer>> rewardArr;
-        for (List<Integer> tmp : staticProp.getRewardList()) {
-            if (CheckNull.isEmpty(tmp) || tmp.size() < 3) {
-                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
-            }
-            if (tmp.get(1) == choosePropId.intValue()) {
-                reward = tmp;
-                break;
-            }
-        }
-        if (ObjectUtils.isEmpty(reward)) {
-            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(roleId, propId));
-        }
-
-        rewardArr = new ArrayList<>();
-        rewardArr.add(reward);
-        listAward.addAll(rewardDataManager.sendReward(player, rewardArr, count, AwardFrom.USE_PROP));
-    }
 
     private void checkAndSubTreasureBox(Player player, StaticProp sProp, Prop prop, int useCount) throws MwException {
         if (prop.getCount() < useCount) {
