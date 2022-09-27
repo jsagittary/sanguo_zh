@@ -198,7 +198,6 @@ public class BanditService extends AbsGameService implements GmCmdService {
                         }
                     } else {
                         // 没有找到叛军或精英叛军
-                        LogUtil.error(String.format("异步未找到地图上的指定叛军的点, pos:%d", pos));
                         switch (req.getType()) {
                             case COMMON_REBEL:
                                 // 刷新一个叛军在地图上
