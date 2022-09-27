@@ -35,7 +35,7 @@ public class AddTreasureWareProp extends AbstractUseProp {
     }
 
     @Override
-    public List<CommonPb.Award> useProp(int propCount, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
+    public void checkUseProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) throws MwException {
         if (player.getTreasureCombat().getCurCombatId() <= 0) {
             throw new MwException(GameError.COMBAT_PASS_BEFORE.getCode(), String.format("领取章节奖励时，当前关卡未通关, roleId: %s, curCombatId: %s, propId: %s",
                     player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
@@ -46,7 +46,12 @@ public class AddTreasureWareProp extends AbstractUseProp {
             throw new MwException(GameError.NO_CONFIG.getCode(), String.format("使用挂机奖励道具时, 无关卡配置, roleId: %s, combatId: %s, propId: %s",
                     player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
         }
+    }
 
+    @Override
+    public List<CommonPb.Award> useProp(int propCount, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
+        StaticTreasureCombat sConf = StaticTreasureWareDataMgr.getTreasureCombatMap(player.getTreasureCombat().getCurCombatId());
+        
         int multiple = 0;
         List<Integer> singleStaticAward = null;
         List<Integer> singleRandomAward = null;
@@ -90,13 +95,10 @@ public class AddTreasureWareProp extends AbstractUseProp {
             }
         }
 
-        if (ObjectUtils.isEmpty(singleAward)) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), String.format("使用挂机奖励道具时, 没有相关资源增益, roleId: %s, combatId: %s, propId: %s",
-                    player.lord.getLordId(), player.getTreasureCombat().getCurCombatId(), propId));
+        if (CheckNull.nonEmpty(singleAward)) {
+            listAward.addAll(DataResource.ac.getBean(RewardDataManager.class).addAwardDelaySync(player, singleAward, change,
+                    AwardFrom.USE_PROP, propId));
         }
-
-        listAward.addAll(DataResource.ac.getBean(RewardDataManager.class).addAwardDelaySync(player, singleAward, change,
-                AwardFrom.USE_PROP, propId));
         return null;
     }
 }

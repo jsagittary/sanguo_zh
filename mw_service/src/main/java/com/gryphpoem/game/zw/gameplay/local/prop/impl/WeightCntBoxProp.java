@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.gameplay.local.prop.impl;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.prop.AbstractUseProp;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
@@ -28,6 +29,11 @@ public class WeightCntBoxProp extends AbstractUseProp {
     @Override
     public int propType() {
         return PropConstant.PropType.WEIGHT_CNT_BOX_PROP_TYPE;
+    }
+
+    @Override
+    public void checkUseProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) throws MwException {
+        
     }
 
     @Override

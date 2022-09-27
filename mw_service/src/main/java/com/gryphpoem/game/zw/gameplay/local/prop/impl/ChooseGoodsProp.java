@@ -31,7 +31,7 @@ public class ChooseGoodsProp extends AbstractUseProp {
     }
 
     @Override
-    public List<CommonPb.Award> useProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
+    public void checkUseProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) throws MwException {
         //因跑马灯在此判断，因此将判断加在这里
         if (count != 1) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
@@ -54,26 +54,29 @@ public class ChooseGoodsProp extends AbstractUseProp {
         if (CheckNull.isEmpty(staticProp.getRewardList())) {
             throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
         }
+    }
 
+    @Override
+    public List<CommonPb.Award> useProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
         List<Integer> reward = null;
         List<List<Integer>> rewardArr;
+        Integer choosePropId = Integer.parseInt(params);
         for (List<Integer> tmp : staticProp.getRewardList()) {
             if (CheckNull.isEmpty(tmp) || tmp.size() < 3) {
-                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
+                continue;
             }
             if (tmp.get(1) == choosePropId.intValue()) {
                 reward = tmp;
                 break;
             }
         }
-        if (ObjectUtils.isEmpty(reward)) {
-            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(roleId, propId));
-        }
 
-        rewardArr = new ArrayList<>();
-        rewardArr.add(reward);
-        listAward.addAll(DataResource.ac.getBean(RewardDataManager.class).addAwardDelaySync(player, rewardArr, change,
-                AwardFrom.USE_PROP));
+        if (CheckNull.nonEmpty(reward)) {
+            rewardArr = new ArrayList<>();
+            rewardArr.add(reward);
+            listAward.addAll(DataResource.ac.getBean(RewardDataManager.class).addAwardDelaySync(player, rewardArr, change,
+                    AwardFrom.USE_PROP));
+        }
         return null;
     }
 }

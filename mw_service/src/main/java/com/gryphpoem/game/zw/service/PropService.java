@@ -167,6 +167,10 @@ public class PropService {
         checkSpecialEquip(player, staticProp, count);
         // 效果道具检测,有更高效果的buff时不能使用低级效果buff
         checkEffectProp(player, staticProp);
+        // 校验道具是否可以使用
+        AbstractUseProp absUseProp = propDataManager.useProp(staticProp.getPropType());
+        absUseProp.checkUseProp(count, staticProp, player, prop, params, roleId, propId, null, null);
+
         if (staticProp.getPropType() == PropConstant.PropType.TREASURE_LOCK_BOX) {
             //带锁的宝箱
             checkAndSubTreasureBox(player, staticProp, prop, count);
@@ -177,7 +181,6 @@ public class PropService {
         UsePropRs.Builder builder = UsePropRs.newBuilder();
         ChangeInfo change = ChangeInfo.newIns();
         List<CommonPb.Award> listAward = new ArrayList<>();
-        AbstractUseProp absUseProp = propDataManager.useProp(staticProp.getPropType());
         List<CommonPb.Award> awardList = absUseProp.useProp(count, staticProp, player, prop, params, roleId, propId, listAward, change);
 
         if (CheckNull.nonEmpty(listAward)) {

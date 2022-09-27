@@ -33,7 +33,7 @@ public class ChooseHeroFragmentProp extends AbstractUseProp {
     }
 
     @Override
-    public List<CommonPb.Award> useProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
+    public void checkUseProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) throws MwException {
         Integer choosePropId;
         try {
             choosePropId = Integer.parseInt(params);
@@ -55,25 +55,29 @@ public class ChooseHeroFragmentProp extends AbstractUseProp {
         if (CheckNull.isEmpty(staticProp.getRewardList())) {
             throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
         }
+    }
 
+    @Override
+    public List<CommonPb.Award> useProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
         List<Integer> reward = null;
         List<List<Integer>> rewardArr;
+        Integer choosePropId = Integer.parseInt(params);
         for (List<Integer> tmp : staticProp.getRewardList()) {
             if (CheckNull.isEmpty(tmp) || tmp.size() < 3) {
-                throw new MwException(GameError.PROP_CONFIG_ERROR.getCode(), GameError.PROP_CONFIG_ERROR.errMsg(roleId, propId));
+                continue;
             }
             if (tmp.get(1) == choosePropId.intValue()) {
                 reward = tmp;
                 break;
             }
         }
-        if (ObjectUtils.isEmpty(reward)) {
-            throw new MwException(GameError.CHOOSE_PROP_ERROR.getCode(), GameError.CHOOSE_PROP_ERROR.errMsg(roleId, propId));
+
+        if (CheckNull.nonEmpty(reward)) {
+            rewardArr = new ArrayList<>();
+            rewardArr.add(reward);
+            listAward.addAll(DataResource.ac.getBean(RewardDataManager.class).sendReward(player, rewardArr, count, AwardFrom.USE_PROP));
         }
 
-        rewardArr = new ArrayList<>();
-        rewardArr.add(reward);
-        listAward.addAll(DataResource.ac.getBean(RewardDataManager.class).sendReward(player, rewardArr, count, AwardFrom.USE_PROP));
         return null;
     }
 }
