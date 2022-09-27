@@ -43,12 +43,14 @@ public class RandomHeroFragmentProp extends AbstractUseProp {
 
     @Override
     public List<CommonPb.Award> useProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) {
-        int temp = 0;
         List<List<Integer>> awardList = staticProp.getRewardList().stream().filter(list -> player.heros.get(list.get(1)) != null).collect(Collectors.toList());
         int totalWeight = awardList.stream().filter(list -> CheckNull.nonEmpty(list) && list.size() >= 4).mapToInt(list -> list.get(3)).sum();
-        int random = RandomHelper.randomInSize(totalWeight);
+
         RewardDataManager rewardDataManager = DataResource.ac.getBean(RewardDataManager.class);
+        int temp, random;
         for (int i = 0; i < count; i++) {
+            temp = 0;
+            random = RandomHelper.randomInSize(totalWeight);
             for (List<Integer> shs : awardList) {
                 if (CheckNull.isEmpty(shs) || shs.size() < 4)
                     continue;
