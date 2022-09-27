@@ -152,7 +152,7 @@ public class HeroConstant {
     /**
      * 限时寻访累计抽卡次数可兑换购买的道具
      */
-    public static List<List<Integer>> GUARANTEED_OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD;
+    public static List<List<Integer>> OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
 
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
@@ -185,7 +185,7 @@ public class HeroConstant {
         NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS = SystemTabLoader.getIntegerSystemValue(SystemId.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, 80);
         ALL_HERO_GRADE_CAPS = SystemTabLoader.getListIntSystemValue(SystemId.ALL_HERO_GRADE_CAPS, "[]");
         DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = SystemTabLoader.getListListIntSystemValue(SystemId.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, "[]");
-        GUARANTEED_OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD = SystemTabLoader.getListListIntSystemValue(SystemId.TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX, "[]");
+        OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG = SystemTabLoader.getListListIntSystemValue(SystemId.TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX, "[]");
     }
 
     /**

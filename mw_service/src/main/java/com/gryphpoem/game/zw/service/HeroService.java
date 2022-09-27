@@ -324,16 +324,16 @@ public class HeroService implements GmCmdService {
             swapPlane = req.getSwapPlane();
         }
 
-        // 替换宝具标识
-        boolean swapTreasure = false;
-        if (req.hasSwapTreasure()) {
-            swapTreasure = req.getSwapTreasure();
-        }
-        // 替换兵书标识
-        boolean swapMedal = false;
-        if (req.hasSwapMedal()) {
-            swapMedal = req.getSwapMedal();
-        }
+        // // 替换宝具标识
+        // boolean swapTreasure = false;
+        // if (req.hasSwapTreasure()) {
+        //     swapTreasure = req.getSwapTreasure();
+        // }
+        // // 替换兵书标识
+        // boolean swapMedal = false;
+        // if (req.hasSwapMedal()) {
+        //     swapMedal = req.getSwapMedal();
+        // }
 
         // 检查pos位是否正常
         if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
@@ -371,7 +371,7 @@ public class HeroService implements GmCmdService {
             defPos = battleHero.getDefPos();
         }
         ChangeInfo change = ChangeInfo.newIns();
-        boolean sysClientUpdateMedal = false;
+        // boolean sysClientUpdateMedal = false;
         if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
             if (!battleHero.isIdle()) {
                 throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
@@ -385,17 +385,17 @@ public class HeroService implements GmCmdService {
             } else {
                 downHeroAllPlane(player, battleHero); // 下阵将领, 把战机也下阵
             }
-            if (swapTreasure) {// 如果需要替换宝具，执行宝具替换的逻辑
-                swapHeroTreasure(player, battleHero, hero);
-            }
-            if (swapMedal) {// 如果需要替换兵书，执行兵书替换的逻辑
-                swapHeroMedal(player, battleHero, hero);
-                sysClientUpdateMedal = true; // 只要玩家选择交互，则默认通知客户端需要重新拉取兵书信息
-            }
+            // if (swapTreasure) {// 如果需要替换宝具，执行宝具替换的逻辑
+            //     swapHeroTreasure(player, battleHero, hero);
+            // }
+            // if (swapMedal) {// 如果需要替换兵书，执行兵书替换的逻辑
+            //     swapHeroMedal(player, battleHero, hero);
+            //     sysClientUpdateMedal = true; // 只要玩家选择交互，则默认通知客户端需要重新拉取兵书信息
+            // }
             battleHero.onBattle(0);// 将领下阵，pos设置为0
             battleHero.onDef(0);// 防守将领下阵, pos设置为0
             // 告诉客户端武将兵书是否有更新
-            builder.setUpdateMedal(sysClientUpdateMedal);
+            // builder.setUpdateMedal(sysClientUpdateMedal);
 
             // 士兵回营
             int sub = battleHero.getCount();
