@@ -18,10 +18,10 @@ public class WallSetHandler extends ClientHandler {
 	public void action() throws MwException {
 		WallSetRq req = msg.getExtension(WallSetRq.ext);
 		boolean swap = req.hasSwap() && req.getSwap();
-		boolean swapTreasure = req.hasSwapTreasure() && req.getSwapTreasure();
-		boolean swapMedal = req.hasSwapMedal() && req.getSwapMedal();
+		// boolean swapTreasure = req.hasSwapTreasure() && req.getSwapTreasure();
+		// boolean swapMedal = req.hasSwapMedal() && req.getSwapMedal();
 		WallSetRs resp = getService(WallService.class).doWallSet(getRoleId(), req.getPos(), req.getHeroId(),
-				req.getType(), swap, swapTreasure, swapMedal);
+				req.getType(), swap/*, swapTreasure, swapMedal*/);
 		sendMsgToPlayer(WallSetRs.EXT_FIELD_NUMBER, WallSetRs.ext, resp);
 	}
 }

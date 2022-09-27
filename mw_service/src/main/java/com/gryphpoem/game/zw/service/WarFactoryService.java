@@ -248,7 +248,7 @@ import java.util.stream.Collectors;
      * @return
      * @throws MwException
      */
-    public AcqHeroSetRs acqHeroSet(long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
+    public AcqHeroSetRs acqHeroSet(long roleId, int pos, int heroId, int type, boolean swap/*, boolean swapTreasure, boolean swapMedal*/) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         if (player.building.getWar() < Constant.CABINET_CONDITION.get(0)) {
             // 内阁等级小于1级禁止开放
@@ -292,7 +292,7 @@ import java.util.stream.Collectors;
         // 将领是否存在
         ChangeInfo change = null;
         AcqHeroSetRs.Builder builder = AcqHeroSetRs.newBuilder();
-        boolean sysClientUpdateMedal = false;
+        // boolean sysClientUpdateMedal = false;
         if (1 == type) {// 上阵
             Hero hero = heroService.checkHeroIsExist(player, heroId);
             // 判断该将领是否在武将上阵
@@ -312,13 +312,13 @@ import java.util.stream.Collectors;
                     // rewardDataManager.checkBagCnt(player);
                     heroService.swapHeroEquip(player, hero, downHero);
                 }
-                if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
-                    heroService.swapHeroTreasure(player, downHero, hero);
-                }
-                if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
-                    heroService.swapHeroMedal(player, downHero, hero);
-                    sysClientUpdateMedal = true;
-                }
+                // if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
+                //     heroService.swapHeroTreasure(player, downHero, hero);
+                // }
+                // if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
+                //     heroService.swapHeroMedal(player, downHero, hero);
+                //     sysClientUpdateMedal = true;
+                // }
                 change = downAcqHeroAndBackRes(player, downHero);
                 // 记录返回下阵将领
                 builder.setDownHero(PbHelper.createHeroPb(downHero, player));
@@ -382,7 +382,7 @@ import java.util.stream.Collectors;
                 builder.addHeroIds(player.heroAcq[i]);
         }
 
-        builder.setUpdateMedal(sysClientUpdateMedal);
+        // builder.setUpdateMedal(sysClientUpdateMedal);
         return builder.build();
     }
 
