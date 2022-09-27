@@ -1802,6 +1802,11 @@ public class SystemId {
     public static final int DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = 779;
 
     /**
+     * 限时寻访宝箱保底购买
+     */
+    public static final int TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX = 780;
+
+    /**
      * 全部英雄品阶等级上限
      */
     public static int ALL_HERO_GRADE_CAPS = 1103;

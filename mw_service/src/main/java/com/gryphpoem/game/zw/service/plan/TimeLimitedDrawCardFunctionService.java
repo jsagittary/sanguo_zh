@@ -8,7 +8,14 @@ import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.FunctionPlanDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb5;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.ChatConst;
+import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
+import com.gryphpoem.game.zw.resource.constant.DrawCardRewardType;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.LogParamConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
@@ -319,5 +326,65 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         } finally {
             drawCardData.addTotalDrawHeroCount(playerFunctionPlanData);
         }
+    }
+
+    /**
+     * 武将限时寻访累计次数购买武将自选箱
+     */
+    public GamePb5.BuyOptionalBoxFromTimeLimitedDrawCardRs BuyOptionalBoxByDrawCardCount(long roleId, GamePb5.BuyOptionalBoxFromTimeLimitedDrawCardRq req) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+
+        // 获取根据functionId，判断该活动是否配置并处于开启时间
+        PlanFunction planFunction = PlanFunction.convertTo(req.getFunctionId());
+        if (CheckNull.isNull(planFunction) || !ArrayUtils.contains(functionId(), planFunction)) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, function:%d", roleId, req.getFunctionId()));
+        }
+
+        Date now = new Date();
+        int keyId = req.getKeyId(); // 区分不同的限时活动：义薄云天、雄姿英发、拔矢啖睛等等。对应s_hero_search_plan的id
+        checkAndGetPlan(keyId, now, player, PlanFunction.PlanStatus.OPEN);
+        FunctionPlanData functionPlanData = functionPlanDataManager.functionPlanData(player.getFunctionPlanData(), planFunction, keyId, true);
+        if (CheckNull.isNull(functionPlanData)) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("role:%d, function:%d, keyId:%d, no player function data", roleId, req.getFunctionId(), keyId));
+        }
+
+        // 确认保底自选宝箱配置
+        if (CheckNull.isEmpty(HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG) || HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG.size() < 1) {
+            throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, no config", roleId));
+        }
+
+        // 玩家限时抽卡活动详情
+        DrawCardTimeLimitedFunctionPlanData drawCardTimeLimitedFunctionPlanData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
+
+        // 计算玩家累计抽卡次数可兑换的保底宝箱购买次数，如果已经购买次数超过可购买次数，则不可购买
+        int totalDrawCardCount = drawCardTimeLimitedFunctionPlanData.getTotalDrawHeroCount();
+
+        List<List<Integer>> optionalBoxConfigList = HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
+        GamePb5.BuyOptionalBoxFromTimeLimitedDrawCardRs.Builder builder = GamePb5.BuyOptionalBoxFromTimeLimitedDrawCardRs.newBuilder();
+        for (List<Integer> optionalBoxConfig : optionalBoxConfigList) {
+            if (keyId == optionalBoxConfig.get(0)) {
+                // 配置的可购买自选箱需要累计寻访的次数
+                Integer needDrawCardCount = optionalBoxConfig.get(1);
+                if (totalDrawCardCount < needDrawCardCount) {
+                    throw new MwException(GameError.ACTIVITY_AWARD_NOT_GET, String.format("roleId:%d, not match condition", roleId));
+                }
+
+                // 配置的可购买自选箱id
+                Integer optionalBoxId = optionalBoxConfig.get(2);
+                // 配置的购买道具所需玉璧
+                Integer optionalBoxPrice = optionalBoxConfig.get(3);
+                // 检查购买宝箱需要的资源是否充足并扣减
+                rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.GOLD, optionalBoxPrice, AwardFrom.ACTIVITY_BUY, true, "");
+                // 扣减购买累计抽卡次数
+                drawCardTimeLimitedFunctionPlanData.subTotalDrawHeroCount(needDrawCardCount);
+                // 给玩家新增宝箱道具
+                CommonPb.Award award = rewardDataManager.sendRewardSignle(player, AwardType.PROP, optionalBoxId, 1, AwardFrom.ACTIVITY_BUY, "");
+                builder.addAward(award);
+
+                break;
+            }
+        }
+
+        return builder.build();
     }
 }

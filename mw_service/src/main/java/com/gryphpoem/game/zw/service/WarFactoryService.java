@@ -4,9 +4,26 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.GamePb1.*;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.manager.CampDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.pb.GamePb1.AcqHeroSetRs;
+import com.gryphpoem.game.zw.pb.GamePb1.CabinetFinishRs;
+import com.gryphpoem.game.zw.pb.GamePb1.CabinetLvFinishRs;
+import com.gryphpoem.game.zw.pb.GamePb1.ComandoHeroSetRs;
+import com.gryphpoem.game.zw.pb.GamePb1.CreateLeadRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetCabinetRs;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
@@ -231,7 +248,7 @@ import java.util.stream.Collectors;
      * @return
      * @throws MwException
      */
-    public AcqHeroSetRs acqHeroSet(long roleId, int pos, int heroId, int type, boolean swap) throws MwException {
+    public AcqHeroSetRs acqHeroSet(long roleId, int pos, int heroId, int type, boolean swap/*, boolean swapTreasure, boolean swapMedal*/) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         if (player.building.getWar() < Constant.CABINET_CONDITION.get(0)) {
             // 内阁等级小于1级禁止开放
@@ -275,6 +292,7 @@ import java.util.stream.Collectors;
         // 将领是否存在
         ChangeInfo change = null;
         AcqHeroSetRs.Builder builder = AcqHeroSetRs.newBuilder();
+        // boolean sysClientUpdateMedal = false;
         if (1 == type) {// 上阵
             Hero hero = heroService.checkHeroIsExist(player, heroId);
             // 判断该将领是否在武将上阵
@@ -294,6 +312,13 @@ import java.util.stream.Collectors;
                     // rewardDataManager.checkBagCnt(player);
                     heroService.swapHeroEquip(player, hero, downHero);
                 }
+                // if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
+                //     heroService.swapHeroTreasure(player, downHero, hero);
+                // }
+                // if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
+                //     heroService.swapHeroMedal(player, downHero, hero);
+                //     sysClientUpdateMedal = true;
+                // }
                 change = downAcqHeroAndBackRes(player, downHero);
                 // 记录返回下阵将领
                 builder.setDownHero(PbHelper.createHeroPb(downHero, player));
@@ -357,6 +382,7 @@ import java.util.stream.Collectors;
                 builder.addHeroIds(player.heroAcq[i]);
         }
 
+        // builder.setUpdateMedal(sysClientUpdateMedal);
         return builder.build();
     }
 

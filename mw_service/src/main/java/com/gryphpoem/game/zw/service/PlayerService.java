@@ -6,8 +6,8 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
@@ -46,12 +46,13 @@ import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -522,7 +523,7 @@ public class PlayerService implements GmCmdService {
             int lastDay = TimeHelper.getDay(player.lord.getOnTime());
             if (nowDay != lastDay) {
                 //隔天登陆了
-                titleService.processTask(player,ETask.LOGIN_DAYS_SUM);
+                titleService.processTask(player, ETask.LOGIN_DAYS_SUM);
             }
             player.logIn();
             // 获取角色相关信息 用于推送给账号服
@@ -1504,7 +1505,7 @@ public class PlayerService implements GmCmdService {
             builder.addFunCard(fc.ser());
         }
         FunCard funCard = seasonService.getCurrSeasonCard(player);
-        if(Objects.nonNull(funCard)){
+        if (Objects.nonNull(funCard)) {
             CommonPb.FunCard.Builder builder1 = funCard.ser().toBuilder();
             builder1.setType(FunCard.CARD_TYPE[9]);
             builder.setSeasonCard(builder1.build());
@@ -1682,41 +1683,41 @@ public class PlayerService implements GmCmdService {
         return warService.compareNotesFightLogic(mPlayer, tPlayer, heroIds);
     }
 
-    private boolean checkCardUnexpired(Player player,int type){
+    private boolean checkCardUnexpired(Player player, int type) {
         FunCard funCard = player.funCards.get(type);
-        if(Objects.isNull(funCard)){
+        if (Objects.isNull(funCard)) {
             return false;
         }
         int now = TimeHelper.getCurrentSecond();
-        if(now >= funCard.getExpire()){
+        if (now >= funCard.getExpire()) {
             return false;
         }
         return true;
     }
 
-    private void checkOnHook(Player player){
+    private void checkOnHook(Player player) {
         try {
-            if(Objects.isNull(player)){
+            if (Objects.isNull(player)) {
                 return;
             }
             PlayerOnHook playerOnHook = player.getPlayerOnHook();
-            if(checkCardUnexpired(player,FunCard.CARD_TYPE[8])){
-                if(playerOnHook.getState() == ONHOOK_TYPE[1]){
+            if (checkCardUnexpired(player, FunCard.CARD_TYPE[8])) {
+                if (playerOnHook.getState() == ONHOOK_TYPE[1]) {
                     boolean stop = false;
-                    if(playerOnHook.getArmys().values().stream().collect(Collectors.summarizingInt(x -> x.intValue())).getSum() < Constant.ONHOOK_1061 ||
+                    if (playerOnHook.getArmys().values().stream().collect(Collectors.summarizingInt(x -> x.intValue())).getSum() < Constant.ONHOOK_1061 ||
                             (!player.isLogin && TimeHelper.getCurrentSecond() - player.lord.getOffTime() >= Constant.ONHOOK_1062) ||
-                            player.getBanditCnt() >= Constant.ATTACK_BANDIT_MAX){
+                            player.getBanditCnt() >= Constant.ATTACK_BANDIT_MAX) {
                         stop = true;
                     }
-                    if(stop){
+                    if (stop) {
                         playerOnHook.setState(ONHOOK_TYPE[0]);
                         //停止挂机清除每次剿灭数量
                         playerOnHook.setAskAnnihilateNumber(0);
                         playerOnHook.setAskLastAnnihilateNumber(0);
                         this.syncOnHookData(player);
-                    }else {
+                    } else {
                         int now = TimeHelper.getCurrentSecond();
-                        if(now - playerOnHook.getLastStamp() >= Constant.ONHOOK_1063){
+                        if (now - playerOnHook.getLastStamp() >= Constant.ONHOOK_1063) {
                             playerOnHook.setLastStamp(now);
                             List<Award> dropAwards = marchService.onHookBandit(player, playerOnHook.getCurRebelLv());
                             playerOnHook.addDropAward(dropAwards);
@@ -1729,8 +1730,8 @@ public class PlayerService implements GmCmdService {
                                 playerOnHook.setAskAnnihilateNumber(0);
                             }
                             //如果不是停止挂机状态且每次请求剿灭叛军阈值和每次剩余剿灭叛军数量等于0则表示已经到达每次清缴上限
-                            if(playerOnHook.getState() != ONHOOK_TYPE[0]
-                                    && playerOnHook.getAskAnnihilateNumber() == 0 && playerOnHook.getAskLastAnnihilateNumber() == 0){
+                            if (playerOnHook.getState() != ONHOOK_TYPE[0]
+                                    && playerOnHook.getAskAnnihilateNumber() == 0 && playerOnHook.getAskLastAnnihilateNumber() == 0) {
                                 playerOnHook.setState(ONHOOK_TYPE[0]);
                             }
                             this.syncOnHookData(player);
@@ -1738,8 +1739,8 @@ public class PlayerService implements GmCmdService {
                         }
                     }
                 }
-            }else {
-                if(playerOnHook.getState() != ONHOOK_TYPE[0]){
+            } else {
+                if (playerOnHook.getState() != ONHOOK_TYPE[0]) {
                     playerOnHook.setState(ONHOOK_TYPE[0]);
                     //如果挂机卡失效则清除
                     playerOnHook.setAskAnnihilateNumber(0);
@@ -1748,42 +1749,32 @@ public class PlayerService implements GmCmdService {
                 }
             }
         } catch (Exception e) {
-            LogUtil.error("Check Month Card Occur Error, roleId=" + player.roleId + ", " ,e);
+            LogUtil.error("Check Month Card Occur Error, roleId=" + player.roleId + ", ", e);
         }
     }
 
-    private void syncOnHookData(Player player){
-        if(Objects.nonNull(player) && player.isLogin){
+    private void syncOnHookData(Player player) {
+        if (Objects.nonNull(player) && player.isLogin) {
             SyncOnHookDataRs.Builder builder = SyncOnHookDataRs.newBuilder();
             builder.setWipeoutNum(player.getBanditCnt());
             builder.addAllDrops(PbHelper.createAwards(player.getPlayerOnHook().getDrops()));
             builder.setState(player.getPlayerOnHook().getState());
-            player.getPlayerOnHook().getArmys().entrySet().forEach(entry -> builder.addArmys(PbHelper.createTwoIntPb(entry.getKey(),entry.getValue())));
+            player.getPlayerOnHook().getArmys().entrySet().forEach(entry -> builder.addArmys(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
             builder.setCountDown(getOnHookCountDown(player.getPlayerOnHook()));
-            if (Objects.nonNull(player.getPlayerOnHook().getAskAnnihilateNumber()))
-            {
+            if (Objects.nonNull(player.getPlayerOnHook().getAskAnnihilateNumber())) {
                 builder.setAskAnnihilateNumber(player.getPlayerOnHook().getAskAnnihilateNumber());
             }
-            if (Objects.nonNull(player.getPlayerOnHook().getAskLastAnnihilateNumber()))
-            {
+            if (Objects.nonNull(player.getPlayerOnHook().getAskLastAnnihilateNumber())) {
                 builder.setAskLastAnnihilateNumber(player.getPlayerOnHook().getAskLastAnnihilateNumber());
             }
-            BasePb.Base msg = PbHelper.createSynBase(SyncOnHookDataRs.EXT_FIELD_NUMBER,SyncOnHookDataRs.ext,builder.build()).build();
-            this.syncMsgToPlayer(msg,player);
+            BasePb.Base msg = PbHelper.createSynBase(SyncOnHookDataRs.EXT_FIELD_NUMBER, SyncOnHookDataRs.ext, builder.build()).build();
+            this.syncMsgToPlayer(msg, player);
         }
-    }
-
-    public void activateMonthCard(Player player,int cardType,int second){
-        FunCard funCard = player.funCards.get(cardType);
-        if (funCard == null) {
-            funCard = new FunCard(cardType);
-            player.funCards.put(funCard.getType(), funCard);
-        }
-        funCard.addExpireSecond(second);
     }
 
     /**
      * 挂机 - 获取信息
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -1793,7 +1784,7 @@ public class PlayerService implements GmCmdService {
         PlayerOnHook playerOnHook = player.getPlayerOnHook();
         OnHookGetInfoRs.Builder resp = OnHookGetInfoRs.newBuilder();
         resp.setMaxRebelLv(playerOnHook.getMaxRebelLv());
-        playerOnHook.getArmys().entrySet().forEach(entry -> resp.addArmys(PbHelper.createTwoIntPb(entry.getKey(),entry.getValue())));
+        playerOnHook.getArmys().entrySet().forEach(entry -> resp.addArmys(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
         playerOnHook.getDrops().forEach(o -> resp.addDrops(PbHelper.createAward(o)));
         resp.setWipeoutNum(player.getBanditCnt());
         FunCard funCard = player.funCards.get(FunCard.CARD_TYPE[8]);
@@ -1802,26 +1793,20 @@ public class PlayerService implements GmCmdService {
         resp.setCurRebelLv(playerOnHook.getCurRebelLv());
         resp.setCountDown(getOnHookCountDown(playerOnHook));
         //如果没有买挂机卡或者最后一次战斗的时间戳为0
-        if (Objects.isNull(funCard) || playerOnHook.getLastStamp() == 0)
-        {
+        if (Objects.isNull(funCard) || playerOnHook.getLastStamp() == 0) {
             resp.setAskAnnihilateNumber(0);
             resp.setAskLastAnnihilateNumber(0);
-        }
-        else
-        {
+        } else {
             //当前时间
             LocalDateTime sysDateTime = LocalDateTime.now();
             //最后一次挂机的时间戳
-            LocalDateTime lastDateTime = LocalDateTime.ofEpochSecond(playerOnHook.getLastStamp(), 0,ZoneOffset.of("+8"));
-            Duration duration = Duration.between(lastDateTime,sysDateTime);
+            LocalDateTime lastDateTime = LocalDateTime.ofEpochSecond(playerOnHook.getLastStamp(), 0, ZoneOffset.of("+8"));
+            Duration duration = Duration.between(lastDateTime, sysDateTime);
             //如果跨天了则重置剩余剿灭次数
-            if (duration.toDays() >= 1)
-            {
+            if (duration.toDays() >= 1) {
                 resp.setAskAnnihilateNumber(0);
                 resp.setAskLastAnnihilateNumber(0);
-            }
-            else
-            {
+            } else {
                 resp.setAskAnnihilateNumber(playerOnHook.getAskAnnihilateNumber());
                 resp.setAskLastAnnihilateNumber(playerOnHook.getAskLastAnnihilateNumber());
             }
@@ -1831,81 +1816,82 @@ public class PlayerService implements GmCmdService {
 
     /**
      * 挂机 - 补兵
+     *
      * @param roleId
      * @param armyType
      * @return
      * @throws MwException
      */
-    public OnHookReplenishRs onHookReplenishRs(long roleId,int armyType) throws MwException {
+    public OnHookReplenishRs onHookReplenishRs(long roleId, int armyType) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         EArmyType eArmyType = EArmyType.get(armyType);
-        if(Objects.isNull(eArmyType)){
-            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(),"roleId=" + roleId + ", armyType=" + armyType);
+        if (Objects.isNull(eArmyType)) {
+            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(), "roleId=" + roleId + ", armyType=" + armyType);
         }
-        int total = playerDataManager.getArmCount(player.resource,armyType);
-        if(total <= 0){
+        int total = playerDataManager.getArmCount(player.resource, armyType);
+        if (total <= 0) {
             activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_REPLENISH_INSUFFICIENT, player);
-            throw new MwException(GameError.ARM_COUNT_ERROR.getCode(),"roleId=" + roleId + ", armyType=" + armyType);
+            throw new MwException(GameError.ARM_COUNT_ERROR.getCode(), "roleId=" + roleId + ", armyType=" + armyType);
         }
-        int curr = player.getPlayerOnHook().getArmys().getOrDefault(armyType,0);
+        int curr = player.getPlayerOnHook().getArmys().getOrDefault(armyType, 0);
         int need = Constant.ONHOOK_1064 - curr;
         int add;
-        if(need > 0){
-            if(total >= need){
+        if (need > 0) {
+            if (total >= need) {
                 add = need;
-            }else {
+            } else {
                 add = total;
             }
-            if(add > 0){
-                rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.ARMY, armyType, add,AwardFrom.ONHOOK_REPLENISH);
-                player.getPlayerOnHook().getArmys().merge(armyType,add,Integer::sum);
+            if (add > 0) {
+                rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.ARMY, armyType, add, AwardFrom.ONHOOK_REPLENISH);
+                player.getPlayerOnHook().getArmys().merge(armyType, add, Integer::sum);
             }
         }
 
         OnHookReplenishRs.Builder resp = OnHookReplenishRs.newBuilder();
-        player.getPlayerOnHook().getArmys().entrySet().forEach(entry -> resp.addArmys(PbHelper.createTwoIntPb(entry.getKey(),entry.getValue())));
+        player.getPlayerOnHook().getArmys().entrySet().forEach(entry -> resp.addArmys(PbHelper.createTwoIntPb(entry.getKey(), entry.getValue())));
         return resp.build();
     }
 
-    private static final int[] ONHOOK_TYPE = {0,1};//[0]停止挂机[1]开始挂机
+    private static final int[] ONHOOK_TYPE = {0, 1};//[0]停止挂机[1]开始挂机
 
     /**
      * 挂机 - 开始挂机/停止挂机
+     *
      * @param roleId
      * @param type
      * @param anniNumberThreshold 剿灭叛军阈值
      * @return
      * @throws MwException
      */
-    public OnHookOperateRs onHookOperateRs(long roleId,int type,int rebelLv, int anniNumberThreshold) throws MwException {
+    public OnHookOperateRs onHookOperateRs(long roleId, int type, int rebelLv, int anniNumberThreshold) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if(Arrays.binarySearch(ONHOOK_TYPE,type)  < 0){
-            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(),"type值错误, roleId=" + roleId + ", type=" + type);
+        if (Arrays.binarySearch(ONHOOK_TYPE, type) < 0) {
+            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(), "type值错误, roleId=" + roleId + ", type=" + type);
         }
         PlayerOnHook playerOnHook = player.getPlayerOnHook();
-        if(rebelLv < 1 || rebelLv > playerOnHook.getMaxRebelLv()){
-            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(),"叛军等级值错误, roleId=" + roleId + ", type=" + type + ", rebelLv=" + rebelLv);
+        if (rebelLv < 1 || rebelLv > playerOnHook.getMaxRebelLv()) {
+            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(), "叛军等级值错误, roleId=" + roleId + ", type=" + type + ", rebelLv=" + rebelLv);
         }
-        if(type == ONHOOK_TYPE[0]){
-            if(playerOnHook.getState() != ONHOOK_TYPE[0]){
+        if (type == ONHOOK_TYPE[0]) {
+            if (playerOnHook.getState() != ONHOOK_TYPE[0]) {
                 playerOnHook.setState(ONHOOK_TYPE[0]);
             }
-        }else if(type == ONHOOK_TYPE[1]){
-            if (anniNumberThreshold == 0)
-            {
-                throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(),"剿灭叛军阈值错误, roleId=" + roleId + ", type=" + type + ", rebelLv=" + rebelLv);
+        } else if (type == ONHOOK_TYPE[1]) {
+            if (anniNumberThreshold == 0) {
+                throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(), "剿灭叛军阈值错误, roleId=" + roleId + ", type=" + type + ", rebelLv=" + rebelLv);
             }
             long sumArmys = playerOnHook.getArmys().values().stream().collect(Collectors.summarizingInt(x -> x.intValue())).getSum();
-            if(sumArmys < Constant.ONHOOK_1061){
-                throw new MwException(GameError.ONHOOK_RUN_ARMY_NOENOUGHT.getCode(),"挂机兵力不足, roleId=" + roleId);
+            if (sumArmys < Constant.ONHOOK_1061) {
+                throw new MwException(GameError.ONHOOK_RUN_ARMY_NOENOUGHT.getCode(), "挂机兵力不足, roleId=" + roleId);
             }
-            if(player.getBanditCnt() >= Constant.ATTACK_BANDIT_MAX){
-                throw new MwException(GameError.ONHOOK_RUN_NON_DAYTIMES.getCode(),"次数用完, roleId=" + roleId);
+            if (player.getBanditCnt() >= Constant.ATTACK_BANDIT_MAX) {
+                throw new MwException(GameError.ONHOOK_RUN_NON_DAYTIMES.getCode(), "次数用完, roleId=" + roleId);
             }
-            if(!checkCardUnexpired(player,FunCard.CARD_TYPE[8])){
-                throw new MwException(GameError.ONHOOK_CARD_EXPIRE.getCode(),"特权卡到期, roleId=" + roleId);
+            if (!checkCardUnexpired(player, FunCard.CARD_TYPE[8])) {
+                throw new MwException(GameError.ONHOOK_CARD_EXPIRE.getCode(), "特权卡到期, roleId=" + roleId);
             }
-            if(playerOnHook.getState() != ONHOOK_TYPE[1]){
+            if (playerOnHook.getState() != ONHOOK_TYPE[1]) {
                 playerOnHook.setState(ONHOOK_TYPE[1]);
                 playerOnHook.setCurRebelLv(rebelLv);
                 playerOnHook.setLastStamp(TimeHelper.getCurrentSecond());
@@ -1919,12 +1905,13 @@ public class PlayerService implements GmCmdService {
         return resp.build();
     }
 
-    private int getOnHookCountDown(PlayerOnHook playerOnHook){
+    private int getOnHookCountDown(PlayerOnHook playerOnHook) {
         return playerOnHook.getLastStamp() + Constant.ONHOOK_1063;
     }
 
     /**
      * 挂机 - 领取奖励
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -1932,12 +1919,12 @@ public class PlayerService implements GmCmdService {
     public OnHookGetAwardRs onHookGetAwardRs(long roleId) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         PlayerOnHook playerOnHook = player.getPlayerOnHook();
-        if(playerOnHook.getDrops().isEmpty()){
-            throw new MwException(GameError.ONHOOK_NON_AWARD.getCode(),"roleId=" + roleId);
+        if (playerOnHook.getDrops().isEmpty()) {
+            throw new MwException(GameError.ONHOOK_NON_AWARD.getCode(), "roleId=" + roleId);
         }
 
         List<Award> dropAwards = PbHelper.createAwards(playerOnHook.getDrops());
-        rewardDataManager.sendRewardByAwardList(player,dropAwards,AwardFrom.ONHOOK_GET_DROP_AWARD);
+        rewardDataManager.sendRewardByAwardList(player, dropAwards, AwardFrom.ONHOOK_GET_DROP_AWARD);
 
         playerOnHook.getDrops().clear();
 
@@ -1947,25 +1934,25 @@ public class PlayerService implements GmCmdService {
         return resp.build();
     }
 
-// <editor-fold desc="自测挂机功能的代码" defaultstate="collapsed">
-    public void test_onHook(Player player,String...params) throws Exception{
-        if(params[0].equalsIgnoreCase("armys")){
+    // <editor-fold desc="自测挂机功能的代码" defaultstate="collapsed">
+    public void test_onHook(Player player, String... params) throws Exception {
+        if (params[0].equalsIgnoreCase("armys")) {
             player.getPlayerOnHook().getArmys().entrySet().forEach(entry -> entry.setValue(Integer.parseInt(params[1])));
         }
-        if(params[0].equalsIgnoreCase("subarmys")){
+        if (params[0].equalsIgnoreCase("subarmys")) {
             long s1 = System.currentTimeMillis();
-            marchService.onHookSubArmy(player,Integer.parseInt(params[1]));
+            marchService.onHookSubArmy(player, Integer.parseInt(params[1]));
         }
-        if(params[0].equalsIgnoreCase("getinfo")){
-            LogUtil.c2sMessage(this.onHookGetInfoRs(player.roleId),player.roleId);
+        if (params[0].equalsIgnoreCase("getinfo")) {
+            LogUtil.c2sMessage(this.onHookGetInfoRs(player.roleId), player.roleId);
         }
-        if(params[0].equalsIgnoreCase("setexpire")){
+        if (params[0].equalsIgnoreCase("setexpire")) {
             player.funCards.get(FunCard.CARD_TYPE[8]).setExpire(TimeHelper.getCurrentSecond() + Integer.parseInt(params[1]));
             syncOnHookData(player);
         }
-        if(params[0].equalsIgnoreCase("hit")){
+        if (params[0].equalsIgnoreCase("hit")) {
             PlayerOnHook playerOnHook = player.getPlayerOnHook();
-            List<Award> dropAwards = marchService.onHookBandit(player,Integer.parseInt(params[1]));
+            List<Award> dropAwards = marchService.onHookBandit(player, Integer.parseInt(params[1]));
             playerOnHook.addDropAward(dropAwards);
             this.syncOnHookData(player);
         }
@@ -1981,10 +1968,10 @@ public class PlayerService implements GmCmdService {
 
     public void syncMsgToPlayer(BasePb.Base msg, long roleId) {
         Player player = playerDataManager.getPlayer(roleId);
-        this.syncMsgToPlayer(msg,player);
+        this.syncMsgToPlayer(msg, player);
     }
 
-    public void syncMsgToPlayer(BasePb.Base msg, Player player){
+    public void syncMsgToPlayer(BasePb.Base msg, Player player) {
         if (Objects.nonNull(player) && player.isLogin) {
             MsgDataManager.getIns().add(new Msg(player.ctx, msg, player.roleId));
         }
@@ -1996,14 +1983,15 @@ public class PlayerService implements GmCmdService {
 
     /**
      * 推送消息给满足条件的玩家
+     *
      * @param msg
      * @param function
      * @param params
      */
-    public void syncMsgToAll(BasePb.Base msg, Function<Map,Boolean> function,Map params){
+    public void syncMsgToAll(BasePb.Base msg, Function<Map, Boolean> function, Map params) {
         playerDataManager.getAllOnlinePlayer().values().forEach(p -> {
-            params.put("player",p);
-            if(function.apply(params)){
+            params.put("player", p);
+            if (function.apply(params)) {
                 MsgDataManager.getIns().add(new Msg(p.ctx, msg, p.roleId));
             }
         });
@@ -2018,23 +2006,23 @@ public class PlayerService implements GmCmdService {
     @GmCmd("player")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
-        switch (params[0]){
+        switch (params[0]) {
             case "lv160":
-                List<List<Integer>>  list = ListUtils.createItems(AwardType.MONEY,AwardType.Money.EXP,Integer.MAX_VALUE);
-                rewardDataManager.sendReward(player,list,AwardFrom.DO_SOME);
+                List<List<Integer>> list = ListUtils.createItems(AwardType.MONEY, AwardType.Money.EXP, Integer.MAX_VALUE);
+                rewardDataManager.sendReward(player, list, AwardFrom.DO_SOME);
 
                 Field[] fields = player.building.getClass().getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
-                    if(!field.getName().equals("lordId")){
-                        field.set(player.building,32);
+                    if (!field.getName().equals("lordId")) {
+                        field.set(player.building, 32);
                     }
                 }
-                Stream.iterate(1,n->n+1).limit(36).forEach(id -> {
-                    for(;;){
-                        TechLv techLv = player.tech.getTechLv().computeIfAbsent(id,v -> new TechLv(id,0,1));
+                Stream.iterate(1, n -> n + 1).limit(36).forEach(id -> {
+                    for (; ; ) {
+                        TechLv techLv = player.tech.getTechLv().computeIfAbsent(id, v -> new TechLv(id, 0, 1));
                         StaticTechLv staticTechLv = StaticBuildingDataMgr.getTechLvMap(techLv.getId(), techLv.getLv() + 1);
-                        if(Objects.isNull(staticTechLv)){
+                        if (Objects.isNull(staticTechLv)) {
                             break;
                         }
                         techLv.setLv(staticTechLv.getLv());
