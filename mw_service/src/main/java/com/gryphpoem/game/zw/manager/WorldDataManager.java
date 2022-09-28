@@ -569,8 +569,8 @@ public class WorldDataManager {
                 emptyPos = posList.stream().filter(pos -> isEmptyPos(pos)).collect(Collectors.toList());
         }
         if (CheckNull.isEmpty(emptyPos)) return -1;
-        Collections.shuffle(emptyPos);
-        return emptyPos.get(0);
+        if (emptyPos.size() == 1) return emptyPos.get(0);
+        return emptyPos.get(RandomHelper.randomInSize(emptyPos.size()));
     }
 
     /**

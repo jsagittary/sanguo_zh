@@ -1,7 +1,9 @@
 package com.gryphpoem.game.zw.resource.pojo.plan.draw;
 
+import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.pb.ActivityPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
+import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.FunctionPlan;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
@@ -117,6 +119,14 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
 
     public void addTotalDrawHeroCount(PlayerFunctionPlanData data) {
         this.saveMap.merge(TOTAL_HERO_DRAW_COUNT_INDEX, 1, Integer::sum);
+    }
+
+    public void subTotalDrawHeroCount(int subCount) {
+        int totalDrawHeroCount = getTotalDrawHeroCount();
+        if (totalDrawHeroCount < subCount) {
+            throw new MwException(GameError.PARAM_ERROR);
+        }
+        this.saveMap.put(TOTAL_HERO_DRAW_COUNT_INDEX, totalDrawHeroCount - subCount);
     }
 
     public String toDebugStr() {
