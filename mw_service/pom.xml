@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.gryphpoem.game.zw</groupId>
-    <artifactId>sanguo</artifactId>
-    <version>1.0.1</version>
-  </parent>
-  <artifactId>mw_service</artifactId>
-  <name>mw_service</name>
-  <description>游戏逻辑处理模块</description>
-  <dependencies>
-  	<dependency>
-  		<groupId>com.gryphpoem.game.zw</groupId>
-  		<artifactId>mw_core</artifactId>
-  		<version>3.0.1</version>
-  	</dependency>
-  </dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.gryphpoem.game.zw</groupId>
+        <artifactId>sanguo</artifactId>
+        <version>1.0.1</version>
+    </parent>
+    <artifactId>mw_service</artifactId>
+    <name>mw_service</name>
+    <description>游戏逻辑处理模块</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.gryphpoem.game.zw</groupId>
+            <artifactId>mw_core</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+    </dependencies>
 </project>
