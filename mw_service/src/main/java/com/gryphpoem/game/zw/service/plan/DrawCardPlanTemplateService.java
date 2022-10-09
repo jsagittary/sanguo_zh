@@ -16,8 +16,11 @@ import com.gryphpoem.game.zw.quartz.jobs.FunctionJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionEndJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionPreviewJob;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
 import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
@@ -25,6 +28,7 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionTrigger;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
+import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
@@ -119,6 +123,7 @@ public class DrawCardPlanTemplateService {
     public GamePb5.DrawActHeroCardRs drawActHeroCard(long roleId, GamePb5.DrawActHeroCardRq req) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         AbsDrawCardPlanService service = getFunctionService(req.getFunctionId());
+        DrawCardData drawCardData = player.getDrawCardData();
         if (CheckNull.isNull(service)) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
         }
@@ -138,7 +143,39 @@ public class DrawCardPlanTemplateService {
         if (CheckNull.isNull(drawCardCount) || CheckNull.isNull(drawCardCostType)) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
         }
+
         // 对应抽卡消耗类型扣除资源
+        int costGoldCnt = 0;
+        switch (drawCardCostType) {
+            case FREE:
+                int totalFreeCount = drawCardData.getOtherFreeCount() + drawCardData.getFreeCount();
+                if (totalFreeCount < drawCardCount.getCount()) {
+                    throw new MwException(GameError.FREE_DRAW_CARD_COUNT_NOT_ENOUGH.getCode(), "免费次数不足, roleId:", player.roleId, ", totalFreeCount:", totalFreeCount, ", now:", now);
+                }
+                // 若玩家点击十连且是免费操作, 则活动任务次数必须足够
+                if (DrawCardOperation.DrawCardCount.TEN.equals(drawCardCount) && drawCardData.getOtherFreeCount() < drawCardCount.getCount()) {
+                    throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
+                }
+                break;
+            case MONEY:
+                Integer goldNum = HeroConstant.PERMANENT_QUEST_GOLD_CONSUMPTION.get(drawCardCount.getType() - 1);
+                if (CheckNull.isNull(goldNum) || goldNum <= 0) {
+                    throw new MwException(GameError.NO_CONFIG.getCode(), "将领寻访玉璧消耗未配置, roleId:", player.roleId, ", costType:", drawCardCostType, ", drawCount:", drawCardCount.getCount());
+                }
+                // 若是今日首次花钱单抽, 则有折扣
+                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && drawCardData.isDiscountPrice()) {
+                    goldNum = HeroConstant.DAILY_DRAW_SINGLE_DRAW_DISCOUNT_TO_CONSUME_JADE;
+                }
+
+                rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, goldNum, "draw permanent card");
+                rewardDataManager.subGold(player, goldNum, AwardFrom.HERO_SUPER_SEARCH);
+                if (DrawCardOperation.DrawCardCount.ONCE.equals(drawCardCount) && drawCardData.isDiscountPrice()) {
+                    drawCardData.setDiscountPrice(false);
+                }
+                costGoldCnt = goldNum;
+                break;
+        }
+
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         switch (planFunction.getA()) {
             case DRAW_CARD:
@@ -153,7 +190,8 @@ public class DrawCardPlanTemplateService {
         GamePb5.DrawActHeroCardRs.Builder builder = GamePb5.DrawActHeroCardRs.newBuilder();
         // 执行将领寻访逻辑
         for (int i = 0; i < drawCardCount.getCount(); i++) {
-            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, planFunction.getB(), 0, drawCardCount, drawCardCostType, weightConfig, now);
+            // TODO 限时寻访日志优化：记录钻石消耗数
+            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, planFunction.getB(), costGoldCnt, drawCardCount, drawCardCostType, weightConfig, now);
             if (null != sh) {
                 builder.addHero(sh);
             }
