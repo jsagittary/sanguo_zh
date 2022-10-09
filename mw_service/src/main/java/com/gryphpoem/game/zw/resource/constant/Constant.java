@@ -1383,6 +1383,9 @@ public final class Constant {
         int DMG_INC = 10001;//增伤
         int DMG_DEC = 10002;//伤害减免
         int SPEED = 11001;
+        // int LESS_INFANTRY_DAMAGE = 50;//对步兵战斗时减伤最终伤害的万分比
+        // int LESS_CAVALRY_DAMAGE = 51;//对骑兵战斗时减伤最终伤害的万分比
+        // int LESS_ARCHER_DAMAGE = 52;//对弓兵战斗时减伤最终伤害的万分比
     }
 
     public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,

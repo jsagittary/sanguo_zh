@@ -394,7 +394,7 @@ public class WallService {
      * @return
      * @throws MwException
      */
-    public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap/*, boolean swapTreasure, boolean swapMedal*/) throws MwException {
+    public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         // 检测是否满足开启天策府
         if (player.building.getWar() < Constant.CABINET_CONDITION.get(1)) {
@@ -445,7 +445,7 @@ public class WallService {
 
         Hero hero = heroService.checkHeroIsExist(player, heroId);
         WallSetRs.Builder builder = WallSetRs.newBuilder();
-        // boolean sysClientUpdateMedal = false;
+        boolean sysClientUpdateMedal = false;
         if (type == 1) {
             // 判断该将领是否在武将上阵
             if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId)) {
@@ -463,13 +463,13 @@ public class WallService {
                     // rewardDataManager.checkBagCnt(player);
                     heroService.swapHeroEquip(player, hero, battleHero);
                 }
-                // if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
-                //     heroService.swapHeroTreasure(player, battleHero, hero);
-                // }
-                // if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
-                //     heroService.swapHeroMedal(player, battleHero, hero);
-                //     sysClientUpdateMedal = true;
-                // }
+                if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
+                    heroService.swapHeroTreasure(player, battleHero, hero);
+                }
+                if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
+                    heroService.swapHeroMedal(player, battleHero, hero);
+                    sysClientUpdateMedal = true;
+                }
                 downWallHeroAndBackRes(player, battleHero);
                 // 重新计算并更新将领属性
                 CalculateUtil.processAttr(player, battleHero);
@@ -524,7 +524,7 @@ public class WallService {
                 builder.addHeroIds(player.heroWall[i]);
         }
 
-        // builder.setUpdateMedal(sysClientUpdateMedal);
+        builder.setUpdateMedal(sysClientUpdateMedal);
         return builder.build();
     }
 

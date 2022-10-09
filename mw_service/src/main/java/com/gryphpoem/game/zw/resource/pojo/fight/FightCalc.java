@@ -3,23 +3,25 @@ package com.gryphpoem.game.zw.resource.pojo.fight;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.manager.MedalDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.PlaneConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePvp;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMedalSpecialSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSkill;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.apache.commons.lang3.RandomUtils;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author TanDonghai
