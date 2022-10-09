@@ -286,7 +286,6 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
             case ORANGE_HERO_FRAGMENT:
             case PURPLE_HERO_FRAGMENT:
                 rewardDataManager.sendReward(player, shs.getRewardList(), AwardFrom.HERO_NORMAL_SEARCH);
-                // TODO 限时寻访日志优化：记录奖励信息
                 awardLogStr = ListUtils.toString(shs.getRewardList());
                 break;
         }
@@ -295,7 +294,6 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         String finalAwardLogStr = awardLogStr;
         DrawCardTimeLimitedFunctionPlanData functionPlanData = (DrawCardTimeLimitedFunctionPlanData) drawCardData;
         int totalDrawCount = functionPlanData.getTotalDrawHeroCount();
-        // TODO 限时寻访日志优化：记录限时卡池类型id，对应s_hero_search表searchType，即functionPlanData.getKeyId();
         LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.DRAW_HERO_CARD_LOG, player,
                 AwardFrom.DRAW_HERO_CARD_NEW, drawCardCount.getType(), LogParamConstant.TIME_LIMITED_DRAW_CARD_TYPE,
                 finalHeroLogId, finalAwardLogStr, costCount, totalDrawCount, functionPlanData.getKeyId()));
