@@ -384,9 +384,9 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                 }
 
                 // 配置的可购买自选箱id
-                Integer optionalBoxId = optionalBoxConfig.get(2);
+                Integer optionalBoxId = optionalBoxConfig.get(1);
                 // 配置的购买道具所需玉璧
-                Integer optionalBoxPrice = optionalBoxConfig.get(3);
+                Integer optionalBoxPrice = optionalBoxConfig.get(2);
                 // 检查购买宝箱需要的资源是否充足并扣减
                 rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.GOLD, optionalBoxPrice, AwardFrom.ACTIVITY_BUY, true, "");
                 // 扣减购买累计抽卡次数
