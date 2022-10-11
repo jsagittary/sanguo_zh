@@ -154,6 +154,11 @@ public class HeroConstant {
      */
     public static List<List<Integer>> OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
 
+    /**
+     * 限时寻访可购买自选箱触发的寻访次数配置
+     */
+    public static List<Integer> TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG;
+
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
         HERO_BATTLE_LEN = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_BATTLE_LEN, 4);
@@ -186,6 +191,7 @@ public class HeroConstant {
         ALL_HERO_GRADE_CAPS = SystemTabLoader.getListIntSystemValue(SystemId.ALL_HERO_GRADE_CAPS, "[]");
         DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = SystemTabLoader.getListListIntSystemValue(SystemId.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, "[]");
         OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG = SystemTabLoader.getListListIntSystemValue(SystemId.TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX, "[]");
+        TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT, "[]");
     }
 
     /**

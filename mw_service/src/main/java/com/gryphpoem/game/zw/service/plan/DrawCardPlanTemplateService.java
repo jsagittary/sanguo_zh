@@ -16,11 +16,8 @@ import com.gryphpoem.game.zw.quartz.jobs.FunctionJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionEndJob;
 import com.gryphpoem.game.zw.quartz.jobs.function.FunctionPreviewJob;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
 import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
@@ -28,7 +25,6 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionPlanData;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionTrigger;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
-import com.gryphpoem.game.zw.resource.pojo.plan.draw.DrawCardTimeLimitedFunctionPlanData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
@@ -145,28 +141,10 @@ public class DrawCardPlanTemplateService {
 
         // 对应抽卡消耗类型扣除资源
         int costGoldCnt = 0;
-        switch (drawCardCostType) {
-            case FREE:
-                int totalFreeCount = ((DrawCardTimeLimitedFunctionPlanData)functionPlanData).getFreeNum();
-                if (totalFreeCount < drawCardCount.getCount()) {
-                    throw new MwException(GameError.FREE_DRAW_CARD_COUNT_NOT_ENOUGH.getCode(), "免费次数不足, roleId:", player.roleId, ", totalFreeCount:", totalFreeCount, ", now:", now);
-                }
-                break;
-            case MONEY:
-                Integer goldNum = HeroConstant.TIME_LIMITED_SEARCH_FOR_GOLD_COIN_CONSUMPTION.get(drawCardCount.getType() - 1);
-                if (CheckNull.isNull(goldNum) || goldNum <= 0) {
-                    throw new MwException(GameError.NO_CONFIG.getCode(), "限时寻访玉璧消耗未配置, roleId:", player.roleId, ", costType:", drawCardCostType, ", drawCount:", drawCardCount.getCount());
-                }
-                rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, goldNum, "draw permanent card");
-                rewardDataManager.subGold(player, goldNum, AwardFrom.HERO_SUPER_SEARCH);
-                costGoldCnt = goldNum;
-                break;
-        }
-
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         switch (planFunction.getA()) {
             case DRAW_CARD:
-                service.checkCondition(player, drawCardCostType, drawCardCount, change, functionPlanData);
+                service.checkCondition(player, drawCardCostType, drawCardCount, change, functionPlanData, costGoldCnt);
                 break;
             default:
                 throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));

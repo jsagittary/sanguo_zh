@@ -35,6 +35,19 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
     /** 总共抽卡次数*/
     private static final int TOTAL_HERO_DRAW_COUNT_INDEX = -1005;
 
+
+    /**
+     * 购买自选箱后剩余的抽卡次数
+     */
+    private static final int LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX = -1006;
+
+
+
+    /**
+     * 自选箱购买总数
+     */
+    private static final int TOTAL_BUY_OPTIONAL_BOX_COUNT_INDEX = -1007;
+
     /**
      * 存储任务完成进度
      */
@@ -129,6 +142,31 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
         this.saveMap.put(TOTAL_HERO_DRAW_COUNT_INDEX, totalDrawHeroCount - subCount);
     }
 
+    /**
+     * 购买自选箱后，更新剩余总计抽卡次数
+     * @param subCount
+     */
+    private void updateLeftHeroDrawCountAfterBuyBox(int subCount) {
+        int lastLeftHeroDrawCountAfterBuyBox = this.saveMap.get(LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX);
+        if (lastLeftHeroDrawCountAfterBuyBox < subCount) {
+            throw new MwException(GameError.PARAM_ERROR);
+        }
+
+        this.saveMap.put(LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX, lastLeftHeroDrawCountAfterBuyBox - subCount);
+    }
+
+    /**
+     * 获取已购买自选箱的次数
+     * @return
+     */
+    public int getOptionalBoxBuyCount() {
+        return this.saveMap.getOrDefault(TOTAL_BUY_OPTIONAL_BOX_COUNT_INDEX, 0);
+    }
+
+    public void addTotalOptionalBoxBuyCount() {
+        this.saveMap.merge(TOTAL_BUY_OPTIONAL_BOX_COUNT_INDEX, 1, Integer::sum);
+    }
+
     public String toDebugStr() {
         return "[hero_fragment_draw_count:" + getFragmentDrawCount() + ", hero_draw_count:" + getHeroDrawCount() + "]";
     }
@@ -170,6 +208,9 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
         builder.setStatus(getReceiveStatus());
         builder.setFreeNum(getFreeNum());
         builder.setTotalDrawCount(getTotalDrawHeroCount());
+        builder.setTotalBuyOptionalBoxCount(getOptionalBoxBuyCount()); // 已购买自选箱的数量
+        // builder.setCurCanBuyOptionalBoxCount(); // 当前可购买自选箱的数量
+        // builder.setLeftDrawCountAfterBuyBox(); // 剩余不足购买自选箱的抽卡次数
         return builder.build();
     }
 }

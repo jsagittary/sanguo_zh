@@ -1807,6 +1807,11 @@ public class SystemId {
     public static final int TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX = 780;
 
     /**
+     * 限时寻访可购买自选箱触发条件
+     */
+    public static final int TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT = 781;
+
+    /**
      * 全部英雄品阶等级上限
      */
     public static int ALL_HERO_GRADE_CAPS = 1103;
