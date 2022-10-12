@@ -1383,9 +1383,9 @@ public final class Constant {
         int DMG_INC = 10001;//增伤
         int DMG_DEC = 10002;//伤害减免
         int SPEED = 11001;
-        // int LESS_INFANTRY_DAMAGE = 50;//对步兵战斗时减伤最终伤害的万分比
-        // int LESS_CAVALRY_DAMAGE = 51;//对骑兵战斗时减伤最终伤害的万分比
-        // int LESS_ARCHER_DAMAGE = 52;//对弓兵战斗时减伤最终伤害的万分比
+        int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
+        int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
+        int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
     }
 
     public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,
@@ -1397,7 +1397,7 @@ public final class Constant {
      * 扩展属性
      */
     public static int[] EXT_ATTRS = new int[]{AttrId.ATTACK_TOWN, AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT,
-            AttrId.DEFEND_EXT, AttrId.FIGHT};
+            AttrId.DEFEND_EXT, AttrId.FIGHT, AttrId.LESS_INFANTRY_MUT, AttrId.LESS_CAVALRY_MUT, AttrId.LESS_ARCHER_MUT};
 
     /**
      * 显示战力id定义

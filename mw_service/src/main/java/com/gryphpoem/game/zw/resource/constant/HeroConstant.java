@@ -415,7 +415,7 @@ public class HeroConstant {
     public static final int CHANGE_TREASURE_WARE_POS_TYPE = 4;
 
     /**
-     * 激活 1, 进化 2, 重组 3
+     * 激活 1, 升级 2, 重置 3
      */
     public static final int AWAKEN_HERO_TYPE_1 = 1;
     public static final int AWAKEN_HERO_TYPE_2 = 2;
@@ -423,6 +423,17 @@ public class HeroConstant {
 
     public static final int AWAKEN_PART_MIN = 1;
     public static final int AWAKEN_PART_MAX = 5;
+    public static final int AWAKEN_PART_MAX_OF_PURPLE_HERO = 4;
+    public static final int AWAKEN_PART_MAX_OF_ORANGE_HERO = 6;
+
+
+    public static final int TALENT_HERO_TYPE_1 = 1;
+    public static final int TALENT_HERO_TYPE_2 = 2;
+    public static final int TALENT_HERO_TYPE_3 = 3;
+
+    public static final int TALENT_PART_MIN = 1;
+    public static final int TALENT_PART_MAX_OF_PURPLE_HERO = 4;
+    public static final int TALENT_PART_MAX_OF_ORANGE_HERO = 6;
 
     /**
      * 紫将

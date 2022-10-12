@@ -13,21 +13,31 @@ public class StaticHeroEvolve {
 
     private int id;
     /**
-     * 进化属性组
+     * 天赋页索引
      */
     private int group;
     /**
-     * 进化部位
+     * 天赋部位（紫将：1、2、3、4  橙将：1、2、3、4、5、6）
      */
     private int part;
     /**
-     * 进化到对应登记需消耗的物品
+     * 升级对应天赋的消耗 [[1,19,50]] 分别表示大类——货币（s_type_define表中的rewardType字段）、细分类型——（s_type_define表中的subType字段）、消耗数量
      */
     private List<List<Integer>> consume;
     /**
-     * 进化到该级添加的属性
+     * 对应等级天赋的强化属性 key--属性id，Constant.AttrId；value--属性值
      */
     private Map<Integer, Integer> attr;
+
+    /**
+     * 天赋等级
+     */
+    private int lv;
+
+    /**
+     * 针对特定兵种生效。1 2 3 表示步 骑 弓，0表示全部
+     */
+    private int aimType;
 
 
     public int getId() {
@@ -68,6 +78,22 @@ public class StaticHeroEvolve {
 
     public void setAttr(Map<Integer, Integer> attr) {
         this.attr = attr;
+    }
+
+    public int getLv() {
+        return lv;
+    }
+
+    public void setLv(int lv) {
+        this.lv = lv;
+    }
+
+    public int getAimType() {
+        return aimType;
+    }
+
+    public void setAimType(int aimType) {
+        this.aimType = aimType;
     }
 
     @Override

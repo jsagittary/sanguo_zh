@@ -56,6 +56,8 @@ public class Hero {
     private boolean isOnBaitTeam;//是否在采集鱼饵队列
     private int[] totem;
     private Integer treasureWare;//宝具
+    private Map<Integer, TalentData> talent;
+
     /** 英雄品阶keyId*/
     private int gradeKeyId;
     /** 是否在主界面显示英雄奖励*/
@@ -83,6 +85,7 @@ public class Hero {
         totem = new int[9];
         awaken = new TreeMap<>(Integer::compareTo);
         showClient = true;
+        talent = new TreeMap<>(Integer::compareTo);
     }
 
     /**
@@ -173,6 +176,14 @@ public class Hero {
                 if (CheckNull.isNull(awakenDataPb))
                     return;
                 this.awaken.put(awakenDataPb.getIndex(), new AwakenData(awakenDataPb));
+            });
+        }
+        if (CheckNull.nonEmpty(hero.getTalentDataList())) {
+            hero.getTalentDataList().forEach(talentDataPb -> {
+                if (CheckNull.isNull(talentDataPb)) {
+                    return;
+                }
+                this.talent.put(talentDataPb.getIndex(), new TalentData(talentDataPb));
             });
         }
         initMedalKeys();
@@ -796,6 +807,22 @@ public class Hero {
         return awaken.get(index);
     }
 
+    public Map<Integer, TalentData> getTalent() {
+        return talent;
+    }
+
+    public void setTalent(Map<Integer, TalentData> talent) {
+        this.talent = talent;
+    }
+
+    public TalentData getTalent(int index) {
+        if (CheckNull.isEmpty(talent)) {
+            talent = new TreeMap<>(Integer::compareTo);
+        }
+
+        return talent.get(index);
+    }
+
     public int getSandTableState() {
         return sandTableState;
     }
@@ -845,6 +872,7 @@ public class Hero {
                 ", warPlanes=" + warPlanes +
                 ", showFight=" + showFight +
                 ", awaken=" + awaken +
+                ", talent=" + talent +
                 ", treasureWare=" + (CheckNull.isNull(treasureWare) ? -1 : treasureWare) +
                 '}';
     }

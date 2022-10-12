@@ -5,24 +5,49 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.ChatDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.WarDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.GamePb5;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.ChatConst;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.HeroUpgradeConstant;
+import com.gryphpoem.game.zw.resource.constant.LogParamConstant;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,145 +120,369 @@ public class HeroUpgradeService implements GmCmdService {
         return builder.build();
     }
 
+    // /**
+    //  * 学习武将天赋
+    //  *
+    //  * @param roleId 角色id
+    //  * @param heroId 将领id
+    //  * @param type   进行的行为, 激活 1, 进化 2, 重组 3
+    //  * @return 操作后的将领数据
+    //  * @throws MwException 自定义异常
+    //  */
+    // public GamePb5.StudyHeroTalentRs studyHeroTalent(long roleId, int heroId, int type, int index) throws MwException {
+    //     // 角色是否存在
+    //     Player player = playerDataManager.checkPlayerIsExist(roleId);
+    //
+    //     // 将领条件检测------------------
+    //     Hero hero = heroService.checkHeroIsExist(player, heroId);
+    //     if (!hero.isIdle()) {
+    //         throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不在空闲中, roleId:", roleId, ", heroId:", heroId,
+    //                 ", state:", hero.getState());
+    //     }
+    //     StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+    //     if (sHero == null) {
+    //         throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:",
+    //                 heroId);
+    //     }
+    //     if (CheckNull.isEmpty(sHero.getEvolveGroup()) || sHero.getEvolveGroup().size() < index) {
+    //         throw new MwException(GameError.NO_CONFIG.getCode(), "英雄天赋组未找到, roleId:", player.roleId, ", heroId:",
+    //                 heroId);
+    //     }
+    //
+    //     if (type == HeroConstant.AWAKEN_HERO_TYPE_1 || type == HeroConstant.AWAKEN_HERO_TYPE_2) {
+    //         // 进化与激活时, 校验武将觉醒层数
+    //         if (hero.getDecorated() < index) {
+    //             throw new MwException(GameError.HERO_INSUFFICIENT_AWAKENING_CONDITIONS.getCode(), "武将觉醒条件不足, roleId:", player.roleId, ", heroId:",
+    //                     heroId);
+    //         }
+    //         // 激活或进化当前页签, 需要确认之前的天赋页签是否全部学习完毕
+    //         if (index > 1) {
+    //             int count = index;
+    //             while (--count >= 1) {
+    //                 AwakenData awakenData = hero.getAwaken().get(count);
+    //                 if (CheckNull.isNull(awakenData) || !awakenData.isActivate() || awakenData.curPart() != 0) {
+    //                     throw new MwException(GameError.PRE_TALENT_NOT_UNLOCKED.getCode(), "前置天赋未解锁, roleId:", player.roleId, ", heroId:",
+    //                             heroId);
+    //                 }
+    //             }
+    //         }
+    //     } else {
+    //         // 重组时, 武将没有激活或学习过的天赋
+    //         if (CheckNull.isEmpty(hero.getAwaken()) || CheckNull.isNull(hero.getAwaken().values().stream().
+    //                 filter(awakenData -> awakenData.lastPart() != 0).findFirst().orElse(null))) {
+    //             throw new MwException(GameError.AWAKEN_HERO_REGROUP_ERROR.getCode(), "已经没部位可以重组了, roleId:", player.roleId, ", heroId:", heroId);
+    //         }
+    //     }
+    //
+    //     // 获取学习天赋数据
+    //     AwakenData awaken = hero.getAwaken().get(index);
+    //     if (type == HeroConstant.AWAKEN_HERO_TYPE_1) {
+    //         // 若为非激活状态且数据为空, 则初始化数据
+    //         if (CheckNull.isNull(awaken)) {
+    //             awaken = new AwakenData(index);
+    //             hero.getAwaken().put(index, awaken);
+    //         }
+    //     }
+    //     // 进化校验武将是否有当前天赋页签数据
+    //     if (type == HeroConstant.AWAKEN_HERO_TYPE_2) {
+    //         if (CheckNull.isNull(awaken)) {
+    //             throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "进化前需要先激活, roleId:", player.roleId, ", heroId:", heroId);
+    //         }
+    //     }
+    //
+    //     // 当前的部位
+    //     int curPart = 0;
+    //     // 激活状态
+    //     boolean activate = true;
+    //     if (type != HeroConstant.AWAKEN_HERO_TYPE_3) {
+    //         activate = awaken.isActivate();
+    //         // 当前的部位
+    //         curPart = awaken.curPart();
+    //     }
+    //
+    //     List<StaticHeroEvolve> heroEvolve = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(index - 1));
+    //     if (CheckNull.isEmpty(heroEvolve)) {
+    //         throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:",
+    //                 heroId);
+    //     }
+    //
+    //     // 激活 1, 进化 2, 重组 3
+    //     if (type == HeroConstant.AWAKEN_HERO_TYPE_1) {
+    //         if (activate) {
+    //             throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "将领已经激活过了, roleId:", player.roleId, ", heroId:", heroId);
+    //         }
+    //         // 扣除激活的消耗, 将将领标识为已激活
+    //         rewardDataManager.checkAndSubPlayerRes(player, sHero.getActivateConsume(), AwardFrom.AWAKEN_HERO_ACTIVE_CONSUME, heroId);
+    //         // 初始化
+    //         AwakenData finalAwaken = awaken;
+    //         Stream.iterate(HeroConstant.AWAKEN_PART_MIN, part -> ++part).limit(HeroConstant.AWAKEN_PART_MAX).forEach(part -> finalAwaken.getEvolutionGene().put(part, 0));
+    //         awaken.setStatus(1);
+    //     } else if (type == HeroConstant.AWAKEN_HERO_TYPE_2) {
+    //         int finalCurPart = curPart;
+    //         StaticHeroEvolve sHeroEvolve = heroEvolve.stream().filter(he -> he.getPart() == finalCurPart).findFirst().orElse(null);
+    //         if (CheckNull.isNull(sHeroEvolve)) {
+    //             throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:",
+    //                     heroId);
+    //         }
+    //         if (!activate) {
+    //             throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "进化前需要先激活, roleId:", player.roleId, ", heroId:", heroId);
+    //         }
+    //         if (curPart == 0) {
+    //             throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "已经没部位可以进化了, roleId:", player.roleId, ", heroId:", heroId);
+    //         }
+    //         // 扣除进化的消耗, 将部位状态标识为1
+    //         rewardDataManager.checkAndSubPlayerRes(player, sHeroEvolve.getConsume(), AwardFrom.AWAKEN_HERO_ACTIVE_CONSUME, heroId, curPart);
+    //         awaken.getEvolutionGene().put(curPart, 1);
+    //     } else if (type == HeroConstant.AWAKEN_HERO_TYPE_3) {
+    //         // 重置则重置所有天赋页
+    //         hero.getAwaken().values().forEach(awakenData -> {
+    //             if (CheckNull.isNull(awakenData))
+    //                 return;
+    //             // 扣除重组的消耗, 将部位状态清空
+    //             int lastPart_ = awakenData.lastPart();
+    //             rewardDataManager.checkAndSubPlayerRes(player, sHero.getRecombination(), AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, lastPart_);
+    //             // 初始化
+    //             Stream.iterate(HeroConstant.AWAKEN_PART_MIN, part -> ++part).limit(HeroConstant.AWAKEN_PART_MAX).forEach(part -> awakenData.getEvolutionGene().put(part, 0));
+    //             List<List<Integer>> awards = new ArrayList<>();
+    //             heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart_).forEach(she -> {
+    //                 List<List<Integer>> consume = she.getConsume();
+    //                 awards.addAll(consume);
+    //             });
+    //             if (!CheckNull.isEmpty(awards)) {
+    //                 List<List<Integer>> mergeAward = RewardDataManager.mergeAward(awards);
+    //                 mergeAward = Objects.requireNonNull(mergeAward).stream().peek(award -> award.set(2, (int) (award.get(2) * (HeroConstant.HERO_REGROUP_AWARD_NUM / Constant.TEN_THROUSAND)))).collect(Collectors.toList());
+    //                 // 发送重组的奖励
+    //                 rewardDataManager.sendReward(player, mergeAward, AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, lastPart_);
+    //             }
+    //         });
+    //     }
+    //     // 更新将领属性
+    //     CalculateUtil.processAttr(player, hero);
+    //     GamePb5.StudyHeroTalentRs.Builder builder = GamePb5.StudyHeroTalentRs.newBuilder();
+    //     builder.setHero(PbHelper.createHeroPb(hero, player));
+    //     return builder.build();
+    // }
+
     /**
-     * 学习武将天赋
+     * 激活或重置武将天赋
      *
      * @param roleId 角色id
      * @param heroId 将领id
-     * @param type   进行的行为, 激活 1, 进化 2, 重组 3
+     * @param type   进行的行为, 激活 1, 重置 3
      * @return 操作后的将领数据
      * @throws MwException 自定义异常
      */
-    public GamePb5.StudyHeroTalentRs studyHeroTalent(long roleId, int heroId, int type, int index) throws MwException {
+    public GamePb5.StudyHeroTalentRs activateOrClearHeroTalent(long roleId, int heroId, int type, int index) throws MwException {
         // 角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
         // 将领条件检测------------------
         Hero hero = heroService.checkHeroIsExist(player, heroId);
         if (!hero.isIdle()) {
-            throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不在空闲中, roleId:", roleId, ", heroId:", heroId,
-                    ", state:", hero.getState());
+            throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不在空闲中, roleId:", roleId, ", heroId:", heroId, ", state:", hero.getState());
         }
         StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
         if (sHero == null) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:",
-                    heroId);
+            throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:", heroId);
         }
         if (CheckNull.isEmpty(sHero.getEvolveGroup()) || sHero.getEvolveGroup().size() < index) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "英雄天赋组未找到, roleId:", player.roleId, ", heroId:",
-                    heroId);
+            throw new MwException(GameError.NO_CONFIG.getCode(), "英雄天赋组未找到, roleId:", player.roleId, ", heroId:", heroId);
         }
 
-        if (type == HeroConstant.AWAKEN_HERO_TYPE_1 || type == HeroConstant.AWAKEN_HERO_TYPE_2) {
-            // 进化与激活时, 校验武将觉醒层数
+        // 获取武将对应天赋页数据
+        TalentData talentDataMap = hero.getTalent().get(index);
+
+        // 获取武将对应天赋页的天赋组
+        List<StaticHeroEvolve> sHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(index - 1));
+        if (CheckNull.isEmpty(sHeroEvolveList)) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:", heroId);
+        }
+
+        if (type == HeroConstant.TALENT_HERO_TYPE_1) {
+            // 激活时, 校验武将觉醒层数
             if (hero.getDecorated() < index) {
-                throw new MwException(GameError.HERO_INSUFFICIENT_AWAKENING_CONDITIONS.getCode(), "武将觉醒条件不足, roleId:", player.roleId, ", heroId:",
-                        heroId);
+                throw new MwException(GameError.HERO_INSUFFICIENT_AWAKENING_CONDITIONS.getCode(), "武将觉醒条件不足, roleId:", player.roleId, ", heroId:", heroId);
             }
-            // 激活或进化当前页签, 需要确认之前的天赋页签是否全部学习完毕
+            // 激活当前页签, 需要确认之前的天赋页签是否全部学习完毕
             if (index > 1) {
                 int count = index;
                 while (--count >= 1) {
-                    AwakenData awakenData = hero.getAwaken().get(count);
-                    if (CheckNull.isNull(awakenData) || !awakenData.isActivate() || awakenData.curPart() != 0) {
-                        throw new MwException(GameError.PRE_TALENT_NOT_UNLOCKED.getCode(), "前置天赋未解锁, roleId:", player.roleId, ", heroId:",
-                                heroId);
+                    TalentData preTalentDataMap = hero.getTalent().get(count);
+                    if (CheckNull.isNull(preTalentDataMap) || !preTalentDataMap.isActivate() || !preTalentDataMap.isAllPartActivated()) {
+                        // TODO 后续如果有多个天赋页，需明确下一页天赋激活的条件是前一天赋页的天赋全部升满，还是全部都大于1级（即天赋球点亮了）即可
+                        throw new MwException(GameError.PRE_TALENT_NOT_UNLOCKED.getCode(), "前置天赋未解锁, roleId:", player.roleId, ", heroId:", heroId);
                     }
                 }
             }
-        } else {
-            // 重组时, 武将没有激活或学习过的天赋
-            if (CheckNull.isEmpty(hero.getAwaken()) || CheckNull.isNull(hero.getAwaken().values().stream().
-                    filter(awakenData -> awakenData.lastPart() != 0).findFirst().orElse(null))) {
-                throw new MwException(GameError.AWAKEN_HERO_REGROUP_ERROR.getCode(), "已经没部位可以重组了, roleId:", player.roleId, ", heroId:", heroId);
-            }
-        }
 
-        // 获取学习天赋数据
-        AwakenData awaken = hero.getAwaken().get(index);
-        if (type == HeroConstant.AWAKEN_HERO_TYPE_1) {
             // 若为非激活状态且数据为空, 则初始化数据
-            if (CheckNull.isNull(awaken)) {
-                awaken = new AwakenData(index);
-                hero.getAwaken().put(index, awaken);
-            }
-        }
-        // 进化校验武将是否有当前天赋页签数据
-        if (type == HeroConstant.AWAKEN_HERO_TYPE_2) {
-            if (CheckNull.isNull(awaken)) {
-                throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "进化前需要先激活, roleId:", player.roleId, ", heroId:", heroId);
-            }
-        }
+            if (CheckNull.isNull(talentDataMap)) {
+                int maxPart;
+                switch (hero.getQuality()) {
+                    case HeroConstant.QUALITY_PURPLE_HERO:
+                        maxPart = HeroConstant.TALENT_PART_MAX_OF_PURPLE_HERO;
+                        break;
+                    case HeroConstant.QUALITY_ORANGE_HERO:
+                        maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
+                        break;
+                    default:
+                        maxPart = 0;
+                }
+                talentDataMap = new TalentData(1, index, maxPart);
+                hero.getTalent().put(index, talentDataMap);
 
-        // 当前的部位
-        int curPart = 0;
-        // 激活状态
-        boolean activate = true;
-        if (type != HeroConstant.AWAKEN_HERO_TYPE_3) {
-            activate = awaken.isActivate();
-            // 当前的部位
-            curPart = awaken.curPart();
-        }
-
-        List<StaticHeroEvolve> heroEvolve = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(index - 1));
-        if (CheckNull.isEmpty(heroEvolve)) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:",
-                    heroId);
-        }
-
-        // 激活 1, 进化 2, 重组 3
-        if (type == HeroConstant.AWAKEN_HERO_TYPE_1) {
-            if (activate) {
-                throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "将领已经激活过了, roleId:", player.roleId, ", heroId:", heroId);
+            } else {
+                if (talentDataMap.isActivate()) {
+                    throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "将领已经激活过了, roleId:", player.roleId, ", heroId:", heroId);
+                }
             }
+
             // 扣除激活的消耗, 将将领标识为已激活
             rewardDataManager.checkAndSubPlayerRes(player, sHero.getActivateConsume(), AwardFrom.AWAKEN_HERO_ACTIVE_CONSUME, heroId);
-            // 初始化
-            AwakenData finalAwaken = awaken;
-            Stream.iterate(HeroConstant.AWAKEN_PART_MIN, part -> ++part).limit(HeroConstant.AWAKEN_PART_MAX).forEach(part -> finalAwaken.getEvolutionGene().put(part, 0));
-            awaken.setStatus(1);
-        } else if (type == HeroConstant.AWAKEN_HERO_TYPE_2) {
-            int finalCurPart = curPart;
-            StaticHeroEvolve sHeroEvolve = heroEvolve.stream().filter(he -> he.getPart() == finalCurPart).findFirst().orElse(null);
-            if (CheckNull.isNull(sHeroEvolve)) {
-                throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:",
-                        heroId);
+        }
+
+        if (type == HeroConstant.TALENT_HERO_TYPE_3) {
+            // 重置时, 武将没有激活或学习过的天赋
+            if (CheckNull.isEmpty(hero.getTalent()) || hero.getTalent().values().stream()
+                    .filter(talentDataTemp -> talentDataTemp.getTalentArr().entrySet().stream().anyMatch(talent -> talent.getValue() > 0))
+                    .count() < 1) {
+                throw new MwException(GameError.AWAKEN_HERO_REGROUP_ERROR.getCode(), "已经没部位可以重置了, roleId:", player.roleId, ", heroId:", heroId);
             }
-            if (!activate) {
-                throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "进化前需要先激活, roleId:", player.roleId, ", heroId:", heroId);
-            }
-            if (curPart == 0) {
-                throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "已经没部位可以进化了, roleId:", player.roleId, ", heroId:", heroId);
-            }
-            // 扣除进化的消耗, 将部位状态标识为1
-            rewardDataManager.checkAndSubPlayerRes(player, sHeroEvolve.getConsume(), AwardFrom.AWAKEN_HERO_ACTIVE_CONSUME, heroId, curPart);
-            awaken.getEvolutionGene().put(curPart, 1);
-        } else if (type == HeroConstant.AWAKEN_HERO_TYPE_3) {
+
             // 重置则重置所有天赋页
-            hero.getAwaken().values().forEach(awakenData -> {
-                if (CheckNull.isNull(awakenData))
+            hero.getTalent().values().forEach(talentData_ -> {
+                if (CheckNull.isNull(talentData_)) {
                     return;
-                // 扣除重组的消耗, 将部位状态清空
-                int lastPart_ = awakenData.lastPart();
-                rewardDataManager.checkAndSubPlayerRes(player, sHero.getRecombination(), AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, lastPart_);
-                // 初始化
-                Stream.iterate(HeroConstant.AWAKEN_PART_MIN, part -> ++part).limit(HeroConstant.AWAKEN_PART_MAX).forEach(part -> awakenData.getEvolutionGene().put(part, 0));
-                List<List<Integer>> awards = new ArrayList<>();
-                heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart_).forEach(she -> {
-                    List<List<Integer>> consume = she.getConsume();
-                    awards.addAll(consume);
+                }
+                // 扣除重置的消耗, 将部位状态清空
+                int indexTemp = talentData_.getIndex();
+                rewardDataManager.checkAndSubPlayerRes(player, sHero.getRecombination(), AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, indexTemp);
+                // 初始化所有部位天赋
+                // Stream.iterate(HeroConstant.TALENT_PART_MIN, part -> ++part).limit(talentData_.getMaxPart()).forEach(part -> talentData_.getTalentArr().put(part, 0));
+                /*heroEvolve.stream()
+                        .filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= indexTemp)
+                        .forEach(she -> {
+                            List<List<Integer>> consume = she.getConsume();
+                            hadConsumeList.addAll(consume);
+                        });*/
+                // 获取已升级天赋的总计消耗
+                List<List<Integer>> hadConsumeList = new ArrayList<>();
+                talentData_.getTalentArr().entrySet().stream().forEach(talent_ -> {
+                    Integer part_ = talent_.getKey();
+                    Integer lv_ = talent_.getValue();
+                    if (lv_ > 0) {
+                        sHeroEvolveList.stream()
+                                .filter(she -> she.getPart() == part_ && (she.getLv() >= 0  && she.getLv() < lv_))
+                                .forEach(she -> {
+                                    List<List<Integer>> consume = she.getConsume();
+                                    hadConsumeList.addAll(consume);
+                                });
+                    }
                 });
-                if (!CheckNull.isEmpty(awards)) {
-                    List<List<Integer>> mergeAward = RewardDataManager.mergeAward(awards);
+                // 初始化所有部位天赋
+                Stream.iterate(HeroConstant.TALENT_PART_MIN, part -> ++part).limit(talentData_.getMaxPart()).forEach(part -> talentData_.getTalentArr().put(part, 0));
+                // 返还重置的部分消耗
+                if (!CheckNull.isEmpty(hadConsumeList)) {
+                    List<List<Integer>> mergeAward = RewardDataManager.mergeAward(hadConsumeList);
                     mergeAward = Objects.requireNonNull(mergeAward).stream().peek(award -> award.set(2, (int) (award.get(2) * (HeroConstant.HERO_REGROUP_AWARD_NUM / Constant.TEN_THROUSAND)))).collect(Collectors.toList());
-                    // 发送重组的奖励
-                    rewardDataManager.sendReward(player, mergeAward, AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, lastPart_);
+                    rewardDataManager.sendReward(player, mergeAward, AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, indexTemp);
                 }
             });
         }
+
         // 更新将领属性
         CalculateUtil.processAttr(player, hero);
         GamePb5.StudyHeroTalentRs.Builder builder = GamePb5.StudyHeroTalentRs.newBuilder();
+        builder.setHero(PbHelper.createHeroPb(hero, player));
+        return builder.build();
+    }
+
+    /**
+     * 升级武将天赋
+     *
+     * @param roleId 角色id
+     * @param heroId 武将id
+     * @param pageIndex   天赋页（对应s_hero_evolve的group）
+     * @param part   要升级的天赋索引位置（中心天赋位置为1）
+     * @return
+     * @throws MwException
+     */
+    public GamePb5.UpgradeHeroTalentRs upgradeHeroTalent(long roleId, int heroId, int pageIndex, int part) throws MwException {
+        // 角色是否存在
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+
+        // 将领条件检测
+        Hero hero = heroService.checkHeroIsExist(player, heroId);
+        if (!hero.isIdle()) {
+            throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不在空闲中, roleId:", roleId, ", heroId:", heroId, ", state:", hero.getState());
+        }
+        StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        if (sHero == null) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:", heroId);
+        }
+        if (CheckNull.isEmpty(sHero.getEvolveGroup()) || sHero.getEvolveGroup().size() < pageIndex) { // s_hero的evolveGroup对应1、2、3...天赋页的天赋
+            throw new MwException(GameError.NO_CONFIG.getCode(), "英雄天赋组未找到, roleId:", player.roleId, ", heroId:", heroId);
+        }
+
+        Integer group = sHero.getEvolveGroup().get(pageIndex);
+        if ((hero.getQuality() == HeroConstant.QUALITY_PURPLE_HERO && group >= 100) || (hero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO && group < 100)) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "将领天赋组错误, roleId:", player.roleId, ", heroId:", heroId);
+        }
+
+        // 升级天赋时, 校验武将觉醒层数
+        if (hero.getDecorated() < pageIndex) { // 觉醒次数对应天赋页数
+            throw new MwException(GameError.HERO_INSUFFICIENT_AWAKENING_CONDITIONS.getCode(), "武将觉醒条件不足, roleId:", player.roleId, ", heroId:", heroId);
+        }
+
+        TalentData talentData = hero.getTalent().get(pageIndex);
+        if (CheckNull.isNull(talentData) || !talentData.isActivate()) {
+            throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "升级前需要先激活, roleId:", player.roleId, ", heroId:", heroId);
+        }
+
+        // 目标部位天赋的配置（同一天赋按等级区分，表里分为多条记录）
+        List<StaticHeroEvolve> staticHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(group).stream()
+                .filter(staticHeroEvolve -> staticHeroEvolve.getPart() == part)
+                .collect(Collectors.toList());
+        // 目标位置天赋的最大等级配置
+        Integer maxTargetTalentLv = staticHeroEvolveList.stream().max(Comparator.comparingInt(StaticHeroEvolve::getLv)).map(StaticHeroEvolve::getLv).orElse(null);
+        if (maxTargetTalentLv == null) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "天赋等级未配置, roleId:", player.roleId, ", heroId:", heroId);
+        }
+        if (talentData.getTalentArr().get(part) >= maxTargetTalentLv) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), "该天赋已经满级, roleId:", player.roleId, ", heroId:", heroId);
+        }
+        // 获取升到下一级所需的资源数量
+        Integer curLv = talentData.getTalentArr().get(part);
+        StaticHeroEvolve nextLvStaticHeroEvolve = staticHeroEvolveList.stream().filter(she -> she.getLv() == curLv + 1).findFirst().orElse(null);
+        if (nextLvStaticHeroEvolve == null) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "天赋下一等级未配置, roleId:", player.roleId, ", heroId:", heroId, "talentGroup:", pageIndex);
+        }
+        List<List<Integer>> consume = nextLvStaticHeroEvolve.getConsume();
+        // 扣除升级的消耗，天赋等级加1
+        rewardDataManager.checkAndSubPlayerRes(player, consume, AwardFrom.AWAKEN_HERO_EVOLVE_CONSUME, heroId, part);
+        talentData.upgradeTalent(part);
+
+        // 如果所有部位天赋都已达到最大等级，更新天赋页
+        int size = (int) talentData.getTalentArr().entrySet().stream().filter(talent -> {
+            Integer partTemp = talent.getKey();
+            Integer lvTemp = talent.getValue();
+            Integer maxLvOfPart = StaticHeroDataMgr.getHeroEvolve(group).stream()
+                    .filter(she -> she.getPart() == partTemp)
+                    .max(Comparator.comparingInt(StaticHeroEvolve::getLv))
+                    .map(StaticHeroEvolve::getLv).orElse(null);
+            if (maxLvOfPart == null) {
+                throw new MwException(GameError.NO_CONFIG.getCode(), "天赋等级未配置, roleId:", player.roleId, ", heroId:", heroId);
+            }
+
+            return lvTemp.compareTo(maxLvOfPart) < 0;
+        }).count();
+        if (size == 0) {
+            talentData.setAllPartActivated(1);
+        }
+
+        // 更新将领属性
+        CalculateUtil.processAttr(player, hero);
+        GamePb5.UpgradeHeroTalentRs.Builder builder = GamePb5.UpgradeHeroTalentRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(hero, player));
         return builder.build();
     }

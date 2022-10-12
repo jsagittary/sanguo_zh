@@ -34,9 +34,9 @@ public class AttrData {
     public int moreInfantryDamage;//对步兵增伤
     public int moreCavalryDamage;//对骑兵增伤
     public int moreArcherDamage;//对弓兵增伤
-    // public int lessInfantryDamage;//对步兵减伤
-    // public int lessCavalryDamage;//对骑兵减伤
-    // public int lessArcherDamage;//对弓兵减伤
+    public double lessInfantryMut;//对步兵减伤
+    public double lessCavalryMut;//对骑兵减伤
+    public double lessArcherMut;//对弓兵减伤
 
     public AttrData(CommonPb.SerAttrData attrData) {
         this.attack = attrData.getAttack();
@@ -169,6 +169,15 @@ public class AttrData {
                 break;
             case Constant.AttrId.LEAD_MUT:
                 this.lead += (int) (this.lead * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LESS_INFANTRY_MUT:
+                this.lessInfantryMut += value;
+                break;
+            case Constant.AttrId.LESS_CAVALRY_MUT:
+                this.lessCavalryMut += value;
+                break;
+            case Constant.AttrId.LESS_ARCHER_MUT:
+                this.lessArcherMut += value;
                 break;
             default:
                 break;

@@ -123,11 +123,36 @@ public class FightCalc {
                 }
             }
         } else if (haveArmyRestraint(target.armType, force.armType)) {
-            restrain = restrain - (WorldConstant.K8 + (defHeroLv * WorldConstant.K10));
+            // 兵种克制减伤属性加成
+            double lessHurtFromArmyRestraint = getLessHurtFromArmyRestraint(force, target);
+            restrain = restrain - (WorldConstant.K8 + (defHeroLv * WorldConstant.K10)) - lessHurtFromArmyRestraint;
         }
 
-
         return restrain;
+    }
+
+    /**
+     * 根据兵种克制关系，获取减伤系数
+     *
+     * @param force
+     * @param target
+     * @return
+     */
+    private static double getLessHurtFromArmyRestraint(Force force, Force target) {
+        double lessHurt = 0.00;
+        if (target.armType == Constant.ArmyType.INFANTRY_ARMY_TYPE && force.armType == Constant.ArmyType.CAVALRY_ARMY_TYPE) {
+            lessHurt = target.attrData.lessInfantryMut;
+        }
+
+        if (target.armType == Constant.ArmyType.CAVALRY_ARMY_TYPE && force.armType == Constant.ArmyType.ARCHER_ARMY_TYPE) {
+            lessHurt = target.attrData.lessCavalryMut;
+        }
+
+        if (target.armType == Constant.ArmyType.ARCHER_ARMY_TYPE && force.armType == Constant.ArmyType.INFANTRY_ARMY_TYPE) {
+            lessHurt = target.attrData.lessArcherMut;
+        }
+
+        return lessHurt;
     }
 
     /**

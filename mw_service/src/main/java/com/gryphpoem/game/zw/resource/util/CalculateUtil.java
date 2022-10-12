@@ -4,42 +4,142 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticCiaDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWarFireDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticFightDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticMentorDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticNightRaidMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPartyDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticTotemDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.NewCrossConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.DressUpDataManager;
+import com.gryphpoem.game.zw.manager.MedalDataManager;
+import com.gryphpoem.game.zw.manager.RankDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
+import com.gryphpoem.game.zw.resource.constant.EffectConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.LogParamConstant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.MentorConstant;
+import com.gryphpoem.game.zw.resource.constant.PlaneConstant;
+import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.*;
+import com.gryphpoem.game.zw.resource.domain.p.Cia;
+import com.gryphpoem.game.zw.resource.domain.p.CrossBuff;
+import com.gryphpoem.game.zw.resource.domain.p.CrossFunctionData;
+import com.gryphpoem.game.zw.resource.domain.p.CrossPersonalData;
+import com.gryphpoem.game.zw.resource.domain.p.CrossWarFireLocalData;
+import com.gryphpoem.game.zw.resource.domain.p.Effect;
+import com.gryphpoem.game.zw.resource.domain.p.FemaleAgent;
+import com.gryphpoem.game.zw.resource.domain.p.Mentor;
+import com.gryphpoem.game.zw.resource.domain.p.MentorEquip;
+import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
+import com.gryphpoem.game.zw.resource.domain.p.MentorSkill;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerRebellion;
+import com.gryphpoem.game.zw.resource.domain.p.RebelBuff;
+import com.gryphpoem.game.zw.resource.domain.p.Tech;
+import com.gryphpoem.game.zw.resource.domain.p.TechLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCabinetPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkinStar;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCrossBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEquip;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEquipExtra;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroClergy;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroDecorated;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSeasonSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticJewel;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMarchLine;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMedalAuraSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMedalGeneralSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMedalSpecialSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMentor;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMentorSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPartyRanks;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneInit;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRebelBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRingStrengthen;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalent;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSkillAction;
+import com.gryphpoem.game.zw.resource.domain.s.StaticStone;
+import com.gryphpoem.game.zw.resource.domain.s.StaticStoneImprove;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSuperEquipLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotem;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotemLink;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotemUp;
+import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
+import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuffCross;
+import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
+import com.gryphpoem.game.zw.resource.pojo.Equip;
+import com.gryphpoem.game.zw.resource.pojo.Ring;
+import com.gryphpoem.game.zw.resource.pojo.StoneHole;
+import com.gryphpoem.game.zw.resource.pojo.StoneImprove;
+import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
+import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.TitleEntity;
-import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.totem.Totem;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
-import com.gryphpoem.game.zw.service.*;
+import com.gryphpoem.game.zw.service.HeroUpgradeService;
+import com.gryphpoem.game.zw.service.TaskService;
+import com.gryphpoem.game.zw.service.TitleService;
+import com.gryphpoem.game.zw.service.TreasureWareService;
+import com.gryphpoem.game.zw.service.WorldScheduleService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author TanDonghai
@@ -535,6 +635,20 @@ public class CalculateUtil {
         DataResource.ac.getBean(TaskDataManager.class).updTask(player, TaskType.COND_516, 1, hero.getShowFight().values().stream().mapToInt(Integer::intValue).sum());
         return attrMap;
     }
+
+    // /**
+    //  * 武将兵种克制减伤属性
+    //  * @param player
+    //  * @param hero
+    //  * @param attrMap
+    //  * @return
+    //  */
+    // public static void addArmyRestrainReduceHurtEffect(Player player, Hero hero, Map<Integer, Integer> attrMap) {
+    //     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+    //     List<Integer> staticHeroEvolveGroup = staticHero.getEvolveGroup();
+    //     Map<Integer, AwakenData> awakenDataMap = hero.getAwaken();
+    //
+    // }
 
     public static int calcHeroesFightVal(Player player, List<Integer> heroIds) {
         int val = 0;
@@ -1689,29 +1803,42 @@ public class CalculateUtil {
      */
     private static void addAwakenEffect(StaticHero sHero, Hero hero, Map<Integer, Integer> attrMap) {
         if (hero.getDecorated() > 0) {
-            Map<Integer, AwakenData> awakenMap = hero.getAwaken();
+            Map<Integer, TalentData> talentMap = hero.getTalent();
             // 激活了
-            if (CheckNull.nonEmpty(awakenMap)) {
-                awakenMap.values().forEach(awakenData -> {
-                    if (CheckNull.isNull(awakenData))
+            if (CheckNull.nonEmpty(talentMap)) {
+                talentMap.values().forEach(talentData -> {
+                    if (CheckNull.isNull(talentData)) {
                         return;
-                    if (awakenData.isActivate()) {
-                        if (CheckNull.isEmpty(sHero.getEvolveGroup()) || awakenData.getIndex() > sHero.getEvolveGroup().size())
+                    }
+                    if (talentData.isActivate()) {
+                        if (CheckNull.isEmpty(sHero.getEvolveGroup()) || talentData.getIndex() > sHero.getEvolveGroup().size()) {
                             return;
+                        }
+                        // 武将天赋页激活属性加成
                         for (Entry<Integer, Integer> en : sHero.getActivateAttr().entrySet()) {
                             addAttrValue(attrMap, en.getKey(), en.getValue());
                         }
-                        List<StaticHeroEvolve> heroEvolve = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(awakenData.getIndex() - 1));
-                        if (!CheckNull.isEmpty(heroEvolve) && !CheckNull.isEmpty(awakenData.getEvolutionGene())) {
+                        // 武将天赋点属性加成
+                        List<StaticHeroEvolve> staticHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(talentData.getIndex() - 1));
+                        if (!CheckNull.isEmpty(staticHeroEvolveList) && !CheckNull.isEmpty(talentData.getTalentArr())) {
                             // 目前进化到哪个部位
-                            int lastPart = awakenData.lastPart();
-                            if (lastPart == 0) {
-                                return;
-                            }
+                            // int lastPart = talentData.lastPart();
+                            // if (lastPart == 0) {
+                            //     return;
+                            // }
                             // 哪些部位
-                            heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart).forEach(she -> {
+                            /*heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart).forEach(she -> {
                                 for (Entry<Integer, Integer> en : she.getAttr().entrySet()) {
                                     addAttrValue(attrMap, en.getKey(), en.getValue());
+                                }
+                            });*/
+                            // 根据武将激活的属性及对应的等级，获取对应的加成属性
+                            talentData.getTalentArr().forEach((part, lv) -> {
+                                StaticHeroEvolve staticHeroEvolve = staticHeroEvolveList.stream().filter(she -> she.getPart() == part && she.getLv() == lv).findFirst().orElse(null);
+                                if (staticHeroEvolve != null) {
+                                    for (Entry<Integer, Integer> en : staticHeroEvolve.getAttr().entrySet()) {
+                                        addAttrValue(attrMap, en.getKey(), en.getValue());
+                                    }
                                 }
                             });
                         }
