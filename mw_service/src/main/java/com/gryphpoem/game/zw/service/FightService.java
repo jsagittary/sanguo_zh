@@ -13,6 +13,7 @@ import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.p.MentorSkill;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
@@ -61,8 +62,38 @@ public class FightService {
     @Autowired
     private GlobalDataManager globalDataManager;
 
+    @Autowired
+    private WarService warService;
+
     private Fighter createFighter() {
         Fighter fighter = new Fighter();
+        return fighter;
+    }
+
+    public Fighter createFighter(Player player, int armyKeyId, List<TwoInt> form) {
+        if (CheckNull.isEmpty(form)) {
+            throw new IllegalArgumentException(String.format("roleId :%d, armyKeyId :%d, heroMap isEmpty", player.roleId, armyKeyId));
+        }
+        Fighter fighter = createFighter();
+        Force force;
+        for (TwoInt twoInt : form) {
+            Hero hero = player.heros.get(twoInt.getV1());
+            int hpCount = Objects.nonNull(hero) ? hero.getCount() : 0;
+            if (hpCount <= 0) {//死亡的将领不进入战斗
+                LogUtil.debug(String.format("roleId :%d, armyKeyId :%d, hero count :%d", player.roleId, armyKeyId, hpCount));
+                continue;
+            }
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+            force = createForce(player, staticHero, twoInt.getV1(), hpCount);
+            force.roleType = Constant.Role.PLAYER;
+            force.ownerId = player.roleId;
+            force.camp = player.lord.getCamp();
+            force.skillId = staticHero.getSkillId();
+            fighter.addForce(force);
+            // 加入光环技能
+            addMedalAuraSkill(fighter, hero, player);
+        }
+        fighter.roleType = Constant.Role.PLAYER;
         return fighter;
     }
 
@@ -692,8 +723,9 @@ public class FightService {
 
     /**
      * 创建玩家宝具副本战斗对象
+     *
      * @param player 玩家
-     * @param ids 参战的将领
+     * @param ids    参战的将领
      * @return Fighter
      */
     public Fighter createTreasureCombatFighter(Player player, List<Integer> ids) {
@@ -1459,5 +1491,22 @@ public class FightService {
         force.count = force.lead - tmpTotalLost;// 本排兵剩余数量
         force.curLine = curLine;
         return force;
+    }
+
+    /**
+     * 添加战功并创建RptHero
+     *
+     * @param force
+     * @param changeMap
+     * @param awardFrom
+     * @return
+     */
+    public CommonPb.RptHero addExploitAndBuildRptHero(Force force, Map<Long, ChangeInfo> changeMap, AwardFrom awardFrom) {
+        //计算战功
+        ChangeInfo changeInfo = changeMap.computeIfAbsent(force.ownerId, v -> ChangeInfo.newIns());
+        int exploit = (int) (force.totalLost * 0.1f);
+        Player player = playerDataManager.getPlayer(force.ownerId);
+        warService.addExploit(player, exploit, changeInfo, awardFrom);
+        return PbHelper.createRptHero(force.roleType, force.killed, exploit, force.id, player.lord.getNick(), player.lord.getLevel(), 0, force.totalLost, player.heros.get(force.id));
     }
 }

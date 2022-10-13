@@ -541,9 +541,44 @@ public final class ActParamConstant {
      * 张飞转盘道具保底规则
      */
     public static List<Integer> ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE;
+    /**
+     * 王朝遗迹活动，遗迹建筑刷新的时刻
+     */
+    public static String ACT_RELIC_REFRESH;
+    /**
+     * 王朝遗迹活动，遗迹建筑刷新后的保护期和探索期
+     */
+    public static List<Integer> ACT_RELIC_STAMP;
+    /**
+     * 王朝遗迹跑马灯触发条件
+     */
+    public static Map<Integer, Integer> RELIC_CHAT_KILL_BROADCAST_MAP;
+    /**
+     * 王朝遗迹活动，伤病恢复系数
+     */
+    public static int RELIC_RECOVERY_RATIO;
+    /**
+     * 王朝遗迹活动，每个进攻兵团的最大战斗场数
+     */
+    public static int RELIC_ARMY_FIGHT_MAX;
+    /**
+     * 王朝遗迹帮一奖励
+     */
+    public static List<List<Integer>> RELIC_MAX_SCORE_PLAYER_WARD;
+    /**
+     * 王朝遗迹 行军加速
+     */
+    public static int RELIC_MARCH_SPEEDUP;
 
     /*-------------------------------load数据-------------------------------------*/
     public static void loadSystem() {
+        RELIC_MARCH_SPEEDUP = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_RELIC_MARCH_SPEEDUP, 5000);
+        RELIC_MAX_SCORE_PLAYER_WARD = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_RELIC_MAX_SCORE_PLAYER_WARD, "[]");
+        RELIC_ARMY_FIGHT_MAX = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_RELIC_ARMY_FIGHT_MAX, 10);
+        RELIC_RECOVERY_RATIO = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_RELIC_RECOVERY_RATIO, 5000);
+        RELIC_CHAT_KILL_BROADCAST_MAP = ActParamTabLoader.getMapIntSystemValue(ActParamId.ACT_RELIC_CHAT_KILL_BROADCAST, "[]");
+        ACT_RELIC_REFRESH = ActParamTabLoader.getStringSystemValue(ActParamId.ACT_RELIC_REFRESH, "0 0 7,15,23 * * ?");
+        ACT_RELIC_STAMP = ActParamTabLoader.getListIntSystemValue(ActParamId.ACT_RELIC_STAMP, "[600,1800,2]");
         ACT_MAGIC_TREASURE_WARE_TURNTABLE_CNT = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_MAGIC_TREASURE_WARE_TURNTABLE_CNT, "[[]]");
         ACT_MAGIC_TREASURE_WARE_RANK_SCORE = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_MAGIC_TREASURE_WARE_RANK_SCORE, "[[]]");
 
@@ -1249,6 +1284,34 @@ public final class ActParamConstant {
          * 张飞转盘道具保底规则
          */
         public static int ACT_FAMOUS_GENERAL_TURNTABLE_GUARANTEE = 379;
+
+        /**
+         * 王朝遗迹活动，遗迹建筑刷新的时刻0 0 7, 15,23 * * ?
+         */
+        public static final int ACT_RELIC_REFRESH = 400;
+        /**
+         * 王朝遗迹活动，遗迹建筑刷新后的保护期和探索期[600,1800,2]
+         */
+        public static final int ACT_RELIC_STAMP = 401;
+
+        /**
+         * 王朝遗迹活动，每个进攻兵团的最大战斗场数
+         */
+        public static final int ACT_RELIC_ARMY_FIGHT_MAX = 402;
+        /**
+         * 王朝遗迹活动，伤病恢复系数
+         */
+        public static final int ACT_RELIC_RECOVERY_RATIO = 404;
+        /**
+         * 王朝遗迹连续击杀广播
+         */
+        public static final int ACT_RELIC_CHAT_KILL_BROADCAST = 405;
+        /**
+         * 王朝遗迹榜一奖励
+         */
+        public static final int ACT_RELIC_MAX_SCORE_PLAYER_WARD = 384;
+
+        public static final int ACT_RELIC_MARCH_SPEEDUP = 406;
     }
 
 }

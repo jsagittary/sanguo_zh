@@ -7,13 +7,21 @@ public class ActivityConst {
     public static final int CLEAN_DAY = 1;// 每日清理
     public static final int CLEAN_RETAIN = 2;// 保留清理
 
-    /** DISPLAY-OPEN阶段,活动未开启 */
+    /**
+     * DISPLAY-OPEN阶段,活动未开启
+     */
     public static final int DISPLAY_OPEN = -2;//预显示
-    /** BEGIN之前 ,活动未开启 */
+    /**
+     * BEGIN之前 ,活动未开启
+     */
     public static final int OPEN_CLOSE = -1;//关闭
-    /** BEGIN-END阶段 */
+    /**
+     * BEGIN-END阶段
+     */
     public static final int OPEN_STEP = 0;//开启中
-    /** END-DISPLAY阶段 ,不能更新活动进度 */
+    /**
+     * END-DISPLAY阶段 ,不能更新活动进度
+     */
     public static final int OPEN_AWARD = 1;//显示期
 
     // 0可以领取 1进度未达到 2天数未达到 3已领取
@@ -22,24 +30,32 @@ public class ActivityConst {
     public static final int ACT_7_STATUS_NO_DAY = 2;// 天数未达到
     public static final int ACT_7_STATUS_HAS_GAIN = 3;// 已领取
 
-    /** 活动领奖状态 **/
+    /**
+     * 活动领奖状态
+     **/
     public static final int CAN_NOT_AWARD = 0;// 不可领奖
     public static final int CAN_AWARD = 1;// 可领奖
 
     public static final int ASC = 0; // 小到大排序
     public static final int DESC = 1; // 大道小排序
 
-    /** 攻城掠地 **/
+    /**
+     * 攻城掠地
+     **/
     public static final int INIT_STATUS = 1; // 目标进度初始值
 
-    /** 闪电战消息推送类型 */
+    /**
+     * 闪电战消息推送类型
+     */
     public static final int ACT_BEGIN = 1;
     public static final int ATTACK_CNT = 2;
     public static final int ACT_END = 3;
     public static final int ACT_ANN = 4;// 活动预告
 
     /* 活动类型 */
-    /** 首充礼包 */
+    /**
+     * 首充礼包
+     */
     public static final int ACT_FIRSH_CHARGE = 1;// 首充礼包 首次充值领取奖励
     public static final int ACT_7DAY = 2;// 七日狂欢 新建角色开启为期7天的活动
     public static final int ACT_BLACK = 3;// 黑鹰计划（原七星拜将） 新建角色开启为期4天的活动
@@ -137,8 +153,8 @@ public class ActivityConst {
     //2022新年活动
     public static final int ACT_NEWYEAR_2022_LONGLIGHT = 66;
     public static final int ACT_NEWYEAR_2022_FIREWORK = 67;
-	public static final int ACT_NEWYEAR_2022_FISH = 68;
-	public static final int ACT_FIRST_PAY_RESET = 69;//首充重置
+    public static final int ACT_NEWYEAR_2022_FISH = 68;
+    public static final int ACT_FIRST_PAY_RESET = 69;//首充重置
 
     public static final int ACT_TREASURE_WARE_JOURNEY = 71;//宝具征程
     public static final int ACT_MAGIC_TREASURE_WARE = 72;//神兵宝具
@@ -152,11 +168,11 @@ public class ActivityConst {
     public static final int ACT_DAY_DISCOUNTS = 108;// 每日特惠活动
     // public static final int ACT_GIFT_DISCOUNTS = 109;// 礼物特惠
     public static final int ACT_PAY_RANK_NEW = 109;// 充值排行-新
-                                                   // (被策划强行变成了合服排行)根据充值参与排名领取超值奖励！活动首日19:00开始按排名计算奖励，活动结束后未领取奖励将以邮件形式补发
+    // (被策划强行变成了合服排行)根据充值参与排名领取超值奖励！活动首日19:00开始按排名计算奖励，活动结束后未领取奖励将以邮件形式补发
     public static final int ACT_CHARGE_TOTAL = 110;// 累计充值
     public static final int ACT_CHARGE_CONTINUE = 111;// 连续充值
     public static final int ACT_PAY_RANK_V_3 = 112;// 充值排行的第3个版本了(与109一样)
-                                                   // 根据充值参与排名领取超值奖励！活动首日19:00开始按排名计算奖励，活动结束后未领取奖励将以邮件形式补发
+    // 根据充值参与排名领取超值奖励！活动首日19:00开始按排名计算奖励，活动结束后未领取奖励将以邮件形式补发
     public static final int ACT_REAL_NAME = 114;  //实名认证活动
     public static final int ACT_PHONE_BINDING = 115; //手机绑定
     public static final int ACT_WECHAT = 116; // 微信公众号
@@ -203,9 +219,11 @@ public class ActivityConst {
     public static final int ACT_ELIMINATE_BANDIT = 418; // 消灭匪军
     public static final int ACT_TRAINED_SOLDIERS_DAILY = 419; // 训练士兵(每日清除进度)
     public static final int ACT_WAR_ROAD_DAILY = 420;// 战火试炼 通关战火试炼，征战大陆(每日清除进度)
+    public static final int ACT_RELIC = 422;//王朝遗迹(非常规活动)
 
-
-    /** 副本活动翻倍 */
+    /**
+     * 副本活动翻倍
+     */
     public static final int ACT_COMBAT_DOUBLE_REWARD = 501;// 副本活动翻倍
     public static final int ACT_CITY_DRAWING = 503;// 图纸活动 据点生产图纸的CD时间减半
     public static final int ACT_PRODUCTTION_EXPEDITE = 504;// 生产加速 活动期间，化工厂生产材料的时间减半。
@@ -224,8 +242,10 @@ public class ActivityConst {
     //**************************跨服活动**************************
     public static final int CROSS_ACT_RECHARGE_RANK = 2001;//跨服充值排名活动
 
-    /** 结束还持续显示的活动 */
-    public static final int[] ACT_END_DISPLAY_ARRAY = new int[] {
+    /**
+     * 结束还持续显示的活动
+     */
+    public static final int[] ACT_END_DISPLAY_ARRAY = new int[]{
             ACT_SUPPLY_DORP,
             ACT_PAY_RANK_NEW,
             ACT_PAY_RANK_V_3,
@@ -233,8 +253,8 @@ public class ActivityConst {
             ACT_CONSUME_GOLD_RANK,
             ACT_TUTOR_RANK,
             ACT_BRAVEST_ARMY,
-            ACT_CHRISTMAS,ACT_REPAIR_CASTLE,
-            ACT_DIAOCHAN,ACT_SEASON_HERO,
+            ACT_CHRISTMAS, ACT_REPAIR_CASTLE,
+            ACT_DIAOCHAN, ACT_SEASON_HERO,
             CROSS_ACT_RECHARGE_RANK};
 
     /**
@@ -250,6 +270,7 @@ public class ActivityConst {
 
     /**
      * 是不是兑换道具活动
+     *
      * @param activityType
      * @return
      */
@@ -392,13 +413,21 @@ public class ActivityConst {
     public static final int TRIGGER_GIFT_FIRST_BY_HIT_FLY = 7;// 首次被击飞（离线情况下被击飞，则在上线时触发）
     public static final int TRIGGER_GIFT_REPLENISH_INSUFFICIENT = 8;// 补兵时兵力不足
     public static final int TRIGGER_GIFT_REBUILD = 9;// 重建家园
-    /** 7级升级8级基地资源不足时触发 */
+    /**
+     * 7级升级8级基地资源不足时触发
+     */
     public static final int TRIGGER_GIFT_REBUILD_7_8 = 10;
-    /** 8级升级9级基地时触发 9级升级10级基地时触发*/
+    /**
+     * 8级升级9级基地时触发 9级升级10级基地时触发
+     */
     public static final int TRIGGER_GIFT_REBUILD_8_9_10 = 11;
-    /** 玩家获得第一个紫色品质将领时触发 玩家获得第一个橙色品质将领时触发 */
+    /**
+     * 玩家获得第一个紫色品质将领时触发 玩家获得第一个橙色品质将领时触发
+     */
     public static final int TRIGGER_GIFT_FIRST_RARE_HERO = 12;
-    /** 时间触发 */
+    /**
+     * 时间触发
+     */
     public static final int TRIGGER_GIFT_TIME_COND = 13;
     public static final int TRIGGER_GIFT_TREASURE_OPEN = 14;//市场翻牌触发礼包
     public static final int TRIGGER_GIFT_EXPEDITION_FAIL = 15;//帝国远征战斗失败（宝石副本）
@@ -521,26 +550,44 @@ public class ActivityConst {
      * 大富翁存储key值管理
      */
     public static interface ActMonopolyKey {
-        /** 今日充值金币数(在进行下一轮时会清0) key值存储在statusCnt中 */
+        /**
+         * 今日充值金币数(在进行下一轮时会清0) key值存储在statusCnt中
+         */
         public static final int STATUSCNT_TODAY_PAY_KEY = 1;
-        /** 今日拥有玩色子的次数 值存储在statusCnt中 */
+        /**
+         * 今日拥有玩色子的次数 值存储在statusCnt中
+         */
         public static final int STATUSCNT_HASCNT_KEY = 2;
-        /** 今日已经玩色子的次数 值存储在statusCnt中 */
+        /**
+         * 今日已经玩色子的次数 值存储在statusCnt中
+         */
         public static final int STATUSCNT_PLAY_CNT_KEY = 3;
-        /** 今日充值金币数总数(在进行下一轮时不会清除) key值存储在statusCnt中 */
+        /**
+         * 今日充值金币数总数(在进行下一轮时不会清除) key值存储在statusCnt中
+         */
         public static final int STATUSCNT_TODAY_ALL_PAY_KEY = 4;
-        /** 当前在那一轮, 存储在saveMap中 */
+        /**
+         * 当前在那一轮, 存储在saveMap中
+         */
         public static final int SAVEMAP_CUR_ROUND_KEY = -1;
-        /** 当前在第格, 存储在saveMap中 */
+        /**
+         * 当前在第格, 存储在saveMap中
+         */
         public static final int SAVEMAP_CUR_GRID_KEY = -2;
-        /** 上一次当天首次充值的时间点, 存储在saveMap中 */
+        /**
+         * 上一次当天首次充值的时间点, 存储在saveMap中
+         */
         public static final int SAVEMAP_LAST_PAY_TIME_KEY = -3;
     }
 
     public static interface ActWishingWellKey {
-        /** 许愿池存储当前已许愿第几次的key值 */
+        /**
+         * 许愿池存储当前已许愿第几次的key值
+         */
         public static final int STATUSCNT_WISHING_CUR_CNT_KEY = 0;
-        /** 额外奖励领取的key值 */
+        /**
+         * 额外奖励领取的key值
+         */
         public static final int STATUSMAP_WISHING_EXTRA_AWARD_KEY = 0;
     }
 

@@ -23,14 +23,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName BaseWorldEntity.java
  * @Description
- * @author QiuKun
  * @date 2019年3月20日
  */
 public abstract class BaseWorldEntity {
     protected int pos;
-    protected final WorldEntityType type;
+    protected WorldEntityType type;
+
+    public BaseWorldEntity() {
+    }
 
     public BaseWorldEntity(int pos, WorldEntityType type) {
         this.pos = pos;
@@ -73,7 +76,7 @@ public abstract class BaseWorldEntity {
 
     /**
      * 攻击该点
-     * 
+     *
      * @param param
      * @return
      * @throws MwException
@@ -82,7 +85,7 @@ public abstract class BaseWorldEntity {
 
     /**
      * 创建一个攻打部队
-     * 
+     *
      * @param param
      * @param invokePlayer
      * @param armyState
@@ -91,7 +94,7 @@ public abstract class BaseWorldEntity {
      * @throws MwException
      */
     public static Army checkAndCreateArmy(AttackParamDto param, Player invokePlayer, int armyState,
-            BaseWorldEntity baseEntity) throws MwException {
+                                          BaseWorldEntity baseEntity) throws MwException {
         long roleId = invokePlayer.lord.getLordId();
         List<Integer> heroIdList = param.getHeroIdList();
         int pos = baseEntity.getPos();
@@ -116,4 +119,7 @@ public abstract class BaseWorldEntity {
         return army;
     }
 
+    public void setType(WorldEntityType type) {
+        this.type = type;
+    }
 }

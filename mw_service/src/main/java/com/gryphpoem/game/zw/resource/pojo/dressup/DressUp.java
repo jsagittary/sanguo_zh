@@ -4,7 +4,6 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.pojo.Task;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -133,6 +132,7 @@ public class DressUp {
 
     /**
      * pb转成装扮的实体对象
+     *
      * @return 函数
      */
     private Function<CommonPb.DressUpEntity, BaseDressUpEntity> pbToDressUpEntity() {
@@ -153,7 +153,7 @@ public class DressUp {
                 dressUpEntity = new ChatBubbleEntity(data);
             } else if (type == AwardType.TITLE) {
                 dressUpEntity = new TitleEntity(data);
-            }else {
+            } else {
                 LogUtil.error("反序列化错误, type：", type, ", id：", data.getId());
             }
             return dressUpEntity;
@@ -166,5 +166,13 @@ public class DressUp {
 
     public void setCurrChatBubble(int currChatBubble) {
         this.currChatBubble = currChatBubble;
+    }
+
+    public int getCurrTitle() {
+        return curTitle;
+    }
+
+    public void setCurrTitle(int currTitle) {
+        this.curTitle = currTitle;
     }
 }

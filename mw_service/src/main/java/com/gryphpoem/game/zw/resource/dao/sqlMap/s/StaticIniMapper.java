@@ -17,16 +17,22 @@ import java.util.Set;
  */
 public interface StaticIniMapper {
 
+    @Select("select * from s_generation")
+    @Results({
+            @Result(column = "duration", property = "duration", typeHandler = ListIntTypeHandler.class)
+    })
+    List<StaticGeneration> selectStaticGenerationList();
+
     @Select("select * from s_war_fire_buff_cross")
     List<StaticWarFireBuffCross> selectWarFireBuffCross();
 
     @Select("select * from s_small_game")
     @MapKey("id")
     @Results({
-            @Result(column ="award", property = "award", typeHandler = ListListTypeHandler.class),
-            @Result(column ="extAward", property = "extAward", typeHandler = ListListTypeHandler.class),
+            @Result(column = "award", property = "award", typeHandler = ListListTypeHandler.class),
+            @Result(column = "extAward", property = "extAward", typeHandler = ListListTypeHandler.class),
     })
-    Map<Integer,StaticSmallGame> selectSmallGameMap();
+    Map<Integer, StaticSmallGame> selectSmallGameMap();
 
     @Select("select * from s_summer_charge")
     @Results({
@@ -69,45 +75,45 @@ public interface StaticIniMapper {
 
     @Select("select * from s_fish_bait_herocombination")
     @Results({
-            @Result(column = "personnel",property = "personnel",typeHandler = ListListTypeHandler.class),
-            @Result(column = "heroLV",property = "heroLV",typeHandler = ListIntTypeHandler.class),
-            @Result(column = "collectionResult",property = "collectionResult",typeHandler = ListListTypeHandler.class)
+            @Result(column = "personnel", property = "personnel", typeHandler = ListListTypeHandler.class),
+            @Result(column = "heroLV", property = "heroLV", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "collectionResult", property = "collectionResult", typeHandler = ListListTypeHandler.class)
     })
     List<StaticFishBaitHerocombination> selectStaticFishBaitHerocombinationList();
 
     @Select("select * from s_fish_bait")
     @Results({
-            @Result(column = "fishID",property = "fishID",typeHandler = ListListTypeHandler.class)
+            @Result(column = "fishID", property = "fishID", typeHandler = ListListTypeHandler.class)
     })
     List<StaticFishBait> selectStaticFishBaitList();
 
     @Select("select * from s_fish_results")
     @MapKey("colorID")
-    Map<Integer,StaticFishResults> selectStaticFishResultsMap();
+    Map<Integer, StaticFishResults> selectStaticFishResultsMap();
 
     @Select("select * from s_fish_attribute")
     @Results({
-            @Result(column = "reward",property = "reward",typeHandler = ListListTypeHandler.class),
-            @Result(column = "sizeChange",property = "sizeChange",typeHandler = ListIntTypeHandler.class)
+            @Result(column = "reward", property = "reward", typeHandler = ListListTypeHandler.class),
+            @Result(column = "sizeChange", property = "sizeChange", typeHandler = ListIntTypeHandler.class)
     })
     @MapKey("fishID")
-    Map<Integer,StaticFishattribute> selectStaticFishattributeMap();
+    Map<Integer, StaticFishattribute> selectStaticFishattributeMap();
 
     @Select("select * from s_fish_proficiency")
     @Results({
-            @Result(column = "multipleCrit",property = "multipleCrit",typeHandler = ListIntTypeHandler.class),
-            @Result(column = "sizeUP",property = "sizeUP",typeHandler = ListListTypeHandler.class),
-            @Result(column = "goalUP",property = "goalUP",typeHandler = ListListTypeHandler.class)
+            @Result(column = "multipleCrit", property = "multipleCrit", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "sizeUP", property = "sizeUP", typeHandler = ListListTypeHandler.class),
+            @Result(column = "goalUP", property = "goalUP", typeHandler = ListListTypeHandler.class)
     })
     List<StaticFishProficiency> selectStaticFishProficiencyList();
 
     @Select("select * from s_fish_shop")
     @Results({
-            @Result(column = "awardList",property = "awardList",typeHandler = ListListTypeHandler.class),
-            @Result(column = "expendProp",property = "expendProp",typeHandler = ListListTypeHandler.class)
+            @Result(column = "awardList", property = "awardList", typeHandler = ListListTypeHandler.class),
+            @Result(column = "expendProp", property = "expendProp", typeHandler = ListListTypeHandler.class)
     })
     @MapKey("id")
-    Map<Integer,StaticFishShop> selectStaticFishShopMap();
+    Map<Integer, StaticFishShop> selectStaticFishShopMap();
 
 
     @Select("select * from s_activity_cross_plan")
@@ -119,7 +125,7 @@ public interface StaticIniMapper {
 
     @Select("select * from s_autumn_turnplate")
     @Results({
-            @Result(column = "award",property = "award",typeHandler = ListListTypeHandler.class)
+            @Result(column = "award", property = "award", typeHandler = ListListTypeHandler.class)
     })
     List<StaticAutumnTurnplate> selectStaticAutumnTurnplateList();
 
@@ -156,35 +162,35 @@ public interface StaticIniMapper {
 
     @Select("select * from s_totem")
     @Results({
-            @Result(column = "beakNeed",property = "beakNeed",typeHandler = ListListTypeHandler.class),
+            @Result(column = "beakNeed", property = "beakNeed", typeHandler = ListListTypeHandler.class),
     })
     List<StaticTotem> selectStaticTotemList();
 
     @Select("select * from s_totem_link")
     @Results({
-            @Result(column = "attr",property = "attr",typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr", property = "attr", typeHandler = MapIntTypeHandler.class),
     })
     List<StaticTotemLink> selectStaticTotemLinkList();
 
     @Select("select * from s_totem_drop")
     @Results({
-            @Result(column = "range",property = "range",typeHandler = ListIntTypeHandler.class),
-            @Result(column = "group",property = "group",typeHandler = ListListTypeHandler.class),
+            @Result(column = "range", property = "range", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "group", property = "group", typeHandler = ListListTypeHandler.class),
     })
     List<StaticTotemDrop> selectStaticTotemDropList();
 
     @Select("select * from s_totem_up")
     @Results({
-            @Result(column = "attr1",property = "attr1",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr2",property = "attr2",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr3",property = "attr3",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr4",property = "attr4",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr5",property = "attr5",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr6",property = "attr6",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr7",property = "attr7",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "attr8",property = "attr8",typeHandler = MapIntTypeHandler.class),
-            @Result(column = "upNeed",property = "upNeed",typeHandler = ListListTypeHandler.class),
-            @Result(column = "analysis",property = "analysis",typeHandler = ListListTypeHandler.class),
+            @Result(column = "attr1", property = "attr1", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr2", property = "attr2", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr3", property = "attr3", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr4", property = "attr4", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr5", property = "attr5", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr6", property = "attr6", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr7", property = "attr7", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "attr8", property = "attr8", typeHandler = MapIntTypeHandler.class),
+            @Result(column = "upNeed", property = "upNeed", typeHandler = ListListTypeHandler.class),
+            @Result(column = "analysis", property = "analysis", typeHandler = ListListTypeHandler.class),
     })
     List<StaticTotemUp> selectStaticTotemUpList();
 
@@ -239,13 +245,13 @@ public interface StaticIniMapper {
     @Select("select * from s_fireworks")
     @MapKey("id")
     @Results({
-            @Result(column = "cost",property = "cost",typeHandler = ListListTypeHandler.class)
+            @Result(column = "cost", property = "cost", typeHandler = ListListTypeHandler.class)
     })
-    Map<Integer,StaticFireworks> selectStaticFireworksMap();
+    Map<Integer, StaticFireworks> selectStaticFireworksMap();
 
     @Select("select * from s_fireworks")
     @Results({
-            @Result(column = "cost",property = "cost",typeHandler = ListListTypeHandler.class)
+            @Result(column = "cost", property = "cost", typeHandler = ListListTypeHandler.class)
     })
     List<StaticFireworks> selectStaticFireworksList();
 
@@ -254,8 +260,8 @@ public interface StaticIniMapper {
 
     @Select("select * from s_fishing_lv")
     @Results({
-            @Result(column = "fishId",property = "fishId",typeHandler = ListListTypeHandler.class),
-            @Result(column = "wave",property = "wave",typeHandler = ListIntTypeHandler.class)
+            @Result(column = "fishId", property = "fishId", typeHandler = ListListTypeHandler.class),
+            @Result(column = "wave", property = "wave", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticFishingLv> selectStaticFishingLvList();
 
@@ -299,21 +305,39 @@ public interface StaticIniMapper {
 
     @Select("select * from s_act_treasure_ware_journey")
     @Results({
-            @Result(column = "awardList",property = "awardList",typeHandler = ListListTypeHandler.class),
-            @Result(column = "param",property = "params",typeHandler = ListIntTypeHandler.class)
+            @Result(column = "awardList", property = "awardList", typeHandler = ListListTypeHandler.class),
+            @Result(column = "param", property = "params", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticActTreasureWareJourney> selectStaticActTreasureWareJourney();
 
     @Select("select * from s_hero_biography_attr")
     @Results({
-            @Result(column = "attr",property = "attr",typeHandler = ListListTypeHandler.class)
+            @Result(column = "attr", property = "attr", typeHandler = ListListTypeHandler.class)
     })
     List<StaticHeroBiographyAttr> selectStaticHeroBiographyAttrList();
 
     @MapKey("id")
     @Select("select * from s_hero_biography_show")
     @Results({
-            @Result(column = "heroId",property = "heroId",typeHandler = ListIntTypeHandler.class)
+            @Result(column = "heroId", property = "heroId", typeHandler = ListIntTypeHandler.class)
     })
     Map<Integer, StaticHeroBiographyShow> selectStaticHeroBiographyShowMap();
+
+    @Select("select * from s_relic")
+    @Results({
+            @Result(column = "era", property = "era", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "area", property = "area", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticRelic> selectStaticRelicList();
+
+    @Select("select * from s_relic_shop")
+    @Results({
+            @Result(column = "award", property = "award", typeHandler = ListListTypeHandler.class),
+            @Result(column = "partyAward", property = "partyAward", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticRelicShop> selectStaticRelicShopList();
+
+    @Select("select * from s_relic_fraction")
+    @MapKey("id")
+    Map<Integer, StaticRelicFraction> selectStaticRelicFractionMap();
 }
