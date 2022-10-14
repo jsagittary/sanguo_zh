@@ -333,11 +333,15 @@ public interface StaticIniMapper {
     @Select("select * from s_relic_shop")
     @Results({
             @Result(column = "award", property = "award", typeHandler = ListListTypeHandler.class),
-            @Result(column = "partyAward", property = "partyAward", typeHandler = ListListTypeHandler.class)
+            @Result(column = "partyAward", property = "partyAward", typeHandler = ListListTypeHandler.class),
+            @Result(column = "area", property = "area", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticRelicShop> selectStaticRelicShopList();
 
     @Select("select * from s_relic_fraction")
+    @Results({
+            @Result(column = "area", property = "area", typeHandler = ListIntTypeHandler.class)
+    })
     @MapKey("id")
     Map<Integer, StaticRelicFraction> selectStaticRelicFractionMap();
 }

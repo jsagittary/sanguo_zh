@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
@@ -34,6 +35,8 @@ public class RelicEntity extends BaseWorldEntity {
     private int fightId;
     //当前的防御部队. KEY:roleId, VALUE:部队ID
     private LinkedList<Turple<Long, Integer>> defendList = new LinkedList<>();
+    // 当前队伍占领记录时间戳 <roleId, <armyKeyId, 时间戳>>
+    private HashMap<Long, HashMap<Integer, Long>> holdArmyTime = new HashMap<>();
 
     public RelicEntity() {
         super();
@@ -94,6 +97,19 @@ public class RelicEntity extends BaseWorldEntity {
         builder.setFightId(this.fightId);
         this.campRankDataMap.values().forEach(o -> builder.addCampRankInfo(o.ser()));
         this.defendList.forEach(turple -> builder.addDefends(PbHelper.createLongIntPb(turple.getA(), turple.getB())));
+        if (CheckNull.nonEmpty(this.holdArmyTime)) {
+            SerializePb.SerRelicHoldArmy.Builder armyPb = SerializePb.SerRelicHoldArmy.newBuilder();
+            this.holdArmyTime.entrySet().forEach(en -> {
+                armyPb.setRoleId(en.getKey());
+                if (CheckNull.nonEmpty(en.getValue())) {
+                    en.getValue().entrySet().forEach(en_ -> {
+                        armyPb.addHoldTime(PbHelper.createIntLongPc(en_.getKey(), en_.getValue()));
+                    });
+                }
+                builder.addArmy(armyPb.build());
+                armyPb.clear();
+            });
+        }
         return builder.build();
     }
 
@@ -115,6 +131,16 @@ public class RelicEntity extends BaseWorldEntity {
         }
         if (serRelicEntity.getDefendsCount() > 0) {
             serRelicEntity.getDefendsList().forEach(o -> this.defendList.add(new Turple<>(o.getV1(), o.getV2())));
+        }
+        if (serRelicEntity.getArmyCount() > 0) {
+            serRelicEntity.getArmyList().forEach(army -> {
+                if (army.getHoldTimeCount() > 0) {
+                    army.getHoldTimeList().forEach(holdArmyTime -> {
+                        this.holdArmyTime.computeIfAbsent(army.getRoleId(), m -> new HashMap<>()).
+                                computeIfAbsent(holdArmyTime.getV1(), l -> holdArmyTime.getV2());
+                    });
+                }
+            });
         }
     }
 
@@ -185,5 +211,21 @@ public class RelicEntity extends BaseWorldEntity {
 
     public void setDefendList(LinkedList<Turple<Long, Integer>> defendList) {
         this.defendList = defendList;
+    }
+
+    public void joinHoldArmy(long roleId, int armyKeyId, long nowMills) {
+        this.holdArmyTime.computeIfAbsent(roleId, m -> new HashMap<>()).putIfAbsent(armyKeyId, nowMills);
+    }
+
+    public void clearHold() {
+        this.holdArmyTime.clear();
+    }
+
+    public long holdTime(long roleId, int armyKeyId) {
+        HashMap<Integer, Long> map;
+        if ((map = this.holdArmyTime.get(roleId)) != null) {
+            return map.getOrDefault(armyKeyId, 0l);
+        }
+        return 0l;
     }
 }

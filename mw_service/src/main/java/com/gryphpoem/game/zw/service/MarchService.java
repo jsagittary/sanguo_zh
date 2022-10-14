@@ -3,8 +3,8 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -32,6 +32,7 @@ import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.RamadanVisitAltarService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
+import com.gryphpoem.game.zw.service.relic.RelicsFightService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import com.gryphpoem.game.zw.service.totem.TotemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +116,8 @@ public class MarchService {
 
     @Autowired
     private TitleService titleService;
+    @Autowired
+    private RelicsFightService relicsFightService;
 
     /**
      * 行军结束处理逻辑
@@ -243,6 +246,8 @@ public class MarchService {
             // 不论是否拜访成功, 都需要返回行军
             worldService.retreatArmy(player, army, now);
             worldService.synRetreatArmy(player, army, now);
+        } else if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE) {
+            relicsFightService.marchEnd(player, army, now);
         }
     }
 
@@ -460,7 +465,7 @@ public class MarchService {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
 
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
@@ -530,7 +535,7 @@ public class MarchService {
                 player.trophy.put(TrophyConstant.TROPHY_1, staticBandit.getLv());
             }
             //挂机 根据损并检查是否可挂机这个等级的叛军, 进攻成功
-            if(attacker.lost <= Constant.ONHOOK_1066 && player.getPlayerOnHook().getMaxRebelLv() < staticBandit.getLv()){
+            if (attacker.lost <= Constant.ONHOOK_1066 && player.getPlayerOnHook().getMaxRebelLv() < staticBandit.getLv()) {
                 player.getPlayerOnHook().setMaxRebelLv(staticBandit.getLv());
             }
             // 地图上移除流寇
@@ -721,7 +726,7 @@ public class MarchService {
                 dropList.addAll(tmp);
             }
             // 图腾掉落
-            dropList.addAll(totemService.dropTotem(player,2,AwardFrom.TOTOEM_DROP_PANJUN));
+            dropList.addAll(totemService.dropTotem(player, 2, AwardFrom.TOTOEM_DROP_PANJUN));
 
             // 更新任务进度
             taskDataManager.updTask(player, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
@@ -730,12 +735,12 @@ public class MarchService {
             activityDataManager.updActivity(player, ActivityConst.ACT_ELIMINATE_BANDIT, 1, staticBandit.getLv(), true);
 
             //貂蝉任务-攻打流寇
-            ActivityDiaoChanService.completeTask(player, ETask.FIGHT_REBEL,staticBandit.getBanditId(),staticBandit.getLv());
+            ActivityDiaoChanService.completeTask(player, ETask.FIGHT_REBEL, staticBandit.getBanditId(), staticBandit.getLv());
             //喜悦金秋-日出而作-攻打流寇
-            TaskService.processTask(player, ETask.FIGHT_REBEL,staticBandit.getBanditId(),staticBandit.getLv());
-            TaskService.handleTask(player,ETask.FIGHT_REBEL,staticBandit.getBanditId(),staticBandit.getLv());
+            TaskService.processTask(player, ETask.FIGHT_REBEL, staticBandit.getBanditId(), staticBandit.getLv());
+            TaskService.handleTask(player, ETask.FIGHT_REBEL, staticBandit.getBanditId(), staticBandit.getLv());
             //称号-攻打流寇
-            titleService.processTask(player,ETask.FIGHT_REBEL);
+            titleService.processTask(player, ETask.FIGHT_REBEL);
             if (!bandit_task_999) {
                 // 30急开启世界任务
                 if (taskDataManager.isOpenWorldTask(player)) {
@@ -768,8 +773,7 @@ public class MarchService {
             }
             //如果是挂机中野外打怪胜利也要算到剩余里面
             PlayerOnHook playerOnHook = player.getPlayerOnHook();
-            if(Objects.nonNull(playerOnHook) && playerOnHook.getState() == 1 && playerOnHook.getAskLastAnnihilateNumber() != 0)
-            {
+            if (Objects.nonNull(playerOnHook) && playerOnHook.getState() == 1 && playerOnHook.getAskLastAnnihilateNumber() != 0) {
                 playerOnHook.setAskLastAnnihilateNumber(playerOnHook.getAskLastAnnihilateNumber() - 1);
             }
             // 发送战报
@@ -789,8 +793,8 @@ public class MarchService {
         }
         LogLordHelper.commonLog("attckBandit", AwardFrom.COMMON, player, staticBandit.getBanditId(), isSuccess);
         //上报数数
-        EventDataUp.battle(player.account, player.lord,attacker,"atk", String.valueOf(banditId), String.valueOf(WorldConstant.BATTLE_TYPE_BANDIT),
-                String.valueOf(fightLogic.getWinState()),lord.getLordId(), rpt.getAtkHeroList());
+        EventDataUp.battle(player.account, player.lord, attacker, "atk", String.valueOf(banditId), String.valueOf(WorldConstant.BATTLE_TYPE_BANDIT),
+                String.valueOf(fightLogic.getWinState()), lord.getLordId(), rpt.getAtkHeroList());
         // 判断当前任务列表中是否有流寇任务
         if (worldService.checkCurTaskHasBandit(staticBandit.getLv(), historyLv) || bandit_task_999) {
             retreatArmyByMarchTime(player, army, now, Constant.ATTACK_BANDIT_MARCH_TIME);
@@ -805,14 +809,15 @@ public class MarchService {
 
     /**
      * 挂机 - 打叛军
+     *
      * @param player
      * @param rebelLv
      */
-    public List<CommonPb.Award> onHookBandit(Player player,int rebelLv){
+    public List<CommonPb.Award> onHookBandit(Player player, int rebelLv) {
         List<CommonPb.Award> dropList = new ArrayList<>();
 
         StaticBandit staticBandit = StaticBanditDataMgr.getBanditMap().get(rebelLv);
-        if(Objects.isNull(staticBandit)){
+        if (Objects.isNull(staticBandit)) {
             return dropList;
         }
         if (player.getBanditCnt() >= Constant.ATTACK_BANDIT_MAX) {
@@ -930,7 +935,7 @@ public class MarchService {
         activityDataManager.getActHitDrop(player, staticBandit.getLv(), StaticActBandit.ACT_HIT_DROP_TYPE_2);
 
         // 图腾掉落
-        dropList.addAll(totemService.dropTotem(player,2,AwardFrom.TOTOEM_DROP_PANJUN));
+        dropList.addAll(totemService.dropTotem(player, 2, AwardFrom.TOTOEM_DROP_PANJUN));
 
         // 更新任务进度
         taskDataManager.updTask(player, TaskType.COND_BANDIT_LV_CNT, 1, staticBandit.getLv());
@@ -939,18 +944,18 @@ public class MarchService {
         activityDataManager.updActivity(player, ActivityConst.ACT_ELIMINATE_BANDIT, 1, staticBandit.getLv(), true);
 
         //貂蝉任务-攻打流寇
-        ActivityDiaoChanService.completeTask(player, ETask.FIGHT_REBEL,staticBandit.getBanditId(),staticBandit.getLv());
+        ActivityDiaoChanService.completeTask(player, ETask.FIGHT_REBEL, staticBandit.getBanditId(), staticBandit.getLv());
         //喜悦金秋-日出而作-攻打流寇
-        TaskService.processTask(player, ETask.FIGHT_REBEL,staticBandit.getBanditId(),staticBandit.getLv());
-        TaskService.handleTask(player,ETask.FIGHT_REBEL,staticBandit.getBanditId(),staticBandit.getLv());
+        TaskService.processTask(player, ETask.FIGHT_REBEL, staticBandit.getBanditId(), staticBandit.getLv());
+        TaskService.handleTask(player, ETask.FIGHT_REBEL, staticBandit.getBanditId(), staticBandit.getLv());
         //称号-攻打流寇
-        titleService.processTask(player,ETask.FIGHT_REBEL);
+        titleService.processTask(player, ETask.FIGHT_REBEL);
 
         boolean bandit_task_999 = WorldConstant.BANDIT_LV_999 == staticBandit.getLv();
         if (!bandit_task_999) {
             // 30急开启世界任务
             if (taskDataManager.isOpenWorldTask(player)) {
-                taskDataManager.updWorldTaskSelf(player.roleId, TaskType.WORLD_TASK_TYPE_BANDIT, 1,staticBandit.getLv());
+                taskDataManager.updWorldTaskSelf(player.roleId, TaskType.WORLD_TASK_TYPE_BANDIT, 1, staticBandit.getLv());
             }
 
             player.setBanditCnt(player.getBanditCnt() + 1);
@@ -960,55 +965,55 @@ public class MarchService {
             // 荣耀日报 打匪军成功更新
             honorDailyService.addAndCheckHonorReport2s(player, HonorDailyConstant.COND_ID_3);
             // 添加并且检测军团补给
-            campService.addAndCheckPartySupply(player, PartyConstant.SupplyType.KILL_BANDIT,staticBandit.getBanditId());
+            campService.addAndCheckPartySupply(player, PartyConstant.SupplyType.KILL_BANDIT, staticBandit.getBanditId());
             // 更新世界目标进度: 攻打盖世太保或流寇
             worldScheduleService.updateScheduleGoal(player, ScheduleConstant.GOAL_COND_ATK_GESTAPO_BANDIT, 0);
             // 世界争霸攻打匪军完成记录
             worldWarSeasonDailyRestrictTaskService.updatePlayerDailyRestrictTaskAttackBandit(player, staticBandit);
         }
 
-        int subTotal = RandomUtil.randomIntIncludeEnd(Constant.ONHOOK_1065.get(0),Constant.ONHOOK_1065.get(1));
-        this.onHookSubArmy(player,subTotal);
+        int subTotal = RandomUtil.randomIntIncludeEnd(Constant.ONHOOK_1065.get(0), Constant.ONHOOK_1065.get(1));
+        this.onHookSubArmy(player, subTotal);
 
         return dropList;
     }
 
-    public void onHookSubArmy(Player player,int sub){
+    public void onHookSubArmy(Player player, int sub) {
         int subTmp = sub / 3;
-        Map<Integer,Integer> armys = player.getPlayerOnHook().getArmys();
+        Map<Integer, Integer> armys = player.getPlayerOnHook().getArmys();
         long sum = armys.values().stream().collect(Collectors.summarizingInt(x -> x.intValue())).getSum();
-        if(sum < sub){
+        if (sum < sub) {
             return;
         }
-        for(EArmyType eArmyType : EArmyType.values()){
-            if(sub <= 0){
+        for (EArmyType eArmyType : EArmyType.values()) {
+            if (sub <= 0) {
                 break;
             }
             int count = armys.get(eArmyType.getType());
-            if(count <= 0){
+            if (count <= 0) {
                 continue;
-            }else {
+            } else {
                 int n;
-                if(subTmp == 0){
-                    if(count >= sub){
+                if (subTmp == 0) {
+                    if (count >= sub) {
                         n = sub;
-                    }else {
+                    } else {
                         n = count;
                     }
-                }else {
-                    if(count >= subTmp){
+                } else {
+                    if (count >= subTmp) {
                         n = subTmp;
-                    }else {
+                    } else {
                         n = count;
                     }
                 }
-                armys.put(eArmyType.getType(),count - n);
+                armys.put(eArmyType.getType(), count - n);
                 sub -= n;
             }
         }
 
-        if(sub > 0){
-            this.onHookSubArmy(player,sub);
+        if (sub > 0) {
+            this.onHookSubArmy(player, sub);
         }
     }
 
@@ -1300,8 +1305,8 @@ public class MarchService {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
         // 兵力恢复
         Map<Long, List<CommonPb.Award>> recoverArmyAwardMap = new HashMap<>();
@@ -1619,8 +1624,8 @@ public class MarchService {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
         boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
 
@@ -1730,56 +1735,56 @@ public class MarchService {
 
         // 参与者, 不包括归属者
         battlePlayer.forEach(p -> {
-                    List<CommonPb.Award> drops = dropMap.computeIfAbsent(p.roleId, (k) -> new ArrayList<>());
-                    // List<CommonPb.Award> drops = dropMap.get(p.roleId);
-                    // if (CheckNull.isNull(drops)) {
-                    //     drops = new ArrayList<>();
-                    //     dropMap.put(p.roleId, drops);
-                    // }
-                    if (atkSuccess) {
-                        // 当天首次击杀
-                        if (Constant.AIRSHIP_CAN_AWARD_CNT.get(0) == p.getAndCreateAirshipPersonData().getKillAwardCnt()) {
-                            List<CommonPb.Award> awards = rewardDataManager.sendReward(p, sAirShip.getAwardFirst(), AwardFrom.AIR_SHIP_BATTLE_AWARD);
-                            if (!CheckNull.isEmpty(awards)) {
-                                drops.addAll(awards);
-                            }
-                            taskDataManager.updTask(p, TaskType.COND_522, 1);
-                        }
-                        // 记录获取击杀奖励次数
-                        p.getAndCreateAirshipPersonData().subKillAwardCnt(1);
-                        activityDataManager.updDay7ActSchedule(p, ActivityConst.ACT_TASK_MULTI_BANDIT_CNT, sAirShip.getLv());
-                        //圣诞活动掉落
-                        List<CommonPb.Award> actHitDrop = activityDataManager.getActHitDrop(p, sAirShip.getLv(), StaticActBandit.ACT_HIT_DROP_TYPE_3);
-                        drops.addAll(actHitDrop);
-
-                        //貂蝉任务-攻打精英叛军
-                        ActivityDiaoChanService.completeTask(p,ETask.FIGHT_ELITE_REBEL,sAirShip.getId(),sAirShip.getLv());
-                        //喜悦金秋-日出而作-攻打精英叛军
-                        TaskService.processTask(p,ETask.FIGHT_ELITE_REBEL,sAirShip.getId(),sAirShip.getLv());
+            List<CommonPb.Award> drops = dropMap.computeIfAbsent(p.roleId, (k) -> new ArrayList<>());
+            // List<CommonPb.Award> drops = dropMap.get(p.roleId);
+            // if (CheckNull.isNull(drops)) {
+            //     drops = new ArrayList<>();
+            //     dropMap.put(p.roleId, drops);
+            // }
+            if (atkSuccess) {
+                // 当天首次击杀
+                if (Constant.AIRSHIP_CAN_AWARD_CNT.get(0) == p.getAndCreateAirshipPersonData().getKillAwardCnt()) {
+                    List<CommonPb.Award> awards = rewardDataManager.sendReward(p, sAirShip.getAwardFirst(), AwardFrom.AIR_SHIP_BATTLE_AWARD);
+                    if (!CheckNull.isEmpty(awards)) {
+                        drops.addAll(awards);
                     }
-                    if (p.getAndCreateAirshipPersonData().getAttendAwardCnt() > 0) {
-                        // 记录获取参与奖励次数
-                        p.getAndCreateAirshipPersonData().subAttendAwardCnt(1);
+                    taskDataManager.updTask(p, TaskType.COND_522, 1);
+                }
+                // 记录获取击杀奖励次数
+                p.getAndCreateAirshipPersonData().subKillAwardCnt(1);
+                activityDataManager.updDay7ActSchedule(p, ActivityConst.ACT_TASK_MULTI_BANDIT_CNT, sAirShip.getLv());
+                //圣诞活动掉落
+                List<CommonPb.Award> actHitDrop = activityDataManager.getActHitDrop(p, sAirShip.getLv(), StaticActBandit.ACT_HIT_DROP_TYPE_3);
+                drops.addAll(actHitDrop);
 
-                        // 固定掉落
-                        List<CommonPb.Award> awards = rewardDataManager.sendReward(p, sAirShip.getAwardRegular(), AwardFrom.AIR_SHIP_BATTLE_AWARD);
-                        if (!CheckNull.isEmpty(awards)) {
-                            drops.addAll(awards);
-                        }
-                        // 概率掉落
-                        List<Integer> randomAward = RandomUtil.getRandomByWeight(sAirShip.getAwardExtra(), 3, false);
-                        if (!CheckNull.isEmpty(randomAward)) {
-                            awards = rewardDataManager.sendReward(p, Collections.singletonList(randomAward), AwardFrom.AIR_SHIP_BATTLE_AWARD);
-                            if (!CheckNull.isEmpty(awards)) {
-                                drops.addAll(awards);
-                            }
-                        }
-                        //称号-攻打精英叛军(仅包含奖励的每天5次)
-                        titleService.processTask(p,ETask.FIGHT_ELITE_REBEL);
-                    } else {
-                        mailDataManager.sendNormalMail(p, MailConstant.MOLD_AIR_SHIP_HELP_AWARD_MAX, now);
+                //貂蝉任务-攻打精英叛军
+                ActivityDiaoChanService.completeTask(p, ETask.FIGHT_ELITE_REBEL, sAirShip.getId(), sAirShip.getLv());
+                //喜悦金秋-日出而作-攻打精英叛军
+                TaskService.processTask(p, ETask.FIGHT_ELITE_REBEL, sAirShip.getId(), sAirShip.getLv());
+            }
+            if (p.getAndCreateAirshipPersonData().getAttendAwardCnt() > 0) {
+                // 记录获取参与奖励次数
+                p.getAndCreateAirshipPersonData().subAttendAwardCnt(1);
+
+                // 固定掉落
+                List<CommonPb.Award> awards = rewardDataManager.sendReward(p, sAirShip.getAwardRegular(), AwardFrom.AIR_SHIP_BATTLE_AWARD);
+                if (!CheckNull.isEmpty(awards)) {
+                    drops.addAll(awards);
+                }
+                // 概率掉落
+                List<Integer> randomAward = RandomUtil.getRandomByWeight(sAirShip.getAwardExtra(), 3, false);
+                if (!CheckNull.isEmpty(randomAward)) {
+                    awards = rewardDataManager.sendReward(p, Collections.singletonList(randomAward), AwardFrom.AIR_SHIP_BATTLE_AWARD);
+                    if (!CheckNull.isEmpty(awards)) {
+                        drops.addAll(awards);
                     }
-                });
+                }
+                //称号-攻打精英叛军(仅包含奖励的每天5次)
+                titleService.processTask(p, ETask.FIGHT_ELITE_REBEL);
+            } else {
+                mailDataManager.sendNormalMail(p, MailConstant.MOLD_AIR_SHIP_HELP_AWARD_MAX, now);
+            }
+        });
 
         List<Integer> posList = new ArrayList<>();
 
@@ -1816,7 +1821,7 @@ public class MarchService {
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
         }
 
-        logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer, rpt.getAtkHeroList(), String.valueOf(airShipId));
+        logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos, attacker, firstAttackPlayer, rpt.getAtkHeroList(), String.valueOf(airShipId));
     }
 
     /**
@@ -1831,18 +1836,19 @@ public class MarchService {
     public void logAirShipBattle(int areaId, List<CommonPb.BattleRole> battleRoles, boolean atkSuccess, String airShipKeyIdAndId,
                                  int airShipPos, Fighter attacker, Player firstAttackPlayer, List<CommonPb.RptHero> atkHero, Object... param) {
         String win;
-        if(atkSuccess){
+        if (atkSuccess) {
             win = String.valueOf(ArmyConstant.FIGHT_RESULT_SUCCESS);
-        }else {
+        } else {
             win = String.valueOf(ArmyConstant.FIGHT_RESULT_FAIL);
         }
         battleRoles.stream().map(rb -> rb.getRoleId()).distinct().map(rId -> playerDataManager.getPlayer(rId))
                 .filter(p -> p != null)
-                .forEach(player -> {LogLordHelper.otherLog("airShipBattle", player.account.getServerId(), player.roleId,
-                        "atk", areaId, airShipKeyIdAndId, atkSuccess, airShipPos, player.lord.getCamp());
-                        //上报数数
-                    EventDataUp.battle(player.account, player.lord,attacker,"atk", airShipKeyIdAndId,
-                            String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP),win,firstAttackPlayer.roleId, atkHero, param);
+                .forEach(player -> {
+                    LogLordHelper.otherLog("airShipBattle", player.account.getServerId(), player.roleId,
+                            "atk", areaId, airShipKeyIdAndId, atkSuccess, airShipPos, player.lord.getCamp());
+                    //上报数数
+                    EventDataUp.battle(player.account, player.lord, attacker, "atk", airShipKeyIdAndId,
+                            String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP), win, firstAttackPlayer.roleId, atkHero, param);
                 });
     }
 
@@ -1895,17 +1901,17 @@ public class MarchService {
                 .filter(a -> a.getType() == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP && a.getTarget() == pos)
                 .map(a -> a.getLordId()).distinct().map(roleId -> playerDataManager.getPlayer(roleId.longValue()))
                 .filter(p -> !CheckNull.isNull(p)).forEach(p -> {
-            // mailDataManager.sendNormalMail(p, Objects.equals(player.roleId, p.roleId) ? // 归属权获取者
-            //                 MailConstant.MOLD_AIR_SHIP_GET_BELONG : MailConstant.MOLD_AIR_SHIP_NOT_GET_BELONG, now, id, id,
-            //         pos);
-            p.armys.values()
-                    .stream().filter(a -> a.getType() == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP
-                    && a.getTarget() == pos && a.getState() != ArmyConstant.ARMY_STATE_RETREAT)
-                    .forEach(a -> {
-                        worldService.retreatArmy(p, a, now);
-                        worldService.synRetreatArmy(p, a, now);
-                    });
-        });
+                    // mailDataManager.sendNormalMail(p, Objects.equals(player.roleId, p.roleId) ? // 归属权获取者
+                    //                 MailConstant.MOLD_AIR_SHIP_GET_BELONG : MailConstant.MOLD_AIR_SHIP_NOT_GET_BELONG, now, id, id,
+                    //         pos);
+                    p.armys.values()
+                            .stream().filter(a -> a.getType() == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP
+                                    && a.getTarget() == pos && a.getState() != ArmyConstant.ARMY_STATE_RETREAT)
+                            .forEach(a -> {
+                                worldService.retreatArmy(p, a, now);
+                                worldService.synRetreatArmy(p, a, now);
+                            });
+                });
     }
 
 }

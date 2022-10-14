@@ -25,8 +25,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRelic;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicShop;
 import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
-import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
 import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
 import com.gryphpoem.game.zw.resource.pojo.relic.PlayerRelic;
@@ -34,6 +32,7 @@ import com.gryphpoem.game.zw.resource.pojo.relic.RelicCons;
 import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.*;
 import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +41,6 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.gryphpoem.game.zw.resource.constant.ActParamConstant.RELIC_MAX_SCORE_PLAYER_WARD;
 
 /**
  * 王朝遗迹
@@ -144,11 +141,15 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         return builder.build();
     }
 
-    public void checkArmy(Player player) throws MwException {
+    public void checkArmy(Player player, int pos) throws MwException {
         checkPlayerFunctionOpen(player);
         GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
         if (globalRelic.state() != RelicCons.OPEN) {
             throw new MwException(GameError.RELIC_PROB_SAFE.getCode(), GameError.err(player.roleId, "遗迹探索,遗迹处于保护期"));
+        }
+        RelicEntity relicEntity = worldDataManager.getRelicEntityMap().get(pos);
+        if (relicEntity.getDefendList().size() >= ActParamConstant.MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE) {
+            throw new MwException(GameError.THE_NUMBER_OF_RELICS_DEFENSE_QUEUE_HAS_REACHED_THE_MAXIMUM.getCode(), GameError.err(player.roleId, "遗迹探索, 遗迹防守队列军团数量达到上限"));
         }
     }
 
@@ -180,10 +181,27 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
                 builder.setLordLv(p.lord.getLevel());
                 builder.setLordName(p.lord.getNick());
                 builder.setArmyLead(armCount);
+                builder.setFatigueDeBuff(checkFatigueDeBuff(relicEntity.holdTime(roleId, turple.getB())));
                 resp.addProbArmy(builder);
             }
         });
         return resp.build();
+    }
+
+    /**
+     * 校验当前队伍是否有疲劳de buff
+     *
+     * @param holdTime
+     * @return
+     */
+    private boolean checkFatigueDeBuff(long holdTime) {
+        if (holdTime == 0l) return false;
+        if (CheckNull.isEmpty(ActParamConstant.FATIGUE_DE_BUFF_PARAMETER))
+            return false;
+        long nowMills = System.currentTimeMillis();
+        long intervalTime = (nowMills - holdTime) / 1000l;
+        List<Integer> config = ActParamConstant.FATIGUE_DE_BUFF_PARAMETER.stream().filter(l -> intervalTime >= l.get(1)).findFirst().orElse(null);
+        return CheckNull.nonEmpty(config);
     }
 
     /**
@@ -395,11 +413,6 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
     public void retreatCheckProbing(Player player, Army army) {
         RelicEntity relic = globalDataManager.getGameGlobal().getGlobalRelic().getRelicEntityMap().get(army.getTarget());
         if (Objects.nonNull(relic)) {
-//            Turple<Long, Integer> turple = relic.getDefendList().stream().filter(o -> o.getB()==army.getKeyId()).findFirst().orElse(null);
-//            if(Objects.nonNull(turple)){
-//
-//            }
-
             boolean probing = relic.isHavingProbe(player.roleId);
             if (!probing) {
                 PlayerRelic playerRelic = player.getPlayerRelic();
@@ -530,11 +543,6 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
 
         GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
         globalRelic.setMaxScoreRole(maxScoreRole);
-
-        // 给榜一发奖励
-        rewardDataManager.addAwardDelaySync(maxScorePlayer, RELIC_MAX_SCORE_PLAYER_WARD, null, AwardFrom.RELIC_MAX_SCORE_AWARD);
-
-        LogUtil.common("王朝遗迹给榜一发奖励; maxScorePlayer = " + maxScorePlayer.roleId);
     }
 
     private List<CampRankData> sortCampRank(RelicEntity relicEntity) {
@@ -601,6 +609,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         playerRelic.addScore(addScore);
         // 积分任务
         taskDataManager.updTask(player, TaskType.COND_RELIC_SCORE, playerRelic.getScore());
+        EventDataUp.credits(player.account, player.lord, playerRelic.getScore(), addScore, CreditsConstant.RELIC_SCORE, AwardFrom.RELIC_FIGHT);
     }
 
     @GmCmd("relic")
@@ -648,20 +657,20 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         player.getPlayerRelic().clear();
 
         // 清除称号数据
-        if (!RELIC_MAX_SCORE_PLAYER_WARD.isEmpty()) {
-            for (List<Integer> list : RELIC_MAX_SCORE_PLAYER_WARD) {
-                if (list.get(0) == AwardType.TITLE) {
-                    Integer titleId = list.get(1);
-                    DressUp dressUp = player.getDressUp();
-                    Map<Integer, BaseDressUpEntity> titleMap = dressUp.getDressUpEntityMapByType(AwardType.TITLE);
-                    titleMap.remove(titleId);
-                    if (dressUp.getCurrTitle() == titleId) {
-                        // 恢复默认称号
-                        dressUp.setCurrTitle(0);
-                    }
-                }
-            }
-        }
+//        if (!RELIC_MAX_SCORE_PLAYER_WARD.isEmpty()) {
+//            for (List<Integer> list : RELIC_MAX_SCORE_PLAYER_WARD) {
+//                if (list.get(0) == AwardType.TITLE) {
+//                    Integer titleId = list.get(1);
+//                    DressUp dressUp = player.getDressUp();
+//                    Map<Integer, BaseDressUpEntity> titleMap = dressUp.getDressUpEntityMapByType(AwardType.TITLE);
+//                    titleMap.remove(titleId);
+//                    if (dressUp.getCurrTitle() == titleId) {
+//                        // 恢复默认称号
+//                        dressUp.setCurrTitle(0);
+//                    }
+//                }
+//            }
+//        }
     }
 
     @Override

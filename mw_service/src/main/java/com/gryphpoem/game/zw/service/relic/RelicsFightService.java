@@ -116,6 +116,7 @@ public class RelicsFightService {
             player.getPlayerRelic().setStartProbe(now);
         }
         relicEntity.joinDefendList(new Turple<>(player.roleId, army.getKeyId()));
+        relicEntity.joinHoldArmy(player.roleId, army.getKeyId(), System.currentTimeMillis());
         LinkedList<Turple<Long, Integer>> defendList = relicEntity.getDefendList();
         LogUtil.debug(String.format("relic player join ,cityId :%d, roleId :%d, army keyId :%d, join defend list current defend list size :%d", relicEntity.getCfgId(), player.roleId, army.getKeyId(), defendList.size()));
         if (defendList.size() > Constant.RELIC_DEFEND_ARMY_MAX_COUNT) {
@@ -148,12 +149,7 @@ public class RelicsFightService {
                 continue;
             }
             FightLogic fightLogic = fightLogic(rlc, player, army, defendPlayer, defendArmy, nowSec, rlc, tpl);
-            if (Objects.nonNull(fightLogic)) {
-//                if (defendArmy.getHeroLeadCount() <= 0) {
-//                    //当前防守部队将领全部死亡.
-//                    defendList.remove(tpl);
-//                }
-            } else {
+            if (Objects.isNull(fightLogic)) {
                 LogUtil.error(String.format("relic fight occur error,cityId :%d, roleId :%d, army keyId :%d, def roleId :%d, def army keyId :%d, fight is error...",
                         rlc.getCfgId(), player.roleId, army.getKeyId(), defendRoleId, defendArmyKeyId));
                 break;
@@ -185,8 +181,8 @@ public class RelicsFightService {
     private FightLogic fightLogic(RelicEntity rlc, Player attackPlayer, Army atkArmy, Player defendPlayer, Army defArmy, int nowSec, RelicEntity o1, Turple<Long, Integer> o2) {
         long fightId = incrAndGetFightId();
         try {
-            Fighter attacker = fightService.createFighter(attackPlayer, atkArmy.getKeyId(), atkArmy.getHero());
-            Fighter defender = fightService.createFighter(defendPlayer, defArmy.getKeyId(), defArmy.getHero());
+            Fighter attacker = fightService.createRelicFighter(attackPlayer, atkArmy.getKeyId(), atkArmy.getHero(), 0);
+            Fighter defender = fightService.createRelicFighter(defendPlayer, defArmy.getKeyId(), defArmy.getHero(), rlc.holdTime(defendPlayer.roleId, defArmy.getKeyId()));
             FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_HIS_REMAIN);
             fightLogic.packForm();
             fightLogic.fight();
@@ -235,11 +231,13 @@ public class RelicsFightService {
             posList.add(attackPlayer.lord.getPos());
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
             //上报数数(攻击方)
-            EventDataUp.battle(attackPlayer.account, attackPlayer.lord, attacker, "atk", "fightSuperMine",
-                    String.valueOf(WorldConstant.BATTLE_TYPE_HIS_REMAIN), String.valueOf(fightLogic.getWinState()), attackPlayer.roleId, report.getRptPlayer().getAtkHeroList());
+            EventDataUp.battle(attackPlayer.account, attackPlayer.lord, attacker, "atk", "fightRelic",
+                    String.valueOf(WorldConstant.BATTLE_TYPE_HIS_REMAIN), String.valueOf(fightLogic.getWinState()),
+                    attackPlayer.roleId, report.getRptPlayer().getAtkHeroList(), rlc.getCfgId());
             //上报数数(防守方)
-            EventDataUp.battle(defendPlayer.account, defendPlayer.lord, defender, "def", "fightSuperMine",
-                    String.valueOf(WorldConstant.BATTLE_TYPE_HIS_REMAIN), String.valueOf(fightLogic.getWinState()), attackPlayer.roleId, report.getRptPlayer().getDefHeroList());
+            EventDataUp.battle(defendPlayer.account, defendPlayer.lord, defender, "def", "fightRelic",
+                    String.valueOf(WorldConstant.BATTLE_TYPE_HIS_REMAIN), String.valueOf(fightLogic.getWinState()),
+                    attackPlayer.roleId, report.getRptPlayer().getDefHeroList(), rlc.getCfgId());
             return fightLogic;
         } catch (Exception e) {
             LogUtil.error(String.format("cityId :%d, attack roleId :%d, army keyId :%d, defend roleId :%d, army keyId :%d, fightId :%d, fight error!!!",
@@ -346,18 +344,15 @@ public class RelicsFightService {
     }
 
     private void handAttackRelicSuccess(RelicEntity rlc, Player attackPlayer, Army army, int nowSec) {
+        rlc.clearHold();
         // 首次被占领时广播
         int camp = attackPlayer.getCamp();
         if (rlc.getHoldCamp() == 0) {
             chatDataManager.sendSysChat(ChatConst.CHAT_FIND_RELICS, camp, 0, camp, attackPlayer.lord.getNick(), rlc.getArea(), rlc.getPos());
-        } else {
-            // 所属权发生改变时广播
-//            chatDataManager.sendSysChat(ChatConst.CHAT_RELICS_OCCUPY, camp, 0, camp, attackPlayer.lord.getNick(), camp);
         }
 
         //更换占领阵营，先计算原阵营的占领时间
         rlc.updCampHoldValue(nowSec);
-//        int now = TimeHelper.getCurrentSecond();
         rlc.setHoldCamp(attackPlayer.getCamp());
         rlc.setStartHold(nowSec);
         List<Integer> posList = new ArrayList<>();

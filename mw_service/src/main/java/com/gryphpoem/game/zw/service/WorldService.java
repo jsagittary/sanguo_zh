@@ -55,6 +55,8 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
+import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
+import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -281,6 +283,17 @@ public class WorldService {
                         builder.addCity(areaCityBuilder.build());
                     });
         }
+
+        RelicEntity relicEntity = worldDataManager.getRelicEntityMap().values().stream().filter(o -> o.getArea() == area).findFirst().orElse(null);
+        Optional.ofNullable(relicEntity).ifPresent(o -> {
+            GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
+            CommonPb.MapRelicForce.Builder mapRelicForce = CommonPb.MapRelicForce.newBuilder();
+            mapRelicForce.setPos(o.getPos());
+            mapRelicForce.setSafeExpire(globalRelic.getSafeExpire());
+            mapRelicForce.setOverExpire(globalRelic.getOverExpire());
+            mapRelicForce.setHoldCamp(o.getHoldCamp());
+            builder.addMapRelicForce(mapRelicForce);
+        });
         return builder.build();
     }
 
@@ -593,6 +606,9 @@ public class WorldService {
             }
             // 圣坛地图上的数据
             ramadanVisitAltarService.getMap(block, builder);
+
+            //遗迹
+            DataResource.getBean(RelicService.class).getMapForce(block, builder);
         }
         builder.addAllBlock(blockList);
         return builder.build();
@@ -934,7 +950,7 @@ public class WorldService {
             subType = reqType;
         } else if (worldDataManager.isRelicPos(pos)) {
             //探索遗迹
-            DataResource.getBean(RelicService.class).checkArmy(player);
+            DataResource.getBean(RelicService.class).checkArmy(player, pos);
             type = ArmyConstant.ARMY_TYPE_RELIC_BATTLE;
             //遗迹行军时间减半
             marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);

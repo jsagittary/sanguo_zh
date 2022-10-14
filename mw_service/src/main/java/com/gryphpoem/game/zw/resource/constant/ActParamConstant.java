@@ -558,22 +558,27 @@ public final class ActParamConstant {
      */
     public static int RELIC_RECOVERY_RATIO;
     /**
+     * 王朝遗迹活动，遗迹防守队列军团数量上限
+     */
+    public static int MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE;
+    /**
      * 王朝遗迹活动，每个进攻兵团的最大战斗场数
      */
     public static int RELIC_ARMY_FIGHT_MAX;
     /**
-     * 王朝遗迹帮一奖励
-     */
-    public static List<List<Integer>> RELIC_MAX_SCORE_PLAYER_WARD;
-    /**
      * 王朝遗迹 行军加速
      */
     public static int RELIC_MARCH_SPEEDUP;
+    /**
+     * 王朝遗迹 疲劳debuff参数
+     */
+    public static List<List<Integer>> FATIGUE_DE_BUFF_PARAMETER;
 
     /*-------------------------------load数据-------------------------------------*/
     public static void loadSystem() {
+        FATIGUE_DE_BUFF_PARAMETER = ActParamTabLoader.getListListIntSystemValue(ActParamId.FATIGUE_DE_BUFF_PARAMETER, "");
+        MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE = ActParamTabLoader.getIntegerSystemValue(ActParamId.MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE, 9999);
         RELIC_MARCH_SPEEDUP = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_RELIC_MARCH_SPEEDUP, 5000);
-        RELIC_MAX_SCORE_PLAYER_WARD = ActParamTabLoader.getListListIntSystemValue(ActParamId.ACT_RELIC_MAX_SCORE_PLAYER_WARD, "[]");
         RELIC_ARMY_FIGHT_MAX = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_RELIC_ARMY_FIGHT_MAX, 10);
         RELIC_RECOVERY_RATIO = ActParamTabLoader.getIntegerSystemValue(ActParamId.ACT_RELIC_RECOVERY_RATIO, 5000);
         RELIC_CHAT_KILL_BROADCAST_MAP = ActParamTabLoader.getMapIntSystemValue(ActParamId.ACT_RELIC_CHAT_KILL_BROADCAST, "[]");
@@ -1295,9 +1300,14 @@ public final class ActParamConstant {
         public static final int ACT_RELIC_STAMP = 401;
 
         /**
+         * 王朝遗迹活动，遗迹防守队列军团数量上限
+         */
+        public static final int MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE = 402;
+
+        /**
          * 王朝遗迹活动，每个进攻兵团的最大战斗场数
          */
-        public static final int ACT_RELIC_ARMY_FIGHT_MAX = 402;
+        public static final int ACT_RELIC_ARMY_FIGHT_MAX = 403;
         /**
          * 王朝遗迹活动，伤病恢复系数
          */
@@ -1306,12 +1316,13 @@ public final class ActParamConstant {
          * 王朝遗迹连续击杀广播
          */
         public static final int ACT_RELIC_CHAT_KILL_BROADCAST = 405;
-        /**
-         * 王朝遗迹榜一奖励
-         */
-        public static final int ACT_RELIC_MAX_SCORE_PLAYER_WARD = 384;
 
         public static final int ACT_RELIC_MARCH_SPEEDUP = 406;
+
+        /**
+         * 王朝遗迹 疲劳debuff参数
+         */
+        public static final int FATIGUE_DE_BUFF_PARAMETER = 407;
     }
 
 }

@@ -14,7 +14,6 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Account;
@@ -48,6 +47,7 @@ import java.util.stream.Collectors;
  */
 public class EventDataUp {
     public static Queue<Map<String, Object>> eventList = new LinkedBlockingQueue<>(51);
+
     /**
      * 到达最大容量，开始上报
      *
@@ -502,7 +502,8 @@ public class EventDataUp {
                 common.put("battle_info1", ObjectUtils.isEmpty(param) && param.length >= 2 ? "" : param[1]);
             }
             if (String.valueOf(WorldConstant.BATTLE_TYPE_GESTAPO).equalsIgnoreCase(type) ||
-                    String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP).equalsIgnoreCase(type)) {
+                    String.valueOf(WorldConstant.BATTLE_TYPE_AIRSHIP).equalsIgnoreCase(type) ||
+                    String.valueOf(WorldConstant.BATTLE_TYPE_HIS_REMAIN).equalsIgnoreCase(type)) {
                 common.put("battle_info", ObjectUtils.isEmpty(param) ? "" : param[0]);
             }
 
@@ -679,6 +680,7 @@ public class EventDataUp {
 
     /**
      * 玩家整体兵力变化上报
+     *
      * @param player
      * @param from
      * @param armyType
@@ -890,6 +892,7 @@ public class EventDataUp {
 
     /**
      * 宝具养成时数据上报（分解、获取、强化、被洗炼消耗、洗炼）
+     *
      * @param player
      * @param treasureWare
      * @param reason

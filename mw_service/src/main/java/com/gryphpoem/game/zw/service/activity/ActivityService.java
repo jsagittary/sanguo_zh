@@ -36,6 +36,7 @@ import com.gryphpoem.game.zw.server.SaveGlobalActivityServer;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.anniversary.ActivityFireWorkService;
 import com.gryphpoem.game.zw.service.activity.cross.CrossRechargeLocalActivityService;
+import com.gryphpoem.game.zw.service.relic.RelicService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -410,11 +411,11 @@ public class ActivityService {
                     if (now.getTime() > disPlayTime) {
                         continue;
                     }
-                } else if(ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType){
+                } else if (ActivityConst.ACT_CHRISTMAS == activityType || ActivityConst.ACT_REPAIR_CASTLE == activityType) {
                     tips = 1;
-                }else if (ActivityConst.ACT_ANNIVERSARY_FIREWORK == activity.getActivityType()){
+                } else if (ActivityConst.ACT_ANNIVERSARY_FIREWORK == activity.getActivityType()) {
                     tips = activityFireWorkService.getTips(activity, actBase);
-                }else if (ActivityConst.CROSS_ACT_RECHARGE_RANK==activity.getActivityType()){
+                } else if (ActivityConst.CROSS_ACT_RECHARGE_RANK == activity.getActivityType()) {
                     tips = crossRechargeLocalActivityService.getActivityTips(actBase, activity);
                 } else if (ActivityConst.ACT_MUSIC_FESTIVAL_BOX_OFFICE == activity.getActivityType()) {
                     tips = activityBoxOfficeService.getActivityTips(actBase, activity);
@@ -476,6 +477,8 @@ public class ActivityService {
                 continue;
             }
         }
+
+        DataResource.getBean(RelicService.class).buildActivity(player, builder);
 
         Date beginTime = TimeHelper.getDateZeroTime(player.account.getCreateDate());
         int dayiy = DateHelper.dayiy(beginTime, now);
@@ -770,9 +773,9 @@ public class ActivityService {
                 int status = cnt > 0 ? 1 : 0;
                 builder.addActivityCond(PbHelper.createActivityCondPb(promotion, status, cnt));
             }
-        }else if (ActivityConst.ACT_MERGE_PROP_PROMOTION == activity.getActivityType()){
+        } else if (ActivityConst.ACT_MERGE_PROP_PROMOTION == activity.getActivityType()) {
             activityMergePromotionService.buildActivity(builder, player, activity);
-        }else if (ActivityConst.ACT_CAMP_RANK == activity.getActivityType()) {// 开服阵营排行
+        } else if (ActivityConst.ACT_CAMP_RANK == activity.getActivityType()) {// 开服阵营排行
 
         } else if (ActivityConst.ACT_WISHING_WELL == activity.getActivityType()) { // 许愿池活动
             List<StaticActAward> actAwardList = StaticActivityDataMgr.getActAwardById(activityKeyId);
@@ -872,8 +875,8 @@ public class ActivityService {
             activityHotProductService.getActivity(player, activity, builder);
         } else if (ActivityConst.ACT_GOOD_LUCK == activity.getActivityType()) {
             activityLotteryService.getGoodLuckActivity(player, activity, builder);
-        }else if(activity.getActivityType() == ActivityConst.ACT_CHRISTMAS
-                || activity.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE){
+        } else if (activity.getActivityType() == ActivityConst.ACT_CHRISTMAS
+                || activity.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE) {
             List<StaticActExchange> exchangeList = StaticActivityDataMgr.getActExchangeListById(activityKeyId);
             int schedule = activityDataManager.currentActivity(player, activity, 0);
             if (!CheckNull.isEmpty(exchangeList)) {
@@ -886,7 +889,7 @@ public class ActivityService {
             }
         } else if (activity.getActivityType() == ActivityConst.ACT_MONSTER_NIAN) {
             state = activityMonsterNianService.buildActivity(builder, activityBase, activity);
-        }else if (activity.getActivityType() == ActivityConst.ACT_ANNIVERSARY_FIREWORK){
+        } else if (activity.getActivityType() == ActivityConst.ACT_ANNIVERSARY_FIREWORK) {
             state = activityFireWorkService.buildActivity(builder, activityBase, activity);
         }
         builder.setState(state);
@@ -1114,6 +1117,7 @@ public class ActivityService {
 
     /**
      * 检测砸蛋条件是否达成, 只有青铜砸完, 才能砸白银
+     *
      * @param condition 条件
      * @return true
      */
@@ -1157,8 +1161,8 @@ public class ActivityService {
             throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), "活动未开启, roleId:,", roleId);
         }
 
-        if(activityType == ActivityConst.ACT_NEWYEAR_2022_FISH){
-            throw new MwException(GameError.INVALID_PARAM.getCode(),GameError.err(roleId,"非法参数 此活动类型不可领奖",activityType));
+        if (activityType == ActivityConst.ACT_NEWYEAR_2022_FISH) {
+            throw new MwException(GameError.INVALID_PARAM.getCode(), GameError.err(roleId, "非法参数 此活动类型不可领奖", activityType));
         }
 
         // if (!activityBase.isReceiveAwardTime()) {// 领奖时间的判断
@@ -1236,7 +1240,7 @@ public class ActivityService {
             activity.getStatusMap().put(freeKey, 1);
         } else if (activityType == ActivityConst.ACT_THREE_REBATE) { // 三倍返利奖励
             player.activitys.get(ActivityConst.ACT_THREE_REBATE).getStatusMap().put(1, 0);
-        }else {
+        } else {
             if (activityType == ActivityConst.ACT_LEVEL) { // 成长基金
                 // 是否购买V4
                 Long isBuy = activity.getStatusCnt().get(0);
@@ -1469,12 +1473,12 @@ public class ActivityService {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         StaticActExchange actExchange = StaticActivityDataMgr.getActExchangeListByKeyId(keyId);
         if (CheckNull.isNull(actExchange)) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "找不到配置, roleId:,", roleId,"keyId=" + keyId);
+            throw new MwException(GameError.NO_CONFIG.getCode(), "找不到配置, roleId:,", roleId, "keyId=" + keyId);
         }
 
         Activity activity = activityDataManager.getActivityInfo(player, actExchange.getType());
         if (CheckNull.isNull(activity)) {
-            throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), "活动未开启, roleId:,", roleId, ", type:",actExchange.getType());
+            throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), "活动未开启, roleId:,", roleId, ", type:", actExchange.getType());
         }
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activity.getActivityType());
         if (CheckNull.isNull(activityBase)) {
@@ -1492,14 +1496,14 @@ public class ActivityService {
         }
 
         //判断兑换是否是皮肤且已拥有
-        if(awardList.get(0).get(0) == AwardType.CASTLE_SKIN && castleSkinService.checkSkinHaving(player,awardList.get(0).get(1))){
+        if (awardList.get(0).get(0) == AwardType.CASTLE_SKIN && castleSkinService.checkSkinHaving(player, awardList.get(0).get(1))) {
             throw new MwException(GameError.EXCHANGE_SKIN_HAVING.getCode(), "兑换皮肤已拥有, roleId:,", roleId, ", activityType=" + activity.getActivityType(), ", activityId=" + activity.getActivityId(), ", skinId=" + awardList.get(0).get(1));
         }
 
         List<Integer> prop = actExchange.getProp();
-        if(ActivityConst.ACT_CHRISTMAS == activity.getActivityType() || ActivityConst.ACT_REPAIR_CASTLE == activity.getActivityType()){
+        if (ActivityConst.ACT_CHRISTMAS == activity.getActivityType() || ActivityConst.ACT_REPAIR_CASTLE == activity.getActivityType()) {
 
-        }else {
+        } else {
             if (CheckNull.isNull(prop)) {
                 throw new MwException(GameError.ACTIVITY_CONFIG_ERR.getCode(), "活动配置错误, roleId:", roleId, ", type:",
                         activity.getActivityId());
@@ -1542,9 +1546,9 @@ public class ActivityService {
             throw new MwException(GameError.EXCHANGE_AWARD_LEVEL_ERR.getCode(), "兑换奖励等级未达到, roleId:", roleId, ", min:",
                     actExchange.getLvLimit(), ", level:", player.lord.getLevel());
         }
-        if(activity.getActivityType() == ActivityConst.ACT_CHRISTMAS || activity.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE){
-            activityChristmasService.checkAndSubScore4Exchange(player,activity,actExchange.getNeedPoint(),AwardFrom.ACT_CHRISTMAS_SCORE_EXCHANGE);
-        }else {
+        if (activity.getActivityType() == ActivityConst.ACT_CHRISTMAS || activity.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE) {
+            activityChristmasService.checkAndSubScore4Exchange(player, activity, actExchange.getNeedPoint(), AwardFrom.ACT_CHRISTMAS_SCORE_EXCHANGE);
+        } else {
             // 扣除对应的道具,并且向客户端同步
             rewardDataManager.checkAndSubPlayerRes(player, actExchange.getExpendProp(),
                     actExchange.getType() == ActivityConst.ACT_ATK_GESTAPO ? AwardFrom.EXCHANGE_GESTAPO_COST
@@ -1601,11 +1605,11 @@ public class ActivityService {
                     player.lord.getCamp(), player.lord.getNick(), awardList.get(0).get(0), awardList.get(0).get(1),
                     awardList.get(0).get(2), activity.getActivityId());
         }
-        if(awardList.get(0).get(0) == AwardType.CASTLE_SKIN){
-            chatDataManager.sendSysChat(ChatConst.CHAT_EXCHANGE_SKIN, player.lord.getCamp(), 0,player.lord.getCamp(), player.lord.getNick(), awardList.get(0).get(0), awardList.get(0).get(1),awardList.get(0).get(2), activity.getActivityId());
+        if (awardList.get(0).get(0) == AwardType.CASTLE_SKIN) {
+            chatDataManager.sendSysChat(ChatConst.CHAT_EXCHANGE_SKIN, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), awardList.get(0).get(0), awardList.get(0).get(1), awardList.get(0).get(2), activity.getActivityId());
         }
-        if(activity.getActivityType() == ActivityConst.ACT_CHRISTMAS || activity.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE){
-            builder.addParam(PbHelper.createTwoIntPb(activity.getActivityType(),activityChristmasService.getMyScore(activity)));
+        if (activity.getActivityType() == ActivityConst.ACT_CHRISTMAS || activity.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE) {
+            builder.addParam(PbHelper.createTwoIntPb(activity.getActivityType(), activityChristmasService.getMyScore(activity)));
         }
         return builder.build();
     }
@@ -1735,7 +1739,7 @@ public class ActivityService {
         int createServerId = player.account.getServerId();
         List<StaticDay7Act> staticDay7ActList = StaticActivityDataMgr.getAct7DayMap().values().stream().filter(sd7c -> sd7c.checkServerPlan(createServerId)).collect(Collectors.toList());
         List<CommonPb.Day7Act> listDay7Act = new ArrayList<>();
-        if(staticDay7ActList.isEmpty()){
+        if (staticDay7ActList.isEmpty()) {
 //            throw new MwException(GameError.NO_CONFIG.getCode(), "找不到配置, roleId:,", roleId);
             dayiy = 0;
         } else {
@@ -1751,7 +1755,7 @@ public class ActivityService {
                             int status = activityDataManager.getDay7ActStatus(player, e);
                             listDay7Act.add(PbHelper.createDay7ActPb(e.getKeyId(), status, ActivityConst.ACT_7_STATUS_HAS_GAIN));
                         } else {
-                            listDay7Act.add(PbHelper.createDay7ActPb(e.getKeyId(), e.getCond(),ActivityConst.ACT_7_STATUS_HAS_GAIN));
+                            listDay7Act.add(PbHelper.createDay7ActPb(e.getKeyId(), e.getCond(), ActivityConst.ACT_7_STATUS_HAS_GAIN));
                         }
                         continue;
                     }
@@ -2130,10 +2134,10 @@ public class ActivityService {
             if (gActDate == null) {
                 throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), "排行活动未开启 roleId:", roleId);
             }
-            List<StaticActAward> sActAward ;
-            if(activityType == ActivityConst.ACT_NEWYEAR_2022_FISH){
+            List<StaticActAward> sActAward;
+            if (activityType == ActivityConst.ACT_NEWYEAR_2022_FISH) {
                 sActAward = StaticActivityDataMgr.getActAwardById(actId);
-            }else {
+            } else {
                 sActAward = StaticActivityDataMgr.getRankActAwardByActId(actId);
             }
             if (CheckNull.isEmpty(sActAward)) {
@@ -2392,8 +2396,8 @@ public class ActivityService {
                     activityType);
         }
 
-        if(activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR){
-            if(ActivityConst.LUCKY_TURNPLATE_GOLD == costType && turnplat.getTodayCnt() + turnplateConf.getCount() > turnplateConf.getDailyLimited()){
+        if (activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {
+            if (ActivityConst.LUCKY_TURNPLATE_GOLD == costType && turnplat.getTodayCnt() + turnplateConf.getCount() > turnplateConf.getDailyLimited()) {
                 throw new MwException(GameError.ACT_TURNPLAT_NEW_YEAR_TODAY_LIMIT.getCode(), " 新年转盘, 今日达到次数限制, roleId:,", roleId, ", type:",
                         activityType);
             }
@@ -2417,7 +2421,7 @@ public class ActivityService {
             turnplat.subRefreshCount();
             LogLordHelper.commonLog("freeLuckyTurnplate", activityType == ActivityConst.ACT_LUCKY_TURNPLATE
                     ? AwardFrom.LUCKY_TURNPLATE_FREE : AwardFrom.FAMOUS_GENERAL_TURNPLATE_FREE, player);
-            if(activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR){
+            if (activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {
                 initWinCnt = true;
             }
             logCost = "0";
@@ -2443,7 +2447,7 @@ public class ActivityService {
             }
         }
 
-        if(initWinCnt && turnplat.getGoldCnt() == 0){
+        if (initWinCnt && turnplat.getGoldCnt() == 0) {
             doSearchWinCnt(turnplat, turnplateConf);
         }
 
@@ -2455,12 +2459,12 @@ public class ActivityService {
         int integral = 0;
         List<List<Integer>> awards = new ArrayList<>();
         for (int i = 0; i < turnplateConf.getCount(); i++) {
-            if(activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR){
+            if (activityType == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {
                 turnplat.setGoldCnt(turnplat.getGoldCnt() + 1);
-                if(ActivityConst.LUCKY_TURNPLATE_GOLD == costType){
+                if (ActivityConst.LUCKY_TURNPLATE_GOLD == costType) {
                     turnplat.setTodayCnt(turnplat.getTodayCnt() + 1);
                 }
-            }else {
+            } else {
                 if (ActivityConst.LUCKY_TURNPLATE_GOLD == costType) {
                     turnplat.setGoldCnt(turnplat.getGoldCnt() + 1);
                 }
@@ -2705,27 +2709,27 @@ public class ActivityService {
         Set<Integer> winCnt = turnplat.getWinCnt();// 抽中特殊奖励的节点
         List<Set<Integer>> winCnt211 = turnplat.getWinCnt211();//新春转盘的特殊奖励节点
         List<Integer> awardList = new ArrayList<>();
-        if(conf.getType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {//新春转盘
+        if (conf.getType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {//新春转盘
             int awardIdx = turnplat.getSetIdxByCnt(goldCnt);
-            if(awardIdx != -1){
+            if (awardIdx != -1) {
                 awardList = conf.getProbAward().get(awardIdx);
                 getTurnplatePoint(integral, awardList, 3);
 
                 falg = true;// 抽中特殊道具 发送跑马灯
-            }else {
+            } else {
                 // 根据权重获取奖励
                 awardList = doSweepstakesAwards(conf, player, turnplat);
                 getTurnplatePoint(integral, awardList, 4);
             }
-        }else {
+        } else {
             if (ActivityConst.LUCKY_TURNPLATE_FREE == costType || ActivityConst.LUCKY_TURNPLATE_PROP == costType) { // 免费抽奖
                 // 根据权重获取奖励
                 awardList = doSweepstakesAwards(conf, player, turnplat);
                 getTurnplatePoint(integral, awardList, 4);
-            }else if (ActivityConst.LUCKY_TURNPLATE_GOLD == costType) { // 金币抽奖
-                if(conf.getType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR){//新春转盘
+            } else if (ActivityConst.LUCKY_TURNPLATE_GOLD == costType) { // 金币抽奖
+                if (conf.getType() == ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR) {//新春转盘
 
-                }else {
+                } else {
                     if (winCnt.contains(goldCnt)) { // 达到特殊奖励条件
                         awardList = !CheckNull.isEmpty(conf.getOnlyAward()) ? conf.getOnlyAward().get(0) : new ArrayList<>();
                         getTurnplatePoint(integral, awardList, 3);
@@ -2760,9 +2764,9 @@ public class ActivityService {
                     awardList.get(1), awardList.get(2), turnplat.getActivityId());
             //活动消息推送
             int chatId;
-            if(conf.getType() == ActivityConst.ACT_LUCKY_TURNPLATE){
+            if (conf.getType() == ActivityConst.ACT_LUCKY_TURNPLATE) {
                 chatId = ChatConst.CHAT_LUCKY_TURNPLATE_GLOBAL_NUM;
-            }else {
+            } else {
                 chatId = ChatConst.CHAT_FAMOUS_GENERAL_TURNPLATE_GLOBAL_NUM;
             }
             chatDataManager.sendActivityChat(chatId, conf.getType(), 0,
@@ -2771,9 +2775,9 @@ public class ActivityService {
         return awardList;
     }
 
-    private boolean checkCntInBetween(int cnt,StaticTurnplateConf conf){
+    private boolean checkCntInBetween(int cnt, StaticTurnplateConf conf) {
         for (List<Integer> list : conf.getProbList()) {
-            if(cnt >= list.get(0) && cnt <= list.get(1)){
+            if (cnt >= list.get(0) && cnt <= list.get(1)) {
                 return true;
             }
         }
@@ -2928,26 +2932,26 @@ public class ActivityService {
                 List<Integer> upProbability = conf.getUpProbability();
                 RandomHelper.randomWinCnt(upProbability, turnplat.getWinCnt());
             }
-        }catch (Exception e) {
-            LogUtil.error("计算获取特殊道具的次数节点，初始节点发生异常, ",e);
+        } catch (Exception e) {
+            LogUtil.error("计算获取特殊道具的次数节点，初始节点发生异常, ", e);
         }
     }
 
-    private void checkAndRandomWinCnt(List<Set<Integer>> winCnts,List<Integer> tmpList,int awardIdx){
+    private void checkAndRandomWinCnt(List<Set<Integer>> winCnts, List<Integer> tmpList, int awardIdx) {
         Set<Integer> all = new HashSet<>();
         winCnts.forEach(set -> all.addAll(set));
         int n = tmpList.get(2);
-        if(n <= 0){
+        if (n <= 0) {
             return;
         }
         int i = 0;
-        while(true){
-            int cnt = RandomUtil.randomIntIncludeEnd(tmpList.get(0),tmpList.get(1));
-            if(all.add(cnt)){
+        while (true) {
+            int cnt = RandomUtil.randomIntIncludeEnd(tmpList.get(0), tmpList.get(1));
+            if (all.add(cnt)) {
                 winCnts.get(awardIdx).add(cnt);
-                i ++;
+                i++;
             }
-            if(i>=n){
+            if (i >= n) {
                 break;
             }
         }
@@ -4371,7 +4375,7 @@ public class ActivityService {
 //            if(actType == ActivityConst.ACT_DIAOCHAN){
 //                activityDiaoChanService.handleOver(player);
 //            }
-            if(actType == ActivityConst.ACT_DROP_CONTROL){
+            if (actType == ActivityConst.ACT_DROP_CONTROL) {
                 this.autoConvertDropMail(player);
             }
         }
@@ -4383,14 +4387,14 @@ public class ActivityService {
         }
     }
 
-    private void autoConvertDropMail(Player player){
+    private void autoConvertDropMail(Player player) {
         Activity activity = player.activitys.get(ActivityConst.ACT_DROP_CONTROL);
-        if(Objects.isNull(activity)){
+        if (Objects.isNull(activity)) {
             return;
         }
         int activityId = activity.getActivityId();
         List<StaticActBandit> sActBandits = StaticActivityDataMgr.getActBanditList().stream().filter(sab -> sab.getActivityId() == activityId).collect(Collectors.toList());
-        if(Objects.isNull(sActBandits)){
+        if (Objects.isNull(sActBandits)) {
             return;
         }
         List<Award> awards = new ArrayList<>();
@@ -4415,7 +4419,7 @@ public class ActivityService {
                 }
                 try {
                     rewardDataManager.checkAndSubPlayerAllRes(player, cost.get(0), cost.get(1), AwardFrom.GESTAPO_EXPIRED_EXCHANGE_RESOURCES);
-                }catch (MwException e) {
+                } catch (MwException e) {
                     LogUtil.error(e);
                     return;
                 }
@@ -4436,117 +4440,117 @@ public class ActivityService {
      * @param now
      */
     private void autoExchangUnrewardeMailByTurnplate(Player player, Integer actType, int now) {
-        try{
-                ActTurnplat activity = (ActTurnplat) player.activitys.get(actType);
-                if (CheckNull.isNull(activity)) {
-                    return;
-                }
-                List<StaticTurnplateConf> turnplateConfs = StaticActivityDataMgr
-                        .getActTurnPlateListByActId(activity.getActivityId());
-                if (CheckNull.isEmpty(turnplateConfs)) {
-                    return;
-                }
-                StaticTurnplateConf turnplateConf = turnplateConfs.get(0);
-                if (CheckNull.isNull(turnplateConf)) {
-                    return;
-                }
-                ChangeInfo change = ChangeInfo.newIns();
-                // 207特殊处理
-                if (actType == ActivityConst.FAMOUS_GENERAL_TURNPLATE && !CheckNull.isEmpty(Constant.FAMOUS_GENERAL_EXCHANGE_PROP)) {
-                    for (List<Integer> exchangeProp : Constant.FAMOUS_GENERAL_EXCHANGE_PROP) {
-                        // 判断活动兑换的activityId
-                        if (activity.getActivityId() != exchangeProp.get(3)) {
-                            continue;
-                        }
-                        int roleResByType = (int) rewardDataManager.getRoleResByType(player, exchangeProp.get(0), exchangeProp.get(1));
-                        if (roleResByType > 0) {
-                            try {
-                                rewardDataManager.subProp(player, exchangeProp.get(1), roleResByType, AwardFrom.EXCHANGE_FAMOUS_EXPIRED_EXCHANGE_REWARDE);
-                                // 通知玩家消耗的资源类型
-                                change.addChangeType(exchangeProp.get(0), exchangeProp.get(1));
-                                rewardDataManager.syncRoleResChanged(player, change);
-                                ArrayList<CommonPb.Award> awards = new ArrayList<>();
-                                List<Integer> convertTargetList = null;
-                                for (List<Integer> list : ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD) {
-                                    if(list.get(3) == activity.getActivityId()){
-                                        convertTargetList = list;
-                                        break;
-                                    }
+        try {
+            ActTurnplat activity = (ActTurnplat) player.activitys.get(actType);
+            if (CheckNull.isNull(activity)) {
+                return;
+            }
+            List<StaticTurnplateConf> turnplateConfs = StaticActivityDataMgr
+                    .getActTurnPlateListByActId(activity.getActivityId());
+            if (CheckNull.isEmpty(turnplateConfs)) {
+                return;
+            }
+            StaticTurnplateConf turnplateConf = turnplateConfs.get(0);
+            if (CheckNull.isNull(turnplateConf)) {
+                return;
+            }
+            ChangeInfo change = ChangeInfo.newIns();
+            // 207特殊处理
+            if (actType == ActivityConst.FAMOUS_GENERAL_TURNPLATE && !CheckNull.isEmpty(Constant.FAMOUS_GENERAL_EXCHANGE_PROP)) {
+                for (List<Integer> exchangeProp : Constant.FAMOUS_GENERAL_EXCHANGE_PROP) {
+                    // 判断活动兑换的activityId
+                    if (activity.getActivityId() != exchangeProp.get(3)) {
+                        continue;
+                    }
+                    int roleResByType = (int) rewardDataManager.getRoleResByType(player, exchangeProp.get(0), exchangeProp.get(1));
+                    if (roleResByType > 0) {
+                        try {
+                            rewardDataManager.subProp(player, exchangeProp.get(1), roleResByType, AwardFrom.EXCHANGE_FAMOUS_EXPIRED_EXCHANGE_REWARDE);
+                            // 通知玩家消耗的资源类型
+                            change.addChangeType(exchangeProp.get(0), exchangeProp.get(1));
+                            rewardDataManager.syncRoleResChanged(player, change);
+                            ArrayList<CommonPb.Award> awards = new ArrayList<>();
+                            List<Integer> convertTargetList = null;
+                            for (List<Integer> list : ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD) {
+                                if (list.get(3) == activity.getActivityId()) {
+                                    convertTargetList = list;
+                                    break;
                                 }
-                                Optional.ofNullable(convertTargetList).ifPresent(tmps -> awards.add(PbHelper.createAwardPb(tmps.get(0),tmps.get(1),roleResByType * tmps.get(2))));
-
-                                if (!awards.isEmpty()) {
-                                    mailDataManager.sendAttachMail(player, awards, MailConstant.MOLD_ACT_EXCHANGE_REWARD,
-                                            AwardFrom.ACT_UNREWARDED_RETURN, now, activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId());
-                                }
-                            } catch (MwException e) {
-                                LogUtil.error(e, "幸运/名将 转盘活动结束,道具碎片兑换成指定奖励");
-                                return;
                             }
+                            Optional.ofNullable(convertTargetList).ifPresent(tmps -> awards.add(PbHelper.createAwardPb(tmps.get(0), tmps.get(1), roleResByType * tmps.get(2))));
+
+                            if (!awards.isEmpty()) {
+                                mailDataManager.sendAttachMail(player, awards, MailConstant.MOLD_ACT_EXCHANGE_REWARD,
+                                        AwardFrom.ACT_UNREWARDED_RETURN, now, activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId());
+                            }
+                        } catch (MwException e) {
+                            LogUtil.error(e, "幸运/名将 转盘活动结束,道具碎片兑换成指定奖励");
+                            return;
                         }
                     }
                 }
-                List<List<Integer>> onlyAward = null;
-                switch (actType) {
-                    case ActivityConst.ACT_LUCKY_TURNPLATE:
-                        onlyAward = turnplateConf.getOnlyAward();
-                        break;
-                    case ActivityConst.FAMOUS_GENERAL_TURNPLATE:
-                        // onlyAward = Constant.FAMOUS_GENERAL_EXCHANGE_PROP;
-                        // break;
-                    case ActivityConst.ACT_LUCKY_TURNPLATE_NEW:
-                    case ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR:
-                    case ActivityConst.ACT_SEASON_TURNPLATE:
-                        onlyAward = turnplateConf.getSubstitute();
-                        break;
-                }
-                if (CheckNull.isEmpty(onlyAward)) {
-                    return;
-                }
+            }
+            List<List<Integer>> onlyAward = null;
+            switch (actType) {
+                case ActivityConst.ACT_LUCKY_TURNPLATE:
+                    onlyAward = turnplateConf.getOnlyAward();
+                    break;
+                case ActivityConst.FAMOUS_GENERAL_TURNPLATE:
+                    // onlyAward = Constant.FAMOUS_GENERAL_EXCHANGE_PROP;
+                    // break;
+                case ActivityConst.ACT_LUCKY_TURNPLATE_NEW:
+                case ActivityConst.ACT_LUCKY_TURNPLATE_NEW_YEAR:
+                case ActivityConst.ACT_SEASON_TURNPLATE:
+                    onlyAward = turnplateConf.getSubstitute();
+                    break;
+            }
+            if (CheckNull.isEmpty(onlyAward)) {
+                return;
+            }
 
-                List<Integer> award = onlyAward.get(0);// 能够被兑换的道具
-                if (CheckNull.isEmpty(award)) {
+            List<Integer> award = onlyAward.get(0);// 能够被兑换的道具
+            if (CheckNull.isEmpty(award)) {
+                return;
+            }
+            // 兑换次数
+            int chipCnt = (int) rewardDataManager.getRoleResByType(player, award.get(0), award.get(1));
+            if (chipCnt > 0 && !CheckNull.isEmpty(isLuckyTurn(actType) ? ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD
+                    : ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD)) {
+                try {
+                    rewardDataManager.subProp(player, award.get(1), chipCnt,
+                            isLuckyTurn(actType) ? AwardFrom.TURNPLATE_EXPIRED_EXCHANGE_REWARDE
+                                    : AwardFrom.EXCHANGE_FAMOUS_EXPIRED_EXCHANGE_REWARDE);// "幸运转盘过期道具回收"
+                    // 通知玩家消耗的资源类型
+                    change.addChangeType(award.get(0), award.get(1));
+                    rewardDataManager.syncRoleResChanged(player, change);
+                } catch (MwException e) {
+                    LogUtil.error(e, "幸运/名将 转盘活动结束,道具碎片兑换成指定奖励");
                     return;
                 }
-                // 兑换次数
-                int chipCnt = (int) rewardDataManager.getRoleResByType(player, award.get(0), award.get(1));
-                if (chipCnt > 0 && !CheckNull.isEmpty(isLuckyTurn(actType) ? ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD
-                        : ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD)) {
-                    try {
-                        rewardDataManager.subProp(player, award.get(1), chipCnt,
-                                isLuckyTurn(actType) ? AwardFrom.TURNPLATE_EXPIRED_EXCHANGE_REWARDE
-                                        : AwardFrom.EXCHANGE_FAMOUS_EXPIRED_EXCHANGE_REWARDE);// "幸运转盘过期道具回收"
-                        // 通知玩家消耗的资源类型
-                        change.addChangeType(award.get(0), award.get(1));
-                        rewardDataManager.syncRoleResChanged(player, change);
-                    } catch (MwException e) {
-                        LogUtil.error(e, "幸运/名将 转盘活动结束,道具碎片兑换成指定奖励");
-                        return;
-                    }
-                    List<Award> awards = new ArrayList<>();
-                    if (isLuckyTurn(actType)) {// 幸运转盘
-                        awards.add(PbHelper.createAwardPb(ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD.get(0),
-                                ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD.get(1),
-                                chipCnt * ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD.get(2)));
-                    }/* else if (actType == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
+                List<Award> awards = new ArrayList<>();
+                if (isLuckyTurn(actType)) {// 幸运转盘
+                    awards.add(PbHelper.createAwardPb(ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD.get(0),
+                            ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD.get(1),
+                            chipCnt * ActParamConstant.ACT_TURNPLATE_EXCHANGE_AWRAD.get(2)));
+                }/* else if (actType == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
                 awards.add(PbHelper.createAwardPb(ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD.get(0),
                         ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD.get(1),
                         chipCnt * ActParamConstant.ACT_FAMOUS_GENERAL_EXCHANGE_AWRAD.get(2)));
             }*/ else {
-                        List<List<Integer>> returnAward = turnplateConf.getReturnAward();
-                        if (CheckNull.isEmpty(returnAward)) {
-                            return;
-                        }
-                        awards.add(PbHelper.createAwardPb(returnAward.get(0).get(0), returnAward.get(0).get(1), chipCnt * returnAward.get(0).get(2)));
+                    List<List<Integer>> returnAward = turnplateConf.getReturnAward();
+                    if (CheckNull.isEmpty(returnAward)) {
+                        return;
                     }
-
-                    if (!awards.isEmpty()) {
-                        mailDataManager.sendAttachMail(player, awards, MailConstant.MOLD_ACT_EXCHANGE_REWARD,
-                                AwardFrom.ACT_UNREWARDED_RETURN, now, activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId());
-                    }
+                    awards.add(PbHelper.createAwardPb(returnAward.get(0).get(0), returnAward.get(0).get(1), chipCnt * returnAward.get(0).get(2)));
                 }
+
+                if (!awards.isEmpty()) {
+                    mailDataManager.sendAttachMail(player, awards, MailConstant.MOLD_ACT_EXCHANGE_REWARD,
+                            AwardFrom.ACT_UNREWARDED_RETURN, now, activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId());
+                }
+            }
         } catch (Exception e) {
-            LogUtil.error("",e);
+            LogUtil.error("", e);
         }
     }
 
@@ -4608,7 +4612,7 @@ public class ActivityService {
                 }
             }
         } catch (Exception e) {
-            LogUtil.error("",e);
+            LogUtil.error("", e);
         }
     }
 
@@ -4643,9 +4647,9 @@ public class ActivityService {
                 sendUnrewardedMailBySupplyDorp(player, now);
             }
         } else if (actType != ActivityConst.ACT_GESTAPO_RANK && actType != ActivityConst.ACT_ROYAL_ARENA && StaticActivityDataMgr.isActTypeRank(actType)) { // 排行活动,排除盖世太保
-            if(actType == ActivityConst.ACT_CHRISTMAS || actType == ActivityConst.ACT_REPAIR_CASTLE) {
+            if (actType == ActivityConst.ACT_CHRISTMAS || actType == ActivityConst.ACT_REPAIR_CASTLE) {
                 activityChristmasService.overAndSendMail(jobKeyName);
-            }else {
+            } else {
                 for (Player player : playerDataManager.getPlayers().values()) {
                     sendUnrewardedMailByRank(player, actType, now);
                 }
@@ -5014,7 +5018,7 @@ public class ActivityService {
             rankList.add(PbHelper.createGestapoCampRankPb(i, timeVal[0], timeVal[1]));
         }
         rankList = rankList.stream().sorted((r1, r2) -> r1.getVal() == r2.getVal()
-                ? Integer.compare(r1.getTime(), r2.getTime()) : -Integer.compare(r1.getVal(), r2.getVal()))
+                        ? Integer.compare(r1.getTime(), r2.getTime()) : -Integer.compare(r1.getVal(), r2.getVal()))
                 .collect(Collectors.toList());
         for (int i = 0; i < rankList.size(); i++) {
             int rank = i + 1;
@@ -6282,7 +6286,7 @@ public class ActivityService {
                 .getOrDefault(ActivityConst.ActWishingWellKey.STATUSCNT_WISHING_CUR_CNT_KEY, 0L).intValue();
         final int nextCnt = curCnt + 1;
         StaticActAward nextActAward = actAwardList.stream().filter(
-                aa -> !CheckNull.isEmpty(aa.getParam()) && aa.getParam().size() >= 3 && aa.getParam().get(0) == nextCnt)
+                        aa -> !CheckNull.isEmpty(aa.getParam()) && aa.getParam().size() >= 3 && aa.getParam().get(0) == nextCnt)
                 .findFirst().orElse(null);
         if (nextActAward == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "许愿池配置未找到(未找到对应次数配置) roleId:,", roleId,
@@ -6681,7 +6685,7 @@ public class ActivityService {
         }
     }
 
-    public void autoConverActItems(int actType,String jobKey) {
+    public void autoConverActItems(int actType, String jobKey) {
         if (actType == ActivityConst.ACT_CHRISTMAS || actType == ActivityConst.ACT_REPAIR_CASTLE) {
             activityChristmasService.overAutoConver(jobKey);
         }
