@@ -2105,7 +2105,10 @@ public class HeroService implements GmCmdService {
                 maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
                 break;
             default:
-                maxPart = 5;
+                maxPart = 0;
+        }
+        if (maxPart == 0) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
         }
         TalentData talentData = new TalentData(0, hero.getDecorated(), maxPart);
         hero.getTalent().put(hero.getDecorated(), talentData);

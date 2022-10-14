@@ -328,6 +328,9 @@ public class HeroUpgradeService implements GmCmdService {
                     default:
                         maxPart = 0;
                 }
+                if (maxPart == 0) {
+                    throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
+                }
                 talentDataMap = new TalentData(1, index, maxPart);
                 hero.getTalent().put(index, talentDataMap);
             } else {
@@ -356,19 +359,9 @@ public class HeroUpgradeService implements GmCmdService {
                 // 扣除重置的消耗, 将部位状态清空
                 int indexTemp = talentData_.getIndex();
                 rewardDataManager.checkAndSubPlayerRes(player, sHero.getRecombination(), AwardFrom.AWAKEN_HERO_REGROUP_CONSUME, heroId, indexTemp);
-                // 初始化所有部位天赋
-                // Stream.iterate(HeroConstant.TALENT_PART_MIN, part -> ++part).limit(talentData_.getMaxPart()).forEach(part -> talentData_.getTalentArr().put(part, 0));
-                /*heroEvolve.stream()
-                        .filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= indexTemp)
-                        .forEach(she -> {
-                            List<List<Integer>> consume = she.getConsume();
-                            hadConsumeList.addAll(consume);
-                        });*/
                 // 获取已升级天赋的总计消耗
                 List<List<Integer>> hadConsumeList = new ArrayList<>();
-                talentData_.getTalentArr().entrySet().stream().forEach(talent_ -> {
-                    Integer part_ = talent_.getKey();
-                    Integer lv_ = talent_.getValue();
+                talentData_.getTalentArr().forEach((part_, lv_) -> {
                     if (lv_ > 0) {
                         sHeroEvolveList.stream()
                                 .filter(she -> she.getPart() == part_ && (she.getLv() >= 0 && she.getLv() < lv_))
