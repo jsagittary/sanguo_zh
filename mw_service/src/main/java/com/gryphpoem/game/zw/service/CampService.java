@@ -2,12 +2,12 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.service.CrossCityService;
-import com.gryphpoem.game.zw.gameplay.local.service.CrossWorldMapService;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPartyDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.service.CrossCityService;
+import com.gryphpoem.game.zw.gameplay.local.service.CrossWorldMapService;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
@@ -26,6 +26,8 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.party.*;
+import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
+import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -488,7 +490,7 @@ public class CampService extends BaseAwkwardDataManager {
             rallyAirshipList.forEach(awd -> builder.addAirShip(PbHelper.createAirshipShowClientPb(awd, player.lord.getCamp(), true, playerDataManager)));
         }
 
-		//填充Assemble集结信息
+        //填充Assemble集结信息
         List<Player> pushPlayerList = new ArrayList<>();
         int now = TimeHelper.getCurrentSecond();
         Optional.ofNullable(playerDataManager.getPlayerByCamp(player.getCamp())).ifPresent(map -> {
@@ -506,10 +508,24 @@ public class CampService extends BaseAwkwardDataManager {
                 }
             });
         });
-		if (!pushPlayerList.isEmpty()) {
+        if (!pushPlayerList.isEmpty()) {
             for (Player pushPlayer : pushPlayerList) {
                 builder.addAssemble(worldServices.syncAssemblyInfo(pushPlayer));
             }
+        }
+        //遗迹
+        GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
+        if (!globalRelic.getRelicEntityMap().isEmpty()) {
+            RelicEntity relicEntity = globalRelic.getRelicEntityBackMap().values().stream().filter(o -> o.getArea() == player.lord.getArea()).findFirst().orElse(null);
+            if (Objects.isNull(relicEntity)) {
+                relicEntity = globalRelic.getRelicEntityMap().values().iterator().next();
+            }
+            CommonPb.MapRelicForce.Builder mapRelicForce = CommonPb.MapRelicForce.newBuilder();
+            mapRelicForce.setPos(relicEntity.getPos());
+            mapRelicForce.setSafeExpire(globalRelic.getSafeExpire());
+            mapRelicForce.setOverExpire(globalRelic.getOverExpire());
+            mapRelicForce.setHoldCamp(relicEntity.getHoldCamp());
+            builder.setRelicForce(mapRelicForce);
         }
 
         return builder.build();
