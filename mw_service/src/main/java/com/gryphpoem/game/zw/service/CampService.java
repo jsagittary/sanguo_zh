@@ -920,10 +920,10 @@ public class CampService extends BaseAwkwardDataManager {
      * @param airshipId 飞艇的id
      * @return 邀请列表
      */
-    public GetInvitesBattleRs getInvitesBattle(long roleId, int battleId, int airshipId) throws MwException {
+    public GetInvitesBattleRs getInvitesBattle(long roleId, int battleId, int airshipId, int relicPos) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-        if (battleId == 0 && airshipId == 0) {
+        if (battleId == 0 && airshipId == 0 && relicPos <= 0) {
             throw new MwException(GameError.INVITES_BATTLE_PARAM_ERROR.getCode(), "获取战斗邀请参数错误, roleId: ", roleId, ", battleId: ", battleId, ", airshipId: ", airshipId);
         }
 
@@ -959,6 +959,12 @@ public class CampService extends BaseAwkwardDataManager {
                 if (defencerId != 0L) {
                     filterRole.add(defencerId);
                 }
+            }
+        }
+        if (relicPos > 0) {
+            RelicEntity relicEntity = worldDataManager.getRelicEntityMap().get(relicPos);
+            if (Objects.nonNull(relicEntity)) {
+                battlePos = relicEntity.getPos();
             }
         }
         GetInvitesBattleRs.Builder builder = GetInvitesBattleRs.newBuilder();
@@ -1047,8 +1053,14 @@ public class CampService extends BaseAwkwardDataManager {
         int battleId = req.getBattleId();
         int airshipId = req.getAirshipId();
         List<Long> invitesRoles = req.getInvitesRoleList();
-        if (battleId == 0 && airshipId == 0) {
-            throw new MwException(GameError.MAKE_INVITES_PARAM_ERROR.getCode(), "获取战斗邀请参数错误, roleId: ", roleId, ", battleId: ", battleId, ", airshipId: ", airshipId);
+//        if (battleId == 0 && airshipId == 0) {
+//            throw new MwException(GameError.MAKE_INVITES_PARAM_ERROR.getCode(), "获取战斗邀请参数错误, roleId: ", roleId, ", battleId: ", battleId, ", airshipId: ", airshipId);
+//        }
+        int relicPos = req.getRelicPos();
+        if (relicPos <= 0) {
+            if (battleId == 0 && airshipId == 0) {
+                throw new MwException(GameError.MAKE_INVITES_PARAM_ERROR.getCode(), "获取战斗邀请参数错误, roleId: ", roleId, ", battleId: ", battleId, ", airshipId: ", airshipId);
+            }
         }
         if (CheckNull.isEmpty(invitesRoles)) {
             throw new MwException(GameError.MAKE_INVITES_PARAM_ERROR.getCode(), "获取战斗邀请人为空, roleId: ", roleId, ", battleId: ", battleId, ", airshipId: ", airshipId);
@@ -1078,6 +1090,11 @@ public class CampService extends BaseAwkwardDataManager {
             }
         }
 
+        RelicEntity relicEntity = worldDataManager.getRelicEntityMap().get(relicPos);
+        if (Objects.nonNull(relicEntity)) {
+            builder.setRelicPos(relicEntity.getPos());
+        }
+
         // 邀请人的数据
         builder.setInvites(PbHelper.crateInvitesRole(player, airship, battle));
         Base.Builder msg = PbHelper.createRsBase(SyncInvitesBattleRs.EXT_FIELD_NUMBER, SyncInvitesBattleRs.ext, builder.build());
@@ -1099,6 +1116,9 @@ public class CampService extends BaseAwkwardDataManager {
                     invitesFlag = true;
                     // battle.getInvites().add(invitesRole);
                 }
+            }
+            if (Objects.nonNull(relicEntity)) {
+                invitesFlag = true;
             }
             if (invitesFlag) {
                 // 推送给所有满足条件的在线玩家

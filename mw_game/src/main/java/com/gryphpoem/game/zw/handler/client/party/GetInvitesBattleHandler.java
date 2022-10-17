@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.service.CampService;
 
 /**
  * 获取战斗邀请
+ *
  * @program: civilization_zh
  * @description:
  * @author: zhou jie
@@ -18,7 +19,7 @@ public class GetInvitesBattleHandler extends ClientHandler {
     public void action() throws MwException {
         GamePb3.GetInvitesBattleRq req = msg.getExtension(GamePb3.GetInvitesBattleRq.ext);
         CampService campService = getService(CampService.class);
-        GamePb3.GetInvitesBattleRs resp = campService.getInvitesBattle(getRoleId(), req.getBattleId(), req.getAirshipId());
+        GamePb3.GetInvitesBattleRs resp = campService.getInvitesBattle(getRoleId(), req.getBattleId(), req.getAirshipId(), req.getRelicPos());
 
         if (null != resp) {
             sendMsgToPlayer(GamePb3.GetInvitesBattleRs.ext, resp);
