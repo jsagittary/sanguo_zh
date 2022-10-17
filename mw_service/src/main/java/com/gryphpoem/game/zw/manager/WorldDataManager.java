@@ -6,10 +6,7 @@ import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -31,6 +28,7 @@ import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.random.MineLvRandom;
@@ -102,6 +100,8 @@ public class WorldDataManager {
     private Map<Integer, Integer> sendChatCnt;
     // 圣坛记录, key: pos
     private Map<Integer, Altar> altarMap;
+    //遗迹
+    private Map<Integer, RelicEntity> relicEntityMap;
     // =========================== pos 相关的 end=============================
 
     // =========================== block 相关 start=============================
@@ -175,7 +175,7 @@ public class WorldDataManager {
         superMineCampMap = globalDataManager.getGameGlobal().getSuperMineCampMap();
         allAirshipWorldData = globalDataManager.getGameGlobal().getAllAirshipWorldData();
         altarMap = globalDataManager.getGameGlobal().getAltarMap();
-
+        relicEntityMap = globalDataManager.getGameGlobal().getGlobalRelic().getRelicEntityMap();
         /*-------------------------------加载一些地图block数据 start----------------------------------*/
         int block;
         Map<Integer, Integer> mineIdMap;
@@ -240,6 +240,13 @@ public class WorldDataManager {
         // 加载超级矿点
         loadSuperMine();
         loadAirship();// 初始化飞艇
+    }
+
+    public void clearRelicMap() {
+        List<Integer> tmps = new ArrayList<>();
+        relicEntityMap.values().forEach(entity -> tmps.add(entity.getPos()));
+        freePostList.addAll(tmps);
+        relicEntityMap.clear();
     }
 
     /**
@@ -1394,25 +1401,7 @@ public class WorldDataManager {
      */
     public boolean isEmptyPos(int pos) {
         if (!isValidPos(pos) || isPlayerPos(pos) || isMinePos(pos) || isBanditPos(pos) || isCabinetLeadPos(pos)
-                || isGestapoPos(pos) || isSuperMinePos(pos) || isAirshipWorldData(pos) || isAltarPos(pos)) {
-            // if (!isValidPos(pos)) {
-            // // LogUtil.debug("无效坐标" + pos + ",是否城市" + StaticWorldDataMgr.isCityPos(pos));
-            // }
-            // if (isPlayerPos(pos)) {
-            // // LogUtil.debug("该坐标有玩家" + pos);
-            // }
-            // if (isMinePos(pos)) {
-            // // LogUtil.debug("该坐标有矿" + pos);
-            // }
-            // if (isBanditPos(pos)) {
-            // // LogUtil.debug("该坐标有流寇" + pos);
-            // }
-            // if (isCabinetLeadPos(pos)) {
-            // // LogUtil.debug("该坐标有点兵统领" + pos);
-            // }
-            // if (isGestapoPos(pos)) {
-            // // LogUtil.debug("该坐标有盖世太保" + pos);
-            // }
+                || isGestapoPos(pos) || isSuperMinePos(pos) || isAirshipWorldData(pos) || isAltarPos(pos) || isRelicPos(pos)) {
             return false;
         }
         return true;
@@ -1541,6 +1530,39 @@ public class WorldDataManager {
         }
     }
 
+    public int randomEmptyPosInRadius(StaticCity staticCity, int radius) {
+        int centrePos = staticCity.getCityPos();
+        List<Integer> cityPosList = StaticWorldDataMgr.getCityByArea(staticCity.getArea()).stream().map(StaticCity::getCityPos).collect(Collectors.toList());
+        if (staticCity.getArea() == 13) {
+            List<StaticBerlinWar> staticBerlinWarList = StaticBerlinWarDataMgr.getBerlinBattlefront();
+            staticBerlinWarList.forEach(o -> cityPosList.add(o.getCityPos()));
+        }
+        int i = 0;
+        for (; ; ) {
+            i++;
+            int rdmPos = MapHelper.randomPosByCentre(centrePos, radius);
+            if (cityPosList.contains(rdmPos))
+                continue;
+            if (isEmptyPos(rdmPos) && !hasCityInRadius(rdmPos, 8, cityPosList)) {
+                return rdmPos;
+            }
+            if (i >= 100) {
+                LogUtil.warn("random empty position failure");
+                return -1;
+            }
+        }
+    }
+
+    public boolean hasCityInRadius(int pos, int radius, List<Integer> cityPosList) {
+        List<Integer> posList = MapHelper.getRoundPos0(pos, radius);
+        for (Integer integer : posList) {
+            if (cityPosList.contains(integer)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * 在指定分区内随机获取一个空闲坐标
      *
@@ -1648,6 +1670,10 @@ public class WorldDataManager {
         return altarMap.containsKey(pos);
     }
 
+    public boolean isRelicPos(int pos) {
+        return relicEntityMap.containsKey(pos);
+    }
+
     public boolean isMinePos(int pos) {
         return mineMap.containsKey(pos);
     }
@@ -1723,8 +1749,7 @@ public class WorldDataManager {
     }
 
     public int getBanditIdByPos(int pos) {
-        Integer banditId = banditMap.get(pos);
-        return banditId == null ? 0 : banditId;
+        return banditMap.getOrDefault(pos, 0);
     }
 
     public Guard getGuardByPos(int pos) {
@@ -2707,4 +2732,7 @@ public class WorldDataManager {
     }
 
 
+    public Map<Integer, RelicEntity> getRelicEntityMap() {
+        return relicEntityMap;
+    }
 }

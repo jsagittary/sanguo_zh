@@ -13,6 +13,7 @@ import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.p.MentorSkill;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
@@ -61,8 +62,47 @@ public class FightService {
     @Autowired
     private GlobalDataManager globalDataManager;
 
+    @Autowired
+    private WarService warService;
+
     private Fighter createFighter() {
         Fighter fighter = new Fighter();
+        return fighter;
+    }
+
+    /**
+     * 创建王朝遗迹战斗信息
+     *
+     * @param player
+     * @param armyKeyId
+     * @param form
+     * @param holdTime
+     * @return
+     */
+    public Fighter createRelicFighter(Player player, int armyKeyId, List<TwoInt> form, long holdTime) {
+        if (CheckNull.isEmpty(form)) {
+            throw new IllegalArgumentException(String.format("roleId :%d, armyKeyId :%d, heroMap isEmpty", player.roleId, armyKeyId));
+        }
+        Fighter fighter = createFighter();
+        Force force;
+        for (TwoInt twoInt : form) {
+            Hero hero = player.heros.get(twoInt.getV1());
+            int hpCount = Objects.nonNull(hero) ? hero.getCount() : 0;
+            if (hpCount <= 0) {//死亡的将领不进入战斗
+                LogUtil.debug(String.format("roleId :%d, armyKeyId :%d, hero count :%d", player.roleId, armyKeyId, hpCount));
+                continue;
+            }
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+            force = createRelicForce(player, staticHero, twoInt.getV1(), hpCount, holdTime);
+            force.roleType = Constant.Role.PLAYER;
+            force.ownerId = player.roleId;
+            force.camp = player.lord.getCamp();
+            force.skillId = staticHero.getSkillId();
+            fighter.addForce(force);
+            // 加入光环技能
+            addMedalAuraSkill(fighter, hero, player);
+        }
+        fighter.roleType = Constant.Role.PLAYER;
         return fighter;
     }
 
@@ -692,8 +732,9 @@ public class FightService {
 
     /**
      * 创建玩家宝具副本战斗对象
+     *
      * @param player 玩家
-     * @param ids 参战的将领
+     * @param ids    参战的将领
      * @return Fighter
      */
     public Fighter createTreasureCombatFighter(Player player, List<Integer> ids) {
@@ -1012,6 +1053,54 @@ public class FightService {
         AttrData attrData = new AttrData(staticWallHeroLv.getAttr());
         return new Force(attrData, staticWallHeroLv.getType(), wallNpc.getCount(), attrData.lead, wallNpc.getId(),
                 attrData.lead, staticWallHeroLv.getLine());
+    }
+
+    /**
+     * 创建王朝遗迹战斗对象
+     *
+     * @param player
+     * @param staticHero
+     * @param heroId
+     * @param count
+     * @param holdTime
+     * @return
+     */
+    public Force createRelicForce(Player player, StaticHero staticHero, int heroId, int count, long holdTime) {
+        Hero hero = player.heros.get(heroId);
+        Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
+        AttrData attrData = new AttrData(attrMap);
+        // 王朝遗迹防守玩家deBuff
+        if (holdTime > 0) {
+            long nowMills = System.currentTimeMillis();
+            long intervalTime = (nowMills - holdTime) / 1000l;
+            int attrId, ratio;
+            if (intervalTime > 0) {
+                for (List<Integer> config : ActParamConstant.FATIGUE_DE_BUFF_PARAMETER) {
+                    if (CheckNull.isEmpty(config)) continue;
+                    ratio = 0;
+                    attrId = config.get(0);
+                    if (intervalTime >= config.get(1))
+                        ratio += config.get(3);
+                    ratio += (intervalTime - config.get(1)) / config.get(2) * config.get(3);
+                    ratio = Math.min(ratio, config.get(4));
+                    attrData.addRatioValue(attrId, ratio * -1);
+                }
+            }
+        }
+
+
+        int line = calcHeroLine(player, hero, staticHero.getLine());
+        int lead = (int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / line);// 当兵力不能被整除时，向上取整
+        int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
+        int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
+        Force force = new Force(attrData, staticHero.getType(), count, lead, heroId, player.roleId);
+        // 添加战机详情
+        addPlaneInfo(player, hero, force);
+        //设置英雄战斗技能
+        loadHeroSkill(force, hero);
+        force.setIntensifyLv(heroLv);
+        force.setEffect(restrain);
+        return force;
     }
 
     /**
@@ -1459,5 +1548,22 @@ public class FightService {
         force.count = force.lead - tmpTotalLost;// 本排兵剩余数量
         force.curLine = curLine;
         return force;
+    }
+
+    /**
+     * 添加战功并创建RptHero
+     *
+     * @param force
+     * @param changeMap
+     * @param awardFrom
+     * @return
+     */
+    public CommonPb.RptHero addExploitAndBuildRptHero(Force force, Map<Long, ChangeInfo> changeMap, AwardFrom awardFrom) {
+        //计算战功
+        ChangeInfo changeInfo = changeMap.computeIfAbsent(force.ownerId, v -> ChangeInfo.newIns());
+        int exploit = (int) (force.totalLost * 0.1f);
+        Player player = playerDataManager.getPlayer(force.ownerId);
+        warService.addExploit(player, exploit, changeInfo, awardFrom);
+        return PbHelper.createRptHero(force.roleType, force.killed, exploit, force.id, player.lord.getNick(), player.lord.getLevel(), 0, force.totalLost, player.heros.get(force.id));
     }
 }

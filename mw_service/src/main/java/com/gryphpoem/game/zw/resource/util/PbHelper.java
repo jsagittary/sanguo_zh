@@ -6,146 +6,54 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticBattlePassDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.BattlePassDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.AccountRoleInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.ActivityCond;
-import com.gryphpoem.game.zw.pb.CommonPb.AtkCityActActive;
-import com.gryphpoem.game.zw.pb.CommonPb.AtkCityActTask;
-import com.gryphpoem.game.zw.pb.CommonPb.Award;
-import com.gryphpoem.game.zw.pb.CommonPb.Barrage;
-import com.gryphpoem.game.zw.pb.CommonPb.BattlePassAwardPb;
-import com.gryphpoem.game.zw.pb.CommonPb.BattlePassPersonInfoPb;
-import com.gryphpoem.game.zw.pb.CommonPb.BattlePassPlanPb;
-import com.gryphpoem.game.zw.pb.CommonPb.BattlePassTaskPb;
-import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
-import com.gryphpoem.game.zw.pb.CommonPb.BerlinBasicReport;
-import com.gryphpoem.game.zw.pb.CommonPb.BuildingBase;
-import com.gryphpoem.game.zw.pb.CommonPb.ChatDialog;
-import com.gryphpoem.game.zw.pb.CommonPb.CityAtkFirstKill;
-import com.gryphpoem.game.zw.pb.CommonPb.CityFirstKill;
-import com.gryphpoem.game.zw.pb.CommonPb.DbSpecialProp;
-import com.gryphpoem.game.zw.pb.CommonPb.EquipExtr;
-import com.gryphpoem.game.zw.pb.CommonPb.EquipTurnplateInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.FirstKillInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.Force;
-import com.gryphpoem.game.zw.pb.CommonPb.FriendHero;
-import com.gryphpoem.game.zw.pb.CommonPb.GestapoBattle;
-import com.gryphpoem.game.zw.pb.CommonPb.GestapoCampRank;
-import com.gryphpoem.game.zw.pb.CommonPb.HitRoleInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.IntListInt;
-import com.gryphpoem.game.zw.pb.CommonPb.IntLong;
-import com.gryphpoem.game.zw.pb.CommonPb.InvitesRole;
-import com.gryphpoem.game.zw.pb.CommonPb.LongInt;
-import com.gryphpoem.game.zw.pb.CommonPb.MailShow;
-import com.gryphpoem.game.zw.pb.CommonPb.Man;
-import com.gryphpoem.game.zw.pb.CommonPb.MapForce;
-import com.gryphpoem.game.zw.pb.CommonPb.MapLine;
-import com.gryphpoem.game.zw.pb.CommonPb.MedalExt;
-import com.gryphpoem.game.zw.pb.CommonPb.MergeBannerData;
-import com.gryphpoem.game.zw.pb.CommonPb.PartyCity;
-import com.gryphpoem.game.zw.pb.CommonPb.PayInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.Report;
-import com.gryphpoem.game.zw.pb.CommonPb.SignInInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.SignInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.SmallAccountData;
-import com.gryphpoem.game.zw.pb.CommonPb.SpecialAct;
-import com.gryphpoem.game.zw.pb.CommonPb.TeamMember;
-import com.gryphpoem.game.zw.pb.CommonPb.TriggerGiftInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.TurnplateInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoStr;
-import com.gryphpoem.game.zw.pb.CommonPb.TypeAwards;
+import com.gryphpoem.game.zw.pb.CommonPb.*;
 import com.gryphpoem.game.zw.pb.GamePb2;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.DbActivity;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7Act;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7ActStatus;
-import com.gryphpoem.game.zw.resource.constant.ActivityConst;
-import com.gryphpoem.game.zw.resource.constant.BerlinWarConstant;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.ActivityAuctionParam;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.ActBlackhawkItem;
-import com.gryphpoem.game.zw.resource.domain.p.ActTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
-import com.gryphpoem.game.zw.resource.domain.p.ActivityTask;
 import com.gryphpoem.game.zw.resource.domain.p.ArmQue;
-import com.gryphpoem.game.zw.resource.domain.p.AtkCityAct;
-import com.gryphpoem.game.zw.resource.domain.p.AwardItem;
 import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
-import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
-import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
 import com.gryphpoem.game.zw.resource.domain.p.Day7Act;
 import com.gryphpoem.game.zw.resource.domain.p.DbFriend;
 import com.gryphpoem.game.zw.resource.domain.p.DbMasterApprentice;
-import com.gryphpoem.game.zw.resource.domain.p.DecisiveInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.p.EquipQue;
-import com.gryphpoem.game.zw.resource.domain.p.EquipTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Factory;
 import com.gryphpoem.game.zw.resource.domain.p.FemaleAgent;
 import com.gryphpoem.game.zw.resource.domain.p.Gains;
 import com.gryphpoem.game.zw.resource.domain.p.History;
-import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
-import com.gryphpoem.game.zw.resource.domain.p.MineData;
 import com.gryphpoem.game.zw.resource.domain.p.MultCombatTeam;
 import com.gryphpoem.game.zw.resource.domain.p.RedPacket;
 import com.gryphpoem.game.zw.resource.domain.p.RedPacketRole;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
-import com.gryphpoem.game.zw.resource.domain.p.SiginInfo;
 import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
-import com.gryphpoem.game.zw.resource.domain.p.TechLv;
 import com.gryphpoem.game.zw.resource.domain.p.TechQue;
-import com.gryphpoem.game.zw.resource.domain.p.TriggerGift;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActAward;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActDaydiscounts;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActExchange;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActGiftpack;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActHotProduct;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActMonopoly;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActOreTurnplate;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActPayTurnplate;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActVoucher;
-import com.gryphpoem.game.zw.resource.domain.s.StaticAtkCityAct;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePassLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePassPlan;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePassTask;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
-import com.gryphpoem.game.zw.resource.domain.s.StaticEasterAward;
-import com.gryphpoem.game.zw.resource.domain.s.StaticEquipTurnplateConf;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMergeBanner;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPay;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPromotion;
-import com.gryphpoem.game.zw.resource.domain.s.StaticScheduleBoss;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSpecialPlan;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTriggerConf;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTurnplateConf;
+import com.gryphpoem.game.zw.resource.domain.p.*;
+import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ActRank;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.EquipJewel;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.pojo.Ring;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
@@ -160,38 +68,24 @@ import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySuperSupply;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySupply;
+import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
-import com.gryphpoem.game.zw.resource.pojo.world.AirshipWorldData;
 import com.gryphpoem.game.zw.resource.pojo.world.Area;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
-import com.gryphpoem.game.zw.resource.pojo.world.BerlinCityInfo;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinRoleInfo;
-import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.pojo.world.CabinetLead;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
-import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Gestapo;
-import com.gryphpoem.game.zw.resource.pojo.world.LightningWarBoss;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperGuard;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
+import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.BattlePassPersonInfo;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.GlobalBattlePass;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.battlePassTask;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -408,6 +302,7 @@ public class PbHelper {
 
     /**
      * 奖励列表翻倍
+     *
      * @param awardList
      * @param multiple
      * @return
@@ -449,7 +344,7 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.Task createTaskPb(Task task,Object...objs) {
+    public static CommonPb.Task createTaskPb(Task task, Object... objs) {
         CommonPb.Task.Builder builder = CommonPb.Task.newBuilder();
         builder.setTaskId(task.getTaskId());
         builder.setSchedule(task.getSchedule());
@@ -544,7 +439,7 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static TwoStr createTwoStr(String v1,String v2){
+    public static TwoStr createTwoStr(String v1, String v2) {
         TwoStr.Builder builder = TwoStr.newBuilder();
         builder.setV1(v1);
         builder.setV2(v2);
@@ -689,9 +584,9 @@ public class PbHelper {
             builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
-        Stream.iterate(1,i->i+1).limit(hero.getTotem().length-1).forEach(j -> {
-            if(hero.getTotemKey(j) > 0){
-                builder.addTotem(PbHelper.createTwoIntPb(j,hero.getTotemKey(j)));
+        Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
+            if (hero.getTotemKey(j) > 0) {
+                builder.addTotem(PbHelper.createTwoIntPb(j, hero.getTotemKey(j)));
             }
         });
         if (Objects.nonNull(hero.getTreasureWare())) {
@@ -809,9 +704,9 @@ public class PbHelper {
             builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
-        Stream.iterate(1,i->i+1).limit(hero.getTotem().length-1).forEach(j -> {
-            if(hero.getTotemKey(j) > 0){
-                builder.addTotem(PbHelper.createTwoIntPb(j,hero.getTotemKey(j)));
+        Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
+            if (hero.getTotemKey(j) > 0) {
+                builder.addTotem(PbHelper.createTwoIntPb(j, hero.getTotemKey(j)));
             }
         });
         if (Objects.nonNull(hero.getTreasureWare())) {
@@ -1333,20 +1228,20 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
-        CommonPb.RptSummary.Builder builder = CommonPb.RptSummary.newBuilder();
-        builder.setTotal(total);
-        builder.setLost(lost);
-        if (camp >= 0) {
-            builder.setCamp(camp);
-        }
-        if (null != name) {
-            builder.setName(name);
-            builder.setPortrait(portrait);
-            builder.setPortraitFrame(portraitFrame);
-        }
-        return builder.build();
-    }
+//    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
+//        CommonPb.RptSummary.Builder builder = CommonPb.RptSummary.newBuilder();
+//        builder.setTotal(total);
+//        builder.setLost(lost);
+//        if (camp >= 0) {
+//            builder.setCamp(camp);
+//        }
+//        if (null != name) {
+//            builder.setName(name);
+//            builder.setPortrait(portrait);
+//            builder.setPortraitFrame(portraitFrame);
+//        }
+//        return builder.build();
+//    }
 
     public static CommonPb.RptOther createRptOtherPb(int type, int id, int pos, int camp, String extParam) {
         CommonPb.RptOther.Builder builder = CommonPb.RptOther.newBuilder();
@@ -2273,8 +2168,8 @@ public class PbHelper {
                 builder.addSave(createTwoIntPb(keyId, value));
             }
         }
-        if(!activity.getDataMap().isEmpty()){
-            activity.getDataMap().entrySet().forEach(entry -> builder.addData(createTwoStr(entry.getKey(),entry.getValue())));
+        if (!activity.getDataMap().isEmpty()) {
+            activity.getDataMap().entrySet().forEach(entry -> builder.addData(createTwoStr(entry.getKey(), entry.getValue())));
         }
         if (activity.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE
                 || activity.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
@@ -2289,10 +2184,10 @@ public class PbHelper {
             builder.setEquipTurnplat(actTurnplat.ser());
         }
 
-        if (CheckNull.nonEmpty(activity.getDayTasks())){
+        if (CheckNull.nonEmpty(activity.getDayTasks())) {
             activity.getDayTasks().forEach((key, value) -> builder.addSerDayTask(buildSerDayTask(key, value)));
         }
-        if (CheckNull.nonEmpty(activity.getDayScore())){
+        if (CheckNull.nonEmpty(activity.getDayScore())) {
             activity.getDayScore().forEach((key, value) -> builder.addSerDayScore(buildSerDayScore(key, value)));
         }
 
@@ -3389,17 +3284,17 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static Collection<Award> mergeAwards(List<Award> awardList){
-        if(ListUtils.isBlank(awardList)){
+    public static Collection<Award> mergeAwards(List<Award> awardList) {
+        if (ListUtils.isBlank(awardList)) {
             return Collections.EMPTY_LIST;
         }
-        Map<Integer,Award> map = new HashMap<>();
+        Map<Integer, Award> map = new HashMap<>();
         awardList.forEach(o -> {
             Award award = map.get(o.getId());
-            if(Objects.isNull(award)){
-                map.put(o.getId(),o.toBuilder().build());
-            }else {
-                map.put(o.getId(),award.toBuilder().setCount(award.getCount() + o.getCount()).build());
+            if (Objects.isNull(award)) {
+                map.put(o.getId(), o.toBuilder().build());
+            } else {
+                map.put(o.getId(), award.toBuilder().setCount(award.getCount() + o.getCount()).build());
             }
         });
         return map.values();
@@ -3425,5 +3320,36 @@ public class PbHelper {
             consumeList.add(list);
         }
         return consumeList;
+    }
+
+    public static CommonPb.CampRankInfo buildCampRankInfo(CampRankData campRankData) {
+        CommonPb.CampRankInfo.Builder builder = CommonPb.CampRankInfo.newBuilder();
+        builder.setCamp(campRankData.camp);
+        builder.setValue(campRankData.value);
+        builder.setTime(campRankData.time);
+        builder.setRank(campRankData.rank);
+        return builder.build();
+    }
+
+    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame, int healingArmy) {
+        CommonPb.RptSummary.Builder builder = CommonPb.RptSummary.newBuilder();
+        builder.setTotal(total);
+        builder.setLost(lost);
+        if (camp >= 0) {
+            builder.setCamp(camp);
+        }
+        if (null != name) {
+            builder.setName(name);
+            builder.setPortrait(portrait);
+            builder.setPortraitFrame(portraitFrame);
+        }
+        if (healingArmy > 0) {
+            builder.setHealingArmy(healingArmy);
+        }
+        return builder.build();
+    }
+
+    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
+        return createRptSummary(total, lost, camp, name, portrait, portraitFrame, 0);
     }
 }

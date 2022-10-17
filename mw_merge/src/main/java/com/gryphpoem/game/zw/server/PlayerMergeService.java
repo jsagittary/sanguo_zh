@@ -12,6 +12,7 @@ import com.gryphpoem.game.zw.domain.ElementServer;
 import com.gryphpoem.game.zw.domain.MasterCacheData;
 import com.gryphpoem.game.zw.domain.MasterServer;
 import com.gryphpoem.game.zw.domain.MergePlayer;
+import com.gryphpoem.game.zw.face.MergeSvrPlayer;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -199,11 +200,14 @@ public class PlayerMergeService {
         List<Integer> emptyPosList = createEmptyPosList(serverData.getAllPlayer().size());
         // 活动配置数据加载
         int idx = 0;
+        List<MergeSvrPlayer> faceList = DataResource.getBeans(MergeSvrPlayer.class);
         for (Player player : serverData.getAllPlayer().values()) {
             int pos = emptyPosList.get(idx++).intValue();
             cleanDataProcess(player, serverData, pos);
             friendDataProcess(player, serverData);
             activityDataProcess(player, serverData);// 活动处理
+            //处理合服后的玩家某些功能数据
+            faceList.forEach(face -> face.mergePlayer(player));
         }
     }
 

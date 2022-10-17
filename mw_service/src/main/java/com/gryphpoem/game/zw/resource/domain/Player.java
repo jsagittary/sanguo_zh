@@ -5,9 +5,9 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
@@ -20,7 +20,6 @@ import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.ArmQue;
 import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
-import com.gryphpoem.game.zw.resource.domain.p.CrossPlayerLocalData;
 import com.gryphpoem.game.zw.resource.domain.p.Day7Act;
 import com.gryphpoem.game.zw.resource.domain.p.DbFriend;
 import com.gryphpoem.game.zw.resource.domain.p.DbMasterApprentice;
@@ -64,15 +63,16 @@ import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.SupplyRecord;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlayerFunctionPlanData;
+import com.gryphpoem.game.zw.resource.pojo.relic.PlayerRelic;
 import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
+import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.MakeTreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
-import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
-import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
+import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipPersonData;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.BattlePassPersonInfo;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -82,7 +82,8 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @Author: ZhouJie
@@ -658,7 +659,9 @@ public class Player {
      */
     private PlayerWorldWarData playerWorldWarData = new PlayerWorldWarData();
 
-    /** 新跨服的个人数据 */
+    /**
+     * 新跨服的个人数据
+     */
     public CrossPlayerLocalData crossPlayerLocalData = new CrossPlayerLocalData();
 
     /**
@@ -681,7 +684,7 @@ public class Player {
      */
     private int sandTableScore;
 
-    private Map<Integer,Integer> sandTableBought = new HashMap<>();
+    private Map<Integer, Integer> sandTableBought = new HashMap<>();
 
     //叛军等级记录
     private PlayerOnHook playerOnHook = new PlayerOnHook();
@@ -718,7 +721,9 @@ public class Player {
      * 宝具副本
      */
     private TreasureCombat treasureCombat = new TreasureCombat();
-    /** 宝具挑战玩家 */
+    /**
+     * 宝具挑战玩家
+     */
     private TreasureChallengePlayer treasureChallengePlayer = new TreasureChallengePlayer();
 
     /**
@@ -731,6 +736,10 @@ public class Player {
      */
     private DrawCardData drawCardData = new DrawCardData();
 
+    /**
+     * 遗迹
+     */
+    private PlayerRelic playerRelic = new PlayerRelic();
     /**
      * 章节任务
      */
@@ -761,6 +770,7 @@ public class Player {
     public Map<Integer, Integer> getRecruitReward() {
         return recruitReward;
     }
+
     public TreasureCombat getTreasureCombat() {
         return treasureCombat;
     }
@@ -1168,6 +1178,8 @@ public class Player {
     public int pChatTime;// 记录玩家上次私聊送聊天的时间
 
     public int pCampMailTime;// 记录玩家上次发送阵营邮件的时间
+
+    public int pRelicChatTime;// 记录玩家上次发送遗迹聊天的时间
 
     public boolean isTester = false;
 
@@ -1694,8 +1706,8 @@ public class Player {
         // }
         // }
         // return queue;
-        int[] sfArr = { BuildingType.FACTORY_1, BuildingType.FACTORY_2, BuildingType.FACTORY_3,
-                BuildingType.TRAIN_FACTORY_1, BuildingType.TRAIN_FACTORY_2 };
+        int[] sfArr = {BuildingType.FACTORY_1, BuildingType.FACTORY_2, BuildingType.FACTORY_3,
+                BuildingType.TRAIN_FACTORY_1, BuildingType.TRAIN_FACTORY_2};
         List<ArmQue> queList = new ArrayList<>(); // 早出时间最晚的
         for (int sf : sfArr) {
             Factory factory = this.factory.get(sf);
@@ -1987,9 +1999,9 @@ public class Player {
         //沙盘演武积分
         ser.setSandTableScore(this.sandTableScore);
         //沙盘演武兑换
-        if(!CheckNull.isEmpty(this.sandTableBought)){
+        if (!CheckNull.isEmpty(this.sandTableBought)) {
             this.sandTableBought.entrySet().forEach(o -> {
-                ser.addSandTableBought(PbHelper.createTwoIntPb(o.getKey(),o.getValue()));
+                ser.addSandTableBought(PbHelper.createTwoIntPb(o.getKey(), o.getValue()));
             });
         }
         //挂机叛军等级记录
@@ -2022,6 +2034,9 @@ public class Player {
             treasureWareIdMakeCount.forEach((id, count) -> {
                 ser.addTreasureWareIdMakeCount(PbHelper.createTwoIntPb(id, count));
             });
+        }
+        if (Objects.nonNull(playerRelic)) {
+            ser.setSerPlayerRelic(playerRelic.ser());
         }
         //跨服信息
         if (Objects.nonNull(crossPlayerLocalData)) {
@@ -2364,7 +2379,7 @@ public class Player {
             SerCrossPersonalData ser = SerCrossPersonalData.parseFrom(data.getCrossData());
             dserCrossData(ser);
         }
-        if(data.getTotem() != null){
+        if (data.getTotem() != null) {
             TotemDataInfo ser = TotemDataInfo.parseFrom(data.getTotem());
             this.totemData.dser(ser);
         }
@@ -2588,9 +2603,9 @@ public class Player {
         }
         this.ownCastleSkin.addAll(ser.getOwnCastleSkinList());
         Optional.ofNullable(ser.getOwnCastleSkinTimeList()).ifPresent(cs ->
-                cs.forEach( c -> this.ownCastleSkinTime.put(c.getV1(),c.getV2()))
+                cs.forEach(c -> this.ownCastleSkinTime.put(c.getV1(), c.getV2()))
         );
-        Optional.ofNullable(ser.getOwnCastleSkinStarList()).ifPresent(tmpList -> tmpList.forEach(o -> this.ownCastleSkinStar.put(o.getV1(),o.getV2())));
+        Optional.ofNullable(ser.getOwnCastleSkinStarList()).ifPresent(tmpList -> tmpList.forEach(o -> this.ownCastleSkinStar.put(o.getV1(), o.getV2())));
         // 玩家纽约争霸数据
         if (ser.hasNewYorkWar()) {
             this.newYorkWar.deser(ser.getNewYorkWar());
@@ -2602,7 +2617,7 @@ public class Player {
         //沙盘积分
         this.sandTableScore = ser.getSandTableScore();
         //沙盘兑换
-        Optional.ofNullable(ser.getSandTableBoughtList()).ifPresent(tmp -> tmp.forEach(o -> this.sandTableBought.put(o.getV1(),o.getV2())));
+        Optional.ofNullable(ser.getSandTableBoughtList()).ifPresent(tmp -> tmp.forEach(o -> this.sandTableBought.put(o.getV1(), o.getV2())));
 
         this.playerOnHook.deser(ser.getSerPlayerOnHook());
 
@@ -2617,11 +2632,11 @@ public class Player {
             this.collectMineCount = ser.getCollectMineCount();
         }
         //钓鱼数据
-        if(ser.hasSerFishingData()){
+        if (ser.hasSerFishingData()) {
             this.fishingData.dser(ser.getSerFishingData());
         }
         //跨服 rpc 数据
-        if (ser.hasSerRpcPlayerData()){
+        if (ser.hasSerRpcPlayerData()) {
             this.rpcPlayer = new RpcPlayer(ser.getSerRpcPlayerData());
         }
         //玩家小游戏
@@ -2639,7 +2654,10 @@ public class Player {
         if (ser.hasSaveCrossData()) {
             this.crossPlayerLocalData = new CrossPlayerLocalData(ser.getSaveCrossData());
         }
-        Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(),o.getV2())));
+        if (ser.hasSerPlayerRelic()) {
+            this.playerRelic.dser(ser.getSerPlayerRelic());
+        }
+        Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(), o.getV2())));
     }
 
     private void dserTrophy(SerTrophy ser) {
@@ -3364,6 +3382,7 @@ public class Player {
 
     /**
      * 检测玩家是否可以触发npc城池首杀奖励
+     *
      * @param cityId 城池id
      * @return true 可以触发，false 不可以
      */
@@ -3376,6 +3395,7 @@ public class Player {
 
     /**
      * 添加玩家触发的npc城池首杀记录
+     *
      * @param cityId 城池id
      */
     public void addNpcFirstKillRecord(int cityId) {
@@ -3384,6 +3404,7 @@ public class Player {
 
     /**
      * 判断是否可以推送体力赠送
+     *
      * @return 是否可以推送
      */
     public boolean canPushActPower() {
@@ -3393,8 +3414,9 @@ public class Player {
 
     /**
      * 判断是否可以推送离线消息(应用外推送)
-     * @param now       现在的时间
-     * @return  是否可以推送
+     *
+     * @param now 现在的时间
+     * @return 是否可以推送
      */
     public boolean canPushOffLine(int now) {
         Integer status = getPushRecord(PushConstant.OFF_LINE_ONE_DAY);
@@ -3405,6 +3427,7 @@ public class Player {
 
     /**
      * 根据LordId获取名称
+     *
      * @return 跟lordId唯一的名称，有可能被他人占用
      */
     public String getName() {
@@ -3423,6 +3446,7 @@ public class Player {
 
     /**
      * 用现在的时间戳转成十六进制拼接名称
+     *
      * @param now 现在的时间戳
      * @return 不会重复的名称
      */
@@ -3459,10 +3483,11 @@ public class Player {
         return star;
     }
 
-    public int getCamp(){
+    public int getCamp() {
         return lord.getCamp();
     }
-    public long getLordId(){
+
+    public long getLordId() {
         return lord.getLordId();
     }
 
@@ -3574,5 +3599,9 @@ public class Player {
 
     public void setPersonalActs(PersonalActs personalActs) {
         this.personalActs = personalActs;
+    }
+
+    public PlayerRelic getPlayerRelic() {
+        return playerRelic;
     }
 }

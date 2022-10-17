@@ -564,7 +564,7 @@ public class WorldConstant {
         return (int) one.toEpochSecond(ZoneOffset.of("+8"));
     }
 
-//    public static float K0;
+    //    public static float K0;
     public static float K1;
     public static float K2;
     public static float K3;
@@ -852,6 +852,11 @@ public class WorldConstant {
     public static final int FORCE_TYPE_ALTAR = 10;
 
     /**
+     * 世界地图实例类型：遗迹
+     */
+    public static final int FORCE_TYPE_RELIC = 11;
+
+    /**
      * 战斗类型：城战 [打玩家]
      */
     public static final int BATTLE_TYPE_CITY = 1;
@@ -906,6 +911,11 @@ public class WorldConstant {
      * 战斗类型: 采集战斗
      */
     public static final int BATTLE_TYPE_MINE_GUARD = 13;
+
+    /**
+     * 战斗类型: 王朝遗迹
+     */
+    public static final int BATTLE_TYPE_HIS_REMAIN = 14;
 
     /**
      * 是否计算攻坚或者据守

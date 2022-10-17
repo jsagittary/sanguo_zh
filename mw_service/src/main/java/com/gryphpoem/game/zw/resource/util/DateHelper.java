@@ -14,10 +14,12 @@ public class DateHelper {
     public static final String format2 = "yyyy-MM-dd";
     public static final String format3 = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String timeFormat = "HH:mm:ss";
+    public static final String cronFormat = "ss mm HH dd MM ? yyyy";
     public static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
 
     private static final SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat(format1);
     private static final SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat(format2);
+    private static final SimpleDateFormat simpleDateCronFormat = new SimpleDateFormat(cronFormat);
 
     /**
      * 德意志反攻是星期二开放
@@ -40,7 +42,7 @@ public class DateHelper {
         return DateUtils.isSameDay(cal1, cal2);
     }
 
-    public static SimpleDateFormat getDateFormat1(){
+    public static SimpleDateFormat getDateFormat1() {
         return new SimpleDateFormat(format1);
     }
 
@@ -120,8 +122,8 @@ public class DateHelper {
         return null;
     }
 
-    public static Date parseDate(int secStamp){
-        if(secStamp <= 0){
+    public static Date parseDate(int secStamp) {
+        if (secStamp <= 0) {
             return new Date();
         }
         return new Date(secStamp * 1000L);
@@ -253,7 +255,7 @@ public class DateHelper {
      *
      * @param now
      * @param start 格式 HH:mm:ss
-     * @param end 格式 HH:mm:ss
+     * @param end   格式 HH:mm:ss
      * @return
      */
     public static boolean inThisTime(Date now, String start, String end) {
@@ -320,7 +322,6 @@ public class DateHelper {
         }
         return afterDate;
     }
-
 
 
     /**
@@ -421,6 +422,14 @@ public class DateHelper {
         int month2 = calendar2.get(Calendar.MONTH);
 
         return year1 == year2 && month1 == month2;
+    }
+
+    /**
+     * 时间戳（单位秒）转cron字符串
+     */
+    public static String secStampToCron(int secStamp) {
+        Date date = parseDate(secStamp);
+        return simpleDateCronFormat.format(date);
     }
 
 

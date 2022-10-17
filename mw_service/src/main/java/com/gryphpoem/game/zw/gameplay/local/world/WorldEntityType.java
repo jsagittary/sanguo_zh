@@ -1,13 +1,19 @@
 package com.gryphpoem.game.zw.gameplay.local.world;
 
 /**
+ * @author QiuKun
  * @ClassName WorldEntityType.java
  * @Description
- * @author QiuKun
  * @date 2019年3月20日
  */
 public enum WorldEntityType {
-    PLAYER(1, "玩家"), BANDIT(2, "流寇"), MINE(3, "矿点"), AIRSHIP(7, "飞艇"), WAR_FIRE_SAFE_AREA(9, "战火燎原安全区"), CITY(999, "城池");
+    PLAYER(1, "玩家"),
+    BANDIT(2, "流寇"),
+    MINE(3, "矿点"),
+    AIRSHIP(7, "飞艇"),
+    WAR_FIRE_SAFE_AREA(9, "战火燎原安全区"),
+    CITY(999, "城池"),
+    RELIC(10, "遗迹建筑");
 
     private int type;
     private String desc;
