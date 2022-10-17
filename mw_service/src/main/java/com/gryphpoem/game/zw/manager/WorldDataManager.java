@@ -1541,6 +1541,8 @@ public class WorldDataManager {
         for (; ; ) {
             i++;
             int rdmPos = MapHelper.randomPosByCentre(centrePos, radius);
+            if (cityPosList.contains(rdmPos))
+                continue;
             if (isEmptyPos(rdmPos) && !hasCityInRadius(rdmPos, 8, cityPosList)) {
                 return rdmPos;
             }
