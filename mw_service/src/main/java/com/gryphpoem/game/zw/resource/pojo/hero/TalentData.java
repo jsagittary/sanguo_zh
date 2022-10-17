@@ -44,6 +44,7 @@ public class TalentData {
             this.talentArr.put(twoInt.getV1(), twoInt.getV2());
         }
         this.index = talentData.getIndex();
+        this.maxPart = talentData.getMaxPart();
         this.allPartActivated = talentData.getAllPartActivated();
     }
 
