@@ -450,7 +450,12 @@ public class ScheduleManager {
                 StringBuilder name = new StringBuilder();
                 name.append(plan.getActivityType()).append("_").append(plan.getActivityId()).append("_").append(plan.getKeyId());
                 // 加入定时器
-                QuartzHelper.addJob(sched, name.toString(), "actMail", ActMailJob.class, jobTime);
+                if (ab.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
+                    QuartzHelper.addJob(sched, name.toString(), "actMail", ActMailJob.class, ab.getPlan().getEndTime());
+                } else {
+                    QuartzHelper.addJob(sched, name.toString(), "actMail", ActMailJob.class, jobTime);
+                }
+
                 LogUtil.debug("----------添加活动定时任务 :", plan.getName(), name.toString(), ", Date,", DateHelper.formatDateMiniTime(jobTime), "-------------------");
             }
         }

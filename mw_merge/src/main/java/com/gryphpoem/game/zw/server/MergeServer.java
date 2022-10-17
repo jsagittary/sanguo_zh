@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.server;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.protobuf.ExtensionRegistry;
 import com.gryphpoem.game.zw.constant.MergeConstant;
 import com.gryphpoem.game.zw.core.Server;
 import com.gryphpoem.game.zw.core.common.DataResource;
@@ -12,6 +13,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.datasource.DataSourceHelper;
 import com.gryphpoem.game.zw.datasource.DynamicDataSource;
 import com.gryphpoem.game.zw.domain.*;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.common.ServerConfig;
 import com.gryphpoem.game.zw.resource.dao.impl.p.MergeDao;
 import com.gryphpoem.game.zw.resource.dao.impl.p.StaticParamDao;
@@ -137,7 +139,9 @@ public class MergeServer extends Server {
         initDataSource();
         // // 加载游戏数据
         loadGameConf();
-
+        // 加载协议
+        ExtensionRegistry registry = DataResource.getRegistry();
+        SerializePb.registerAllExtensions(registry);
     }
 
     private void loadGameConf() {
