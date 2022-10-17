@@ -632,11 +632,11 @@ public class ChatConst {
     /**
      * 王朝遗迹在|#area1|出现！保护期结束后即可探索！
      */
-    public static final int CHAT_RELICS_REFRESH = 155;
+    public static final int CHAT_RELICS_REFRESH = 154;
     /**
      * 王朝遗迹保护期已结束，|@click立即探索|
      */
-    public static final int CHAT_RELICS_SAFE_EXPIRE = 156;
+    public static final int CHAT_RELICS_SAFE_EXPIRE = 155;
 
     public static final int FIREWORKS_PREVIEW = 200;//烟花活动开始前的跑马灯
     public static final int FIREWORKS_LETOFF = 201;//系统放烟花的跑马灯

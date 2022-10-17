@@ -229,7 +229,13 @@ public class RelicsFightService {
             List<Integer> posList = MapHelper.getAreaStartPos(MapHelper.getLineAcorss(atkArmy.getTarget(), attackPlayer.lord.getPos()));
             posList.add(atkArmy.getTarget());
             posList.add(attackPlayer.lord.getPos());
+            // 新增后台埋点日志
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
+            LogLordHelper.otherLog("battle", attackPlayer.account.getServerId(), attackPlayer.roleId, "atk", 0, WorldConstant.BATTLE_TYPE_HIS_REMAIN,
+                    fightLogic.getWinState(), atkArmy.getTarget(), attackPlayer.lord.getLordId(), defendPlayer.lord.getLordId(), attackPlayer.lord.getCamp());
+            LogLordHelper.otherLog("battle", defendPlayer.account.getServerId(), defendPlayer.roleId, "def", 0, WorldConstant.BATTLE_TYPE_HIS_REMAIN,
+                    fightLogic.getWinState(), atkArmy.getTarget(), attackPlayer.lord.getLordId(), defendPlayer.lord.getLordId(), defendPlayer.lord.getCamp());
+
             //上报数数(攻击方)
             EventDataUp.battle(attackPlayer.account, attackPlayer.lord, attacker, "atk", "fightRelic",
                     String.valueOf(WorldConstant.BATTLE_TYPE_HIS_REMAIN), String.valueOf(fightLogic.getWinState()),

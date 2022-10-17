@@ -406,6 +406,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         Turple<Long, Integer> turple = relic.getDefendList().stream().filter(o -> o.getB() == army.getKeyId()).findFirst().orElse(null);
         if (Objects.nonNull(turple)) {
             relic.getDefendList().remove(turple);
+            relic.removeHolder(player.roleId, army.getKeyId());
         }
         relicsFightService.retreatArmy(player, army, null, TimeHelper.getCurrentSecond(), true);
     }
@@ -514,6 +515,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
 
                     // 遗迹结束, 更新遗迹积分
                     taskDataManager.updTask(p, TaskType.COND_RELIC_SCORE, playerScore);
+                    LogLordHelper.commonLog("relicScore", AwardFrom.RELIC_GET_SCORE_AWARD, p.account, p.lord, playerScore);
                 }
             }
 
