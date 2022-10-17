@@ -1756,6 +1756,8 @@ public class WorldService {
             decisiveBattleService.retreatDecisiveArmy(roleId, player, type, army);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP) {// 飞艇的返回
             airshipService.retreatArmy(player, army, type);
+        } else if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE) {
+            DataResource.getBean(RelicService.class).retreatArmy(player, army);
         } else {
             // 原来行军返回处理
             originalReturnArmyProcess(roleId, player, keyId, type, army);

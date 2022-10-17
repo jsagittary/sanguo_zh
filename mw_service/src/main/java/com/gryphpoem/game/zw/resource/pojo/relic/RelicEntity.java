@@ -228,4 +228,12 @@ public class RelicEntity extends BaseWorldEntity {
         }
         return 0l;
     }
+
+    public long removeHolder(long roleId, int armyKeyId) {
+        HashMap<Integer, Long> map;
+        if ((map = this.holdArmyTime.get(roleId)) != null) {
+            return map.remove(armyKeyId);
+        }
+        return 0l;
+    }
 }
