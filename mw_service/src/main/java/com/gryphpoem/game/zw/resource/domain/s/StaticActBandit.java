@@ -28,6 +28,7 @@ public class StaticActBandit {
     /**
      * 1 击飞玩家<br>
      * 2 攻打匪军
+     * 3 采集掉落
      */
     private int type;
 
@@ -56,6 +57,16 @@ public class StaticActBandit {
      * 数量上总是1：1进行转换的
      */
     private List<List<Integer>> convert;
+
+    /**
+     * 单次采集每满XXX秒可掉落道具
+     */
+    private int dropTime;
+
+    /**
+     * 资源点id区间：[[104,111],[204,211]]
+     */
+    private List<List<Integer>> mineId;
 
     public int getId() {
         return id;
@@ -111,5 +122,21 @@ public class StaticActBandit {
 
     public void setActivityId(int activityId) {
         this.activityId = activityId;
+    }
+
+    public int getDropTime() {
+        return dropTime;
+    }
+
+    public void setDropTime(int dropTime) {
+        this.dropTime = dropTime;
+    }
+
+    public List<List<Integer>> getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(List<List<Integer>> mineId) {
+        this.mineId = mineId;
     }
 }

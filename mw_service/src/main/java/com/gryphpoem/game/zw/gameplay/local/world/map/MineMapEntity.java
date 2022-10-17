@@ -3,6 +3,8 @@ package com.gryphpoem.game.zw.gameplay.local.world.map;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
@@ -12,7 +14,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.CollectArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -21,8 +22,15 @@ import com.gryphpoem.game.zw.pb.CommonPb.MapForce.Builder;
 import com.gryphpoem.game.zw.pb.CommonPb.MapMinePb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
@@ -270,6 +278,46 @@ public class MineMapEntity extends BaseWorldEntity {
         this.guard = null;
         return collect;
 
+    }
+
+    /**
+     * 计算活动期间，采集掉落的道具
+     * @param grab
+     * @param collectTime
+     */
+    public void calcCollectDropProp(List<CommonPb.Award> grab, int collectTime, Player player) {
+        StaticMine staticMine = StaticWorldDataMgr.getMineMap().get(mineId);
+        // 采集掉落道具，对应配置表s_act_bandit
+        List<StaticActBandit> staticActBanditList = StaticActivityDataMgr.getActBanditList().stream()
+                .filter(actBandit -> actBandit.getType() == 3 && actBandit.getActivityType() == ActivityConst.ACT_DROP_CONTROL)
+                .collect(Collectors.toList());
+        for (StaticActBandit staticActBandit : staticActBanditList) {
+            // 获取采集掉落对应活动类型的活动id
+            int activityId = staticActBandit.getActivityId();
+            // 根据活动id判断活动是否开启
+            ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_DROP_CONTROL);
+            if (activityBase.getActivityId() != activityId) {
+                continue;
+            }
+            // 获取对应可掉落的矿点区间，判断当前采集矿点是否在区间内
+            List<List<Integer>> mineIdListList = staticActBandit.getMineId();
+            boolean isInMineIdRange = mineIdListList.stream().anyMatch(mineIdList -> mineIdList.contains(mineId));
+            if (!isInMineIdRange) {
+                continue;
+            }
+            // 获取对应掉落的道具及每日共可获取的掉落数量
+            List<List<Integer>> configDropAwardList = staticActBandit.getDrop();
+            int canGetTotal = staticActBandit.getTotal();
+            // 获取玩家当天已获取数量（每天重置）
+
+            // 判断是否仍可获取掉落道具
+
+            // 根据采集时间，以及玩家当天已获取数量，获取当前采集掉落的道具数量
+
+            // 更新玩家当天已获取的掉落道具数量
+
+            // Award dropAward = PbHelper.createAwardPb(0, 0, 0);
+        }
     }
 
     /**
