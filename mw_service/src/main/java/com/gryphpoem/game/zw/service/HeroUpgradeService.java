@@ -292,7 +292,7 @@ public class HeroUpgradeService implements GmCmdService {
         // 获取武将对应天赋页数据
         TalentData talentDataMap = hero.getTalent().get(index);
 
-        // 获取武将对应天赋页的天赋组
+        // 获取武将对应天赋页的天赋组配置
         List<StaticHeroEvolve> sHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(index - 1));
         if (CheckNull.isEmpty(sHeroEvolveList)) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:", heroId);
@@ -316,7 +316,7 @@ public class HeroUpgradeService implements GmCmdService {
             }
 
             // 若为非激活状态且数据为空, 则初始化数据
-            if (CheckNull.isNull(talentDataMap)) {
+            if (CheckNull.isNull(talentDataMap) || !talentDataMap.isActivate()) {
                 int maxPart;
                 switch (hero.getQuality()) {
                     case HeroConstant.QUALITY_PURPLE_HERO:
@@ -330,7 +330,6 @@ public class HeroUpgradeService implements GmCmdService {
                 }
                 talentDataMap = new TalentData(1, index, maxPart);
                 hero.getTalent().put(index, talentDataMap);
-
             } else {
                 if (talentDataMap.isActivate()) {
                     throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "将领已经激活过了, roleId:", player.roleId, ", heroId:", heroId);
@@ -372,7 +371,7 @@ public class HeroUpgradeService implements GmCmdService {
                     Integer lv_ = talent_.getValue();
                     if (lv_ > 0) {
                         sHeroEvolveList.stream()
-                                .filter(she -> she.getPart() == part_ && (she.getLv() >= 0  && she.getLv() < lv_))
+                                .filter(she -> she.getPart() == part_ && (she.getLv() >= 0 && she.getLv() < lv_))
                                 .forEach(she -> {
                                     List<List<Integer>> consume = she.getConsume();
                                     hadConsumeList.addAll(consume);
@@ -381,6 +380,7 @@ public class HeroUpgradeService implements GmCmdService {
                 });
                 // 初始化所有部位天赋
                 Stream.iterate(HeroConstant.TALENT_PART_MIN, part -> ++part).limit(talentData_.getMaxPart()).forEach(part -> talentData_.getTalentArr().put(part, 0));
+                hero.getTalent().put(indexTemp, talentData_);
                 // 返还重置的部分消耗
                 if (!CheckNull.isEmpty(hadConsumeList)) {
                     List<List<Integer>> mergeAward = RewardDataManager.mergeAward(hadConsumeList);
@@ -400,10 +400,10 @@ public class HeroUpgradeService implements GmCmdService {
     /**
      * 升级武将天赋
      *
-     * @param roleId 角色id
-     * @param heroId 武将id
-     * @param pageIndex   天赋页（对应s_hero_evolve的group）
-     * @param part   要升级的天赋索引位置（中心天赋位置为1）
+     * @param roleId    角色id
+     * @param heroId    武将id
+     * @param pageIndex 天赋页（对应s_hero_evolve的group）
+     * @param part      要升级的天赋索引位置（中心天赋位置为1）
      * @return
      * @throws MwException
      */
@@ -424,8 +424,8 @@ public class HeroUpgradeService implements GmCmdService {
             throw new MwException(GameError.NO_CONFIG.getCode(), "英雄天赋组未找到, roleId:", player.roleId, ", heroId:", heroId);
         }
 
-        Integer group = sHero.getEvolveGroup().get(pageIndex);
-        if ((hero.getQuality() == HeroConstant.QUALITY_PURPLE_HERO && group >= 100) || (hero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO && group < 100)) {
+        Integer heroTalentGroup = sHero.getEvolveGroup().get(pageIndex - 1);
+        if ((hero.getQuality() == HeroConstant.QUALITY_PURPLE_HERO && heroTalentGroup >= 100) || (hero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO && heroTalentGroup < 100)) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "将领天赋组错误, roleId:", player.roleId, ", heroId:", heroId);
         }
 
@@ -440,7 +440,7 @@ public class HeroUpgradeService implements GmCmdService {
         }
 
         // 目标部位天赋的配置（同一天赋按等级区分，表里分为多条记录）
-        List<StaticHeroEvolve> staticHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(group).stream()
+        List<StaticHeroEvolve> staticHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(heroTalentGroup).stream()
                 .filter(staticHeroEvolve -> staticHeroEvolve.getPart() == part)
                 .collect(Collectors.toList());
         // 目标位置天赋的最大等级配置
@@ -453,11 +453,11 @@ public class HeroUpgradeService implements GmCmdService {
         }
         // 获取升到下一级所需的资源数量
         Integer curLv = talentData.getTalentArr().get(part);
-        StaticHeroEvolve nextLvStaticHeroEvolve = staticHeroEvolveList.stream().filter(she -> she.getLv() == curLv + 1).findFirst().orElse(null);
-        if (nextLvStaticHeroEvolve == null) {
+        StaticHeroEvolve curLvStaticHeroEvolve = staticHeroEvolveList.stream().filter(she -> she.getLv() == curLv).findFirst().orElse(null);
+        if (curLvStaticHeroEvolve == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "天赋下一等级未配置, roleId:", player.roleId, ", heroId:", heroId, "talentGroup:", pageIndex);
         }
-        List<List<Integer>> consume = nextLvStaticHeroEvolve.getConsume();
+        List<List<Integer>> consume = curLvStaticHeroEvolve.getConsume();
         // 扣除升级的消耗，天赋等级加1
         rewardDataManager.checkAndSubPlayerRes(player, consume, AwardFrom.AWAKEN_HERO_EVOLVE_CONSUME, heroId, part);
         talentData.upgradeTalent(part);
@@ -466,7 +466,7 @@ public class HeroUpgradeService implements GmCmdService {
         int size = (int) talentData.getTalentArr().entrySet().stream().filter(talent -> {
             Integer partTemp = talent.getKey();
             Integer lvTemp = talent.getValue();
-            Integer maxLvOfPart = StaticHeroDataMgr.getHeroEvolve(group).stream()
+            Integer maxLvOfPart = StaticHeroDataMgr.getHeroEvolve(heroTalentGroup).stream()
                     .filter(she -> she.getPart() == partTemp)
                     .max(Comparator.comparingInt(StaticHeroEvolve::getLv))
                     .map(StaticHeroEvolve::getLv).orElse(null);
@@ -479,6 +479,10 @@ public class HeroUpgradeService implements GmCmdService {
         if (size == 0) {
             talentData.setAllPartActivated(1);
         }
+
+        // 添加天赋升级日志埋点
+        LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.UPGRADE_HERO_TALENT, player,
+                AwardFrom.UPGRADE_HERO_TALENT, heroId, hero.getDecorated(), pageIndex, part, talentData.getTalentArr().get(part)));
 
         // 更新将领属性
         CalculateUtil.processAttr(player, hero);

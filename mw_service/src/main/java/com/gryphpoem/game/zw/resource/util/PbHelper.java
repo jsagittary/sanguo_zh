@@ -780,6 +780,27 @@ public class PbHelper {
             });
         }
 
+        Map<Integer, TalentData> talentMap = hero.getTalent();
+        if (!CheckNull.isEmpty(talentMap)) {
+            CommonPb.TalentData.Builder data = CommonPb.TalentData.newBuilder();
+            talentMap.values().forEach(talentData -> {
+                if (CheckNull.isNull(talentData)) {
+                    return;
+                }
+                data.setStatus(talentData.getStatus());
+                Map<Integer, Integer> talentArr = talentData.getTalentArr();
+                if (!CheckNull.isEmpty(talentArr)) {
+                    for (Entry<Integer, Integer> en : talentArr.entrySet()) {
+                        data.addTalentArr(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
+                }
+                data.setIndex(talentData.getIndex());
+                data.setAllPartActivated(talentData.getAllPartActivated());
+                builder.addTalentData(data.build());
+                data.clear();
+            });
+        }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());

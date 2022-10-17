@@ -32,4 +32,6 @@ public class LogParamConstant {
     public static final String HERO_UPGRADE = "heroUpgrade";
     public static final String MEDAL_STRENGTHEN = "medalStrengthen";
     public static final String UPGRADE_SUPER_EQUIP = "upgradeSuperEquip";
+    public static final String ACTIVATE_OR_CLEAR_HERO_TALENT = "activateOrClearHeroTalent";
+    public static final String UPGRADE_HERO_TALENT = "upgradeHeroTalent";
 }

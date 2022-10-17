@@ -423,14 +423,17 @@ public class HeroConstant {
 
     public static final int AWAKEN_PART_MIN = 1;
     public static final int AWAKEN_PART_MAX = 5;
-    public static final int AWAKEN_PART_MAX_OF_PURPLE_HERO = 4;
-    public static final int AWAKEN_PART_MAX_OF_ORANGE_HERO = 6;
 
-
+    /**
+     * 天赋操作：1-激活天赋页；2-升级天赋球；3-重置天赋
+     */
     public static final int TALENT_HERO_TYPE_1 = 1;
     public static final int TALENT_HERO_TYPE_2 = 2;
     public static final int TALENT_HERO_TYPE_3 = 3;
 
+    /**
+     * 某一天赋页中天赋球部位上下限
+     */
     public static final int TALENT_PART_MIN = 1;
     public static final int TALENT_PART_MAX_OF_PURPLE_HERO = 4;
     public static final int TALENT_PART_MAX_OF_ORANGE_HERO = 6;

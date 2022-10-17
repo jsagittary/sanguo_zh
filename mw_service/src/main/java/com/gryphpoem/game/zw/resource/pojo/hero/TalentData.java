@@ -1,12 +1,9 @@
 package com.gryphpoem.game.zw.resource.pojo.hero;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * @Author: GeYuanpeng
@@ -23,7 +20,7 @@ public class TalentData {
     /**
      * 天赋页中的天赋及其等级
      */
-    private Map<Integer, Integer> talentArr; // key --> 天赋具体位置，s_hero_evolve的part；value --> 天赋等级，s_hero_evolve的lv
+    private Map<Integer, Integer> talentArr = new HashMap<>(); // key --> 天赋具体位置，s_hero_evolve的part；value --> 天赋等级，s_hero_evolve的lv
 
     /**
      * 天赋页索引
@@ -47,6 +44,7 @@ public class TalentData {
             this.talentArr.put(twoInt.getV1(), twoInt.getV2());
         }
         this.index = talentData.getIndex();
+        this.allPartActivated = talentData.getAllPartActivated();
     }
 
     public TalentData() {
@@ -67,10 +65,11 @@ public class TalentData {
         this.status = status;
         this.index = index;
         this.maxPart = maxPart;
-        talentArr = new HashMap<>(maxPart);
+        this.talentArr = new HashMap<>(maxPart);
         for (int i = 1; i <= maxPart; i++) {
-            talentArr.put(i, 0);
+            this.talentArr.put(i, 0);
         }
+        this.allPartActivated = 0;
     }
 
     public Map<Integer, Integer> getTalentArr() {
@@ -84,41 +83,6 @@ public class TalentData {
     public void setIndex(int index) {
         this.index = index;
     }
-
-    /**
-     * 是否激活了
-     *
-     * @return
-     */
-    public boolean isActivate() {
-        return this.status == 1;
-    }
-
-    /**
-     * 未升级点亮的天赋球
-     *
-     * @return 当前部位
-     */
-    public int curPart() {
-        return Stream.iterate(HeroConstant.AWAKEN_PART_MIN, i -> ++i).limit(HeroConstant.AWAKEN_PART_MAX).filter(part -> talentArr.getOrDefault(part, 0) <= 0).sorted().findFirst().orElse(0);
-    }
-
-    /**
-     * 已升级点亮的天赋球
-     *
-     * @return 下一个进化
-     */
-    public int lastPart() {
-        return Stream.iterate(HeroConstant.AWAKEN_PART_MIN, i -> ++i).limit(HeroConstant.AWAKEN_PART_MAX).filter(part -> talentArr.getOrDefault(part, 0) > 1).max(Comparator.comparingInt(Integer::intValue)).orElse(0);
-    }
-
-    /**
-     * 将基因重置
-     */
-    public void clearEvolution() {
-        Stream.iterate(HeroConstant.AWAKEN_PART_MIN, part -> ++part).limit(HeroConstant.AWAKEN_PART_MAX).forEach(part -> talentArr.put(part, 0));
-    }
-
 
     public void setStatus(int status) {
         this.status = status;
@@ -148,6 +112,19 @@ public class TalentData {
         this.allPartActivated = allPartActivated;
     }
 
+    /**
+     * 天赋页是否已激活
+     *
+     * @return
+     */
+    public boolean isActivate() {
+        return this.status == 1;
+    }
+
+    /**
+     * 当前天赋页的天赋球是否已全部满级
+     * @return
+     */
     public boolean isAllPartActivated() {
         return allPartActivated == 1;
     }

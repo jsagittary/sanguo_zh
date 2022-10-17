@@ -104,7 +104,7 @@ public class FightCalc {
 
         /**
          * 克制时	(兵种阶级-对方兵种阶级) * K9 + [基础K8 + (兵种阶级 * K10)]
-         * 被克制时	(兵种阶级-对方兵种阶级) * K9 - [基础K8 + (对方兵种阶级 * K10)]
+         * 被克制时	(兵种阶级-对方兵种阶级) * K9 - [基础K8 + (对方兵种阶级 * K10)] — 兵种克制减伤加成
          * 不可制	(兵种阶级-对方兵种阶级) * K9
          */
 
@@ -126,6 +126,9 @@ public class FightCalc {
             // 兵种克制减伤属性加成
             double lessHurtFromArmyRestraint = getLessHurtFromArmyRestraint(force, target);
             restrain = restrain - (WorldConstant.K8 + (defHeroLv * WorldConstant.K10)) - lessHurtFromArmyRestraint;
+            LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
+                    "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType),
+                    "赛季天赋-以短攻长-加成比例: (兵种阶级-对方兵种阶级) * K9 - [基础K8 + (对方兵种阶级 * K10)] — 兵种克制减伤加成, ", restrain, " - ", (WorldConstant.K8 + (defHeroLv * WorldConstant.K10)), " - ", lessHurtFromArmyRestraint);
         }
 
         return restrain;
@@ -140,15 +143,15 @@ public class FightCalc {
      */
     private static double getLessHurtFromArmyRestraint(Force force, Force target) {
         double lessHurt = 0.00;
-        if (target.armType == Constant.ArmyType.INFANTRY_ARMY_TYPE && force.armType == Constant.ArmyType.CAVALRY_ARMY_TYPE) {
+        if (force.armType == Constant.ArmyType.INFANTRY_ARMY_TYPE) {
             lessHurt = target.attrData.lessInfantryMut;
         }
 
-        if (target.armType == Constant.ArmyType.CAVALRY_ARMY_TYPE && force.armType == Constant.ArmyType.ARCHER_ARMY_TYPE) {
+        if (force.armType == Constant.ArmyType.CAVALRY_ARMY_TYPE) {
             lessHurt = target.attrData.lessCavalryMut;
         }
 
-        if (target.armType == Constant.ArmyType.ARCHER_ARMY_TYPE && force.armType == Constant.ArmyType.INFANTRY_ARMY_TYPE) {
+        if (force.armType == Constant.ArmyType.ARCHER_ARMY_TYPE) {
             lessHurt = target.attrData.lessArcherMut;
         }
 

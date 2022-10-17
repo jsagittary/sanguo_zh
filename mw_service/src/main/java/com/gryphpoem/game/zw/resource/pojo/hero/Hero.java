@@ -56,7 +56,7 @@ public class Hero {
     private boolean isOnBaitTeam;//是否在采集鱼饵队列
     private int[] totem;
     private Integer treasureWare;//宝具
-    private Map<Integer, TalentData> talent;
+    private Map<Integer, TalentData> talent; // 武将天赋信息：key, 天赋页索引; value, 天赋页详情
 
     /** 英雄品阶keyId*/
     private int gradeKeyId;

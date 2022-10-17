@@ -171,13 +171,13 @@ public class AttrData {
                 this.lead += (int) (this.lead * value / Constant.TEN_THROUSAND);
                 break;
             case Constant.AttrId.LESS_INFANTRY_MUT:
-                this.lessInfantryMut += value;
+                this.lessInfantryMut += value / Constant.TEN_THROUSAND;
                 break;
             case Constant.AttrId.LESS_CAVALRY_MUT:
-                this.lessCavalryMut += value;
+                this.lessCavalryMut += value  / Constant.TEN_THROUSAND;
                 break;
             case Constant.AttrId.LESS_ARCHER_MUT:
-                this.lessArcherMut += value;
+                this.lessArcherMut += value  / Constant.TEN_THROUSAND;
                 break;
             default:
                 break;

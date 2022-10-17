@@ -64,6 +64,7 @@ import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.util.AccountHelper;
@@ -2093,6 +2094,22 @@ public class HeroService implements GmCmdService {
 //        activityTriggerService.heroDecoratedTriggerGift(player, sHero.getType(), awaken.isActivate());
         // 授勋
         hero.setDecorated(hero.getDecorated() + 1);
+
+        // 觉醒之后创建默认的天赋页
+        int maxPart;
+        switch (hero.getQuality()) {
+            case HeroConstant.QUALITY_PURPLE_HERO:
+                maxPart = HeroConstant.TALENT_PART_MAX_OF_PURPLE_HERO;
+                break;
+            case HeroConstant.QUALITY_ORANGE_HERO:
+                maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
+                break;
+            default:
+                maxPart = 5;
+        }
+        TalentData talentData = new TalentData(0, hero.getDecorated(), maxPart);
+        hero.getTalent().put(hero.getDecorated(), talentData);
+
         // 更新战令任务的进度
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_HERO_DECORATED_HAVE_CNT, 1, hero.getDecorated());
         // 更新世界目标进度: 全服有N个N次觉醒英雄

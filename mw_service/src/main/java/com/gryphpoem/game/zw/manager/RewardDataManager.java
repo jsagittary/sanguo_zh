@@ -1653,8 +1653,21 @@ public class RewardDataManager {
             case AwardType.Money.CROSS_WAR_FIRE_COIN:
                 addCrossWarFireCoin(player, (int) count, from, true, param);
                 break;
+            case AwardType.Money.ANCIENT_BOOK:
+                addAncientBook(player, (int) count, from, param);
+                break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * 新增古籍
+     */
+    private void addAncientBook(Player player, int add, AwardFrom from, Object[] param) {
+        if (add > 0) {
+            player.lord.setAncientBook(player.lord.getAncientBook() + add);
+            LogLordHelper.ancientBook(from, player.account, player.lord, player.lord.getAncientBook(), add, param);
         }
     }
 
@@ -3083,6 +3096,9 @@ public class RewardDataManager {
             case AwardType.Money.CROSS_WAR_FIRE_COIN:
                 addCrossWarFireCoin(player, (int) count, from, false, param);
                 break;
+            case AwardType.Money.ANCIENT_BOOK:
+                subAncientBook(player, (int) count, from);
+                break;
             default:
                 break;
         }
@@ -3144,6 +3160,22 @@ public class RewardDataManager {
                     player.lord.getTreasureWareGolden(), paramString, "");
         }
 
+    }
+
+    /**
+     * 扣减古籍
+     * @param player
+     * @param sub
+     * @param from
+     */
+    private void subAncientBook(Player player, int sub, AwardFrom from) {
+        if (sub > 0) {
+            int curr = player.lord.getAncientBook();
+            int left = curr - sub;
+            curr = Math.max(left, 0);
+            player.lord.setAncientBook(curr);
+            LogLordHelper.commonLog("ancientBook", from, player, player.lord.getAncientBook(), -sub);
+        }
     }
 
     private void subFishScore(Player player, int sub, AwardFrom from) {
@@ -4093,6 +4125,9 @@ public class RewardDataManager {
             case AwardType.Money.CROSS_WAR_FIRE_COIN:
                 count = player.getMixtureDataById(PlayerConstant.CROSS_WAR_FIRE_PRICE);
                 break;
+            case AwardType.Money.ANCIENT_BOOK:
+                count = player.lord.getAncientBook();
+                break;
             default:
                 break;
         }
@@ -4287,6 +4322,9 @@ public class RewardDataManager {
                         break;
                     case AwardType.Money.TREASURE_WARE_ESSENCE:
                         count = player.lord.getTreasureWareEssence();
+                        break;
+                    case AwardType.Money.ANCIENT_BOOK:
+                        count = player.lord.getAncientBook();
                         break;
                     default:
                         break;

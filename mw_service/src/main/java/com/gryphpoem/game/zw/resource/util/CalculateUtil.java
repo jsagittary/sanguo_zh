@@ -1832,9 +1832,11 @@ public class CalculateUtil {
                                     addAttrValue(attrMap, en.getKey(), en.getValue());
                                 }
                             });*/
-                            // 根据武将激活的属性及对应的等级，获取对应的加成属性
+                            // 根据武将激活的属性及对应的等级，获取对应的加成属性，注意0级天赋attr属性配置为空，同一部位的天赋球，升级后同一天赋属性进行数值替换；不同部位的天赋球，同一属性值求和
                             talentData.getTalentArr().forEach((part, lv) -> {
-                                StaticHeroEvolve staticHeroEvolve = staticHeroEvolveList.stream().filter(she -> she.getPart() == part && she.getLv() == lv).findFirst().orElse(null);
+                                StaticHeroEvolve staticHeroEvolve = staticHeroEvolveList.stream()
+                                        .filter(she -> she.getPart() == part && she.getLv() == lv && she.getAttr() != null)
+                                        .findFirst().orElse(null);
                                 if (staticHeroEvolve != null) {
                                     for (Entry<Integer, Integer> en : staticHeroEvolve.getAttr().entrySet()) {
                                         addAttrValue(attrMap, en.getKey(), en.getValue());
