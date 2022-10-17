@@ -4434,6 +4434,10 @@ public class WorldService {
         marchTime = berlinWarService.getMarchTime(player, army, marchTime);
         marchTime = gestapoService.getGestapoMarchTime(army, marchTime);
 
+        //遗迹行军减半
+        if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE)
+            marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
+
         // 皇城并且是跨区域判断重新计算
         int startArea = MapHelper.getAreaIdByPos(player.lord.getPos());
         int targetArea = MapHelper.getAreaIdByPos(army.getTarget());
