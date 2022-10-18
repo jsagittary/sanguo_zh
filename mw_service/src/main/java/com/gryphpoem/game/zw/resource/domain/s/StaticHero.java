@@ -41,6 +41,7 @@ public class StaticHero {
     private Map<Integer, Integer> activateAttr;// 激活加成属性
     private List<Integer> evolveGroup;// 技能组，链接到 hero_evolve表格中的group字段
     private List<List<Integer>> recombination;// 重组的消耗
+    protected List<Integer> activateFight; // 天赋激活加成战力
     /** 合成英雄需要的碎片数量*/
     private int chips;
 
@@ -294,6 +295,14 @@ public class StaticHero {
 
     public void setChips(int chips) {
         this.chips = chips;
+    }
+
+    public List<Integer> getActivateFight() {
+        return activateFight;
+    }
+
+    public void setActivateFight(List<Integer> activateFight) {
+        this.activateFight = activateFight;
     }
 
     /**

@@ -326,10 +326,7 @@ public class HeroUpgradeService implements GmCmdService {
                         maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
                         break;
                     default:
-                        maxPart = 0;
-                }
-                if (maxPart == 0) {
-                    throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
+                        throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
                 }
                 talentDataMap = new TalentData(1, index, maxPart);
                 hero.getTalent().put(index, talentDataMap);
@@ -355,6 +352,20 @@ public class HeroUpgradeService implements GmCmdService {
             hero.getTalent().values().forEach(talentData_ -> {
                 if (CheckNull.isNull(talentData_)) {
                     return;
+                }
+                if (talentData_.getMaxPart() <= 0) {
+                    int maxPart;
+                    switch (hero.getQuality()) {
+                        case HeroConstant.QUALITY_PURPLE_HERO:
+                            maxPart = HeroConstant.TALENT_PART_MAX_OF_PURPLE_HERO;
+                            break;
+                        case HeroConstant.QUALITY_ORANGE_HERO:
+                            maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
+                            break;
+                        default:
+                            throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
+                    }
+                    talentData_.setMaxPart(maxPart);
                 }
                 // 扣除重置的消耗, 将部位状态清空
                 int indexTemp = talentData_.getIndex();

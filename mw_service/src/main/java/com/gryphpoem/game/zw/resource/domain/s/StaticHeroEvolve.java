@@ -35,9 +35,14 @@ public class StaticHeroEvolve {
     private int lv;
 
     /**
-     * 针对特定兵种生效。1 2 3 表示步 骑 弓，0表示全部
+     * 天赋页签
      */
-    private int aimType;
+    private int page;
+
+    /**
+     * 天赋对应加成战力
+     */
+    private int fight;
 
 
     public int getId() {
@@ -88,12 +93,20 @@ public class StaticHeroEvolve {
         this.lv = lv;
     }
 
-    public int getAimType() {
-        return aimType;
+    public int getPage() {
+        return page;
     }
 
-    public void setAimType(int aimType) {
-        this.aimType = aimType;
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getFight() {
+        return fight;
+    }
+
+    public void setFight(int fight) {
+        this.fight = fight;
     }
 
     @Override

@@ -759,6 +759,11 @@ public class Player {
     private PersonalActs personalActs = new PersonalActs();
 
     /**
+     * 采集掉落道具记录
+     */
+    private Map<Integer, CollectDropRecord> collectDropDataMap = new HashMap<>(2);
+
+    /**
      * 是否第一次打造宝具
      */
     private MakeTreasureWare makeTreasureWare = new MakeTreasureWare();
@@ -2045,6 +2050,10 @@ public class Player {
         if (CheckNull.nonEmpty(recruitReward)) {
             recruitReward.forEach((k, v) -> ser.addRecruitRewardRecord(PbHelper.createTwoIntPb(k, v)));
         }
+        // 采集掉落道具记录
+        if (CheckNull.nonEmpty(collectDropDataMap)) {
+            collectDropDataMap.values().forEach(collectDropRecord -> ser.addSerCollectDropRecord(collectDropRecord.ser()));
+        }
         return ser.build().toByteArray();
     }
 
@@ -2658,6 +2667,10 @@ public class Player {
             this.playerRelic.dser(ser.getSerPlayerRelic());
         }
         Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(), o.getV2())));
+        // 采集掉落道具记录
+        Optional.ofNullable(ser.getSerCollectDropRecordList()).ifPresent(serCollectDropRecordList ->
+                serCollectDropRecordList.forEach(
+                        serCollectDropRecord -> this.collectDropDataMap.put(serCollectDropRecord.getMineType(), new CollectDropRecord().dser(serCollectDropRecord))));
     }
 
     private void dserTrophy(SerTrophy ser) {
@@ -3603,5 +3616,9 @@ public class Player {
 
     public PlayerRelic getPlayerRelic() {
         return playerRelic;
+    }
+
+    public Map<Integer, CollectDropRecord> getCollectDropDataMap() {
+        return collectDropDataMap;
     }
 }

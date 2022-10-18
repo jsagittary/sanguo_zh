@@ -33,9 +33,12 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
+import com.gryphpoem.game.zw.resource.pojo.CollectDropRecord;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.HeroService;
@@ -45,12 +48,13 @@ import com.gryphpoem.game.zw.service.WorldService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName MineMapEntity.java
  * @Description
- * @author QiuKun
  * @date 2019年3月20日
  */
 public class MineMapEntity extends BaseWorldEntity {
@@ -65,6 +69,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 小地图加上矿点
+     *
      * @return AreaMine
      */
     public CommonPb.AreaMine toAreaForcePb() {
@@ -170,7 +175,7 @@ public class MineMapEntity extends BaseWorldEntity {
         rewardDataManager.checkAndSubPlayerRes(invokePlayer, needCost, AwardFrom.ATK_POS); // 检测并扣除资源
         if (mineHasPlayer) { // 矿点有人
             if (guard.getPlayer().roleId != roleId) {
-                worldService.removeProTect(invokePlayer,AwardFrom.COLLECT_WAR,pos); // 移除保护罩
+                worldService.removeProTect(invokePlayer, AwardFrom.COLLECT_WAR, pos); // 移除保护罩
             }
         }
         // 部队添加
@@ -202,7 +207,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 判断采集队伍上限
-     * 
+     *
      * @param roleId
      * @param cmap
      * @throws MwException
@@ -229,7 +234,6 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 结算采集,把资源加到army中,并更新矿点剩余数量,并没有剩余资源时会移除,没有更新地图操作
-     * 
      */
     public CommonPb.MailCollect settleCollect(CrossWorldMap cMap) {
         if (guard == null) {
@@ -251,6 +255,8 @@ public class MineMapEntity extends BaseWorldEntity {
         grab.add(award);
         army.setGrab(grab);
         int collectTime = now - army.getBeginTime(); // 采集了多久
+        // 计算活动期间，采集掉落的道具
+        calcCollectDropProp(grab, collectTime, player, now);
         army.setCollectTime(collectTime);
         remainRes -= add; // 更新本矿点资源
         // 部队返回
@@ -282,14 +288,14 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 计算活动期间，采集掉落的道具
+     *
      * @param grab
      * @param collectTime
      */
-    public void calcCollectDropProp(List<CommonPb.Award> grab, int collectTime, Player player) {
-        StaticMine staticMine = StaticWorldDataMgr.getMineMap().get(mineId);
+    public void calcCollectDropProp(List<CommonPb.Award> grab, int collectTime, Player player, int now) {
         // 采集掉落道具，对应配置表s_act_bandit
         List<StaticActBandit> staticActBanditList = StaticActivityDataMgr.getActBanditList().stream()
-                .filter(actBandit -> actBandit.getType() == 3 && actBandit.getActivityType() == ActivityConst.ACT_DROP_CONTROL)
+                .filter(actBandit -> actBandit.getType() == 4 && actBandit.getActivityType() == ActivityConst.ACT_DROP_CONTROL)
                 .collect(Collectors.toList());
         for (StaticActBandit staticActBandit : staticActBanditList) {
             // 获取采集掉落对应活动类型的活动id
@@ -305,24 +311,58 @@ public class MineMapEntity extends BaseWorldEntity {
             if (!isInMineIdRange) {
                 continue;
             }
-            // 获取对应掉落的道具及每日共可获取的掉落数量
-            List<List<Integer>> configDropAwardList = staticActBandit.getDrop();
-            int canGetTotal = staticActBandit.getTotal();
+            // 获取对应掉落的道具
+            List<List<Integer>> configAwardList = staticActBandit.getDrop();
+            // 每日掉落上限
+            int canGainTotalCount = staticActBandit.getTotal();
+            // 累计多少时间掉落一次
+            int dropTime = staticActBandit.getDropTime();
+            if (CheckNull.isEmpty(configAwardList) || configAwardList.get(0).size() != 3 || canGainTotalCount <= 0 || dropTime <= 0) {
+                continue;
+            }
+
+            Integer awardType = configAwardList.get(0).get(0);
+            Integer awardId = configAwardList.get(0).get(1);
+            Integer singleAwardCount = configAwardList.get(0).get(2);
+            int mineType;
+            switch (dropTime) {
+                case 300:
+                    mineType = CollectDropRecord.MINE_TYPE_1;
+                    break;
+                case 400:
+                    mineType = CollectDropRecord.MINE_TYPE_2;
+                    break;
+                default:
+                    throw new MwException(GameError.NO_CONFIG, "采集掉落配置错误");
+            }
+
+            int totalAdd = singleAwardCount * (collectTime / dropTime); // 单次掉落 * 掉落次数
+            Date nowDate = TimeHelper.getDate((long) now);
             // 获取玩家当天已获取数量（每天重置）
+            Map<Integer, CollectDropRecord> collectDropRecordMap = player.getCollectDropDataMap();
+            CollectDropRecord collectDropRecord = collectDropRecordMap.get(mineType);
+            if (collectDropRecord == null || !DateHelper.isSameDate(nowDate, TimeHelper.getDate((long) collectDropRecord.getDate()))) {
+                // 上一次记录的采集掉落道具时间与当前非同一天，则重置
+                collectDropRecord = new CollectDropRecord();
+                collectDropRecord.setDate(now);
+                collectDropRecord.setPropId(awardId);
+                collectDropRecord.setTotalGainCount(totalAdd);
+                collectDropRecordMap.put(mineType, collectDropRecord);
+            } else {
+                // 如果是同一天的记录，则更新获取数量
+                int totalGainCount = collectDropRecord.getTotalGainCount();
+                totalAdd = totalGainCount >= canGainTotalCount ? 0 : totalGainCount + totalAdd - canGainTotalCount;
+                collectDropRecord.setTotalGainCount(canGainTotalCount);
+            }
 
-            // 判断是否仍可获取掉落道具
-
-            // 根据采集时间，以及玩家当天已获取数量，获取当前采集掉落的道具数量
-
-            // 更新玩家当天已获取的掉落道具数量
-
-            // Award dropAward = PbHelper.createAwardPb(0, 0, 0);
+            Award dropAward = PbHelper.createAwardPb(awardType, awardId, totalAdd);
+            grab.add(dropAward);
         }
     }
 
     /**
      * 计算剩余矿点
-     * 
+     *
      * @return
      */
     public int calcRemainRes() {
@@ -332,7 +372,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 计算采集了多少资源
-     * 
+     *
      * @param now
      * @return
      */
@@ -354,7 +394,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 可采集最大时间
-     * 
+     *
      * @param cMap
      * @param staticHero
      * @return

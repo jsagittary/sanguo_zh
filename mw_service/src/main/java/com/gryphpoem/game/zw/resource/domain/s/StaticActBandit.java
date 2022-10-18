@@ -27,8 +27,8 @@ public class StaticActBandit {
 
     /**
      * 1 击飞玩家<br>
-     * 2 攻打匪军
-     * 3 采集掉落
+     * 2 攻打匪军<br>
+     * 4 采集掉落
      */
     private int type;
 

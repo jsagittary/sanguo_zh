@@ -1404,6 +1404,13 @@ public final class Constant {
         int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
         int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
         int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
+        int MORE_INFANTRY_ATTACK = 101;//对步兵攻击提升
+        int MORE_INFANTRY_ATTACK_EXT = 135;//对步兵破甲提升
+        int MORE_CAVALRY_ATTACK = 201;//对骑兵攻击提升
+        int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
+        int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
+        int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
+
     }
 
     public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,

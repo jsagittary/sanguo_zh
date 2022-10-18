@@ -36,6 +36,12 @@ public class AttrData {
     public double lessInfantryMut;//对步兵减伤
     public double lessCavalryMut;//对骑兵减伤
     public double lessArcherMut;//对弓兵减伤
+    public int moreInfantryAttack;//对步兵攻击提升
+    public int moreInfantryAttackExt;//对步兵破甲提升
+    public int moreCavalryAttack;//对骑兵攻击提升
+    public int moreCavalryAttackExt;//对骑兵破甲提升
+    public int moreArcherAttack;//对弓兵攻击提升
+    public int moreArcherAttackExt;//对弓兵破甲提升
 
     public AttrData(CommonPb.SerAttrData attrData) {
         this.attack = attrData.getAttack();
@@ -179,6 +185,24 @@ public class AttrData {
                 break;
             case Constant.AttrId.LESS_ARCHER_MUT:
                 this.lessArcherMut += value  / Constant.TEN_THROUSAND;
+                break;
+            case Constant.AttrId.MORE_INFANTRY_ATTACK:
+                this.moreInfantryAttack += value;
+                break;
+            case Constant.AttrId.MORE_INFANTRY_ATTACK_EXT:
+                this.moreInfantryAttackExt += value;
+                break;
+            case Constant.AttrId.MORE_CAVALRY_ATTACK:
+                this.moreCavalryAttack += value;
+                break;
+            case Constant.AttrId.MORE_CAVALRY_ATTACK_EXT:
+                this.moreCavalryAttackExt += value;
+                break;
+            case Constant.AttrId.MORE_ARCHER_ATTACK:
+                this.moreArcherAttack += value;
+                break;
+            case Constant.AttrId.MORE_ARCHER_ATTACK_EXT:
+                this.moreArcherAttackExt += value;
                 break;
             default:
                 break;

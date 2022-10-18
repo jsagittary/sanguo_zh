@@ -410,6 +410,7 @@ public class CalculateUtil {
                 }
                 //英雄技能战力
                 fight += reCalcHeroSkillFight(hero);
+                fight += reCalcHeroTalentFight(hero);
             }
         }
         long preFight = player.lord.getFight();
@@ -487,8 +488,10 @@ public class CalculateUtil {
         Map<Integer, Integer> attrMap = calcHeroAttr(player, hero, staticHero);
         //hero fight value
         int fightVal = reCalcFight(attrMap);
-        //英雄技能战力
+        // 英雄技能战力
         fightVal += reCalcHeroSkillFight(hero);
+        // 武将天赋战力加成
+        fightVal += reCalcHeroTalentFight(hero);
         hero.setFightVal(fightVal);
 
         return attrMap;
@@ -635,20 +638,6 @@ public class CalculateUtil {
         DataResource.ac.getBean(TaskDataManager.class).updTask(player, TaskType.COND_516, 1, hero.getShowFight().values().stream().mapToInt(Integer::intValue).sum());
         return attrMap;
     }
-
-    // /**
-    //  * 武将兵种克制减伤属性
-    //  * @param player
-    //  * @param hero
-    //  * @param attrMap
-    //  * @return
-    //  */
-    // public static void addArmyRestrainReduceHurtEffect(Player player, Hero hero, Map<Integer, Integer> attrMap) {
-    //     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-    //     List<Integer> staticHeroEvolveGroup = staticHero.getEvolveGroup();
-    //     Map<Integer, AwakenData> awakenDataMap = hero.getAwaken();
-    //
-    // }
 
     public static int calcHeroesFightVal(Player player, List<Integer> heroIds) {
         int val = 0;
@@ -1354,6 +1343,41 @@ public class CalculateUtil {
     }
 
     /**
+     * 计算武将天赋加成战力
+     *
+     * @param hero
+     * @return
+     */
+    public static int reCalcHeroTalentFight(Hero hero) {
+        StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        Map<Integer, TalentData> talentDataMap = hero.getTalent();
+        int talentFight = 0;
+        for (TalentData talentData : talentDataMap.values()) {
+            boolean activate = talentData.isActivate();
+            if (activate) {
+                int index = talentData.getIndex();
+                Map<Integer, Integer> talentArr = talentData.getTalentArr();
+                List<Integer> activateFight = sHero.getActivateFight();
+                int fightFromActivateTalent = activateFight.get(index - 1);
+                talentFight += fightFromActivateTalent;
+                for (Entry<Integer, Integer> entry : talentArr.entrySet()) {
+                    Integer part = entry.getKey();
+                    Integer lv = entry.getValue();
+                    StaticHeroEvolve sHeroEvolve = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(index - 1), index, part, lv);
+                    if (sHeroEvolve != null && sHeroEvolve.getFight() > 0) {
+                        talentFight += sHeroEvolve.getFight();
+                    }
+                }
+            } else {
+                talentFight += 0;
+            }
+        }
+
+        hero.getShowFight().merge(Constant.ShowFightId.HERO, talentFight, Integer::sum);
+        return talentFight;
+    }
+
+    /**
      * 计算英雄技能战力
      *
      * @param hero
@@ -1804,13 +1828,13 @@ public class CalculateUtil {
     private static void addAwakenEffect(StaticHero sHero, Hero hero, Map<Integer, Integer> attrMap) {
         if (hero.getDecorated() > 0) {
             Map<Integer, TalentData> talentMap = hero.getTalent();
-            // 激活了
             if (CheckNull.nonEmpty(talentMap)) {
                 talentMap.values().forEach(talentData -> {
                     if (CheckNull.isNull(talentData)) {
                         return;
                     }
                     if (talentData.isActivate()) {
+                        // 激活了
                         if (CheckNull.isEmpty(sHero.getEvolveGroup()) || talentData.getIndex() > sHero.getEvolveGroup().size()) {
                             return;
                         }
@@ -1821,17 +1845,6 @@ public class CalculateUtil {
                         // 武将天赋点属性加成
                         List<StaticHeroEvolve> staticHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(talentData.getIndex() - 1));
                         if (!CheckNull.isEmpty(staticHeroEvolveList) && !CheckNull.isEmpty(talentData.getTalentArr())) {
-                            // 目前进化到哪个部位
-                            // int lastPart = talentData.lastPart();
-                            // if (lastPart == 0) {
-                            //     return;
-                            // }
-                            // 哪些部位
-                            /*heroEvolve.stream().filter(he -> he.getPart() >= HeroConstant.AWAKEN_PART_MIN && he.getPart() <= lastPart).forEach(she -> {
-                                for (Entry<Integer, Integer> en : she.getAttr().entrySet()) {
-                                    addAttrValue(attrMap, en.getKey(), en.getValue());
-                                }
-                            });*/
                             // 根据武将激活的属性及对应的等级，获取对应的加成属性，注意0级天赋attr属性配置为空，同一部位的天赋球，升级后同一天赋属性进行数值替换；不同部位的天赋球，同一属性值求和
                             talentData.getTalentArr().forEach((part, lv) -> {
                                 StaticHeroEvolve staticHeroEvolve = staticHeroEvolveList.stream()
