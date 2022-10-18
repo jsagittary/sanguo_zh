@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.gameplay.local.world.map;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
@@ -22,23 +21,17 @@ import com.gryphpoem.game.zw.pb.CommonPb.MapForce.Builder;
 import com.gryphpoem.game.zw.pb.CommonPb.MapMinePb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
-import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
-import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
-import com.gryphpoem.game.zw.resource.pojo.CollectDropRecord;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.HeroService;
@@ -48,7 +41,6 @@ import com.gryphpoem.game.zw.service.WorldService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -255,8 +247,6 @@ public class MineMapEntity extends BaseWorldEntity {
         grab.add(award);
         army.setGrab(grab);
         int collectTime = now - army.getBeginTime(); // 采集了多久
-        // 计算活动期间，采集掉落的道具
-        calcCollectDropProp(grab, collectTime, player, now);
         army.setCollectTime(collectTime);
         remainRes -= add; // 更新本矿点资源
         // 部队返回
@@ -284,80 +274,6 @@ public class MineMapEntity extends BaseWorldEntity {
         this.guard = null;
         return collect;
 
-    }
-
-    /**
-     * 计算活动期间，采集掉落的道具
-     *
-     * @param grab
-     * @param collectTime
-     */
-    public void calcCollectDropProp(List<CommonPb.Award> grab, int collectTime, Player player, int now) {
-        // 采集掉落道具，对应配置表s_act_bandit
-        List<StaticActBandit> staticActBanditList = StaticActivityDataMgr.getActBanditList().stream()
-                .filter(actBandit -> actBandit.getType() == 4 && actBandit.getActivityType() == ActivityConst.ACT_DROP_CONTROL)
-                .collect(Collectors.toList());
-        for (StaticActBandit staticActBandit : staticActBanditList) {
-            // 获取采集掉落对应活动类型的活动id
-            int activityId = staticActBandit.getActivityId();
-            // 根据活动id判断活动是否开启
-            ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_DROP_CONTROL);
-            if (activityBase.getActivityId() != activityId) {
-                continue;
-            }
-            // 获取对应可掉落的矿点区间，判断当前采集矿点是否在区间内
-            List<List<Integer>> mineIdListList = staticActBandit.getMineId();
-            boolean isInMineIdRange = mineIdListList.stream().anyMatch(mineIdList -> mineIdList.contains(mineId));
-            if (!isInMineIdRange) {
-                continue;
-            }
-            // 获取对应掉落的道具
-            List<List<Integer>> configAwardList = staticActBandit.getDrop();
-            // 每日掉落上限
-            int canGainTotalCount = staticActBandit.getTotal();
-            // 累计多少时间掉落一次
-            int dropTime = staticActBandit.getDropTime();
-            if (CheckNull.isEmpty(configAwardList) || configAwardList.get(0).size() != 3 || canGainTotalCount <= 0 || dropTime <= 0) {
-                continue;
-            }
-
-            Integer awardType = configAwardList.get(0).get(0);
-            Integer awardId = configAwardList.get(0).get(1);
-            Integer singleAwardCount = configAwardList.get(0).get(2);
-            int mineType;
-            switch (dropTime) {
-                case 300:
-                    mineType = CollectDropRecord.MINE_TYPE_1;
-                    break;
-                case 400:
-                    mineType = CollectDropRecord.MINE_TYPE_2;
-                    break;
-                default:
-                    throw new MwException(GameError.NO_CONFIG, "采集掉落配置错误");
-            }
-
-            int totalAdd = singleAwardCount * (collectTime / dropTime); // 单次掉落 * 掉落次数
-            Date nowDate = TimeHelper.getDate((long) now);
-            // 获取玩家当天已获取数量（每天重置）
-            Map<Integer, CollectDropRecord> collectDropRecordMap = player.getCollectDropDataMap();
-            CollectDropRecord collectDropRecord = collectDropRecordMap.get(mineType);
-            if (collectDropRecord == null || !DateHelper.isSameDate(nowDate, TimeHelper.getDate((long) collectDropRecord.getDate()))) {
-                // 上一次记录的采集掉落道具时间与当前非同一天，则重置
-                collectDropRecord = new CollectDropRecord();
-                collectDropRecord.setDate(now);
-                collectDropRecord.setPropId(awardId);
-                collectDropRecord.setTotalGainCount(totalAdd);
-                collectDropRecordMap.put(mineType, collectDropRecord);
-            } else {
-                // 如果是同一天的记录，则更新获取数量
-                int totalGainCount = collectDropRecord.getTotalGainCount();
-                totalAdd = totalGainCount >= canGainTotalCount ? 0 : totalGainCount + totalAdd - canGainTotalCount;
-                collectDropRecord.setTotalGainCount(canGainTotalCount);
-            }
-
-            Award dropAward = PbHelper.createAwardPb(awardType, awardId, totalAdd);
-            grab.add(dropAward);
-        }
     }
 
     /**
