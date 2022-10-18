@@ -1079,8 +1079,9 @@ public class FightService {
                     if (CheckNull.isEmpty(config)) continue;
                     ratio = 0;
                     attrId = config.get(0);
-                    if (intervalTime >= config.get(1))
-                        ratio += config.get(3);
+                    if (intervalTime < config.get(1))
+                        continue;
+                    ratio += config.get(3);
                     ratio += (intervalTime - config.get(1)) / config.get(2) * config.get(3);
                     ratio = Math.min(ratio, config.get(4));
                     attrData.addRatioValue(attrId, ratio * -1);
@@ -1094,8 +1095,10 @@ public class FightService {
         int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
         int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
         Force force = new Force(attrData, staticHero.getType(), count, lead, heroId, player.roleId);
+
         // 添加战机详情
         addPlaneInfo(player, hero, force);
+
         //设置英雄战斗技能
         loadHeroSkill(force, hero);
         force.setIntensifyLv(heroLv);

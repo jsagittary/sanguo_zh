@@ -243,9 +243,9 @@ public class WorldDataManager {
     }
 
     public void clearRelicMap() {
-        List<Integer> tmps = new ArrayList<>();
-        relicEntityMap.values().forEach(entity -> tmps.add(entity.getPos()));
-        freePostList.addAll(tmps);
+        Set<Integer> tmp = new HashSet<>(relicEntityMap.size());
+        relicEntityMap.values().forEach(entity -> tmp.add(entity.getPos()));
+        freePostList.addAll(tmp);
         relicEntityMap.clear();
     }
 

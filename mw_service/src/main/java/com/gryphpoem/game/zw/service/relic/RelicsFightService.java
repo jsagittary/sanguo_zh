@@ -370,6 +370,7 @@ public class RelicsFightService {
 
         // 占领遗迹后重置连杀次数
         attackPlayer.getPlayerRelic().clearContinuousKillCnt();
+        relicService.syncRelicHolder(rlc.getPos(), true);
     }
 
     private void handAttackRelicFailure(RelicEntity rlc, Player attackPlayer, Army army, int nowSec) {
