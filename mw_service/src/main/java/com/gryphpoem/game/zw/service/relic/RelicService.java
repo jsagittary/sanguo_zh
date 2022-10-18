@@ -182,7 +182,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
                 builder.setLordName(p.lord.getNick());
                 builder.setArmyLead(armCount);
                 List<CommonPb.TwoInt> fatigueDeBuffList;
-                if ((fatigueDeBuffList = checkFatigueDeBuff(relicEntity.holdTime(roleId, turple.getB()))) != null)
+                if ((fatigueDeBuffList = checkFatigueDeBuff(relicEntity.holdTime(turple.getA(), turple.getB()))) != null)
                     builder.addAllFatigueDeBuff(fatigueDeBuffList);
                 resp.addProbArmy(builder);
             }
@@ -447,9 +447,9 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
      * @param hasHolder
      */
     public void syncRelicHolder(int pos, boolean hasHolder) {
-        GamePb6.SyncRelicHolderRs.Builder builder = GamePb6.SyncRelicHolderRs.newBuilder().setPos(pos).setHasHolder(hasHolder);
-        BasePb.Base msg = PbHelper.createSynBase(GamePb6.SyncRelicHolderRs.EXT_FIELD_NUMBER, GamePb6.SyncRelicHolderRs.ext, builder.build()).build();
-        playerService.syncMsgToAll(msg);
+//        GamePb6.SyncRelicHolderRs.Builder builder = GamePb6.SyncRelicHolderRs.newBuilder().setPos(pos).setHasHolder(hasHolder);
+//        BasePb.Base msg = PbHelper.createSynBase(GamePb6.SyncRelicHolderRs.EXT_FIELD_NUMBER, GamePb6.SyncRelicHolderRs.ext, builder.build()).build();
+//        playerService.syncMsgToAll(msg);
     }
 
     @Override
