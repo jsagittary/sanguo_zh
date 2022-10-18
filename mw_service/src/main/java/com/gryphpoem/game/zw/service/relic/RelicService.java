@@ -162,7 +162,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
      * @throws MwException
      */
     public GamePb6.GetRelicDetailRs getRelicDetail(long roleId, int pos) throws MwException {
-        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        playerDataManager.checkPlayerIsExist(roleId);
         RelicEntity relicEntity = worldDataManager.getRelicEntityMap().get(pos);
         if (Objects.isNull(relicEntity)) {
             throw new MwException(GameError.INVALID_PARAM.getCode(), GameError.err(roleId, "遗迹详细,坐标错误", pos));
@@ -181,7 +181,9 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
                 builder.setLordLv(p.lord.getLevel());
                 builder.setLordName(p.lord.getNick());
                 builder.setArmyLead(armCount);
-                builder.setFatigueDeBuff(checkFatigueDeBuff(relicEntity.holdTime(roleId, turple.getB())));
+                List<CommonPb.TwoInt> fatigueDeBuffList;
+                if ((fatigueDeBuffList = checkFatigueDeBuff(relicEntity.holdTime(roleId, turple.getB()))) != null)
+                    builder.addAllFatigueDeBuff(fatigueDeBuffList);
                 resp.addProbArmy(builder);
             }
         });
@@ -194,14 +196,23 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
      * @param holdTime
      * @return
      */
-    private boolean checkFatigueDeBuff(long holdTime) {
-        if (holdTime == 0l) return false;
+    private List<CommonPb.TwoInt> checkFatigueDeBuff(long holdTime) {
+        if (holdTime == 0l) return null;
         if (CheckNull.isEmpty(ActParamConstant.FATIGUE_DE_BUFF_PARAMETER))
-            return false;
+            return null;
         long nowMills = System.currentTimeMillis();
         long intervalTime = (nowMills - holdTime) / 1000l;
-        List<Integer> config = ActParamConstant.FATIGUE_DE_BUFF_PARAMETER.stream().filter(l -> intervalTime >= l.get(1)).findFirst().orElse(null);
-        return CheckNull.nonEmpty(config);
+        return ActParamConstant.FATIGUE_DE_BUFF_PARAMETER.stream().map(config_ -> {
+            int attrId = config_.get(0), ratio = 0;
+            if (intervalTime >= config_.get(1)) {
+                ratio += config_.get(3);
+            } else
+                return null;
+            ratio += (intervalTime - config_.get(1)) / config_.get(2) * config_.get(3);
+            ratio = Math.min(ratio, config_.get(4));
+            if (ratio <= 0) return null;
+            return PbHelper.createTwoIntPb(attrId, ratio);
+        }).filter(t -> Objects.nonNull(t)).collect(Collectors.toList());
     }
 
     /**
@@ -380,9 +391,9 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
      */
     public boolean checkFunctionOpen() {
         int curScheduleId = worldScheduleService.getCurrentSchduleId();
-        if (curScheduleId < 6)
+        if (curScheduleId < ActParamConstant.ACT_RELIC_STAMP.get(4))
             return false;
-        WorldSchedule worldSchedule = worldScheduleService.getGlobalSchedule().getWorldSchedule(6);
+        WorldSchedule worldSchedule = worldScheduleService.getGlobalSchedule().getWorldSchedule(ActParamConstant.ACT_RELIC_STAMP.get(4));
         if (CheckNull.isNull(worldSchedule)) return false;
         if (DateHelper.isToday(new Date(worldSchedule.getFinishTime() * 1000l)))
             return false;
@@ -409,6 +420,9 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
             relic.removeHolder(player.roleId, army.getKeyId());
         }
         relicsFightService.retreatArmy(player, army, null, TimeHelper.getCurrentSecond(), true);
+        // 同步遗迹防守队伍已空
+        if (CheckNull.isEmpty(relic.getDefendList()))
+            syncRelicHolder(relic.getPos(), false);
     }
 
     public void retreatCheckProbing(Player player, Army army) {
@@ -424,6 +438,18 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
                 taskDataManager.updTask(player, TaskType.COND_RELIC_SCORE, playerRelic.getScore());
             }
         }
+    }
+
+    /**
+     * 同步遗迹防守队伍信息
+     *
+     * @param pos
+     * @param hasHolder
+     */
+    public void syncRelicHolder(int pos, boolean hasHolder) {
+        GamePb6.SyncRelicHolderRs.Builder builder = GamePb6.SyncRelicHolderRs.newBuilder().setPos(pos).setHasHolder(hasHolder);
+        BasePb.Base msg = PbHelper.createSynBase(GamePb6.SyncRelicHolderRs.EXT_FIELD_NUMBER, GamePb6.SyncRelicHolderRs.ext, builder.build()).build();
+        playerService.syncMsgToAll(msg);
     }
 
     @Override
