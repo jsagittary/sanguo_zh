@@ -15,28 +15,28 @@ public class ServerConfig {
     // @Value("${appId}")
     // private String appId;
 
-//    @Value("${jdbcUrl}")
+    @Value("${spring.datasource.dynamic.datasource.master.url}")
     private String jdbcUrl;
 
-//    @Value("${user}")
+    @Value("${spring.datasource.dynamic.datasource.master.username}")
     private String user;
 
-//    @Value("${password}")
+    @Value("${spring.datasource.dynamic.datasource.master.password}")
     private String password;
 
     // @Value("${jdbcPath}")
     // private String jdbcPath;
 
-//    @Value("${iniJdbcUrl}")
+    @Value("${spring.datasource.dynamic.datasource.ini.url}")
     private String iniJdbcUrl;
 
-//    @Value("${iniUser}")
+    @Value("${spring.datasource.dynamic.datasource.ini.username}")
     private String iniUser;
 
-//    @Value("${iniPassword}")
+    @Value("${spring.datasource.dynamic.datasource.ini.password}")
     private String iniPassword;
 
-//    @Value("${gmFlag}")
+    @Value("${gmFlag}")
     private String gmFlag; // gm开关
 
 //    @Value("${registryAddress}")

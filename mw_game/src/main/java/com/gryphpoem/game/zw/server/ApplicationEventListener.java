@@ -1,31 +1,22 @@
 package com.gryphpoem.game.zw.server;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.stereotype.Component;
-
-import java.util.concurrent.TimeUnit;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplicationRunListener;
 
 /**
  * Description:
  * Author: zhangpeng
  * createTime: 2022-10-20 11:54
  */
-@Component
-public class ApplicationEventListener implements ApplicationListener<ApplicationEvent> {
-    @Override
-    public void onApplicationEvent(ApplicationEvent applicationEvent) {
-        if (applicationEvent instanceof ContextClosedEvent) {
-            while (!AppGameServer.getInstance().allSaveDone()) {
-                try {
-                    LogUtil.error("appGameServer 还未保存完, 睡眠3s");
-                    TimeUnit.SECONDS.sleep(3);
-                } catch (InterruptedException e) {
-                    LogUtil.error("", e);
-                }
-            }
-        }
+public class ApplicationEventListener implements SpringApplicationRunListener {
+
+    private final SpringApplication application;
+
+    private final String[] args;
+
+    public ApplicationEventListener(SpringApplication application, String[] args) {
+        this.application = application;
+        this.args = args;
     }
 }

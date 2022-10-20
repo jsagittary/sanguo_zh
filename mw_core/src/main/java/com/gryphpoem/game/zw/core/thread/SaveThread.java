@@ -10,7 +10,7 @@ public abstract class SaveThread extends Thread {
 	// 运行标志
 	protected boolean stop;
 
-	protected boolean done;
+	protected volatile boolean done;
 
 	protected boolean logFlag = false;
 

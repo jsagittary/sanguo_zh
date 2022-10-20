@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.server;
 
+import com.SanGuoApplication;
 import com.gryphpoem.game.zw.core.ConnectMessageHandler;
 import com.gryphpoem.game.zw.core.HttpMessageHandler;
 import com.gryphpoem.game.zw.core.Server;
@@ -52,6 +53,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.traffic.TrafficCounter;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.springframework.beans.BeansException;
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Lazy;
@@ -67,9 +69,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component
-@Lazy(false)
-public class AppGameServer extends Server implements ApplicationContextAware {
+public class AppGameServer extends Server {
 
     public ConnectServer connectServer;
     private HttpServer httpServer;
@@ -98,16 +98,11 @@ public class AppGameServer extends Server implements ApplicationContextAware {
 
     private static volatile AppGameServer gameServer;
 
-    @PostConstruct
-    public void init() {
-        if (gameServer == null) {
-            gameServer = this;
-        }
-    }
-
-    public static AppGameServer getInstance() {
+    public static AppGameServer getInstance(String... args) {
         if (gameServer == null) {
             // spring的初始化
+            ac = SpringApplication.run(SanGuoApplication.class, args);
+            DataResource.ac = ac;
             gameServer = new AppGameServer();
             removeSpringShutdownHook();
             removeDubboShutdownHook();
@@ -201,11 +196,6 @@ public class AppGameServer extends Server implements ApplicationContextAware {
         }
         Base msg = baseBuilder.build();
         innerServer.sendMsg(msg);
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        DataResource.ac = ac = applicationContext;
     }
 
     /**
@@ -494,7 +484,7 @@ public class AppGameServer extends Server implements ApplicationContextAware {
      */
     public boolean allSaveDone() {
         if (savePlayerServer.saveDone() && saveGlobalServer.saveDone() && savePartyServer.saveDone()
-                && saveActivityServer.saveDone() && saveCrossMapServer.saveDone()) { //&& sendEventDataServer.sendDone()
+                && saveActivityServer.saveDone() && saveCrossMapServer.saveDone() && saveMailReportServer.saveDone()) { //&& sendEventDataServer.sendDone()
             return true;
         }
 
