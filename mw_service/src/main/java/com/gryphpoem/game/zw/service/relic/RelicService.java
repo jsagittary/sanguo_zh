@@ -395,7 +395,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
             return false;
         WorldSchedule worldSchedule = worldScheduleService.getGlobalSchedule().getWorldSchedule(ActParamConstant.ACT_RELIC_STAMP.get(4));
         if (CheckNull.isNull(worldSchedule)) return false;
-        if (DateHelper.isToday(new Date(worldSchedule.getFinishTime() * 1000l)))
+        if (DateHelper.isToday(new Date(worldSchedule.getStartTime() * 1000l)))
             return false;
         return true;
     }
