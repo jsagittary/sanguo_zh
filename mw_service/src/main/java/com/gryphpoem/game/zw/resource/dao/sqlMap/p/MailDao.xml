@@ -144,7 +144,7 @@
 		<include refid="mailColumnsSet" />
 	</insert>
 
-	<select id="loadData" parameterType="Map" resultType="MailData">
+	<select id="loadData" parameterType="HashMap" resultType="MailData">
 		select
 		<include refid="mailColumns" />
 		from p_mail

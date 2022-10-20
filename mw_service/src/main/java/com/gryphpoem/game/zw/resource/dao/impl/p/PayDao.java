@@ -10,7 +10,7 @@ import com.gryphpoem.game.zw.resource.domain.p.PaySum;
 
 public class PayDao extends BaseDao {
     public Pay selectPay(int platNo, String orderId) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("platNo", platNo);
         map.put("orderId", orderId);
         return this.getSqlSession().selectOne("PayDao.selectPay", map);
@@ -21,7 +21,7 @@ public class PayDao extends BaseDao {
     }
 
     public List<Pay> selectRolePay(long roleId) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("roleId", roleId);
         return this.getSqlSession().selectList("PayDao.selectRolePay", map);
     }

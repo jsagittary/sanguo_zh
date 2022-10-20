@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.dao.impl.p;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class DataNewDao extends BaseDao {
     }
 
     public void updateOptimize(DataNew data) {
-        Map<String, Object> saveParam = checkSum.saveParam(data);
+        HashMap<String, Object> saveParam = checkSum.saveParam(data);
         if (saveParam != null && saveParam.size() > 1) {
             this.getSqlSession().update("DataNewDao.updateOptimize", saveParam);
         }
@@ -67,7 +68,7 @@ public class DataNewDao extends BaseDao {
     }
 
     private List<DataNew> loadData(long curIndex, int count) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("curIndex", curIndex);
         params.put("count", count);
         return this.getSqlSession().selectList("DataNewDao.loadData", params);

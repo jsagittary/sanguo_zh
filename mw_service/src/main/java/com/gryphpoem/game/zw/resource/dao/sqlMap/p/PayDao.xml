@@ -3,7 +3,7 @@
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="PayDao">
-	<select id="selectPay" parameterType="map" resultType="Pay">
+	<select id="selectPay" parameterType="HashMap" resultType="Pay">
 		select
 		keyId,platNo,platId,orderId,serialId,serverId,roleId,amount,payTime,payType,orderTime,state
 		from
@@ -19,7 +19,7 @@
 	<sql id="selectRoleCol">keyId,platNo,platId,orderId,serialId,serverId,roleId,amount,payTime,payType,orderTime,state
 	</sql>
 
-	<select id="selectRolePay" parameterType="map" resultType="Pay">
+	<select id="selectRolePay" parameterType="HashMap" resultType="Pay">
 	select
 		<include refid="selectRoleCol" />
 		from

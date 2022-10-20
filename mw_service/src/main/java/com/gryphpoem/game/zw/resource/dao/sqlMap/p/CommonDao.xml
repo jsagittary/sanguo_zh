@@ -30,7 +30,7 @@
 		values(#{lordId},#{baptizeCnt},#{baptizeTime},#{reBuild},#{scoutCdTime},#{bagCnt},#{bagBuy},#{autoArmy},#{buyAct},#{retreat},#{killNum},#{renameCnt},#{autoBuildCnt},#{autoBuildOnOff},#{treasureWareCnt},#{buyTreasureWareBagCnt})
 	</insert>
 
-	<select id="load" parameterType="Map" resultType="Common">
+	<select id="load" parameterType="HashMap" resultType="Common">
 		select
 		lordId,baptizeCnt,baptizeTime,reBuild,scoutCdTime,bagCnt,bagBuy,autoArmy,buyAct,retreat,killNum,renameCnt,autoBuildCnt,autoBuildOnOff,treasureWareCnt,buyTreasureWareBagCnt
 		from

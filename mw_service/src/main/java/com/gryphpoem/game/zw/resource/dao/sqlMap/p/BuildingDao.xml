@@ -32,7 +32,7 @@
 		#{trade},#{war},#{train},#{air},#{train2})
 	</insert>
 
-	<select id="load" parameterType="Map" resultType="Building">
+	<select id="load" parameterType="HashMap" resultType="Building">
 		select
 		lordId,command,wall,tech,ware,club,refit,factory1,factory2,factory3,chemical,munition,college,trade,war,train,air,train2
 		from

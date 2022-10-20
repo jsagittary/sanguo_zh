@@ -75,7 +75,6 @@ public class AppGameServer extends Server implements ApplicationContextAware {
     private HttpServer httpServer;
     private InnerServer innerServer;
     public LogicServer mainLogicServer;
-    // public MsgServer msgServer;
     private PushServer pushServer;
 
     private SavePlayerServer savePlayerServer;
@@ -118,7 +117,7 @@ public class AppGameServer extends Server implements ApplicationContextAware {
 
     public static void removeSpringShutdownHook() {
         try {
-            Class<?> shutdownHookClass = ac.getClass().getSuperclass().getSuperclass();
+            Class<?> shutdownHookClass = ac.getClass().getSuperclass().getSuperclass().getSuperclass().getSuperclass();
             Field field = shutdownHookClass.getDeclaredField("shutdownHook");
             if (Objects.nonNull(field)) {
                 field.setAccessible(true);
@@ -493,7 +492,7 @@ public class AppGameServer extends Server implements ApplicationContextAware {
      *
      * @return
      */
-    private boolean allSaveDone() {
+    public boolean allSaveDone() {
         if (savePlayerServer.saveDone() && saveGlobalServer.saveDone() && savePartyServer.saveDone()
                 && saveActivityServer.saveDone() && saveCrossMapServer.saveDone()) { //&& sendEventDataServer.sendDone()
             return true;

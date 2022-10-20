@@ -69,7 +69,7 @@ public class MailDao extends BaseDao {
     }
 
     private List<MailData> loadData(long curIndex, int count) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("curIndex", curIndex);
         params.put("count", count);
         return this.getSqlSession().selectList("MailDao.loadData", params);

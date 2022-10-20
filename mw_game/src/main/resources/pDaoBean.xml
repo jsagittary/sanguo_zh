@@ -82,4 +82,7 @@
 	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CrossMapDao" parent="pBaseDao" />
 	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PlayerHeroDao" parent="pBaseDao" />
 	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.MailReportDao" parent="pBaseDao" />
+
+	<!-- 调度工厂 -->
+	<bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"/>
 </beans>

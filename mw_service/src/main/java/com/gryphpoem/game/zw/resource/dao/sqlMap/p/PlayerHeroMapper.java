@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.resource.dao.sqlMap.p;
 import com.gryphpoem.game.zw.resource.domain.p.DbPlayerHero;
 import org.apache.ibatis.annotations.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,5 +31,5 @@ public interface PlayerHeroMapper {
             @Result(column = "lord_id", property = "lordId"),
             @Result(column = "hero_biography", property = "heroBiography")
     })
-    List<DbPlayerHero> selectList(Map<String, Object> params);
+    List<DbPlayerHero> selectList(HashMap<String, Object> params);
 }

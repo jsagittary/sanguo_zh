@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.resource.dao.sqlMap.p.PlayerHeroMapper;
 import com.gryphpoem.game.zw.resource.domain.p.DbPlayerHero;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +61,7 @@ public class PlayerHeroDao extends BaseDao {
     }
 
     private List<DbPlayerHero> load(long curIndex, int count) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("curIndex", curIndex);
         params.put("count", count);
         return this.getMapper(PlayerHeroMapper.class).selectList(params);

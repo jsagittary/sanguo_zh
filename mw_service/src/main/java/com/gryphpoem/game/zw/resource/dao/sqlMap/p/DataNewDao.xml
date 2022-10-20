@@ -52,7 +52,7 @@
 	</update>
 
 
-	<update id="updateOptimize" parameterType="Map">
+	<update id="updateOptimize" parameterType="HashMap">
 		update p_data
 		<set>
 			<if test="maxKey != null">maxKey=#{maxKey},</if>
@@ -111,7 +111,7 @@
 		signin=#{signin},signInExt=#{signInExt},crossData=#{crossData},totem=#{totem},treasureWares=#{treasureWares},drawCardData=#{drawCardData},chapterTask=#{chapterTask},functionPlanData=#{functionPlanData}
 	</insert>
 
-	<select id="loadData" parameterType="Map" resultType="DataNew">
+	<select id="loadData" parameterType="HashMap" resultType="DataNew">
 		select
 		lordId,maxKey,roleData,heros,equips,medals,props,buildQue,tasks,mill,mails,gains,factory,army,combats,equipQue,typeInfo,tech,shop,combatFb,acquisition,
 		awards,supEquips,supEquipQue,opts,wallNpc,effects,chemical,treasure,friends,masterApprentice,cabinet,trophy,playerExt,day7Act,activity,signin,signInExt,

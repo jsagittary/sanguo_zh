@@ -5,12 +5,13 @@ import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.MaxLordId;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AccountDao extends BaseDao {
     public Account selectAccount(int accountKey, int serverId) {
-        Map<String, Object> param = paramsMap();
+        HashMap<String, Object> param = paramsMap();
         param.put("accountKey", accountKey);
         param.put("serverId", serverId);
         return this.getSqlSession().selectOne("AccountDao.selectAccount", param);
@@ -100,7 +101,7 @@ public class AccountDao extends BaseDao {
     }
 
     private List<Account> load(long curIndex, int count) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("curIndex", curIndex);
         params.put("count", count);
         return this.getSqlSession().selectList("AccountDao.load", params);

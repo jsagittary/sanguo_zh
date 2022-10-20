@@ -25,7 +25,7 @@
 		values(#{roleId},#{buildDate},#{build},#{cityDate},#{cityBattle},#{campDate},#{campBattle},#{honorDate},#{honorGift},#{jobVote},#{canvass},#{taskTime},#{taskAwardCnt})
 	</insert>
 
-    <select id="load" parameterType="Map" resultType="CampMember">
+    <select id="load" parameterType="HashMap" resultType="CampMember">
 		select
 		roleId,buildDate,build,cityDate,cityBattle,campDate,campBattle,honorDate,honorGift,jobVote,canvass,taskTime,taskAwardCnt
 		from

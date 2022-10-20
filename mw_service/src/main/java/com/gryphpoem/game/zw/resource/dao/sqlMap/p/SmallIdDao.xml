@@ -17,7 +17,7 @@
 		values(#{accountKey},#{lordId},now())
 	</insert>
 
-	<select id="load" parameterType="Map" resultMap="smallId">
+	<select id="load" parameterType="HashMap" resultMap="smallId">
 	select keyId,lordId,createTime from p_smallid where lordId >
 	#{curIndex,javaType=java.lang.Long,jdbcType=BIGINT} order by lordId
 	limit 0,#{count,javaType=int}

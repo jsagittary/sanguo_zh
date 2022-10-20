@@ -1,5 +1,5 @@
-#logging:
-#  config: classpath:log4j2.xml
+logging:
+  config: classpath:log4j2.xml
 spring:
   application:
     name: san_guo_game
@@ -43,11 +43,19 @@ spring:
 
 
 ######################## prometheus ###########################
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: *
+management:
+  security:
+    enabled: false
+  endpoint:
+    web:
+      exposure:
+        include: '*'
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name} # 暴露的数据中添加application label
 
 ########   application 配置    ########
 dubbo:

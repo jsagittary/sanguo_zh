@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.dao.impl.p;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class CommonDao extends BaseDao {
     }
 
     private List<Common> load(long curIndex, int count) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("curIndex", curIndex);
         params.put("count", count);
         return this.getSqlSession().selectList("CommonDao.load", params);

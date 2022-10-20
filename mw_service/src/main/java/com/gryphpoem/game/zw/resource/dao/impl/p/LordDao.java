@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.dao.impl.p;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +80,7 @@ public class LordDao extends BaseDao {
     }
 
     private List<Lord> load(long curIndex, int count) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("curIndex", curIndex);
         params.put("count", count);
         return this.getSqlSession().selectList("LordDao.load", params);
@@ -96,13 +97,13 @@ public class LordDao extends BaseDao {
      * @return
      */
     public List<Lord> mergeLoad(int camp) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("camp", camp);
         return this.getSqlSession().selectList("LordDao.mergeLoad", params);
     }
 
     public List<Lord> mergeLoadByCamps(List<Integer> camps) {
-        Map<String, Object> params = paramsMap();
+        HashMap<String, Object> params = paramsMap();
         params.put("camps", camps);
         return this.getSqlSession().selectList("LordDao.mergeLoadByCamps", params);
     }

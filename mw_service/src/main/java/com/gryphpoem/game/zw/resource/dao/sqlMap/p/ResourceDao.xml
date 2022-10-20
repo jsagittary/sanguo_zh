@@ -69,7 +69,7 @@
 	</insert>
 
 
-	<select id="load" parameterType="Map" resultType="Resource">
+	<select id="load" parameterType="HashMap" resultType="Resource">
 		select
 		<include refid="selectColumns" />
 		from p_resource where lordId > #{curIndex} order by lordId limit

@@ -94,9 +94,9 @@ public class DbDataCheckSum {
         return null;
     }
 
-    public Map<String, Object> saveParam(Object data) {
+    public HashMap<String, Object> saveParam(Object data) {
         if (data.getClass().isAssignableFrom(type)) {
-            Map<String, Object> params = new HashMap<>();
+            HashMap<String, Object> params = new HashMap<>();
             Object idVal = getValue(data, idColumn);
             Long idV = null;
             if (idVal instanceof Long) {

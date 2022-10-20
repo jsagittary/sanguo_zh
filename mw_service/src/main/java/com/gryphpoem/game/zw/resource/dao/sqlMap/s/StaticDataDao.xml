@@ -248,7 +248,14 @@
 		s_building_type
 	</select>
 
-	<select id="selectBuildingInitMap" resultType="StaticBuildingInit">
+	<resultMap id="buildingInitMap" type="StaticBuildingInit">
+		<id column="buildingId" property="buildingId" />
+		<result column="openRequire" property="openRequire"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="canBuildType" property="canBuildType"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+	</resultMap>
+	<select id="selectBuildingInitMap" resultMap="buildingInitMap">
 		select * from
 		s_building_init
 	</select>

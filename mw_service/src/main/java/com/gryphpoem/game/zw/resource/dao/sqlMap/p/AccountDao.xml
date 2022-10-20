@@ -3,7 +3,7 @@
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="AccountDao">
-	<select id="selectAccount" parameterType="Map" resultType="Account">
+	<select id="selectAccount" parameterType="HashMap" resultType="Account">
 		select 
 		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where accountKey=#{accountKey} and serverId=#{serverId}
@@ -63,13 +63,13 @@
 
 	<!-- <select id="sameNameCount" parameterType="String" resultType="Integer"> select count(lordId) from p_account where nick=#{nick} </select> -->
 
-	<select id="load" parameterType="Map" resultType="Account">
+	<select id="load" parameterType="HashMap" resultType="Account">
 		select 
 		keyId,accountKey,serverId,platNo,publisher,platId,childNo,forbid,whiteName,lordId,created,deviceNo,createDate,loginDays,loginDate,isGm,isGuider
 		from p_account where keyId > #{curIndex} order by keyId limit 0,#{count}
 	</select>
 	
-	<select id="getMaxLordId" parameterType="Map" resultType="MaxLordId">
+	<select id="getMaxLordId" parameterType="HashMap" resultType="MaxLordId">
 		SELECT platNo ,MAX(lordId) as maxLordId FROM p_account GROUP BY platNo
 	</select>
 	<select id="selectMinAccountKey" resultType="Long">

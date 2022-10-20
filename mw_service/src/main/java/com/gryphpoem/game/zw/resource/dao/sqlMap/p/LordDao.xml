@@ -125,7 +125,7 @@
 		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence})
 	</insert>
 
-	<select id="load" parameterType="Map" resultType="Lord">
+	<select id="load" parameterType="HashMap" resultType="Lord">
 		SELECT
 		p_lord.lordId,
 		p_lord.nick,
@@ -181,7 +181,7 @@
 	</select>
 
 	<!-- 合服使用 加载数据 -->
-	<select id="mergeLoad" parameterType="Map" resultType="Lord">
+	<select id="mergeLoad" parameterType="HashMap" resultType="Lord">
 		SELECT
 		pl.*
 		FROM
@@ -198,7 +198,7 @@
 	</select>
 
 
-	<select id="mergeLoadByCamps" parameterType="Map" resultType="Lord">
+	<select id="mergeLoadByCamps" parameterType="HashMap" resultType="Lord">
 		SELECT
 		pl.*
 		FROM

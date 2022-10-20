@@ -1253,7 +1253,6 @@ public final class Constant {
         } catch (Exception e) {} finally {
             LogUtil.start(pushAddress);
         }
-        LogUtil.start("推送初始化, url:" + PushConstant.PUSH_SERVER_URL + ", PUSH_CONFIG_SWITCH:" + PUSH_CONFIG_SWITCH);
         RECOMMEND_PLAYER_OFF_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.RECOMMEND_PLAYER_OFF_TIME, 0);
         COUNTER_ATK_FUNCTION_LOCK = SystemTabLoader.getIntegerSystemValue(SystemId.COUNTER_ATK_FUNCTION_LOCK, 0);
         CROSS_FIGHT_OPEN_TIME = SystemTabLoader.getListListIntSystemValue(SystemId.CROSS_FIGHT_OPEN_TIME,
