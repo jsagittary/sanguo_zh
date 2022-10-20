@@ -982,6 +982,22 @@ public class StaticActivityDataMgr {
         return rab;
     }
 
+    public static ActivityBase getActivityByTypeAndActivityId(int activityType, int activityId) {
+        ActivityBase rab = null;
+        for (ActivityBase e : activityList) {
+            StaticActivity a = e.getStaticActivity();
+            StaticActivityPlan plan = e.getPlan();
+            if (a == null || plan == null) {
+                continue;
+            }
+            if (a.getType() == activityType && plan.getActivityId() == activityId && e.getStep0() != ActivityConst.OPEN_CLOSE) {
+                if (rab != null && rab.getPlan().getKeyId() > plan.getKeyId()) continue; // 如果是同样的 ,返回keyId大的
+                rab = e;
+            }
+        }
+        return rab;
+    }
+
     public static ActivityBase getPersonalActivityByType(int actPlanKeyId) {
         ActivityBase e = personalActMap.get(actPlanKeyId);
         if (CheckNull.isNull(e))

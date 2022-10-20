@@ -759,9 +759,9 @@ public class Player {
     private PersonalActs personalActs = new PersonalActs();
 
     /**
-     * 采集掉落道具记录
+     * 掉落道具活动记录
      */
-    private Map<Integer, CollectDropRecord> collectDropDataMap = new HashMap<>(2);
+    private List<DropPropRecord> dropPropRecordList = new ArrayList<>();
 
     /**
      * 是否第一次打造宝具
@@ -2050,9 +2050,9 @@ public class Player {
         if (CheckNull.nonEmpty(recruitReward)) {
             recruitReward.forEach((k, v) -> ser.addRecruitRewardRecord(PbHelper.createTwoIntPb(k, v)));
         }
-        // 采集掉落道具记录
-        if (CheckNull.nonEmpty(collectDropDataMap)) {
-            collectDropDataMap.values().forEach(collectDropRecord -> ser.addSerCollectDropRecord(collectDropRecord.ser()));
+        // 掉落道具活动记录
+        if (CheckNull.nonEmpty(dropPropRecordList)) {
+            dropPropRecordList.forEach(dropPropRecord -> ser.addSerDropPropRecord(dropPropRecord.ser()));
         }
         return ser.build().toByteArray();
     }
@@ -2667,10 +2667,12 @@ public class Player {
             this.playerRelic.dser(ser.getSerPlayerRelic());
         }
         Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(), o.getV2())));
-        // 采集掉落道具记录
-        Optional.ofNullable(ser.getSerCollectDropRecordList()).ifPresent(serCollectDropRecordList ->
-                serCollectDropRecordList.forEach(
-                        serCollectDropRecord -> this.collectDropDataMap.put(serCollectDropRecord.getMineType(), new CollectDropRecord().dser(serCollectDropRecord))));
+        // 掉落道具活动记录
+        Optional.ofNullable(ser.getSerDropPropRecordList()).ifPresent(serDropPropRecordList ->
+                serDropPropRecordList.forEach(
+                        serDropPropRecord -> this.dropPropRecordList.add(new DropPropRecord().dser(serDropPropRecord))
+                )
+        );
     }
 
     private void dserTrophy(SerTrophy ser) {
@@ -3618,7 +3620,21 @@ public class Player {
         return playerRelic;
     }
 
-    public Map<Integer, CollectDropRecord> getCollectDropDataMap() {
-        return collectDropDataMap;
+    public List<DropPropRecord> getDropPropRecordList() {
+        return dropPropRecordList;
+    }
+
+    public void setDropPropRecordList(List<DropPropRecord> dropPropRecordList) {
+        this.dropPropRecordList = dropPropRecordList;
+    }
+
+    public DropPropRecord getDropPropRecord(int activityType, int activityId) {
+        return this.dropPropRecordList.stream()
+                .filter(dropPropRecord -> dropPropRecord.getActivityType() == activityType && dropPropRecord.getActivityId() == activityId)
+                .max(Comparator.comparingInt(DropPropRecord::getDate)).orElse(null);
+    }
+
+    public void removeDropPropRecord(int activityType, int activityId) {
+        this.dropPropRecordList.removeIf(dropPropRecord -> dropPropRecord.getActivityType() == activityType && dropPropRecord.getActivityId() == activityId);
     }
 }

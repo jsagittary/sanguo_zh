@@ -48,7 +48,7 @@ public class StaticActBandit {
     private List<List<Integer>> drop;
 
     /**
-     * 共可获取的掉落数量
+     * 单日可获取数量上限
      */
     private int total;
 
@@ -67,6 +67,11 @@ public class StaticActBandit {
      * 资源点id区间：[[104,111],[204,211]]
      */
     private List<List<Integer>> mineId;
+
+    /**
+     * 单次可获取数量上限
+     */
+    private int onceTotal;
 
     public int getId() {
         return id;
@@ -138,5 +143,13 @@ public class StaticActBandit {
 
     public void setMineId(List<List<Integer>> mineId) {
         this.mineId = mineId;
+    }
+
+    public int getOnceTotal() {
+        return onceTotal;
+    }
+
+    public void setOnceTotal(int onceTotal) {
+        this.onceTotal = onceTotal;
     }
 }
