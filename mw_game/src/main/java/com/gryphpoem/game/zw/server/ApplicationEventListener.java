@@ -20,9 +20,10 @@ public class ApplicationEventListener implements ApplicationListener<Application
         if (applicationEvent instanceof ContextClosedEvent) {
             while (!AppGameServer.getInstance().allSaveDone()) {
                 try {
+                    LogUtil.error("appGameServer 还未保存完, 睡眠3s");
                     TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
-                    LogUtil.error("appGameServer 还未保存完, 睡眠3s");
+                    LogUtil.error("", e);
                 }
             }
         }
