@@ -28,6 +28,8 @@ import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.RechargeService;
 import com.gryphpoem.game.zw.service.activity.AbsSimpleActivityService;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,9 +46,12 @@ import java.util.stream.Collectors;
 @Service
 public class CrossRechargeLocalActivityService extends AbsSimpleActivityService implements RechargeService, GmCmdService {
 
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast")
     private CrossRechargeActivityService crossRechargeActivityService;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "asyncUpdatePlayerLord", async = true, isReturn = false)
+            })
     private RpcPlayerService rpcPlayerService;
     @Autowired
     private DubboRpcService dubboRpcService;

@@ -1,11 +1,13 @@
 package com.gryphpoem.game.zw.resource.dao.impl.s;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.gryphpoem.game.zw.resource.dao.BaseDao;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 
 import java.util.List;
 import java.util.Map;
 
+@DS("ini")
 public class StaticDataDao extends BaseDao {
 
     public Map<Integer,StaticPortraitFrame> selectPortraitFrameMap() {

@@ -5,23 +5,15 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao;
 import com.gryphpoem.game.zw.resource.dao.impl.p.LordDao;
 import com.gryphpoem.game.zw.resource.dao.impl.p.SmallIdDao;
-import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.SmallId;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import org.apache.commons.lang3.RandomUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.stereotype.Service;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2021/7/29
  */
 
+@SpringBootTest
 public class MultipleClient {
     @Test
     public void test() {
@@ -67,7 +60,7 @@ public class MultipleClient {
         String serverIp = "172.16.13.101";
         int serverPort = 9201;
 
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("application.xml");
         LordDao lordDao = applicationContext.getBean(LordDao.class);
         List<Lord> lordList = lordDao.load();
         SmallIdDao smallIdDao = applicationContext.getBean(SmallIdDao.class);

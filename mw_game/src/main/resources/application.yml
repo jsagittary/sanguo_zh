@@ -1,0 +1,84 @@
+#logging:
+#  config: classpath:log4j2.xml
+spring:
+  application:
+    name: san_guo_game
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        ini:
+            driverClassName: com.mysql.jdbc.Driver
+            url: jdbc:mysql://172.16.13.204:3306/sanguo_ini_dev?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&serverTimezone=Hongkong&useSSL=true&allowMultiQueries=true
+            username: root
+            password: '00000000'
+        master:
+            driverClassName: com.mysql.jdbc.Driver
+            url: jdbc:mysql://172.16.13.204:3306/sanguo_zp_dev?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&serverTimezone=Hongkong&useSSL=true&allowMultiQueries=true
+            username: root
+            password: '00000000'
+      druid:
+        time-between-log-stats-millis: 300000
+    druid:
+      initial-size: 10
+      min-idle: 10
+      max-active: 100
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 'x'
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      proxy-filters: stat,wall,slf4j,config
+      use-global-data-source-stat: true
+      filter:
+        stat:
+          enabled: true
+        sl4j:
+          enabled: true
+          statement-logger-name: SQL_STAT
+
+
+######################## prometheus ###########################
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: *
+
+########   application 配置    ########
+dubbo:
+  application:
+    name: ${spring.application.name}
+    logger: slf4j
+    qos-enable: false
+########   protocol 配置    ########
+  protocol:
+    name: dubbo
+    port: -1
+    accesslog: true
+########   registry 配置    ########
+  registry:
+    address: nacos://172.16.13.191:8848?namespace=2398e279-f78d-4a40-b709-e3321e6de6cf
+    group: dev
+########   provider 配置    ########
+#标签路由
+#dubbo.provider.tag=cross-group-1
+  provider:
+    threads: 30
+    queues: 100000
+    dispatcher: message
+    retries: 0
+    cluster: failfast
+    layer: provider-fight
+    timeout: 500
+    filter: monitor
+#最多支持100个连接(100个master服务器连接)
+    accepts: 100
+
+
+########   application 参数    ########
+gmFlag: true

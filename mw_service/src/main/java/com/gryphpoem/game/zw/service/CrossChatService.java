@@ -26,6 +26,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
 import com.gryphpoem.game.zw.resource.pojo.chat.RoleChat;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,9 +42,15 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class CrossChatService implements GmCmdService {
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "getPlayerShow")
+            })
     private RpcChatService rpcChatService;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "asyncUpdatePlayerLord", async = true, isReturn = false)
+            })
     private RpcPlayerService rpcPlayerService;
     @Autowired
     private ServerSetting serverSetting;

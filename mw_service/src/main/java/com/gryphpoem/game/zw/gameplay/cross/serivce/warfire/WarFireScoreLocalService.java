@@ -43,6 +43,8 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,9 +71,12 @@ public class WarFireScoreLocalService extends CrossFunctionTemplateService imple
     private ServerSetting serverSetting;
     @Autowired
     private PlayerDataManager playerDataManager;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast")
     private Game2CrossWarFireService game2CrossWarFireService;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "asyncUpdatePlayerLord", async = true, isReturn = false)
+            })
     private RpcPlayerService rpcPlayerService;
     @Autowired
     private RewardDataManager rewardDataManager;

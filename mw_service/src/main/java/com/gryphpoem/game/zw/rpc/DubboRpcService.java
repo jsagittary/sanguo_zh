@@ -18,6 +18,8 @@ import com.gryphpoem.game.zw.resource.util.DtoParser;
 import com.gryphpoem.game.zw.resource.util.RandomUtil;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,9 +41,12 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DubboRpcService implements GmCmdService {
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+                    methods = {
+                        @Method(name = "asyncUpdatePlayerLord", async = true, isReturn = false)
+                    })
     private RpcPlayerService rpcPlayerService;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast")
     private CrossRechargeActivityService crossRechargeActivityService;
     @Autowired
     private ServerSetting serverSetting;

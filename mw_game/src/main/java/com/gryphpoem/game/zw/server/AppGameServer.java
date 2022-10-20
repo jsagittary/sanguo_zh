@@ -51,9 +51,13 @@ import com.start.ProtoRegistry;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.traffic.TrafficCounter;
 import org.apache.dubbo.config.DubboShutdownHook;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
@@ -63,7 +67,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AppGameServer extends Server {
+@Component
+@Lazy(false)
+public class AppGameServer extends Server implements ApplicationContextAware {
 
     public ConnectServer connectServer;
     private HttpServer httpServer;
@@ -87,19 +93,22 @@ public class AppGameServer extends Server {
 
     public static ApplicationContext ac;
 
-    // public Date OPEN_DATE = DateHelper.parseDate(ac.getBean(ServerSetting.class).getOpenTime());
-
     private AppGameServer() {
         super("AppGameServer");
     }
 
-    private static AppGameServer gameServer;
+    private static volatile AppGameServer gameServer;
+
+    @PostConstruct
+    public void init() {
+        if (gameServer == null) {
+            gameServer = this;
+        }
+    }
 
     public static AppGameServer getInstance() {
         if (gameServer == null) {
             // spring的初始化
-            ac = new ClassPathXmlApplicationContext("applicationContext.xml");
-            DataResource.ac = ac;
             gameServer = new AppGameServer();
             removeSpringShutdownHook();
             removeDubboShutdownHook();
@@ -107,9 +116,9 @@ public class AppGameServer extends Server {
         return gameServer;
     }
 
-    private static void removeSpringShutdownHook() {
+    public static void removeSpringShutdownHook() {
         try {
-            Class<?> shutdownHookClass = ac.getClass().getSuperclass().getSuperclass().getSuperclass().getSuperclass();
+            Class<?> shutdownHookClass = ac.getClass().getSuperclass().getSuperclass();
             Field field = shutdownHookClass.getDeclaredField("shutdownHook");
             if (Objects.nonNull(field)) {
                 field.setAccessible(true);
@@ -122,7 +131,8 @@ public class AppGameServer extends Server {
             LogUtil.error("移除 spring shutdownHook 失败!!! ", e);
         }
     }
-    private static void removeDubboShutdownHook(){
+
+    public static void removeDubboShutdownHook() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
     }
@@ -194,6 +204,11 @@ public class AppGameServer extends Server {
         innerServer.sendMsg(msg);
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        DataResource.ac = ac = applicationContext;
+    }
+
     /**
      * 未捕获异常处理
      *
@@ -205,7 +220,7 @@ public class AppGameServer extends Server {
         public void uncaughtException(Thread t, Throwable e) {
             LogUtil.error("GameUncaughtExceptionHandler uncaughtException", e);
 
-            AppGameServer.getInstance().startSuccess = false;
+            getInstance().startSuccess = false;
             System.exit(1);// 重要线程启动失败，立即退出
         }
 
@@ -223,7 +238,7 @@ public class AppGameServer extends Server {
     public void run() {
         super.run();
 
-        GameServerRpcServerImpl impl = ac.getBean("gameServerRpcServer", GameServerRpcServerImpl.class);
+        GameServerRpcServerImpl impl = ac.getBean("gameServerRpcServerImpl", GameServerRpcServerImpl.class);
 //        impl.checkServerAlreadyStart();
 
 

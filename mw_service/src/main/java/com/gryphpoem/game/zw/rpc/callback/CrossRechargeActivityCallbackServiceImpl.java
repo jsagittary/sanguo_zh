@@ -22,6 +22,8 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActAward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActivityPlan;
 import com.gryphpoem.game.zw.resource.util.*;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,9 +43,12 @@ public class CrossRechargeActivityCallbackServiceImpl implements CrossRechargeAc
     private ServerSetting serverSetting;
     @Autowired
     private PlayerDataManager playerDataManager;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast")
     private CrossRechargeActivityService crossRechargeActivityService;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "asyncUpdatePlayerLord", async = true, isReturn = false)
+            })
     private RpcPlayerService rpcPlayerService;
     @Autowired
     private MailDataManager mailDataManager;

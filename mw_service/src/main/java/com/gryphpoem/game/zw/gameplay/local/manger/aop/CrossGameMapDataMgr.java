@@ -5,6 +5,8 @@ import com.gryphpoem.cross.gameplay.map.g2c.service.Game2CrossMapService;
 import com.gryphpoem.cross.gameplay.player.common.CrossPlayer;
 import com.gryphpoem.game.zw.gameplay.cross.util.CrossEntity2Dto;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +17,23 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class CrossGameMapDataMgr {
 
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "enterCrossMap"),
+                    @Method(name = "leaveCrossMap"),
+                    @Method(name = "getCrossMap"),
+                    @Method(name = "getCrossMarch"),
+                    @Method(name = "getCrossArea"),
+                    @Method(name = "getCrossBattle"),
+                    @Method(name = "getCrossCityInfo"),
+                    @Method(name = "crossMovePoint"),
+                    @Method(name = "attackCrossPos"),
+                    @Method(name = "joinBattleCross"),
+                    @Method(name = "enterLeaveCross"),
+                    @Method(name = "getCrossArmy"),
+                    @Method(name = "retreatCross"),
+                    @Method(name = "getCrossMilitarySituation")
+            })
     private Game2CrossMapService crossWarFireMapService;
 
     /**

@@ -6,28 +6,28 @@
 	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
 	<!-- <tx:annotation-driven transaction-manager="transactionManager" /> -->
 
-	<bean id="iniDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
-		destroy-method="close">
-		<property name="driverClass" value="com.mysql.jdbc.Driver" />
-		<property name="jdbcUrl" value="#{serverConfig.iniJdbcUrl}" />
-		<property name="user" value="#{serverConfig.iniUser}" />
-		<property name="password" value="#{serverConfig.iniPassword}" />
+<!--	<bean id="iniDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"-->
+<!--		destroy-method="close">-->
+<!--		<property name="driverClass" value="com.mysql.jdbc.Driver" />-->
+<!--		<property name="jdbcUrl" value="#{serverConfig.iniJdbcUrl}" />-->
+<!--		<property name="user" value="#{serverConfig.iniUser}" />-->
+<!--		<property name="password" value="#{serverConfig.iniPassword}" />-->
 
-		<property name="minPoolSize" value="2" />
-		<property name="maxPoolSize" value="5" />
-		<property name="initialPoolSize" value="2" />
-		<property name="maxIdleTime" value="14400" />
-		<property name="acquireIncrement" value="5" />
-		<property name="acquireRetryAttempts" value="30" />
-		<property name="acquireRetryDelay" value="500" />
-		<!-- <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection" 
-			value="100" /> -->
-		<property name="numHelperThreads" value="2" />
-		<property name="idleConnectionTestPeriod" value="600" />
-		<property name="testConnectionOnCheckout" value="false" />
-		<property name="testConnectionOnCheckin" value="false" />
-		<property name="preferredTestQuery" value="select 'x'" />
-	</bean>
+<!--		<property name="minPoolSize" value="2" />-->
+<!--		<property name="maxPoolSize" value="5" />-->
+<!--		<property name="initialPoolSize" value="2" />-->
+<!--		<property name="maxIdleTime" value="14400" />-->
+<!--		<property name="acquireIncrement" value="5" />-->
+<!--		<property name="acquireRetryAttempts" value="30" />-->
+<!--		<property name="acquireRetryDelay" value="500" />-->
+<!--		&lt;!&ndash; <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection" -->
+<!--			value="100" /> &ndash;&gt;-->
+<!--		<property name="numHelperThreads" value="2" />-->
+<!--		<property name="idleConnectionTestPeriod" value="600" />-->
+<!--		<property name="testConnectionOnCheckout" value="false" />-->
+<!--		<property name="testConnectionOnCheckin" value="false" />-->
+<!--		<property name="preferredTestQuery" value="select 'x'" />-->
+<!--	</bean>-->
 
 	<!-- <bean id="iniDataSource" class="com.alibaba.druid.pool.DruidDataSource" 
 		init-method="init" destroy-method="close"> 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass 
@@ -52,7 +52,7 @@
 	<bean id="iniSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"
 		p:configLocation="classpath:com/gryphpoem/game/zw/resource/dao/config/mybatisConfig.xml"
 		p:mapperLocations="classpath*:com/gryphpoem/game/zw/resource/dao/sqlMap/s/*Dao.xml"
-		p:dataSource-ref="iniDataSource" />
+		p:dataSource-ref="dataSource" />
 
 	<!-- <bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> 
 		<property name="dataSource" ref="iniDataSource" /> </bean> -->

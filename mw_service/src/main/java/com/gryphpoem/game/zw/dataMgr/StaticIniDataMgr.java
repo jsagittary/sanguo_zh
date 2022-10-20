@@ -13,7 +13,7 @@ public class StaticIniDataMgr {
     private StaticIniDataMgr() {
     }
 
-    private static StaticDataDao staticDataDao = DataResource.ac.getBean(StaticDataDao.class);
+    private static StaticDataDao staticDataDao;
 
     private static List<String> markList = new ArrayList<String>();
     private static List<String> familyList = new ArrayList<String>();
@@ -54,6 +54,7 @@ public class StaticIniDataMgr {
     private static Map<Integer, StaticSeasonTalent> seasonTalentMap;
 
     public static void init() {
+        staticDataDao = DataResource.ac.getBean(StaticDataDao.class);
         StaticIniDataMgr.initName();
 
         StaticIniDataMgr.initSystem();

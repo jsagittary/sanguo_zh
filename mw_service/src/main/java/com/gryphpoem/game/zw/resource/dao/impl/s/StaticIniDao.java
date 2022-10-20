@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.dao.impl.s;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.gryphpoem.game.zw.resource.dao.BaseDao;
 import com.gryphpoem.game.zw.resource.dao.sqlMap.s.StaticIniMapper;
 import com.gryphpoem.game.zw.resource.domain.s.*;
@@ -12,6 +13,7 @@ import java.util.Set;
  * @author xwind
  * @date 2021/7/7
  */
+@DS("ini")
 public class StaticIniDao extends BaseDao {
 
     public List<StaticWarFireBuffCross> selectStaticWarFireBuffCross(){

@@ -15,33 +15,33 @@ public class ServerConfig {
     // @Value("${appId}")
     // private String appId;
 
-    @Value("${jdbcUrl}")
+//    @Value("${jdbcUrl}")
     private String jdbcUrl;
 
-    @Value("${user}")
+//    @Value("${user}")
     private String user;
 
-    @Value("${password}")
+//    @Value("${password}")
     private String password;
 
     // @Value("${jdbcPath}")
     // private String jdbcPath;
 
-    @Value("${iniJdbcUrl}")
+//    @Value("${iniJdbcUrl}")
     private String iniJdbcUrl;
 
-    @Value("${iniUser}")
+//    @Value("${iniUser}")
     private String iniUser;
 
-    @Value("${iniPassword}")
+//    @Value("${iniPassword}")
     private String iniPassword;
 
-    @Value("${gmFlag}")
+//    @Value("${gmFlag}")
     private String gmFlag; // gm开关
 
-    @Value("${registryAddress}")
+//    @Value("${registryAddress}")
     private String registryAddress;
-    @Value("${registryGroup}")
+//    @Value("${registryGroup}")
     private String registryGroup;
 
 

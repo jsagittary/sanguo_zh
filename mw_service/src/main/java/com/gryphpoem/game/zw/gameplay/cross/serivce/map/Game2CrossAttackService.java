@@ -20,6 +20,8 @@ import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.WarService;
 import com.gryphpoem.game.zw.service.WorldService;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +53,10 @@ public class Game2CrossAttackService implements GmCmdService {
     private VipDataManager vipDataManager;
     @Autowired
     private CrossGamePlayService crossGamePlayService;
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "invokeScoutPlayerRq")
+            })
     private Game2CrossBattleService game2CrossBattleService;
 
     /**

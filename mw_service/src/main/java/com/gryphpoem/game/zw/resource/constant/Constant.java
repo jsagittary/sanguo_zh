@@ -1247,6 +1247,12 @@ public final class Constant {
                 "[[],[93,83,73,72,71,94,84,74,64,63,62,61],[98,88,78,79,80,97,87,77,67,68,69,70],[21,22,23,13,3,31,32,33,34,24,14,4]]");
         // 推送是否开启 1 开启 0 关闭
         PUSH_CONFIG_SWITCH = SystemTabLoader.getIntegerSystemValue(SystemId.PUSH_CONFIG_SWITCH, 0);
+        String pushAddress = "";
+        try {
+            pushAddress = "推送初始化, url:" + PushConstant.PUSH_SERVER_URL + ", PUSH_CONFIG_SWITCH:" + PUSH_CONFIG_SWITCH;
+        } catch (Exception e) {} finally {
+            LogUtil.start(pushAddress);
+        }
         LogUtil.start("推送初始化, url:" + PushConstant.PUSH_SERVER_URL + ", PUSH_CONFIG_SWITCH:" + PUSH_CONFIG_SWITCH);
         RECOMMEND_PLAYER_OFF_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.RECOMMEND_PLAYER_OFF_TIME, 0);
         COUNTER_ATK_FUNCTION_LOCK = SystemTabLoader.getIntegerSystemValue(SystemId.COUNTER_ATK_FUNCTION_LOCK, 0);

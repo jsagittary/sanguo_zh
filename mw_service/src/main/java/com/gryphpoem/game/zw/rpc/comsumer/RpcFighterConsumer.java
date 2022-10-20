@@ -25,6 +25,8 @@ import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.DtoParser;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Service
 public class RpcFighterConsumer {
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast")
     private RpcFightService rpcFightService;
     @Autowired
     private PlayerDataManager playerDataManager;

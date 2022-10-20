@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.util.ListUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -31,25 +32,26 @@ public class GmCmdProcessor implements BeanPostProcessor {
         return o;
     }
 
+    @Lazy
     @Override
     public Object postProcessAfterInitialization(Object bean, String s) throws BeansException {
-        if(bean instanceof GmCmdService || bean instanceof GmService){
-            Method[] methods = ReflectionUtils.getAllDeclaredMethods(bean.getClass());
-            if (methods != null) {
-                for (Method method : methods) {
-                    GmCmd gmCmd = AnnotationUtils.findAnnotation(method, GmCmd.class);
-                    if (null != gmCmd) {
-                        Relation relation = new Relation(bean,method);
-                        if(relationMap.containsKey(gmCmd.value())){
-                            LogUtil.gm(String.format("Gm命令=%s已存在,%s",gmCmd.value(),relationMap.get(gmCmd.value())));
-                            errors.add(gmCmd.value());
-                        }else {
-                            relationMap.put(gmCmd.value(),relation);
-                        }
-                    }
-                }
-            }
-        }
+//        if(bean instanceof GmCmdService || bean instanceof GmService){
+//            Method[] methods = ReflectionUtils.getAllDeclaredMethods(bean.getClass());
+//            if (methods != null) {
+//                for (Method method : methods) {
+//                    GmCmd gmCmd = AnnotationUtils.findAnnotation(method, GmCmd.class);
+//                    if (null != gmCmd) {
+//                        Relation relation = new Relation(bean,method);
+//                        if(relationMap.containsKey(gmCmd.value())){
+//                            LogUtil.gm(String.format("Gm命令=%s已存在,%s",gmCmd.value(),relationMap.get(gmCmd.value())));
+//                            errors.add(gmCmd.value());
+//                        }else {
+//                            relationMap.put(gmCmd.value(),relation);
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return bean;
     }
 

@@ -30,6 +30,8 @@ import com.gryphpoem.game.zw.resource.util.NumberUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +54,10 @@ public class GameServerRpcServerImpl implements GameServerRpcService {
     @Autowired
     private PlayerDataManager playerDataManager;
 
-    @Autowired
+    @DubboReference(check = false, lazy = true, cluster = "failfast",
+            methods = {
+                    @Method(name = "getServerInfo", timeout = 30000)
+            })
     private GameServerManagerService gameServerManagerService;
 
 
@@ -131,37 +136,6 @@ public class GameServerRpcServerImpl implements GameServerRpcService {
         int idx = name.indexOf("@");
         return name.substring(0, idx);
     }
-
-//    public void checkServerAlreadyStart() {
-//        try {
-//            int serverId = serverSetting.getServerID();
-//            String ip = NetUtils.getLocalHost();
-//            int port = Integer.parseInt(serverSetting.getClientPort());
-//            long startMill = System.currentTimeMillis();
-//            CompletableFuture<Collection<GameServerInfo>> completableFuture = gameServerManagerService.registerGameServerStart(serverId, ip, port);
-//            Collection<GameServerInfo> findServerList = completableFuture.get(60, TimeUnit.SECONDS);
-//            long costSec = (System.currentTimeMillis() - startMill) / NumberUtil.THOUSAND;
-//            LogUtil.start("区服ID 检测花费时间: " + costSec + " 秒");
-//            boolean findOtherRuntimeStart = false;
-//            if (Objects.nonNull(findServerList)) {
-//                for (GameServerInfo gsi : findServerList) {
-//                    if (!ip.equals(gsi.getIp()) || port != gsi.getPort()) {
-//                        findOtherRuntimeStart = true;
-//                        LogUtil.error2Sentry(String.format("区服ID: %d, 已经在其它地方启动了, 启动信息: %s", serverId, gsi));
-//                    }
-//                }
-//            }
-//            if (findOtherRuntimeStart) {
-//                LogUtil.start(String.format("区服ID :%d 唯一性检测失败 程序关闭!!!", serverSetting.getServerID()));
-//                stopStart();
-//            } else {
-//                LogUtil.start(String.format("区服ID :%d 唯一性检测成功", serverSetting.getServerID()));
-//            }
-//        } catch (Exception e) {
-//            LogUtil.error(String.format("区服ID :%d 唯一性检测失败 程序关闭!!!", serverSetting.getServerID()), e);
-//            stopStart();
-//        }
-//    }
 
     public void checkServerAlreadyStart() {
         long startMill = System.currentTimeMillis();

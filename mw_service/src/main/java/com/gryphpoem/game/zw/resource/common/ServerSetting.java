@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
+@Component
 public class ServerSetting {
 
     public static final String CONFIG_MODE = "configMode";

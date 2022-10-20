@@ -20,14 +20,14 @@
 
     <!--    <dubbo:registry group="test" address="nacos://mse-c64cd160-nacos-ans.mse.aliyuncs.com:8848?namespace=d64326f8-1ce2-44ba-adcc-07f0cf3e3dde"/>-->
     <!-- 消费端定义 -->
-    <dubbo:consumer retries="0" timeout="1000" cluster="failfast" threadpool="fixed" threads="30" >
+    <dubbo:consumer retries="0" timeout="1000" cluster="failfast" threadpool="fixed" threads="30">
         <dubbo:parameter key="gameServerId" value="#{serverSetting.serverID}"/>
     </dubbo:consumer>
     <!-- 服务调用 -->
     <dubbo:reference id="crossRechargeActivityService" check="false" lazy="true"
                      interface="com.gryphpoem.cross.activity.CrossRechargeActivityService" version="1.0.0"/>
 
-    <dubbo:reference id="rpcPlayerService" check="false" version="1.0.0"
+    <dubbo:reference id="rpcPlayerService" check="false" version="1.0.0" lazy="true"
                      interface="com.gryphpoem.cross.player.RpcPlayerService">
         <dubbo:method name="asyncUpdatePlayerLord" return="false" async="true"/>
     </dubbo:reference>

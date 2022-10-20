@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.dao.sqlMap.s;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.gryphpoem.game.zw.resource.dao.handle.ElementServerTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler;
@@ -15,6 +16,7 @@ import java.util.Set;
  * @author xwind
  * @date 2021/7/7
  */
+@DS("ini")
 public interface StaticIniMapper {
 
     @Select("select * from s_war_fire_buff_cross")

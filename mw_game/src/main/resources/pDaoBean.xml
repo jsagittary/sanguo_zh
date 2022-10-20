@@ -5,29 +5,29 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
 
-	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
-		destroy-method="close">
-		<property name="driverClass" value="com.mysql.jdbc.Driver" />
-		<property name="jdbcUrl" value="#{serverConfig.jdbcUrl}" />
-		<property name="user" value="#{serverConfig.user}" />
-		<property name="password" value="#{serverConfig.password}" />
-		<property name="initialPoolSize" value="25" />
-		<property name="minPoolSize" value="25" />
-		<property name="maxPoolSize" value="250" />
-		<property name="maxIdleTime" value="14400" />
+<!--	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"-->
+<!--		destroy-method="close">-->
+<!--		<property name="driverClass" value="com.mysql.jdbc.Driver" />-->
+<!--		<property name="jdbcUrl" value="#{serverConfig.jdbcUrl}" />-->
+<!--		<property name="user" value="#{serverConfig.user}" />-->
+<!--		<property name="password" value="#{serverConfig.password}" />-->
+<!--		<property name="initialPoolSize" value="25" />-->
+<!--		<property name="minPoolSize" value="25" />-->
+<!--		<property name="maxPoolSize" value="250" />-->
+<!--		<property name="maxIdleTime" value="14400" />-->
 
-		<property name="acquireIncrement" value="5" />
-		<property name="acquireRetryAttempts" value="30" />
-		<property name="acquireRetryDelay" value="500" />
+<!--		<property name="acquireIncrement" value="5" />-->
+<!--		<property name="acquireRetryAttempts" value="30" />-->
+<!--		<property name="acquireRetryDelay" value="500" />-->
 
-		<!-- <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection" 
-			value="100" /> -->
-		<property name="numHelperThreads" value="5" />
-		<property name="idleConnectionTestPeriod" value="600" />
-		<property name="testConnectionOnCheckout" value="false" />
-		<property name="testConnectionOnCheckin" value="false" />
-		<property name="preferredTestQuery" value="select 'x'" />
-	</bean>
+<!--		&lt;!&ndash; <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection" -->
+<!--			value="100" /> &ndash;&gt;-->
+<!--		<property name="numHelperThreads" value="5" />-->
+<!--		<property name="idleConnectionTestPeriod" value="600" />-->
+<!--		<property name="testConnectionOnCheckout" value="false" />-->
+<!--		<property name="testConnectionOnCheckin" value="false" />-->
+<!--		<property name="preferredTestQuery" value="select 'x'" />-->
+<!--	</bean>-->
 
 	<!-- <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" 
 		init-method="init" destroy-method="close"> 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass 
