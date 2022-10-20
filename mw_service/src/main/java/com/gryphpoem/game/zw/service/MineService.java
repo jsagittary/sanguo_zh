@@ -348,8 +348,10 @@ public class MineService {
                     dropPropRecord.setTotalGainCount(totalGainCount + finalGetCount);
                 }
 
-                CommonPb.Award dropAward = PbHelper.createAwardPb(awardType, awardId, finalGetCount);
-                grab.add(dropAward);
+                if (finalGetCount > 0) {
+                    CommonPb.Award dropAward = PbHelper.createAwardPb(awardType, awardId, finalGetCount);
+                    grab.add(dropAward);
+                }
             }
         }
     }
