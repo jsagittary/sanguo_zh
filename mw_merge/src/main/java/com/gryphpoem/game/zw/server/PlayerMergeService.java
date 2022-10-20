@@ -44,9 +44,9 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName PlayerMergeService.java
  * @Description 玩家合服的处理
- * @author QiuKun
  * @date 2018年9月17日
  */
 @Service
@@ -81,12 +81,12 @@ public class PlayerMergeService {
 
     /**
      * 保存玩家数据
-     * 
+     *
      * @param serverData
      */
     public void saveAllPlayer(MasterCacheData serverData) {
         int nThreads = Runtime.getRuntime().availableProcessors() * 2; // CPU核数
-                                                                       // * 2
+        // * 2
         MasterServer masterServer = serverData.getMasterServer();
         int masterServerId = masterServer.getServerId();
         ConcurrentLinkedQueue<Player> queue = new ConcurrentLinkedQueue<>();
@@ -110,7 +110,7 @@ public class PlayerMergeService {
 
     /**
      * 保存一个玩家数据
-     * 
+     *
      * @param player
      * @param masterServerId
      */
@@ -150,7 +150,7 @@ public class PlayerMergeService {
 
     /**
      * 加载主服玩家的数据
-     * 
+     *
      * @param serverData
      * @throws Exception
      */
@@ -192,7 +192,7 @@ public class PlayerMergeService {
 
     /**
      * 处理所有玩家数据
-     * 
+     *
      * @param serverData
      */
     public void allPlayerDataproccess(MasterCacheData serverData) {
@@ -223,12 +223,12 @@ public class PlayerMergeService {
 
     /**
      * 活动处理
-     * 
+     *
      * @param player
      * @param serverData
      */
     private void activityDataProcess(Player player, MasterCacheData serverData) {
-        for (Iterator<Entry<Integer, Activity>> it = player.activitys.entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Entry<Integer, Activity>> it = player.activitys.entrySet().iterator(); it.hasNext(); ) {
             Entry<Integer, Activity> kv = it.next();
             int actType = kv.getKey();
             Activity activity = kv.getValue();
@@ -254,8 +254,7 @@ public class PlayerMergeService {
 
     /**
      * 好友的处理
-     * 
-     * 
+     *
      * @param player
      */
     private void friendDataProcess(Player player, MasterCacheData serverData) {
@@ -264,14 +263,14 @@ public class PlayerMergeService {
         }
         Map<Long, Player> allPlayer = serverData.getAllPlayer();
 
-        for (Iterator<Map.Entry<Long, DbFriend>> it = player.friends.entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Map.Entry<Long, DbFriend>> it = player.friends.entrySet().iterator(); it.hasNext(); ) {
             Entry<Long, DbFriend> next = it.next();
             Long roleId = next.getKey();
             if (!allPlayer.containsKey(roleId)) {
                 it.remove();
             }
         }
-        for (Iterator<Entry<Long, DbMasterApprentice>> it = player.apprentices.entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Entry<Long, DbMasterApprentice>> it = player.apprentices.entrySet().iterator(); it.hasNext(); ) {
             Entry<Long, DbMasterApprentice> next = it.next();
             Long roleId = next.getKey();
             if (!allPlayer.containsKey(roleId)) {
@@ -285,7 +284,7 @@ public class PlayerMergeService {
 
     /**
      * 那些数据需要清除
-     * 
+     *
      * @param player
      */
     private void cleanDataProcess(Player player, MasterCacheData serverData, int pos) {
@@ -332,7 +331,7 @@ public class PlayerMergeService {
             player.cabinet.setLeadStep(4);
         }
         // buff效果清掉
-        for (Iterator<Entry<Integer, Effect>> it = player.getEffect().entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Entry<Integer, Effect>> it = player.getEffect().entrySet().iterator(); it.hasNext(); ) {
             Entry<Integer, Effect> kv = it.next();
             Effect ef = kv.getValue();
             if (MergeUtils.REATIN_BUFF.contains(ef.getEffectType())) continue;
@@ -378,13 +377,13 @@ public class PlayerMergeService {
 
     /**
      * 名字处理
-     * 
+     *
      * @param serverData
      * @param masterServer
      * @param tmpPlayerMap
      */
     private void nameProcess(MasterCacheData serverData, MasterServer masterServer,
-            Map<Integer, Map<Long, Player>> tmpPlayerMap) {
+                             Map<Integer, Map<Long, Player>> tmpPlayerMap) {
         int masterServerId = masterServer.getServerId();
         Set<String> nameSet = null;
         Map<Long, Player> allPlayer = new HashMap<>();
@@ -500,7 +499,7 @@ public class PlayerMergeService {
 
     /**
      * 充值数据
-     * 
+     *
      * @param tmpPlayerMap
      */
     private boolean loadPay(Map<Long, Player> tmpPlayerMap, int serverId) {
@@ -534,10 +533,12 @@ public class PlayerMergeService {
         List<DbPlayerHero> list = playerHeroDao.load();
         for (DbPlayerHero dbPlayerHero : list) {
             Player player = tmpPlayerMap.get(dbPlayerHero.getLordId());
-            try {
-                player.playerHero = new PlayerHero(dbPlayerHero);
-            } catch (Exception e) {
-                LogUtil.error(e, "roleId:", dbPlayerHero.getLordId());
+            if (Objects.nonNull(player)) {
+                try {
+                    player.playerHero = new PlayerHero(dbPlayerHero);
+                } catch (Exception e) {
+                    LogUtil.error(e, "roleId:", dbPlayerHero.getLordId());
+                }
             }
         }
         return true;
@@ -655,7 +656,7 @@ public class PlayerMergeService {
 
     /**
      * 一些lord加载后的过滤条件
-     * 
+     *
      * @param lord
      * @return true表示满足条件
      */
