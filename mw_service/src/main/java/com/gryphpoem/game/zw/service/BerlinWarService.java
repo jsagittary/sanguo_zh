@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
@@ -1729,7 +1730,7 @@ public class BerlinWarService {
      * @param atk        进攻军队
      * @param atkLord    进攻Lord
      * @param reportRs   战报
-     * @param hero  授勋
+     * @param hero       授勋
      * @throws MwException 自定义异常
      */
     private void syncBasicReport(BerlinCityInfo berlinInfo, int now, SyncBasicReportRs.Builder builder, BerlinForce atk,
@@ -2495,7 +2496,7 @@ public class BerlinWarService {
         Turple<Integer, Long> curWinner = BerlinWar.getCurWinner();
         if (curWinner != null) {
             Player p = playerDataManager.getPlayer(curWinner.getB());
-            if(Objects.nonNull(p)){
+            if (Objects.nonNull(p)) {
                 builder.addBerlinJob(PbHelper.createBerlinJobPb(p, StaticBerlinJob.BOSS_JOB_ID));
             }
         }

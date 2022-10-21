@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.dataMgr;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.DrawCardRewardType;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
@@ -9,7 +10,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
 import com.gryphpoem.game.zw.resource.pojo.plan.PlanFunction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
@@ -70,8 +70,8 @@ public class StaticDrawHeroDataMgr extends AbsStaticIniService {
         Map<Integer, StaticDrawHeoPlan> drawHeoPlanMap = staticIniDao.selectStaticDrawHeoPlanMap();
         if (CheckNull.nonEmpty(drawHeoPlanMap)) {
             this.drawHeoPlanMap = drawHeoPlanMap.values().stream().filter(staticData ->
-                    Objects.nonNull(staticData) && CheckNull.nonEmpty(staticData.getServerIdList()) &&
-                    checkServerId(serverId, staticData.getServerIdList()) && staticData.initPlan()).
+                            Objects.nonNull(staticData) && CheckNull.nonEmpty(staticData.getServerIdList()) &&
+                                    checkServerId(serverId, staticData.getServerIdList()) && staticData.initPlan()).
                     collect(Collectors.toMap(StaticDrawHeoPlan::getId, v -> v));
         }
 

@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
@@ -132,8 +133,8 @@ public class EquipService implements GmCmdService {
 
         //打造红装检查世界进程
         int currSchedule = worldScheduleService.getCurrentSchduleId();
-        if(staticEquip.getQuality() == Constant.Quality.red && currSchedule < Constant.FORGE_RED_EQUIP_SCHEDULE){
-            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId,"打造红装世界进程不符合",equipId,currSchedule));
+        if (staticEquip.getQuality() == Constant.Quality.red && currSchedule < Constant.FORGE_RED_EQUIP_SCHEDULE) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId, "打造红装世界进程不符合", equipId, currSchedule));
         }
 
         // 检查打造装备需要消耗的资源是否足够
@@ -150,16 +151,16 @@ public class EquipService implements GmCmdService {
         }
 
         //貂蝉任务-打造装备
-        ActivityDiaoChanService.completeTask(player, ETask.MAKE_EQUIP,equipId,staticEquip.getQuality());
+        ActivityDiaoChanService.completeTask(player, ETask.MAKE_EQUIP, equipId, staticEquip.getQuality());
         //喜悦金秋-日出而作-装备打造
-        TaskService.processTask(player, ETask.MAKE_EQUIP,equipId,staticEquip.getQuality());
+        TaskService.processTask(player, ETask.MAKE_EQUIP, equipId, staticEquip.getQuality());
 
         // 返回协议
         GamePb1.EquipForgeRs.Builder builder = GamePb1.EquipForgeRs.newBuilder();
         builder.setQue(PbHelper.createEquipQuePb(equipQue));
         taskDataManager.updTask(player, TaskType.COND_29, 1, equipId);
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_HERO_EQUIPID_QUALITY, 1, staticEquip.getQuality());
-        taskDataManager.updTask(player,TaskType.COND_994,1,staticEquip.getQuality());
+        taskDataManager.updTask(player, TaskType.COND_994, 1, staticEquip.getQuality());
         return builder.build();
     }
 
@@ -643,7 +644,7 @@ public class EquipService implements GmCmdService {
                 int propId = PropConstant.PROP_EQUIP_WASP;
                 long propCnt = rewardDataManager.getRoleResByType(player, AwardType.PROP, propId);
                 if (propCnt >= 1) {
-                    rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.PROP,  propId, 1, AwardFrom.EQUIP_BAPTIZE_CHEATS, equip.getEquipId(), LogUtil.obj2ShortStr(equip.getAttrAndLv()));
+                    rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.PROP, propId, 1, AwardFrom.EQUIP_BAPTIZE_CHEATS, equip.getEquipId(), LogUtil.obj2ShortStr(equip.getAttrAndLv()));
                 } else {
                     // 道具不足
                     gold = Constant.EQUIP_GOLD_BAPTIZE_2;
@@ -750,12 +751,12 @@ public class EquipService implements GmCmdService {
         // 洗炼排行榜
         activityDataManager.updRankActivity(player, ActivityConst.ACT_REMOULD_RANK, 1);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_EQUIP_WASH);
-        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_EQUIP_WASH_CNT,  1);
+        activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_EQUIP_WASH_CNT, 1);
         activityRobinHoodService.updateTaskSchedule(player, ActivityConst.ACT_TASK_EQUIP_WASH_CNT, 1);
 
         //貂蝉任务-改造装备
-        ActivityDiaoChanService.completeTask(player,ETask.REFORM_EQUIP,equip.getEquipId());
-        TaskService.processTask(player,ETask.REFORM_EQUIP,equip.getEquipId());
+        ActivityDiaoChanService.completeTask(player, ETask.REFORM_EQUIP, equip.getEquipId());
+        TaskService.processTask(player, ETask.REFORM_EQUIP, equip.getEquipId());
 
         EquipBaptizeRs.Builder builder = EquipBaptizeRs.newBuilder();
         builder.setKeyId(keyId);
@@ -878,8 +879,8 @@ public class EquipService implements GmCmdService {
                     globalDataManager.getGameGlobal().getTrophy().getRankEquips()
                             .put(staticEquip.getEquipId(), lordIds);
                     int chatId = staticEquip.getQuality() == Constant.Quality.purple ?
-                            ChatConst.CHAT_MAKE_PURPLE_EQUIPMENT_AKM : staticEquip.getQuality() == Constant.Quality.orange ? ChatConst.CHAT_MAKE_ORANGE_EQUIPMENT_AKM:ChatConst.CHAT_MAKE_RED_EQUIPMENT;
-                    chatDataManager.sendSysChat(chatId, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(),lordIds.size(), staticEquip.getEquipId());
+                            ChatConst.CHAT_MAKE_PURPLE_EQUIPMENT_AKM : staticEquip.getQuality() == Constant.Quality.orange ? ChatConst.CHAT_MAKE_ORANGE_EQUIPMENT_AKM : ChatConst.CHAT_MAKE_RED_EQUIPMENT;
+                    chatDataManager.sendSysChat(chatId, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), lordIds.size(), staticEquip.getEquipId());
                 }
             }
         }
@@ -1257,8 +1258,8 @@ public class EquipService implements GmCmdService {
                 CalculateUtil.reCalcAllHeroAttr(player);
 
                 //貂蝉任务-升级神器
-                ActivityDiaoChanService.completeTask(player,ETask.ARTIFACT_UP);
-                TaskService.processTask(player,ETask.ARTIFACT_UP);
+                ActivityDiaoChanService.completeTask(player, ETask.ARTIFACT_UP);
+                TaskService.processTask(player, ETask.ARTIFACT_UP);
             } else {
                 throw new MwException(GameError.SUPER_EQUIP_LV_FULL.getCode(), "等级已达上限, roleId:", roleId, ", type:",
                         type);

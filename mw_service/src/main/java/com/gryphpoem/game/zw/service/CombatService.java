@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
@@ -239,7 +240,8 @@ public class CombatService {
 
     /**
      * 小游戏副本
-     * @param player 玩家
+     *
+     * @param player       玩家
      * @param staticCombat 副本配置
      * @return
      */
@@ -369,7 +371,7 @@ public class CombatService {
             }
 
             //增加图腾掉落
-            builder.addAllAward(totemService.dropTotem(player,1,AwardFrom.TOTOEM_DROP_GUANQIA));
+            builder.addAllAward(totemService.dropTotem(player, 1, AwardFrom.TOTOEM_DROP_GUANQIA));
 
             // 勋章掉落
             List<Medal> medals = medalDataManager.getMedalBydoCombat(player);
@@ -393,7 +395,7 @@ public class CombatService {
             activityTriggerService.doCombatTriggerGift(player, combatId);
 
             //貂蝉任务-成功通关关卡，包含扫荡
-            ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER,1);
+            ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER, 1);
             //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
             TaskService.processTask(player, ETask.PASS_BARRIER, 1);
         } else {
@@ -415,7 +417,7 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
         taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
-        taskDataManager.updTask(player,TaskType.COND_995,1);
+        taskDataManager.updTask(player, TaskType.COND_995, 1);
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
@@ -878,7 +880,7 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
         //更新任务
-        taskDataManager.updTask(player,TaskType.COND_995,1);
+        taskDataManager.updTask(player, TaskType.COND_995, 1);
 
 
         // 给将领加经验
@@ -1092,7 +1094,7 @@ public class CombatService {
         }
 
         //增加图腾掉落
-        Stream.iterate(0,i->i+1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player,1,AwardFrom.TOTOEM_DROP_GUANQIA)));
+        Stream.iterate(0, i -> i + 1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player, 1, AwardFrom.TOTOEM_DROP_GUANQIA)));
 
         // 给将领加经验 平分
         int addExp = num * cnt * staticCombat.getExp();
@@ -1284,7 +1286,7 @@ public class CombatService {
             builder.addAllAward(rewardDataManager.sendReward(player, actCombatDropAward, AwardFrom.GAIN_COMBAT));
         }
         //增加图腾掉落
-        Stream.iterate(0,i->i+1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player,1,AwardFrom.TOTOEM_DROP_GUANQIA)));
+        Stream.iterate(0, i -> i + 1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player, 1, AwardFrom.TOTOEM_DROP_GUANQIA)));
         // 给将领加经验 平分
         int addExp = num * cnt * staticCombat.getExp();
         addExp = heroService.adaptHeroAddExp(player, addExp);
@@ -1310,7 +1312,7 @@ public class CombatService {
         activityDataManager.updActivity(player, ActivityConst.ACT_CHALLENGE_COMBAT, cnt, combatId, true);
 
         //貂蝉任务-成功通关关卡，包含扫荡
-        ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER,cnt);
+        ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER, cnt);
         //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_BARRIER, cnt);
 
@@ -1576,7 +1578,7 @@ public class CombatService {
             activityTriggerService.doExpeditionCombatTriggerGift(player, combatId);
 
             //貂蝉任务-成功通关帝国远征，包含扫荡
-            ActivityDiaoChanService.completeTask(player,ETask.PASS_EXPEDITION,1);
+            ActivityDiaoChanService.completeTask(player, ETask.PASS_EXPEDITION, 1);
             //喜悦金秋-日出而作-通关帝国远征xx次（包含扫荡）
             TaskService.processTask(player, ETask.PASS_EXPEDITION, 1);
 
@@ -1644,7 +1646,7 @@ public class CombatService {
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_STONE_COMBAT_47, wipeCnt);
 
         //貂蝉任务-成功通关帝国远征，包含扫荡
-        ActivityDiaoChanService.completeTask(player,ETask.PASS_EXPEDITION,wipeCnt);
+        ActivityDiaoChanService.completeTask(player, ETask.PASS_EXPEDITION, wipeCnt);
         //喜悦金秋-日出而作-通关帝国远征xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_EXPEDITION, wipeCnt);
 

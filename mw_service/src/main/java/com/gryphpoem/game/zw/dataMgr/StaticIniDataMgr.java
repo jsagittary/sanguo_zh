@@ -1,13 +1,13 @@
 package com.gryphpoem.game.zw.dataMgr;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.dao.impl.s.StaticDataDao;
 import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import org.springframework.util.ObjectUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StaticIniDataMgr {
     private StaticIniDataMgr() {
@@ -32,7 +32,7 @@ public class StaticIniDataMgr {
     private static List<StaticSandTableAward> sandTableAwards;
     private static StaticSandTableAward sandTableKillingRewardMaxParam;
 
-    private static Map<Integer,StaticSandTableExchange> sandTableExchangeMap;
+    private static Map<Integer, StaticSandTableExchange> sandTableExchangeMap;
 
     private static List<StaticDiaoChanDay> staticDiaoChanDayList;
     private static List<StaticDiaoChanDayTask> staticDiaoChanDayTaskList;
@@ -42,15 +42,15 @@ public class StaticIniDataMgr {
     private static List<StaticSeasonTalentPlan> staticSeasonTalentPlanList;
     private static Map<Integer, StaticSeasonTalentPlan> staticSeasonTalentPlanMap;
     private static List<StaticSeasonPlan> staticSeasonPlanList;
-    private static Map<Integer,StaticSeasonPlan> staticSeasonPlanMap;
-    private static Map<Integer,StaticSeasonTreasury> staticSeasonTreasuryMap;
-    private static Map<Integer,StaticSeasonTask> staticSeasonTaskMap;
-    private static Map<Integer,List<StaticSeasonTask>> staticSeasonTaskGroupMap;
-    private static Map<Integer,StaticSeasonTaskScore> staticSeasonTaskScoreMap;
-    private static Map<Integer,List<StaticSeasonTaskScore>> staticSeasonTaskScoreGroup;
+    private static Map<Integer, StaticSeasonPlan> staticSeasonPlanMap;
+    private static Map<Integer, StaticSeasonTreasury> staticSeasonTreasuryMap;
+    private static Map<Integer, StaticSeasonTask> staticSeasonTaskMap;
+    private static Map<Integer, List<StaticSeasonTask>> staticSeasonTaskGroupMap;
+    private static Map<Integer, StaticSeasonTaskScore> staticSeasonTaskScoreMap;
+    private static Map<Integer, List<StaticSeasonTaskScore>> staticSeasonTaskScoreGroup;
     private static List<StaticSeasonRank> staticSeasonRankList;
-    private static Map<Integer,List<StaticSeasonRank>> staticSeasonRankGroupMap;
-    private static Map<Integer,Integer> seasonRankMax = new HashMap<>();
+    private static Map<Integer, List<StaticSeasonRank>> staticSeasonRankGroupMap;
+    private static Map<Integer, Integer> seasonRankMax = new HashMap<>();
     private static Map<Integer, StaticSeasonTalent> seasonTalentMap;
 
     public static void init() {
@@ -74,11 +74,11 @@ public class StaticIniDataMgr {
         //赛季
         staticSeasonPlanList = staticDataDao.selectStaticSeasonPlanList();
         staticSeasonPlanMap = new HashMap<>();
-        staticSeasonPlanList.forEach(tmp -> staticSeasonPlanMap.putIfAbsent(tmp.getId(),tmp));
+        staticSeasonPlanList.forEach(tmp -> staticSeasonPlanMap.putIfAbsent(tmp.getId(), tmp));
         staticSeasonTreasuryMap = staticDataDao.selectStaticSeasonTreasuryMap();
         staticSeasonTalentPlanList = staticDataDao.selectStaticSeasonTalentPlanList();
         staticSeasonTalentPlanMap = new HashMap<>();
-        staticSeasonTalentPlanList.forEach(tmp ->  {
+        staticSeasonTalentPlanList.forEach(tmp -> {
             staticSeasonTalentPlanMap.putIfAbsent(tmp.getId(), tmp);
         });
         staticSeasonTreasuryMap.values().forEach(tmp -> {
@@ -91,10 +91,10 @@ public class StaticIniDataMgr {
         staticSeasonTaskScoreGroup = staticSeasonTaskScoreMap.values().stream().collect(Collectors.groupingBy(StaticSeasonTaskScore::getSeason));
         staticSeasonRankList = staticDataDao.selectStaticSeasonRankList();
         staticSeasonRankGroupMap = staticSeasonRankList.stream().collect(Collectors.groupingBy(StaticSeasonRank::getSeason));
-        staticSeasonRankGroupMap.forEach((k,v) -> {
+        staticSeasonRankGroupMap.forEach((k, v) -> {
             TreeSet<Integer> rankSet = new TreeSet<>();
-            v.stream().filter(tmp -> tmp.getType()==1).collect(Collectors.toList()).forEach(tmp -> rankSet.addAll(tmp.getRank()));
-            seasonRankMax.put(k,rankSet.last());
+            v.stream().filter(tmp -> tmp.getType() == 1).collect(Collectors.toList()).forEach(tmp -> rankSet.addAll(tmp.getRank()));
+            seasonRankMax.put(k, rankSet.last());
         });
         seasonTalentMap = staticDataDao.selectStaticSeasonTalentMap();
     }
@@ -107,7 +107,7 @@ public class StaticIniDataMgr {
         return staticSeasonTreasuryMap;
     }
 
-    public static List<StaticSeasonPlan> getStaticSeasonPlanList(){
+    public static List<StaticSeasonPlan> getStaticSeasonPlanList() {
         return staticSeasonPlanList;
     }
 
@@ -115,50 +115,50 @@ public class StaticIniDataMgr {
         return staticSeasonTalentPlanList;
     }
 
-    public static StaticSeasonPlan getStaticSeasonPlanById(int planId){
+    public static StaticSeasonPlan getStaticSeasonPlanById(int planId) {
         return staticSeasonPlanMap.get(planId);
     }
 
-/////////////////////////
-    public static int getDiaoChanMaxDay(int activityId){
+    /////////////////////////
+    public static int getDiaoChanMaxDay(int activityId) {
         return staticDiaoChanDayList.stream().filter(o -> o.getActivityId() == activityId).mapToInt(o -> o.getDay()).distinct().max().getAsInt();
     }
 
-    public static List<StaticDiaoChanRank> getStaticDiaoChanRankListByDay(int activityId,int type,int day){
+    public static List<StaticDiaoChanRank> getStaticDiaoChanRankListByDay(int activityId, int type, int day) {
         return staticDiaoChanRankList.stream().filter(o -> o.getActivityId() == activityId && o.getType() == type && o.getDay() == day).collect(Collectors.toList());
     }
 
-    public static StaticDiaoChanAward getStaticDiaoChanAward(int id){
+    public static StaticDiaoChanAward getStaticDiaoChanAward(int id) {
         return staticDiaoChanAwardList.stream().filter(o -> o.getId() == id).findFirst().orElse(null);
     }
 
-    public static List<StaticDiaoChanAward> getStaticDiaoChanAwardList(int activityId){
+    public static List<StaticDiaoChanAward> getStaticDiaoChanAwardList(int activityId) {
         return staticDiaoChanAwardList.stream().filter(o -> o.getActivityId() == activityId).collect(Collectors.toList());
     }
 
-    public static List<StaticDiaoChanDayTask> getStaticDiaoChanDayTaskByDay(int activityId,int day){
+    public static List<StaticDiaoChanDayTask> getStaticDiaoChanDayTaskByDay(int activityId, int day) {
         return staticDiaoChanDayTaskList.stream().filter(o -> o.getActivityId() == activityId && o.getDay() == day).sorted(Comparator.comparingInt(StaticDiaoChanDayTask::getId)).collect(Collectors.toList());
     }
 
-    public static StaticDiaoChanDay getStaticDiaoChanDay(int id){
+    public static StaticDiaoChanDay getStaticDiaoChanDay(int id) {
         return staticDiaoChanDayList.stream().filter(o -> o.getId() == id).findFirst().orElse(null);
     }
 
-    public static List<StaticDiaoChanDay> getStaticDiaoChanDayList(int activityId,int day){
+    public static List<StaticDiaoChanDay> getStaticDiaoChanDayList(int activityId, int day) {
         return staticDiaoChanDayList.stream().filter(o -> o.getActivityId() == activityId && o.getDay() == day).collect(Collectors.toList());
     }
 ////////////////////////
 
-    public static StaticSandTableAward getStaticSandTableAward(int type,int param){
+    public static StaticSandTableAward getStaticSandTableAward(int type, int param) {
         return sandTableAwards.stream().filter(o -> o.getType() == type && o.getParam() == param).findFirst().orElse(null);
     }
 
-    public static StaticSandTableAward getStaticSandTableAwardMaxParam(int type){
+    public static StaticSandTableAward getStaticSandTableAwardMaxParam(int type) {
         List<StaticSandTableAward> list_ = sandTableAwards.stream().filter(o -> o.getType() == type).sorted(Comparator.comparingInt(StaticSandTableAward::getParam)).collect(Collectors.toList());
-        return list_.get(list_.size()-1);
+        return list_.get(list_.size() - 1);
     }
 
-    public static StaticSandTableExchange getStaticSandTableExchangeById(int id){
+    public static StaticSandTableExchange getStaticSandTableExchangeById(int id) {
         return sandTableExchangeMap.get(id);
     }
 

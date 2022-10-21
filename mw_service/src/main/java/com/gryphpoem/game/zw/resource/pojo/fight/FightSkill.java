@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.resource.pojo.fight;
 
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFightSkill;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 
 import java.util.HashMap;
 
@@ -53,7 +53,7 @@ public abstract class FightSkill {
      * @return
      */
     public CommonPb.FightSkill.Builder createFightSkillPb(Force force, Force target, CommonPb.Action.Builder actionData,
-            int hurt, FightLogic logic) {
+                                                          int hurt, FightLogic logic) {
         hurt = logic.hurt(target, null, hurt, 1f);
         force.killed += hurt;// 记录攻击方击杀数
         force.fighter.hurt += hurt;// 记录总击杀数
@@ -93,6 +93,7 @@ public abstract class FightSkill {
 
     /**
      * 是否还未Roll技能
+     *
      * @return
      */
     public boolean notRollSkill() {

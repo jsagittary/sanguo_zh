@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.manager;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.Constant;

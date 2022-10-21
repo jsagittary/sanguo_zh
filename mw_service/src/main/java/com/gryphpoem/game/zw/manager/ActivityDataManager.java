@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.NumUtils;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -124,8 +125,8 @@ public class ActivityDataManager {
             loadAndInitActCampRank(e, gAct);
         } else if (actType == ActivityConst.ACT_CAMP_FIGHT_RANK) {
             initAndLoadActCampFightRank();
-        } else if (actType == ActivityConst.ACT_DIAOCHAN || actType == ActivityConst.ACT_SEASON_HERO){
-            this.loadRankData4DiaoChan(gAct,actType);
+        } else if (actType == ActivityConst.ACT_DIAOCHAN || actType == ActivityConst.ACT_SEASON_HERO) {
+            this.loadRankData4DiaoChan(gAct, actType);
         } else if (AbsRankActivityService.isActRankAct(actType)) {
             AbsRankActivityService.loadActRankAct(e, gAct);
         } else {// 其他的排行活动
@@ -135,7 +136,7 @@ public class ActivityDataManager {
         LogUtil.debug("----------初始排行榜活动数据: actvityType:", actType);
     }
 
-    private void loadRankData4DiaoChan(GlobalActivityData gAct,int activityType){
+    private void loadRankData4DiaoChan(GlobalActivityData gAct, int activityType) {
         playerDataManager.getPlayers().values().forEach(player -> {
             Activity act = getActivityInfo(player, activityType);
             //总排行
@@ -146,13 +147,13 @@ public class ActivityDataManager {
                 gAct.addPlayerRank(player, value, activityType, timeInt); // 添加玩家
             }
             //今日排行
-            for(int i=1;i<8;i++){
+            for (int i = 1; i < 8; i++) {
                 Turple<Integer, Integer> turple = act.getDayScore().get(i);
-                if(turple != null && turple.getA() != null && turple.getB() != null && turple.getA() > 0){
+                if (turple != null && turple.getA() != null && turple.getB() != null && turple.getA() > 0) {
                     int v1 = turple.getA();
                     int v2 = turple.getB();
-                    int type_ = activityDiaoChanService.getDayRankKey(activityType,i);
-                    gAct.addPlayerRank(player, (long) v1,type_,v2);
+                    int type_ = activityDiaoChanService.getDayRankKey(activityType, i);
+                    gAct.addPlayerRank(player, (long) v1, type_, v2);
                 }
             }
         });
@@ -747,7 +748,7 @@ public class ActivityDataManager {
             } else if (activityType == ActivityConst.ACT_MONOPOLY) { // 大富翁
                 processUpActMonopoly(player, activity, schedule, sortId);
             } else if (activityType == ActivityConst.ACT_CHARGE_CONTINUE
-                    ||activityType==ActivityConst.ACT_MERGE_CHARGE_CONTINUE) { // 连续充值
+                    || activityType == ActivityConst.ACT_MERGE_CHARGE_CONTINUE) { // 连续充值
                 activityChargeContinueService.updateChargeContinueActivity(activityBase, activity, schedule);
             } else if (activityType == ActivityConst.ACT_LUCKY_POOL) {
                 activity.getSaveMap().put(1, activity.getSaveMap().getOrDefault(1, 0) + (int) schedule);
@@ -951,13 +952,14 @@ public class ActivityDataManager {
 
     /**
      * 更新排行榜，如果一个活动持续多天，每天都需要一个当天的排行榜则用
-     *  貂蝉活动 100000000 + type * 100 + day
+     * 貂蝉活动 100000000 + type * 100 + day
+     *
      * @param player
      * @param type
      * @param subType
      * @param value
      */
-    public void updateDayRank(Player player, int type, int subType, int value){
+    public void updateDayRank(Player player, int type, int subType, int value) {
         Activity activity = getActivityInfo(player, type);
         if (activity == null) {
             return;
@@ -967,11 +969,11 @@ public class ActivityDataManager {
             return;
         }
         int currValue = 0;
-        if(type == ActivityConst.ACT_DIAOCHAN || type == ActivityConst.ACT_SEASON_HERO){
-            currValue = activityDiaoChanService.getRankDayScore(activity,subType);
+        if (type == ActivityConst.ACT_DIAOCHAN || type == ActivityConst.ACT_SEASON_HERO) {
+            currValue = activityDiaoChanService.getRankDayScore(activity, subType);
         }
         currValue += value;
-        if(currValue <= 0){
+        if (currValue <= 0) {
             return;
         }
         int now = TimeHelper.getCurrentSecond();
@@ -980,10 +982,10 @@ public class ActivityDataManager {
         activity.getDayScore().get(subType).setB(now);
 
         int type_ = 0;
-        if(type == ActivityConst.ACT_DIAOCHAN || type == ActivityConst.ACT_SEASON_HERO){
-            type_ = activityDiaoChanService.getDayRankKey(type,subType);
+        if (type == ActivityConst.ACT_DIAOCHAN || type == ActivityConst.ACT_SEASON_HERO) {
+            type_ = activityDiaoChanService.getDayRankKey(type, subType);
         }
-        globalActivityData.addPlayerRank(player, (long) currValue,type_,now);
+        globalActivityData.addPlayerRank(player, (long) currValue, type_, now);
     }
 
     /**
@@ -1182,7 +1184,7 @@ public class ActivityDataManager {
 
         if (activityType == ActivityConst.ACT_PAY_RANK_NEW
                 || activityType == ActivityConst.ACT_PAY_RANK_V_3
-                ||activityType == ActivityConst.ACT_MERGE_PAY_RANK
+                || activityType == ActivityConst.ACT_MERGE_PAY_RANK
                 || activityType == ActivityConst.ACT_CAMP_RANK
                 || activityType == ActivityConst.ACT_CAMP_FIGHT_RANK
                 || activityType == ActivityConst.ACT_CONSUME_GOLD_RANK) {// 新充值排行活动
@@ -1536,7 +1538,7 @@ public class ActivityDataManager {
 
         int createServerId = player.account.getServerId();
         List<StaticDay7Act> staticDay7ActList = StaticActivityDataMgr.getAct7DayMap().values().stream().filter(sd7c -> sd7c.checkServerPlan(createServerId)).collect(Collectors.toList());
-        if(staticDay7ActList.isEmpty()){
+        if (staticDay7ActList.isEmpty()) {
             return;
         }
 //        List<StaticDay7Act> list = StaticActivityDataMgr.getDay7ActTypeList(type);
@@ -2763,8 +2765,8 @@ public class ActivityDataManager {
         } else if (type == ActivityConst.ACT_CHRISTMAS) {
             player.setMixtureData(PlayerConstant.ACT_CHRISTMAS_AWARD_COUNT, cnt);
         } else if (type == ActivityConst.ACT_REPAIR_CASTLE) {
-            player.setMixtureData(PlayerConstant.ACT_REPAIR_CASTLE_COUNT,cnt);
-        }else if (type == ActivityConst.ACT_MONSTER_NIAN) {
+            player.setMixtureData(PlayerConstant.ACT_REPAIR_CASTLE_COUNT, cnt);
+        } else if (type == ActivityConst.ACT_MONSTER_NIAN) {
             Activity activity = getActivityInfo(player, type);
             if (Objects.nonNull(activity)) {
                 int today = TimeHelper.getCurrentDay();
@@ -2773,7 +2775,7 @@ public class ActivityDataManager {
                 // 该活动玩家的数据刷新依赖于活动变化协议. 客户端(李潮)
                 syncActChange(player, type, 0);
             }
-        }else if (type == ActivityConst.ACT_DROP_CONTROL){
+        } else if (type == ActivityConst.ACT_DROP_CONTROL) {
             player.setMixtureData(PlayerConstant.ACT_DROP_CONTROL_COUNT, cnt);
         }
     }
@@ -2805,7 +2807,7 @@ public class ActivityDataManager {
             return player.getMixtureDataById(PlayerConstant.ACT_BANDIT_AWARD_COUNT);
         } else if (type == ActivityConst.ACT_CHRISTMAS) {
             return player.getMixtureDataById(PlayerConstant.ACT_CHRISTMAS_AWARD_COUNT);
-        } else if(type == ActivityConst.ACT_REPAIR_CASTLE){
+        } else if (type == ActivityConst.ACT_REPAIR_CASTLE) {
             return player.getMixtureDataById(PlayerConstant.ACT_REPAIR_CASTLE_COUNT);
         } else if (type == ActivityConst.ACT_MONSTER_NIAN) {
             Activity activity = getActivityInfo(player, type);
@@ -2815,7 +2817,7 @@ public class ActivityDataManager {
             } else {
                 return Integer.MAX_VALUE;
             }
-        } else if (type == ActivityConst.ACT_DROP_CONTROL){
+        } else if (type == ActivityConst.ACT_DROP_CONTROL) {
             return player.getMixtureDataById(PlayerConstant.ACT_DROP_CONTROL_COUNT);
         }
         return 0;

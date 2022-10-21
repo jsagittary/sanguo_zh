@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service.robot;
 import com.google.common.collect.Lists;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
@@ -15,7 +16,10 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticEquipQualityExtra;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.RandomUtil;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.EquipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,10 +31,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * @Description 机器人装备相关服务类
  * @author TanDonghai
+ * @Description 机器人装备相关服务类
  * @date 创建时间：2017年10月17日 下午4:31:56
- *
  */
 @Service
 public class RobotEquipService {
@@ -46,7 +49,7 @@ public class RobotEquipService {
 
     /**
      * 自动打造装备
-     * 
+     *
      * @param player
      */
     public void autoEquipForge(Player player) {
@@ -80,7 +83,7 @@ public class RobotEquipService {
 
     /**
      * 查找最适合当前打造的装备，并返回该装备的id
-     * 
+     *
      * @param player
      * @return
      */
@@ -111,7 +114,7 @@ public class RobotEquipService {
 
     /**
      * 获取玩家所有将领已穿戴的装备中的最低品质，如果有将领不是所有部位都已穿戴了装备，将会返回0
-     * 
+     *
      * @param player
      * @return
      */
@@ -130,7 +133,7 @@ public class RobotEquipService {
 
     /**
      * 获取将领穿戴的装备中的最低品质，如果该将领不是所有部位都已穿戴了装备，将会返回0
-     * 
+     *
      * @param player
      * @param hero
      * @return
@@ -155,7 +158,7 @@ public class RobotEquipService {
 
     /**
      * 计算可打造装备的优先级，优先级越高值越小
-     * 
+     *
      * @param player
      * @param e1
      * @param e2
@@ -181,7 +184,7 @@ public class RobotEquipService {
 
     /**
      * 根据将领身上穿戴的装备，比较当前哪件装备打造优先级更高
-     * 
+     *
      * @param player
      * @param e1
      * @param e2
@@ -206,7 +209,7 @@ public class RobotEquipService {
 
     /**
      * 比较两数大小，前面的数小则返回-1，相等返回0，否则返回1
-     * 
+     *
      * @param num1
      * @param num2
      * @return 返回值-1，0，1
@@ -222,7 +225,7 @@ public class RobotEquipService {
 
     /**
      * 获取传入将领集合的装备拥有率（百分比），装备平均品质
-     * 
+     *
      * @param player
      * @param heros
      * @return 如果传入的集合中没有将领，装备拥有率将返回-1
@@ -257,7 +260,7 @@ public class RobotEquipService {
 
     /**
      * 判断装备是否满足打造条件
-     * 
+     *
      * @param player
      * @param equipId
      * @return
@@ -278,7 +281,7 @@ public class RobotEquipService {
 
     /**
      * 自动收取打造好的装备
-     * 
+     *
      * @param player
      */
     public void autoGainEquip(Player player) {
@@ -315,7 +318,7 @@ public class RobotEquipService {
 
     /**
      * 分解掉指定品质的闲置装备
-     * 
+     *
      * @param player
      * @param quality
      */
@@ -357,7 +360,7 @@ public class RobotEquipService {
 
     /**
      * 自动穿戴装备
-     * 
+     *
      * @param player
      */
     public void autoDressEquip(Player player) {
@@ -374,7 +377,7 @@ public class RobotEquipService {
 
     /**
      * 给玩家所有的上阵将领试穿戴装备
-     * 
+     *
      * @param player
      * @param unusedEquip 准备试穿戴的闲置装备
      * @return 穿戴成功返回true
@@ -391,7 +394,7 @@ public class RobotEquipService {
 
     /**
      * 给指定将领试穿戴装备
-     * 
+     *
      * @param player
      * @param heroIds
      * @param unusedEquip 准备试穿戴的闲置装备
@@ -430,7 +433,7 @@ public class RobotEquipService {
 
     /**
      * 装备重要性比较，越重要值越小
-     * 
+     *
      * @param e1
      * @param e2
      * @return
@@ -457,7 +460,7 @@ public class RobotEquipService {
 
     /**
      * 统计装备所有技能的等级和
-     * 
+     *
      * @param equip
      * @return
      */
@@ -481,7 +484,7 @@ public class RobotEquipService {
 
     /**
      * 自动装备改造
-     * 
+     *
      * @param player
      * @param now
      */
@@ -515,7 +518,7 @@ public class RobotEquipService {
 
     /**
      * 装备改造
-     * 
+     *
      * @param equip
      */
     private void equipRefit(Equip equip) {
@@ -543,7 +546,7 @@ public class RobotEquipService {
 
     /**
      * 判断装备是否还需要改造（洗炼），白色装备不需要，技能等级已满的也不需要
-     * 
+     *
      * @param equip
      * @return
      */

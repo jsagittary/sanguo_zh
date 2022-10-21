@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
 import com.gryphpoem.game.zw.gameplay.cross.serivce.CrossGamePlayService;
 import com.gryphpoem.game.zw.gameplay.cross.util.CrossEntity2Dto;
@@ -21,7 +22,10 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.CounterAttack;
 import com.gryphpoem.game.zw.resource.pojo.world.GlobalRebellion;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
@@ -319,12 +323,12 @@ public class GameLocal2CrossMapService implements GmCmdService {
             }
 
             List<Long> randomPlayers = new ArrayList<Long>(playerDataManager.getPlayers().keySet());
-            for (;;) {
+            for (; ; ) {
                 Player tmp = playerDataManager.getPlayers().get(randomPlayers.get(RandomHelper.randomInSize(randomPlayers.size())));
                 if (players.contains(tmp.getLordId()))
                     continue;
-                    crossGameMapDataMgr.processMoveCityEnter(CrossEntity2Dto.createGame2CrossRequest(tmp, plan.getKeyId()),
-                            CrossEntity2Dto.uploadCrossPlayer(tmp, CrossFunction.CROSS_WAR_FIRE.getFunctionId(), true));
+                crossGameMapDataMgr.processMoveCityEnter(CrossEntity2Dto.createGame2CrossRequest(tmp, plan.getKeyId()),
+                        CrossEntity2Dto.uploadCrossPlayer(tmp, CrossFunction.CROSS_WAR_FIRE.getFunctionId(), true));
                 players.add(tmp.getLordId());
                 if (++count_ >= count) {
                     break;
@@ -363,7 +367,8 @@ public class GameLocal2CrossMapService implements GmCmdService {
                                         boolean flag = false;
                                         StaticCrossGamePlayPlan plan = StaticNewCrossDataMgr.getOpenPlan(p, CrossFunction.CROSS_WAR_FIRE.getFunctionId());
                                         if (CheckNull.isNull(plan)) return false;
-                                        if (!p.crossPlayerLocalData.inFunction(CrossFunction.CROSS_WAR_FIRE.getFunctionId())) return false;
+                                        if (!p.crossPlayerLocalData.inFunction(CrossFunction.CROSS_WAR_FIRE.getFunctionId()))
+                                            return false;
                                         int force = CrossEntity2Dto.getForce(p, CrossFunction.CROSS_WAR_FIRE.getFunctionId(), serverSetting.getServerID());
                                         for (String s : split) {
                                             if (Integer.valueOf(s) == force) {

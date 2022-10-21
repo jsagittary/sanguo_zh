@@ -1,9 +1,8 @@
 package com.gryphpoem.game.zw.service;
 
-import com.gryphpoem.game.zw.service.activity.ActivityRedPacketService;
-import com.hundredcent.game.ai.util.CheckNull;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticChatDataMgr;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.MsgDataManager;
@@ -23,7 +22,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRedPacketMessage;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRedpacketList;
 import com.gryphpoem.game.zw.resource.pojo.chat.RoleChat;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
+import com.gryphpoem.game.zw.service.activity.ActivityRedPacketService;
+import com.hundredcent.game.ai.util.CheckNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -172,14 +172,14 @@ public class RedPacketService {
             // syncRedPacketAccept(p, rpr, rpId);
             // });
 
-            if( redPacket.getRedType() == ActivityConst.ACT_RED_PACKET){
+            if (redPacket.getRedType() == ActivityConst.ACT_RED_PACKET) {
                 StaticRedpacketList listMaxValue = StaticChatDataMgr.getRedpacketListMaxValue(rewarPond);
-                if(listMaxValue.getValue() == sRpl.getValue()){
+                if (listMaxValue.getValue() == sRpl.getValue()) {
                     StaticRedPacketMessage redPacketMessage = StaticChatDataMgr.getRedPacketMessageMap().get(msgId);
                     String sendName = redPacket.getParam().get(0);
-                    if(sendName != null && !player.lord.getNick().equals(sendName)){
+                    if (sendName != null && !player.lord.getNick().equals(sendName)) {
                         String format = String.format(redPacketMessage.getDes(), sendName);
-                        RoleChat chat = (RoleChat) chatService.createRoleChat(player,format);
+                        RoleChat chat = (RoleChat) chatService.createRoleChat(player, format);
                         chat.setChannel(ChatConst.CHANNEL_WORLD);
                         chat.setRedType(redPacket.getRedType());
                         chatDataManager.sendWorldChat(chat, false);
@@ -188,7 +188,6 @@ public class RedPacketService {
 
 
             }
-
 
 
             builder.addAward(award);

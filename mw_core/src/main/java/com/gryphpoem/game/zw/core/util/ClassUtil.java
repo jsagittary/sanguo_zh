@@ -1,6 +1,4 @@
-package com.gryphpoem.game.zw.resource.util;
-
-import com.gryphpoem.game.zw.core.util.LogUtil;
+package com.gryphpoem.game.zw.core.util;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -343,7 +341,7 @@ public class ClassUtil {
             try {
                 urlLoader.close();
             } catch (IOException e) {
-				LogUtil.error("", e);
+                LogUtil.error("", e);
             }
         }
         return clazz;

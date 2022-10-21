@@ -1,10 +1,11 @@
 package com.gryphpoem.game.zw.service;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.cross.gameplay.battle.c2g.dto.HeroFightSummary;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
@@ -1100,9 +1101,9 @@ public class WarService {
                         if (staticCity != null) {
                             taskDataManager.updTask(player, TaskType.COND_22, 1, staticCity.getType());
                             taskDataManager.updTask(player, TaskType.COND_520, attacker.getForces().stream().filter(e -> e.ownerId == roleId).mapToInt(e -> e.killed).sum());
-                            taskDataManager.updTask(player,TaskType.COND_521,1,staticCity.getType());
+                            taskDataManager.updTask(player, TaskType.COND_521, 1, staticCity.getType());
                             //支线任务
-                            taskDataManager.updTask(player,TaskType.COND_996,1);
+                            taskDataManager.updTask(player, TaskType.COND_996, 1);
                         }
                     }
                 });
@@ -1118,7 +1119,7 @@ public class WarService {
                         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_JOIN_CAMP_BATTLE_41, 1, staticCity.getType());
                         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_JOIN_CAMP_BATTLE_41, 1, staticCity.getType());
                         taskDataManager.updTask(player, TaskType.COND_520, attacker.getForces().stream().filter(e -> e.ownerId == roleId).mapToInt(e -> e.killed).sum());
-                        taskDataManager.updTask(player,TaskType.COND_521,1,staticCity.getType());
+                        taskDataManager.updTask(player, TaskType.COND_521, 1, staticCity.getType());
                     }
                 });
 
@@ -1299,7 +1300,7 @@ public class WarService {
                 ActivityDiaoChanService.completeTask(player, ETask.CITY_FIRSTKILLED);
                 TaskService.processTask(player, ETask.CITY_FIRSTKILLED);
                 //称号-城池首杀
-                titleService.processTask(player,ETask.CITY_FIRSTKILLED);
+                titleService.processTask(player, ETask.CITY_FIRSTKILLED);
             });
 
             return true;
@@ -2819,6 +2820,7 @@ public class WarService {
 
     /**
      * 宝具加成属性
+     *
      * @param player
      * @param hero
      * @param attrData

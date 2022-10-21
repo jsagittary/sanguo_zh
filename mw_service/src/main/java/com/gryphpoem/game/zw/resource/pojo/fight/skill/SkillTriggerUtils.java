@@ -1,10 +1,10 @@
 package com.gryphpoem.game.zw.resource.pojo.fight.skill;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.constant.FightConstant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSkillAction;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class SkillTriggerUtils {
         return false;
     }
 
-    public static boolean checkSkillTriggerConfig(StaticSkillAction s_skill){
+    public static boolean checkSkillTriggerConfig(StaticSkillAction s_skill) {
         switch (s_skill.getTriggerCond()) {
             case FightConstant.TriggerCond.TriggerCond_0:
                 return checkTriggerCond0(s_skill);

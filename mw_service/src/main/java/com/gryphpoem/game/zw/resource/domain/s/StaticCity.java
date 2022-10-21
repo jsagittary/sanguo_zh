@@ -2,13 +2,13 @@ package com.gryphpoem.game.zw.resource.domain.s;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
 import org.springframework.util.ObjectUtils;
@@ -135,11 +135,17 @@ public class StaticCity {
      * 攻打前置条件，填写城市ID，[Id1,Id2,Id3...]
      */
     private List<Integer> attackPrecondition;
-    /** 默认的阵营 */
+    /**
+     * 默认的阵营
+     */
     private int camp;
-    /** 开放程度 新地图使用 */
+    /**
+     * 开放程度 新地图使用
+     */
     private int open;
-    /** 拥有的地块 */
+    /**
+     * 拥有的地块
+     */
     private List<Integer> ownCellId;
 
     //竞选奖励
@@ -394,6 +400,7 @@ public class StaticCity {
 
     /**
      * 获取城池当前的阵型配置
+     *
      * @param npcCity 是否是npc城池
      * @return 阵营配置
      */
@@ -583,6 +590,7 @@ public class StaticCity {
                 ", totalArm=" + totalArm +
                 '}';
     }
+
     public List<Integer> getInAward() {
         return inAward;
     }

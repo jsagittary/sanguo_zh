@@ -2,12 +2,13 @@ package com.gryphpoem.game.zw.gameplay.local.world;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
-import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
-import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
+import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
+import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.map.*;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
@@ -20,7 +21,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipWorldData;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.random.MineLvRandom;
 import com.gryphpoem.game.zw.service.AirshipService;
@@ -309,7 +309,7 @@ public class MapEntityGenerator {
                 }
             }
             //清除叛军
-            if (worldEntity.getType()==WorldEntityType.BANDIT){
+            if (worldEntity.getType() == WorldEntityType.BANDIT) {
                 it.remove();
             }
         }

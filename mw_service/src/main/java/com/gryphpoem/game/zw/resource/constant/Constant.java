@@ -1451,9 +1451,6 @@ public final class Constant {
         int ATTACK = 1000;// 行军速度
     }
 
-    /**
-     * 角色类型
-     */
     public interface Role {
         int PLAYER = 1;// 玩家
         int BANDIT = 2;// 流寇NPC(s_npc)
@@ -1461,6 +1458,7 @@ public final class Constant {
         int WALL = 4;// 城墙NPC(s_wall_hero_lv)
         int GESTAPO = 5;// 盖世太保NPC(s_npc)
     }
+
 
     /**
      * 商店
