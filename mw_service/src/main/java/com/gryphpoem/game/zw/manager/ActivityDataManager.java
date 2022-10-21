@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.NumUtils;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncActChangeRs;
@@ -2746,6 +2747,85 @@ public class ActivityDataManager {
             }
         }
         return reward;
+    }
+
+    /**
+     * 获取采集掉落活动奖励（包括超级矿）
+     * @param player
+     * @param mineId
+     * @param collectTime
+     * @param type
+     * @return
+     */
+    public List<Award> getCollectDrop(Player player, int mineId, int collectTime, int type) {
+        // 采集掉落道具，对应配置表s_act_bandit
+        List<StaticActBandit> staticActBanditList = StaticActivityDataMgr.getActBanditList().stream()
+                .filter(actBandit -> actBandit.getType() == type && actBandit.getActivityType() == ActivityConst.ACT_DROP_CONTROL)
+                .collect(Collectors.toList());
+        List<Award> awardList = new ArrayList<>();
+        for (StaticActBandit staticActBandit : staticActBanditList) {
+            // 获取最近开启的对应活动
+            int activityId = staticActBandit.getActivityId();
+            ActivityBase activityBase = StaticActivityDataMgr.getActivityByTypeAndActivityId(ActivityConst.ACT_DROP_CONTROL, activityId);
+            if (activityBase == null) {
+                continue;
+            }
+            // 获取对应可掉落的矿点区间，判断当前采集矿点是否在区间内
+            List<List<Integer>> mineIdListList = staticActBandit.getMineId();
+            boolean isInMineIdRange = false;
+            if (CheckNull.nonEmpty(mineIdListList)) {
+                for (List<Integer> mineIdList : mineIdListList) {
+                    if (mineIdList.size() == 2) {
+                        isInMineIdRange = mineId >= mineIdList.get(0) && mineId <= mineIdList.get(1);
+                        if (isInMineIdRange) {
+                            // 采集矿点在配置的任一范围矿点即可
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!isInMineIdRange) {
+                continue;
+            }
+            // 获取对应掉落的道具配置[[道具类型， 道具id， 道具数量(每满足条件掉落数量)], [道具类型， 道具id， 道具数量], [道具类型， 道具id， 道具数量]]
+            List<List<Integer>> configAwardList = staticActBandit.getDrop();
+            // 每日掉落上限（同一ActivityType、同一ActivityId，共享每日上限）
+            int oneDayTotalCountLimit = staticActBandit.getTotal();
+            // 单次采集掉落上限
+            int onceTotalCountLimit = staticActBandit.getOnceTotal();
+            // 累计多少时间掉落一次
+            int dropTime = staticActBandit.getDropTime();
+            if (CheckNull.isEmpty(configAwardList)) {
+                continue;
+            }
+
+            for (List<Integer> configAward : configAwardList) {
+                if (configAward.size() < 3) {
+                    continue;
+                }
+                Integer awardType = configAward.get(0);
+                Integer awardId = configAward.get(1);
+                Integer singleAwardCount = configAward.get(2);
+
+                // 检测单次上限。单次采集掉落总数（实际值：单次掉落 * 掉落次数）
+                int finalGetCount = Math.min(onceTotalCountLimit, singleAwardCount * (collectTime / dropTime));
+                // 检测当日上限
+                int actDropControlCount = player.getMixtureDataById(PlayerConstant.ACT_DROP_CONTROL_COUNT);
+                if (actDropControlCount >= oneDayTotalCountLimit) {
+                    finalGetCount = 0;
+                } else {
+                    finalGetCount = finalGetCount + actDropControlCount >= oneDayTotalCountLimit ? oneDayTotalCountLimit - actDropControlCount : finalGetCount;
+                }
+
+                if (finalGetCount > 0) {
+                    CommonPb.Award dropAward = PbHelper.createAwardPb(awardType, awardId, finalGetCount);
+                    awardList.add(dropAward);
+                }
+            }
+        }
+
+        return awardList;
     }
 
     /**

@@ -23,6 +23,10 @@ public class StaticActBandit {
     //精英叛军
     public static final int ACT_HIT_DROP_TYPE_3 = 3;
 
+    public static final int ACT_HIT_DROP_TYPE_4 = 4;
+
+    public static final int ACT_HIT_DROP_TYPE_5 = 5;
+
     private int id;
 
     /**

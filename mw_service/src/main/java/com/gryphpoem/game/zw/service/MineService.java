@@ -259,7 +259,9 @@ public class MineService {
                 add));
 
         // 计算活动期间，采集掉落的道具
-        calcCollectDropProp(grab, now - army.getBeginTime(), player, now, staticMine.getMineId());
+        // calcCollectDropProp(grab, now - army.getBeginTime(), player, now, staticMine.getMineId());
+        List<CommonPb.Award> collectDrop = activityDataManager.getCollectDrop(player, staticMine.getMineId(), now - army.getBeginTime(), StaticActBandit.ACT_HIT_DROP_TYPE_4);
+        grab.addAll(collectDrop);
 
         army.setGrab(grab);
 
