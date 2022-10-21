@@ -2819,6 +2819,8 @@ public class ActivityDataManager {
                 }
 
                 if (finalGetCount > 0) {
+                    // 新增掉落记录
+                    player.setMixtureData(PlayerConstant.ACT_DROP_CONTROL_COUNT, actDropControlCount + finalGetCount);
                     CommonPb.Award dropAward = PbHelper.createAwardPb(awardType, awardId, finalGetCount);
                     awardList.add(dropAward);
                 }
