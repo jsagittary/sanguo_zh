@@ -954,6 +954,7 @@ public class WorldService {
             type = ArmyConstant.ARMY_TYPE_RELIC_BATTLE;
             //遗迹行军时间减半
             marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
+            DataResource.getBean(RelicService.class).checkArmyMarchTime(player, marchTime);
         } else {
             throw new MwException(GameError.ATTACK_POS_ERROR.getCode(), "AttackPos，坐标不正确, roleId:", roleId, ", pos:",
                     pos);

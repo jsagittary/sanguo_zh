@@ -154,6 +154,20 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
     }
 
     /**
+     * 校验部队行军时间
+     *
+     * @param player
+     * @param marchTime
+     * @throws MwException
+     */
+    public void checkArmyMarchTime(Player player, int marchTime) throws MwException {
+        GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
+        if (globalRelic.getOverExpire() - marchTime <= TimeHelper.getCurrentSecond()) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(player.roleId, "遗迹探索, 行军部队行军时间不够"));
+        }
+    }
+
+    /**
      * 查看遗迹详细
      *
      * @param roleId
@@ -346,7 +360,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         });
     }
 
-    private void syncRelicRefresh() {
+    public void syncRelicRefresh() {
         GamePb6.SyncRelicRefreshRs.Builder builder = GamePb6.SyncRelicRefreshRs.newBuilder();
         BasePb.Base msg = PbHelper.createSynBase(GamePb6.SyncRelicRefreshRs.EXT_FIELD_NUMBER, GamePb6.SyncRelicRefreshRs.ext, builder.build()).build();
         playerService.syncMsgToAll(msg);
