@@ -509,11 +509,9 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
                 List<CampRankData> list = sortCampRank(entity);
                 if (!CheckNull.isEmpty(list)) {
                     int camp = list.get(0).camp;
-                    worldDataManager.getPlayerInArea(entity.getArea()).forEach(p -> {
-                        if (p.getCamp() == camp) {
-                            rewardDataManager.sendRewardByAwardList(p, finalAwardList, AwardFrom.RELIC_OVER_CAMPRANK_AWARD);
-                            mailDataManager.sendReportMail(p, null, MailConstant.RELIC_OVER_CAMPRANK_AWARD, finalAwardList, TimeHelper.getCurrentSecond());
-                        }
+                    playerDataManager.getPlayerByCamp(camp).values().forEach(p -> {
+                        rewardDataManager.sendRewardByAwardList(p, finalAwardList, AwardFrom.RELIC_OVER_CAMPRANK_AWARD);
+                        mailDataManager.sendReportMail(p, null, MailConstant.RELIC_OVER_CAMPRANK_AWARD, finalAwardList, TimeHelper.getCurrentSecond());
                     });
                 }
             });
