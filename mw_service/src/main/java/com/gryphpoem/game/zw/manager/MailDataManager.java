@@ -7,16 +7,20 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb2.SyncMailRs;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMail;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.MailHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -262,6 +266,9 @@ import java.util.Objects;
             List<CommonPb.Award> grabList = collect.getGrabList();
             if (!CheckNull.isEmpty(grabList)) {
                 for (CommonPb.Award award : grabList) {
+                    if (award.getType() != AwardType.RESOURCE) {
+                        continue;
+                    }
                     int key = award.getType() * 10000 + award.getId();
                     // 更新活动采集资源
                     activityDataManager.updActivity(recvPlayer, ActivityConst.ACT_COLLECT_RESOURCES, award.getCount(), key, true);

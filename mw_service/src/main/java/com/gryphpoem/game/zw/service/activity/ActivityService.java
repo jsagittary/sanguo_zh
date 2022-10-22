@@ -4405,7 +4405,7 @@ public class ActivityService {
             if (CheckNull.isEmpty(drop)) {
                 return;
             }
-            if (type == StaticActBandit.ACT_HIT_DROP_TYPE_1) {
+            if (type == StaticActBandit.ACT_HIT_DROP_TYPE_1 || type == StaticActBandit.ACT_HIT_DROP_TYPE_4 || type == StaticActBandit.ACT_HIT_DROP_TYPE_5) {
                 costList = drop;
             } else if (type == StaticActBandit.ACT_HIT_DROP_TYPE_2) {
                 costList = drop.stream().map(list -> list.stream().skip(2).collect(Collectors.toList())).collect(Collectors.toList());
