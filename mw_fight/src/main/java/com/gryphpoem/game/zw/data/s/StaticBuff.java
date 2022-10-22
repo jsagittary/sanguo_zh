@@ -20,6 +20,10 @@ public class StaticBuff {
      */
     private int buffId;
     /**
+     * buff生效方式
+     */
+    private int buffEffectiveWay;
+    /**
      * 持续回合
      */
     private int continuousRound;

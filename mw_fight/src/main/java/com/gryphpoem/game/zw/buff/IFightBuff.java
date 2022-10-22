@@ -1,20 +1,39 @@
 package com.gryphpoem.game.zw.buff;
 
 import com.gryphpoem.game.zw.data.p.FightResult;
+import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
+
+import java.util.List;
 
 /**
  * Description: buff接口
  * Author: zhangpeng
  * createTime: 2022-10-21 10:09
  */
-public interface IFightBuff {
+public interface IFightBuff<T extends StaticBuff> extends IUniqueId {
+    /**
+     * 获取buff配置
+     *
+     * @return
+     */
+    T getBuffConfig();
+
     /**
      * 扣除buff次数
      */
     void deductBuffTimes();
+
+    /**
+     * 校验buff共存
+     *
+     * @param targetBuff
+     * @param removeBuff
+     * @return
+     */
+    boolean buffCoexistenceCheck(StaticBuff targetBuff, List<IFightBuff> removeBuff);
 
     /**
      * buff是否还有生效次数

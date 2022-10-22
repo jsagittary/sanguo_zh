@@ -41,11 +41,14 @@ public class Force {
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
     public Map<Integer, PlaneInfo> planeInfos = new HashMap<>();// 战机信息
-    public Map<Integer, FightBuff> fightBuff = new HashMap<>(); // key: buffType, val: 战斗buff
     /**
-     * 战斗buff集合
+     * 战斗buff集合 <主/副将, <武将id, buff列表>>
      */
-    public LinkedList<IFightBuff> buffList = new LinkedList<>();
+    public Map<Integer, Map<Integer, LinkedList<IFightBuff>>> buffList = new HashMap<>();
+    /**
+     * 副将列表
+     */
+    public LinkedList<FightAssistantHero> assistantHeroList = new LinkedList<>();
 
     public Force() {
     }

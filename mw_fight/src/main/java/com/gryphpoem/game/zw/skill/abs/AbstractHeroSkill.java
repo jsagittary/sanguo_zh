@@ -29,9 +29,18 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
      * 临时存储变量
      */
     private HashMap<Integer, Integer> param = new HashMap<>();
+    /**
+     * 是否是副将技能
+     */
+    private boolean assistantHeroSkill;
 
     public AbstractHeroSkill(StaticHeroSkill s_skill) {
         this.s_skill = s_skill;
+    }
+
+    public AbstractHeroSkill(StaticHeroSkill s_skill, boolean assistantHeroSkill) {
+        this.s_skill = s_skill;
+        this.assistantHeroSkill = assistantHeroSkill;
     }
 
     public StaticHeroSkill getS_skill() {
@@ -64,6 +73,14 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
 
     public void setParam(HashMap<Integer, Integer> param) {
         this.param = param;
+    }
+
+    public boolean isAssistantHeroSkill() {
+        return assistantHeroSkill;
+    }
+
+    public void setAssistantHeroSkill(boolean assistantHeroSkill) {
+        this.assistantHeroSkill = assistantHeroSkill;
     }
 
     /**

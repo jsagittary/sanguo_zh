@@ -6,6 +6,8 @@ import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.ClassUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.data.s.StaticBuff;
+import com.gryphpoem.game.zw.data.s.StaticSkillEffect;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -93,5 +95,41 @@ public class FightManager {
         }
 
         return true;
+    }
+
+    /**
+     * 创建战斗buff对象
+     *
+     * @param buffType
+     * @param staticBuff
+     * @return
+     */
+    public IFightBuff createFightBuff(int buffType, StaticBuff staticBuff) {
+        Class<? extends IFightBuff> clazz = buffClazzMap.get(buffType);
+        if (CheckNull.isNull(clazz)) return null;
+        try {
+            return clazz.getConstructor(StaticBuff.class).newInstance(staticBuff);
+        } catch (Exception e) {
+            LogUtil.error("", e);
+            return null;
+        }
+    }
+
+    /**
+     * 创建技能效果
+     *
+     * @param effectType
+     * @param staticSkillEffect
+     * @return
+     */
+    public IFightEffect createSkillEffect(int effectType, StaticSkillEffect staticSkillEffect) {
+        Class<? extends IFightEffect> clazz = effectClazzMap.get(effectType);
+        if (CheckNull.isNull(clazz)) return null;
+        try {
+            return clazz.getConstructor(StaticSkillEffect.class).newInstance(staticSkillEffect);
+        } catch (Exception e) {
+            LogUtil.error("", e);
+            return null;
+        }
     }
 }

@@ -10,7 +10,7 @@ import com.gryphpoem.game.zw.pojo.p.Force;
  * Author: zhangpeng
  * createTime: 2022-10-20 17:24
  */
-public interface IFightEffect {
+public interface IFightEffect extends IUniqueId {
     /**
      * 扣除效果次数
      */
