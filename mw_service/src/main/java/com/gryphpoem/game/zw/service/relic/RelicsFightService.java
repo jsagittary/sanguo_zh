@@ -12,6 +12,7 @@ import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRelicFraction;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
@@ -311,12 +312,12 @@ public class RelicsFightService {
                         rlc.getCfgId(), attackPlayer.roleId, army.getKeyId()));
             } else {
                 String atkNick = attackPlayer.lord.getNick();
-                int attackKillScore = calcScoreByKillCount(fightLogic.getDefender().lost);//进攻杀敌积分
+                int attackKillScore = calcScoreByKillCount(fightLogic.getDefender().lost, fightLogic.getAttacker().lost);//进攻杀敌积分
                 relicService.addPlayerScoreHandle(attackPlayer, attackKillScore);
                 mailDataManager.sendReportMail(attackPlayer, report, MailConstant.MOLD_HIS_REMAINS_ATTACK_SUCCESS, null, nowSec,
                         atkNick, defendPlayer.getCamp(), defendPlayer.lord.getLevel(), defendPlayer.lord.getNick(),//标题参数
                         rlc.getPos(), defendPlayer.lord.getNick(), defendPlayer.lord.getPos(), attackKillScore);//内容参数
-                int defendKillScore = calcScoreByKillCount(fightLogic.getAttacker().lost);//防守杀敌积分
+                int defendKillScore = calcScoreByKillCount(fightLogic.getAttacker().lost, fightLogic.getDefender().lost);//防守杀敌积分
                 relicService.addPlayerScoreHandle(defendPlayer, defendKillScore);
                 mailDataManager.sendReportMail(defendPlayer, report, MailConstant.MOLD_HIS_REMAINS_DEFEND_FAILURE, null, nowSec,
                         defendPlayer.lord.getNick(), attackPlayer.getCamp(), attackPlayer.lord.getLevel(), attackPlayer.lord.getNick(),
@@ -333,13 +334,13 @@ public class RelicsFightService {
             Lord atkLord = attackPlayer.lord;
             Lord defLord = defendPlayer.lord;
             //进攻战斗失败
-            int atkKillScore = calcScoreByKillCount(fightLogic.getDefender().lost);
+            int atkKillScore = calcScoreByKillCount(fightLogic.getDefender().lost, fightLogic.getAttacker().lost);
             relicService.addPlayerScoreHandle(attackPlayer, atkKillScore);
             mailDataManager.sendReportMail(attackPlayer, report, MailConstant.MOLD_HIS_REMAINS_ATTACK_FAILURE, null, nowSec,
                     attackPlayer.lord.getNick(), defendPlayer.getCamp(), defLord.getLevel(), defLord.getNick(),
                     rlc.getPos(), defLord.getNick(), defLord.getPos(), atkKillScore);
             //防守战斗成功
-            int defKillScore = calcScoreByKillCount(fightLogic.getAttacker().lost);
+            int defKillScore = calcScoreByKillCount(fightLogic.getAttacker().lost, fightLogic.getDefender().lost);
             relicService.addPlayerScoreHandle(defendPlayer, defKillScore);
             mailDataManager.sendReportMail(defendPlayer, report, MailConstant.MOLD_HIS_REMAINS_DEFEND_SUCCESS, null, nowSec,
                     defLord.getNick(), atkLord.getCamp(), atkLord.getLevel(), atkLord.getNick(),
@@ -377,8 +378,10 @@ public class RelicsFightService {
         //进攻方行军返回
     }
 
-    private int calcScoreByKillCount(int killCount) {
-        return killCount / StaticDataMgr.getStaticRelicFraction(worldScheduleService.getCurrentSchduleId()).getKill();
+    private int calcScoreByKillCount(int killCount, int lostCount) {
+        StaticRelicFraction config = StaticDataMgr.getStaticRelicFraction(worldScheduleService.getCurrentSchduleId());
+        if (CheckNull.isNull(config)) return 0;
+        return killCount / config.getKill() + lostCount / config.getLoss();
     }
 
     private void subAndRetreatDeadHeroInArmy(Player player, Fighter fighter, Army army, Map<Long, ChangeInfo> changeMap, Map<Long, Integer> recoverMap, int nowSec) {

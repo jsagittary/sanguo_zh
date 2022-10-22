@@ -952,6 +952,7 @@ public class WorldService {
             //探索遗迹
             DataResource.getBean(RelicService.class).checkArmy(player, pos);
             type = ArmyConstant.ARMY_TYPE_RELIC_BATTLE;
+            rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood, AwardFrom.ATK_POS);
             //遗迹行军时间减半
             marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
             DataResource.getBean(RelicService.class).checkArmyMarchTime(player, marchTime);

@@ -11,6 +11,7 @@ public class StaticRelicFraction {
     private List<Integer> area;
     private int searchTime;
     private int kill;
+    private int loss;
 
     public int getId() {
         return id;
@@ -42,5 +43,13 @@ public class StaticRelicFraction {
 
     public void setArea(List<Integer> area) {
         this.area = area;
+    }
+
+    public int getLoss() {
+        return loss;
+    }
+
+    public void setLoss(int loss) {
+        this.loss = loss;
     }
 }
