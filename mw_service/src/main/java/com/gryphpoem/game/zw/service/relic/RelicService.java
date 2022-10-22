@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -508,11 +509,13 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
                 //阵营排名奖励
                 List<CampRankData> list = sortCampRank(entity);
                 if (!CheckNull.isEmpty(list)) {
-                    int camp = list.get(0).camp;
-                    playerDataManager.getPlayerByCamp(camp).values().forEach(p -> {
-                        rewardDataManager.sendRewardByAwardList(p, finalAwardList, AwardFrom.RELIC_OVER_CAMPRANK_AWARD);
-                        mailDataManager.sendReportMail(p, null, MailConstant.RELIC_OVER_CAMPRANK_AWARD, finalAwardList, TimeHelper.getCurrentSecond());
-                    });
+                    ConcurrentHashMap<Long, Player> campPlayerMap = playerDataManager.getPlayerByCamp(list.get(0).camp);
+                    if (Objects.nonNull(campPlayerMap)) {
+                        campPlayerMap.values().forEach(p -> {
+                            rewardDataManager.sendRewardByAwardList(p, finalAwardList, AwardFrom.RELIC_OVER_CAMPRANK_AWARD);
+                            mailDataManager.sendReportMail(p, null, MailConstant.RELIC_OVER_CAMPRANK_AWARD, finalAwardList, TimeHelper.getCurrentSecond());
+                        });
+                    }
                 }
             });
 
