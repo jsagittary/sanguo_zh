@@ -33,9 +33,11 @@ public class ChooseGoodsProp extends AbstractUseProp {
     @Override
     public void checkUseProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) throws MwException {
         //因跑马灯在此判断，因此将判断加在这里
-        if (count != 1) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
-                    "usedCount: ", prop.getCount(), ", count = ", count);
+        if (!staticProp.canBatchUse()) {
+            if (count != 1) {
+                throw new MwException(GameError.PARAM_ERROR.getCode(), "自选箱使用非一个, roleId: ", player.roleId,
+                        "usedCount: ", prop.getCount(), ", count = ", count);
+            }
         }
 
         Integer choosePropId;
