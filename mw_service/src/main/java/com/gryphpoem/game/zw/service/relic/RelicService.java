@@ -244,7 +244,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         if (Objects.isNull(staticRelicShop) || CheckNull.isEmpty(staticRelicShop.getArea()) || staticRelicShop.getArea().size() < 2) {
             throw new MwException(GameError.INVALID_PARAM.getCode(), GameError.err(roleId, "遗迹领取积分奖励,配置id无效", cfgId));
         }
-        int currentScheduleId = globalDataManager.getGameGlobal().getGlobalSchedule().getCurrentScheduleId();
+        int currentScheduleId = globalDataManager.getGameGlobal().getGlobalRelic().getCurScheduleId();
         if (staticRelicShop.getArea().get(0) > currentScheduleId || staticRelicShop.getArea().get(1) < currentScheduleId) {
             throw new MwException(GameError.INVALID_PARAM.getCode(), GameError.err(roleId, "遗迹领取积分奖励,迭代不匹配", cfgId));
         }
@@ -274,6 +274,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         int nowStamp = TimeHelper.getCurrentSecond();
         GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
         int currEra = worldScheduleService.getCurrentSchduleId();
+        globalRelic.setCurScheduleId(currEra);
         List<StaticRelic> staticRelicList = StaticDataMgr.getStaticRelic(currEra);
         LogUtil.common((String.format("refresh relic, currEra=%s, config=%s", currEra, JSON.toJSONString(staticRelicList))));
         List<Integer> posList = new ArrayList<>();
@@ -482,7 +483,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         if (globalRelic.getOverExpire() != 0 && globalRelic.state() == RelicCons.OVER && !globalRelic.isKeep()) {
             globalRelic.setKeep(true);
             //阵营排名奖励
-            int currentScheduleId = worldScheduleService.getCurrentSchduleId();
+            int currentScheduleId = globalRelic.getCurScheduleId();
             List<StaticRelicShop> configList = StaticDataMgr.getStaticRelicShopList(currentScheduleId);
             StaticRelicShop staticRelicShop = null;
             if (CheckNull.nonEmpty(configList)) {

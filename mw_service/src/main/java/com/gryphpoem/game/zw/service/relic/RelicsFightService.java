@@ -379,7 +379,8 @@ public class RelicsFightService {
     }
 
     private int calcScoreByKillCount(int killCount, int lostCount) {
-        StaticRelicFraction config = StaticDataMgr.getStaticRelicFraction(worldScheduleService.getCurrentSchduleId());
+        StaticRelicFraction config = StaticDataMgr.getStaticRelicFraction(globalDataManager.getGameGlobal().
+                getGlobalRelic().getCurScheduleId());
         if (CheckNull.isNull(config)) return 0;
         return killCount / config.getKill() + lostCount / config.getLoss();
     }
