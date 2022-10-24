@@ -139,6 +139,12 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
         if (globalRelic.state() == RelicCons.OPEN && score > 0) {
             taskDataManager.updTask(player, TaskType.COND_RELIC_SCORE, score);
         }
+
+        int curScheduleId = globalRelic.getCurScheduleId();
+        builder.setCurScheduleId(globalRelic.getCurScheduleId());
+        if (curScheduleId == 0) {
+            builder.setCurScheduleId(worldScheduleService.getCurrentSchduleId());
+        }
         return builder.build();
     }
 
