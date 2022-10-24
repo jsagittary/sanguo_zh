@@ -359,8 +359,8 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         // 玩家限时抽卡活动详情
         DrawCardTimeLimitedFunctionPlanData drawCardTimeLimitedFunctionPlanData = (DrawCardTimeLimitedFunctionPlanData) functionPlanData;
 
-        // 计算玩家累计抽卡次数可兑换的保底宝箱购买次数，如果已经购买次数超过可购买次数，则不可购买
-        int totalDrawCardCount = drawCardTimeLimitedFunctionPlanData.getTotalDrawHeroCount();
+        // 剩余抽卡次数
+        int leftHeroDrawCountAfterBuyBox = drawCardTimeLimitedFunctionPlanData.getLeftHeroDrawCountAfterBuyBox();
 
         List<List<Integer>> optionalBoxConfigList = HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
         List<Integer> optionalBoxActiveCountConfig = HeroConstant.TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG; // [60,70,80,90,100,110,120]
@@ -379,24 +379,22 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
                     needDrawCardCount = optionalBoxActiveCountConfig.get(curBuyCount);
                 }
 
-                if (totalDrawCardCount < needDrawCardCount) {
+                if (leftHeroDrawCountAfterBuyBox < needDrawCardCount) {
                     throw new MwException(GameError.ACTIVITY_AWARD_NOT_GET, String.format("roleId:%d, not match condition", roleId));
                 }
-
                 // 配置的可购买自选箱id
                 Integer optionalBoxId = optionalBoxConfig.get(1);
                 // 配置的购买道具所需玉璧
                 Integer optionalBoxPrice = optionalBoxConfig.get(2);
                 // 检查购买宝箱需要的资源是否充足并扣减
                 rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.GOLD, optionalBoxPrice, AwardFrom.ACTIVITY_BUY, true, "");
-                // 扣减购买累计抽卡次数
-                drawCardTimeLimitedFunctionPlanData.subTotalDrawHeroCount(needDrawCardCount);
+                // 更新剩余抽卡次数
+                drawCardTimeLimitedFunctionPlanData.subLeftHeroDrawCountAfterBuyBox(needDrawCardCount);
                 // 增加购买自选箱的次数
                 drawCardTimeLimitedFunctionPlanData.addTotalOptionalBoxBuyCount();
                 // 给玩家新增宝箱道具
                 CommonPb.Award award = rewardDataManager.sendRewardSignle(player, AwardType.PROP, optionalBoxId, 1, AwardFrom.ACTIVITY_BUY, "");
                 builder.addAward(award);
-
                 break;
             }
         }

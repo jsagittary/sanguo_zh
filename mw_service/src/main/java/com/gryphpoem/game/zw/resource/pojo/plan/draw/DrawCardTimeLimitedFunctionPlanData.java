@@ -22,27 +22,34 @@ import java.util.stream.Collectors;
  */
 @FunctionPlan(functions = PlanFunction.DRAW_CARD)
 public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<ActivityPb.TimeLimitedDrawCardActData> {
-    /** 进度下标*/
+    /**
+     * 进度下标
+     */
     private static final int PROGRESS_INDEX = -1000;
-    /** 领取状态下标*/
+    /**
+     * 领取状态下标
+     */
     private static final int RECEIVED_STATUS_INDEX = -1001;
-    /** 免费次数下标*/
+    /**
+     * 免费次数下标
+     */
     private static final int FREE_NUM_INDEX = -1002;
-    /** 抽出英雄次数下标*/
+    /**
+     * 抽出英雄次数下标
+     */
     private static final int HERO_DRAW_COUNT_INDEX = -1003;
-    /** 抽出英雄碎片次数下标*/
+    /**
+     * 抽出英雄碎片次数下标
+     */
     private static final int HERO_FRAGMENT_DRAW_COUNT_INDEX = -1004;
-    /** 总共抽卡次数*/
+    /**
+     * 总共抽卡次数
+     */
     private static final int TOTAL_HERO_DRAW_COUNT_INDEX = -1005;
-
-
     /**
      * 购买自选箱后剩余的抽卡次数
      */
     private static final int LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX = -1006;
-
-
-
     /**
      * 自选箱购买总数
      */
@@ -132,21 +139,25 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
 
     public void addTotalDrawHeroCount(PlayerFunctionPlanData data) {
         this.saveMap.merge(TOTAL_HERO_DRAW_COUNT_INDEX, 1, Integer::sum);
+        // 总抽卡次数增加，剩余抽卡次数也同步增加
+        this.saveMap.merge(LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX, 1, Integer::sum);
     }
 
-    public void subTotalDrawHeroCount(int subCount) {
-        int totalDrawHeroCount = getTotalDrawHeroCount();
-        if (totalDrawHeroCount < subCount) {
-            throw new MwException(GameError.PARAM_ERROR);
-        }
-        this.saveMap.put(TOTAL_HERO_DRAW_COUNT_INDEX, totalDrawHeroCount - subCount);
+    /**
+     * 获取购买自选箱后的剩余抽卡次数
+     *
+     * @return
+     */
+    public int getLeftHeroDrawCountAfterBuyBox() {
+        return this.saveMap.getOrDefault(LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX, 0);
     }
 
     /**
      * 购买自选箱后，更新剩余总计抽卡次数
+     *
      * @param subCount
      */
-    private void updateLeftHeroDrawCountAfterBuyBox(int subCount) {
+    public void subLeftHeroDrawCountAfterBuyBox(int subCount) {
         int lastLeftHeroDrawCountAfterBuyBox = this.saveMap.get(LEFT_HERO_DRAW_COUNT_AFTER_BUY_BOX_INDEX);
         if (lastLeftHeroDrawCountAfterBuyBox < subCount) {
             throw new MwException(GameError.PARAM_ERROR);
@@ -157,6 +168,7 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
 
     /**
      * 获取已购买自选箱的次数
+     *
      * @return
      */
     public int getOptionalBoxBuyCount() {
@@ -209,8 +221,7 @@ public class DrawCardTimeLimitedFunctionPlanData extends DrawCardFunctionData<Ac
         builder.setFreeNum(getFreeNum());
         builder.setTotalDrawCount(getTotalDrawHeroCount());
         builder.setTotalBuyOptionalBoxCount(getOptionalBoxBuyCount()); // 已购买自选箱的数量
-        // builder.setCurCanBuyOptionalBoxCount(); // 当前可购买自选箱的数量
-        // builder.setLeftDrawCountAfterBuyBox(); // 剩余不足购买自选箱的抽卡次数
+        builder.setLeftDrawCountAfterBuyBox(getLeftHeroDrawCountAfterBuyBox()); // 购买自选箱后剩余抽卡次数
         return builder.build();
     }
 }
