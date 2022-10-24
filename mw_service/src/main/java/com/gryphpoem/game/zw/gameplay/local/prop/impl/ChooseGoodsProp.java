@@ -70,9 +70,10 @@ public class ChooseGoodsProp extends AbstractUseProp {
                     continue;
                 }
                 if (configReward.get(1) == choosePropId.intValue()) {
-                    Integer num = configReward.get(2);
-                    configReward.set(2, num * count);
-                    reward = configReward;
+                    reward = new ArrayList<>(3);
+                    reward.add(configReward.get(0));
+                    reward.add(configReward.get(1));
+                    reward.add(configReward.get(2) * count);
                     rewardArr.add(reward);
                     break;
                 }

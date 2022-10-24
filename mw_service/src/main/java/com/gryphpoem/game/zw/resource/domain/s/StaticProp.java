@@ -22,7 +22,7 @@ public class StaticProp {
     private int chip;// 碎片数量，适用于propType=9，自动转换成rewardList里的(一个)道具
     private int season;//
     private List<Integer> key;
-    private int batchUse;
+    private int batchUse; // 道具是否可批量使用
 
     public int getChip() {
         return chip;
