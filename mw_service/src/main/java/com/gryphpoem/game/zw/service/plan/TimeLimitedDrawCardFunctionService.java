@@ -297,7 +297,7 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         int totalDrawCount = functionPlanData.getTotalDrawHeroCount();
         LogUtil.getLogThread().addCommand(() -> LogLordHelper.gameLog(LogParamConstant.DRAW_HERO_CARD_LOG, player,
                 AwardFrom.DRAW_HERO_CARD_NEW, drawCardCount.getType(), LogParamConstant.TIME_LIMITED_DRAW_CARD_TYPE,
-                finalHeroLogId, finalAwardLogStr, costCount, totalDrawCount, functionPlanData.getKeyId()));
+                finalHeroLogId, finalAwardLogStr, costCount, totalDrawCount, planData.getSearchTypeId()));
         return builder.build();
     }
 
