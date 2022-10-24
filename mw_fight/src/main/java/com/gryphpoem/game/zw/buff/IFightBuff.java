@@ -2,10 +2,10 @@ package com.gryphpoem.game.zw.buff;
 
 import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -13,7 +13,7 @@ import java.util.List;
  * Author: zhangpeng
  * createTime: 2022-10-21 10:09
  */
-public interface IFightBuff<T extends StaticBuff> extends IUniqueId {
+public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniqueId {
     /**
      * 获取buff配置
      *
@@ -22,9 +22,23 @@ public interface IFightBuff<T extends StaticBuff> extends IUniqueId {
     T getBuffConfig();
 
     /**
+     * 获取buff剩余作用回合数
+     *
+     * @return
+     */
+    int getBuffEffectiveRounds();
+
+    /**
+     * 设置被作用方
+     *
+     * @param force
+     */
+    void setForce(S force);
+
+    /**
      * 扣除buff次数
      */
-    void deductBuffTimes();
+    void deductBuffRounds();
 
     /**
      * 校验buff共存
@@ -49,24 +63,22 @@ public interface IFightBuff<T extends StaticBuff> extends IUniqueId {
     /**
      * 释放技能, buff添加
      *
-     * @param attacker   攻击者
-     * @param defender   被攻击者
+     * @param actingBuffList 被作用方的buff列表
      * @param fightLogic
      * @param params
      * @return
      */
-    FightResult releaseSkill(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, Object... params);
+    void releaseBuff(LinkedList<IFightBuff> actingBuffList, FightLogic fightLogic, List<Integer> staticBuffConfig, FightResult fightResult, Object... params);
 
     /**
-     * buff释放, 效果添加
+     * buff的效果添加
      *
-     * @param attacker   攻击者
-     * @param defender   被攻击者
+     * @param actingForce 攻击者
      * @param fightLogic
      * @param params
      * @return
      */
-    FightResult releaseBuff(Force attacker, Force defender, FightLogic fightLogic, int timing, Object... params);
+    void releaseEffect(Force actingForce, FightLogic fightLogic, FightResult fightResult, int timing, Object... params);
 
     /**
      * buff失效, 效果还原
@@ -77,5 +89,5 @@ public interface IFightBuff<T extends StaticBuff> extends IUniqueId {
      * @param params
      * @return
      */
-    FightResult buffLoseEffectiveness(Force attacker, Force defender, FightLogic fightLogic, Object... params);
+    void buffLoseEffectiveness(Force attacker, Force defender, FightLogic fightLogic, FightResult fightResult, Object... params);
 }

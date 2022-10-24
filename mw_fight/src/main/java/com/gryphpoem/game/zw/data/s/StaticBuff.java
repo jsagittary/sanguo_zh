@@ -20,6 +20,10 @@ public class StaticBuff {
      */
     private int buffId;
     /**
+     * effect效果列表
+     */
+    private List<List<Integer>> effects;
+    /**
      * buff生效方式
      */
     private int buffEffectiveWay;
@@ -32,9 +36,9 @@ public class StaticBuff {
      */
     private List<List<Integer>> buffTriggerCondition;
     /**
-     * 效果生效次数限制
+     * buff生效次数限制
      */
-    private List<List<Integer>> effectEffectiveTimes;
+    private int buffEffectiveTimes;
     /**
      * 类型分组
      */
@@ -47,4 +51,12 @@ public class StaticBuff {
      * 优先级
      */
     private int priority;
+    /**
+     * 同buffId共存数量
+     */
+    private int coexistingIdNum;
+    /**
+     * 同ID顶替规则
+     */
+    private int sameIdReplacementRule;
 }

@@ -7,7 +7,6 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.ClassUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.data.s.StaticSkillEffect;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -34,7 +33,7 @@ public class FightManager {
     /**
      * effect class集合
      */
-    private ConcurrentHashMap<Integer, Class<? extends IFightEffect>> effectClazzMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, IFightEffect> effectMap = new ConcurrentHashMap<>();
     /**
      * buff触发时机集合
      */
@@ -70,7 +69,14 @@ public class FightManager {
                     buffClazzMap.put(wayAnn.type(), clazz);
                     break;
                 case FightConstant.BuffEffect.EFFECT:
-                    effectClazzMap.put(wayAnn.type(), clazz);
+                    IFightEffect fightEffect;
+                    try {
+                        fightEffect = (IFightEffect) clazz.getConstructor(null).newInstance();
+                    } catch (Exception e) {
+                        LogUtil.error("", e);
+                        break;
+                    }
+                    effectMap.put(wayAnn.type(), fightEffect);
                     break;
                 default:
                     break;
@@ -88,10 +94,10 @@ public class FightManager {
      * @param params
      * @return
      */
-    public boolean buffCanRelease(Force attacker, Force defender, FightLogic fightLogic, int timing, Object... params) {
+    public boolean buffCanRelease(Force attacker, Force defender, FightLogic fightLogic, int timing, StaticBuff staticBuff, Object... params) {
         IFightBuffWork work;
         if ((work = buffWorkMap.get(timing)) != null) {
-            return work.buffCanEffect(attacker, defender, fightLogic, timing, params);
+            return work.buffCanEffect(attacker, defender, fightLogic, timing, staticBuff, params);
         }
 
         return true;
@@ -116,20 +122,12 @@ public class FightManager {
     }
 
     /**
-     * 创建技能效果
+     * 返回技能效果实例
      *
      * @param effectType
-     * @param staticSkillEffect
      * @return
      */
-    public IFightEffect createSkillEffect(int effectType, StaticSkillEffect staticSkillEffect) {
-        Class<? extends IFightEffect> clazz = effectClazzMap.get(effectType);
-        if (CheckNull.isNull(clazz)) return null;
-        try {
-            return clazz.getConstructor(StaticSkillEffect.class).newInstance(staticSkillEffect);
-        } catch (Exception e) {
-            LogUtil.error("", e);
-            return null;
-        }
+    public IFightEffect getSkillEffect(int effectType) {
+        return effectMap.get(effectType);
     }
 }

@@ -10,23 +10,7 @@ import com.gryphpoem.game.zw.pojo.p.Force;
  * Author: zhangpeng
  * createTime: 2022-10-20 17:24
  */
-public interface IFightEffect extends IUniqueId {
-    /**
-     * 扣除效果次数
-     */
-    void deductEffectTimes();
-
-    /**
-     * 是否还有生效次数
-     *
-     * @param attacker
-     * @param defender
-     * @param fightLogic
-     * @param params
-     * @return
-     */
-    boolean hasRemainEffect(Force attacker, Force defender, FightLogic fightLogic, Object... params);
-
+public interface IFightEffect {
     /**
      * 效果生效
      *

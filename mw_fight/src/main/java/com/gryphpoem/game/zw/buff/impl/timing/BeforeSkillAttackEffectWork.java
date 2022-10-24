@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 
 import com.gryphpoem.game.zw.buff.IFightBuffWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 
@@ -17,7 +18,7 @@ public class BeforeSkillAttackEffectWork implements IFightBuffWork {
     }
 
     @Override
-    public boolean buffCanEffect(Force attacker, Force defender, FightLogic fightLogic, int timing, Object... params) {
+    public boolean buffCanEffect(Force attacker, Force defender, FightLogic fightLogic, int timing, StaticBuff staticBuff, Object... params) {
         return true;
     }
 }

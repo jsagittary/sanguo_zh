@@ -24,30 +24,17 @@ public class FightUtil {
     /**
      * 获取buff作用方, 以及被作用方的buff列表
      *
-     * @param attacker
-     * @param defender
+     * @param affectedForce
      * @param buffObjective
      * @return
      */
-    public static Map<Integer, LinkedList<IFightBuff>> actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective) {
+    public static Map<Integer, LinkedList<IFightBuff>> actingForceBuff(Force affectedForce, FightConstant.BuffObjective buffObjective) {
         if (CheckNull.isNull(buffObjective))
             return null;
-        if (CheckNull.isNull(attacker) && CheckNull.isNull(defender))
+        if (CheckNull.isNull(affectedForce) || CheckNull.isNull(affectedForce.buffList))
             return null;
 
-        Force affectedForce = null;
-        Map<Integer, Map<Integer, LinkedList<IFightBuff>>> affectedBuffList = null;
-        Boolean atk = buffObjective.isAttackerSize(FightConstant.ForceSide.ATTACKER);
-        if (Objects.nonNull(attacker) && Objects.nonNull(atk) && atk) {
-            affectedBuffList = attacker.buffList;
-            affectedForce = attacker;
-        }
-        Boolean def = buffObjective.isAttackerSize(FightConstant.ForceSide.DEFENDER);
-        if (Objects.nonNull(defender) && Objects.nonNull(def) && def) {
-            affectedBuffList = defender.buffList;
-            affectedForce = defender;
-        }
-
+        Map<Integer, Map<Integer, LinkedList<IFightBuff>>> affectedBuffList = affectedForce.buffList;
         Map<Integer, LinkedList<IFightBuff>> actingForce = null;
         switch (buffObjective) {
             case MY_PRINCIPAL_HERO:
@@ -111,5 +98,28 @@ public class FightUtil {
      */
     public static long uniqueId() {
         return idGenerator.incrementAndGet();
+    }
+
+    /**
+     * 获得buff被作用方
+     *
+     * @param attacker
+     * @param defender
+     * @param buffObjective
+     * @return
+     */
+    public static Force actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective) {
+        Force affectedForce = null;
+        Boolean atk = buffObjective.isAttackerSize(FightConstant.ForceSide.ATTACKER);
+        if (Objects.nonNull(attacker) && Objects.nonNull(atk) && atk) {
+            affectedForce = attacker;
+        } else {
+            Boolean def = buffObjective.isAttackerSize(FightConstant.ForceSide.DEFENDER);
+            if (Objects.nonNull(defender) && Objects.nonNull(def) && def) {
+                affectedForce = defender;
+            }
+        }
+
+        return affectedForce;
     }
 }

@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.manager.s;
 
 import com.gryphpoem.game.zw.data.s.StaticBuff;
+import com.gryphpoem.game.zw.data.s.StaticFightEffect;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -13,8 +14,13 @@ import java.util.HashMap;
 @Component
 public class StaticFightManager {
     private HashMap<Integer, StaticBuff> buffHashMap = new HashMap<>();
+    private HashMap<Integer, StaticFightEffect> effectHashMap = new HashMap<>();
 
     public StaticBuff getStaticBuff(int id) {
         return buffHashMap.get(id);
+    }
+
+    public StaticFightEffect getStaticFightEffect(int id) {
+        return effectHashMap.get(id);
     }
 }

@@ -50,6 +50,7 @@ public interface FightConstant {
     interface BuffEffectTiming {
         int ROUND_START = 0;
         int SKILL_BEFORE = 1;
+        int SKILL_AFTER = 2;
     }
 
     interface BuffEffectiveType {
@@ -150,5 +151,16 @@ public interface FightConstant {
         int SKILL = 1;
         int ORIGINAL_ATTACK = 2;
         int OTHER_DAMAGE = 3;
+    }
+
+    interface ReplacementBuffRule {
+        /**
+         * 效果强度优先
+         */
+        int MORE_STRONG = 1;
+        /**
+         * 回合数更长
+         */
+        int LONGER_ROUNDS = 2;
     }
 }

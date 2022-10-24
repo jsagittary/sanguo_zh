@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.buff;
 
+import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 
@@ -26,5 +27,5 @@ public interface IFightBuffWork {
      * @param params
      * @return
      */
-    boolean buffCanEffect(Force attacker, Force defender, FightLogic fightLogic, int timing, Object... params);
+    boolean buffCanEffect(Force attacker, Force defender, FightLogic fightLogic, int timing, StaticBuff staticBuff, Object... params);
 }

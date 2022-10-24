@@ -1,9 +1,12 @@
 package com.gryphpoem.game.zw.skill.abs;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.skill.IHeroSkill;
+import com.gryphpoem.push.util.CheckNull;
 
 import java.util.HashMap;
 
@@ -89,22 +92,35 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
      * @param attacker
      * @param defender
      * @param fightLogic
+     * @param staticHeroSkill
+     * @param fightResult
      * @param params
      */
-    public void releaseSkill(Force attacker, Force defender, FightLogic fightLogic, Object... params) {
-        if (releaseDamageFirst()) {
-            releaseDamage(attacker, defender, fightLogic, params);
-            releaseBuff(attacker, defender, fightLogic, params);
-        } else {
-            releaseBuff(attacker, defender, fightLogic, params);
-            releaseDamage(attacker, defender, fightLogic, params);
+    @Override
+    public void releaseSkill(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, FightResult fightResult, Object... params) {
+        releaseSkillBuff(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
+        releaseSkillEffect(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
+        // 触发技能后buff释放
+        if (!CheckNull.isEmpty(attacker.buffList)) {
+            attacker.buffList.values().forEach(list -> {
+                list.values().forEach(fightBuffList -> {
+                    if (CheckNull.isEmpty(fightBuffList)) return;
+                    fightBuffList.forEach(fightBuff -> {
+                        fightBuff.releaseEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
+                    });
+                });
+            });
+        }
+
+        if (!CheckNull.isEmpty(defender.buffList)) {
+            defender.buffList.values().forEach(list -> {
+                list.values().forEach(fightBuffList -> {
+                    if (CheckNull.isEmpty(fightBuffList)) return;
+                    fightBuffList.forEach(fightBuff -> {
+                        fightBuff.releaseEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
+                    });
+                });
+            });
         }
     }
-
-    /**
-     * 释放伤害与buff的先后顺序
-     *
-     * @return
-     */
-    protected abstract boolean releaseDamageFirst();
 }
