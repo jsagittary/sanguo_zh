@@ -70,6 +70,7 @@ public class GlobalRelic {
         if (Objects.nonNull(this.maxScoreRole)) {
             builder.setMaxScoreRole(this.maxScoreRole);
         }
+        builder.setCurScheduleId(this.curScheduleId);
         return builder.build();
     }
 
@@ -94,7 +95,7 @@ public class GlobalRelic {
         this.overExpire = serGlobalRelic.getOverExpire();
         this.keep = serGlobalRelic.getKeep();
         this.fightId = serGlobalRelic.getFightId();
-
+        this.curScheduleId = serGlobalRelic.getCurScheduleId();
         if (serGlobalRelic.hasMaxScoreRole()) {
             this.maxScoreRole = serGlobalRelic.getMaxScoreRole();
         }
