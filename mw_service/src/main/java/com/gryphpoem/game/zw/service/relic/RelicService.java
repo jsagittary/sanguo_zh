@@ -149,7 +149,7 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
             throw new MwException(GameError.RELIC_PROB_SAFE.getCode(), GameError.err(player.roleId, "遗迹探索,遗迹处于保护期"));
         }
         RelicEntity relicEntity = worldDataManager.getRelicEntityMap().get(pos);
-        if (relicEntity.getDefendList().size() >= ActParamConstant.MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE) {
+        if (relicEntity.getHoldCamp() == player.lord.getCamp() && relicEntity.getDefendList().size() >= ActParamConstant.MAXIMUM_NUMBER_OF_RELICS_DEFENSE_QUEUE) {
             throw new MwException(GameError.THE_NUMBER_OF_RELICS_DEFENSE_QUEUE_HAS_REACHED_THE_MAXIMUM.getCode(), GameError.err(player.roleId, "遗迹探索, 遗迹防守队列军团数量达到上限"));
         }
     }
