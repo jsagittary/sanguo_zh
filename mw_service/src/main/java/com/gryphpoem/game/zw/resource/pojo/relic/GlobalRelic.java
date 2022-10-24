@@ -25,6 +25,8 @@ public class GlobalRelic {
     //遗迹战斗ID
     private long fightId;
     private boolean keep;
+    // 当前活动世界进程
+    private int curScheduleId;
     /**
      * 本次遗迹积分最大的玩家
      */
@@ -38,6 +40,7 @@ public class GlobalRelic {
         fightId = 0;
         keep = false;
         maxScoreRole = null;
+        curScheduleId = 0;
     }
 
     public int state() {
@@ -147,5 +150,13 @@ public class GlobalRelic {
 
     public void setMaxScoreRole(CommonPb.LongInt maxScoreRole) {
         this.maxScoreRole = maxScoreRole;
+    }
+
+    public int getCurScheduleId() {
+        return curScheduleId;
+    }
+
+    public void setCurScheduleId(int curScheduleId) {
+        this.curScheduleId = curScheduleId;
     }
 }
