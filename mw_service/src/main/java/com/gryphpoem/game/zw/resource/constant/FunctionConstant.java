@@ -183,7 +183,9 @@ public class FunctionConstant {
 
     public static final int FUNC_ACTIVITY_SEASON_HERO = 9014;
 
-    /** 赛季天赋功能开关*/
+    /**
+     * 赛季天赋功能开关
+     */
     public static final int FUNC_SEASON_TALENT = 9018;
 
     /**
@@ -196,9 +198,14 @@ public class FunctionConstant {
      */
     public static final int FUNC_CROSS_WAR_FIRE = 9022;
 
-    /** 跨服战火聊天*/
+    /**
+     * 跨服战火聊天
+     */
     public static final int FUNC_CROSS_WAR_FIRE_CHAT = 9023;
 
-
+    /**
+     * 王朝遗迹
+     */
+    public static final int FUNC_ID_RELIC = 8035;
 
 }

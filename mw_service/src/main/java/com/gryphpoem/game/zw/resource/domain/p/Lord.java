@@ -49,6 +49,7 @@ public class Lord implements Cloneable {
     private long treasureWareGolden;//宝具金锭 用于打造宝具
     private long treasureWareDust;//宝具微尘 用于升级宝具
     private long treasureWareEssence;//宝具精华 用于宝具突破
+    private int ancientBook;//古籍，用于武将天赋
 
     @Override
     public Object clone() {
@@ -433,6 +434,14 @@ public class Lord implements Cloneable {
 
     public void setTreasureWareEssence(long treasureWareEssence) {
         this.treasureWareEssence = treasureWareEssence;
+    }
+
+    public int getAncientBook() {
+        return ancientBook;
+    }
+
+    public void setAncientBook(int ancientBook) {
+        this.ancientBook = ancientBook;
     }
 
     @Override

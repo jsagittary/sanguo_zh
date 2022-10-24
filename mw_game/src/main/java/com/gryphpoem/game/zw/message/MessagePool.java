@@ -60,11 +60,7 @@ import com.gryphpoem.game.zw.handler.client.factory.*;
 import com.gryphpoem.game.zw.handler.client.fish.*;
 import com.gryphpoem.game.zw.handler.client.friend.*;
 import com.gryphpoem.game.zw.handler.client.hero.*;
-import com.gryphpoem.game.zw.handler.client.hero.function.BuyOptionalBoxFromTimeLimitedDrawCardHandler;
-import com.gryphpoem.game.zw.handler.client.hero.function.DrawActHeroCardHandler;
-import com.gryphpoem.game.zw.handler.client.hero.function.GetDrawHeroCardActInfoHandler;
-import com.gryphpoem.game.zw.handler.client.hero.function.GetDrawHeroCardPlanListHandler;
-import com.gryphpoem.game.zw.handler.client.hero.function.ReceiveTimeLimitedDrawCountHandler;
+import com.gryphpoem.game.zw.handler.client.hero.function.*;
 import com.gryphpoem.game.zw.handler.client.mail.*;
 import com.gryphpoem.game.zw.handler.client.medal.*;
 import com.gryphpoem.game.zw.handler.client.mentor.*;
@@ -81,6 +77,9 @@ import com.gryphpoem.game.zw.handler.client.rebellion.BuyRebelBuffHandler;
 import com.gryphpoem.game.zw.handler.client.rebellion.BuyRebelShopHandler;
 import com.gryphpoem.game.zw.handler.client.rebellion.GetRebelBuffHandler;
 import com.gryphpoem.game.zw.handler.client.rebellion.GetRebellionHandler;
+import com.gryphpoem.game.zw.handler.client.relic.GetRelicDataInfoHandler;
+import com.gryphpoem.game.zw.handler.client.relic.GetRelicDetailHandler;
+import com.gryphpoem.game.zw.handler.client.relic.GetRelicScoreAwardHandler;
 import com.gryphpoem.game.zw.handler.client.royalarena.GetRoyalArenaHandler;
 import com.gryphpoem.game.zw.handler.client.royalarena.RoyalArenaAwardHandler;
 import com.gryphpoem.game.zw.handler.client.royalarena.RoyalArenaSkillHandler;
@@ -176,7 +175,7 @@ public class MessagePool implements IMessagePool {
         // 获取离线收益
         registerC(OffLineIncomeRq.EXT_FIELD_NUMBER, OffLineIncomeRs.EXT_FIELD_NUMBER, GetOffLineIncome.class);
         // 获取加入社群奖励
-        registerC(JoinCommunityRq.EXT_FIELD_NUMBER, JoinCommunityRs.EXT_FIELD_NUMBER,JoinCommunityHandler.class);
+        registerC(JoinCommunityRq.EXT_FIELD_NUMBER, JoinCommunityRs.EXT_FIELD_NUMBER, JoinCommunityHandler.class);
         // 切磋
         registerC(CompareNotesRq.EXT_FIELD_NUMBER, CompareNotesRs.EXT_FIELD_NUMBER, CompareNotesHandler.class);
 
@@ -434,6 +433,8 @@ public class MessagePool implements IMessagePool {
         registerC(GamePb5.UpgradeHeroRq.EXT_FIELD_NUMBER, UpgradeHeroRs.EXT_FIELD_NUMBER, HeroUpgradeHandler.class);
         registerC(GamePb5.ExchangeHeroFragmentRq.EXT_FIELD_NUMBER, ExchangeHeroFragmentRs.EXT_FIELD_NUMBER, ExchangeHeroFragmentHandler.class);
         registerC(GamePb5.SynthesizingHeroFragmentsRq.EXT_FIELD_NUMBER, SynthesizingHeroFragmentsRs.EXT_FIELD_NUMBER, SynthesizingHeroFragmentsHandler.class);
+        registerC(GamePb5.UpgradeHeroTalentRq.EXT_FIELD_NUMBER, UpgradeHeroTalentRs.EXT_FIELD_NUMBER, UpgradeHeroTalentHandler.class);
+
         // 战机相关协议
         registerC(GetWarPlanesRq.EXT_FIELD_NUMBER, GetWarPlanesRs.EXT_FIELD_NUMBER, GetWarPlanesHandler.class);
         registerC(GetPlaneByIdsRq.EXT_FIELD_NUMBER, GetPlaneByIdsRs.EXT_FIELD_NUMBER, GetPlaneByIdsHandler.class);
@@ -1122,22 +1123,22 @@ public class MessagePool implements IMessagePool {
         registerC(RoyalArenaSkillRq.EXT_FIELD_NUMBER, RoyalArenaSkillRs.EXT_FIELD_NUMBER, RoyalArenaSkillHandler.class);
 
         //圣诞活动
-        registerC(GetChristmasInfoRq.EXT_FIELD_NUMBER,GetChristmasInfoRs.EXT_FIELD_NUMBER, ChristmasGetInfoHandler.class);
-        registerC(HandInChristmasChipRq.EXT_FIELD_NUMBER,HandInChristmasChipRs.EXT_FIELD_NUMBER, ChristmasHandInChipHandler.class);
-        registerC(GetChristmasAwardRq.EXT_FIELD_NUMBER,GetChristmasAwardRs.EXT_FIELD_NUMBER, ChristmasGetAwardHandler.class);
+        registerC(GetChristmasInfoRq.EXT_FIELD_NUMBER, GetChristmasInfoRs.EXT_FIELD_NUMBER, ChristmasGetInfoHandler.class);
+        registerC(HandInChristmasChipRq.EXT_FIELD_NUMBER, HandInChristmasChipRs.EXT_FIELD_NUMBER, ChristmasHandInChipHandler.class);
+        registerC(GetChristmasAwardRq.EXT_FIELD_NUMBER, GetChristmasAwardRs.EXT_FIELD_NUMBER, ChristmasGetAwardHandler.class);
 
         //沙盘演武
-        registerC(SandTableEnrollRq.EXT_FIELD_NUMBER,SandTableEnrollRs.EXT_FIELD_NUMBER, SandTableEnrollHandler.class);
-        registerC(SandTableUpdateArmyRq.EXT_FIELD_NUMBER,SandTableUpdateArmyRs.EXT_FIELD_NUMBER, SandTableUpdateArmyHandler.class);
-        registerC(SandTableChangeLineRq.EXT_FIELD_NUMBER,SandTableChangeLineRs.EXT_FIELD_NUMBER, SandTableChangeLineHandler.class);
-        registerC(SandTableAdjustLineRq.EXT_FIELD_NUMBER,SandTableAdjustLineRs.EXT_FIELD_NUMBER, SandTableAdjustLineHandler.class);
-        registerC(SandTableGetInfoRq.EXT_FIELD_NUMBER,SandTableGetInfoRs.EXT_FIELD_NUMBER, SandTableGetInfoHandler.class);
-        registerC(SandTableHisRankRq.EXT_FIELD_NUMBER,SandTableHisRankRs.EXT_FIELD_NUMBER, SandTableHisRankHandler.class);
-        registerC(SandTableHisContestRq.EXT_FIELD_NUMBER,SandTableHisContestRs.EXT_FIELD_NUMBER, SandTableHisContestHandler.class);
-        registerC(SandTableReplayRq.EXT_FIELD_NUMBER,SandTableReplayRs.EXT_FIELD_NUMBER, SandTableReplayHandler.class);
-        registerC(SandTableShopBuyRq.EXT_FIELD_NUMBER,SandTableShopBuyRs.EXT_FIELD_NUMBER, SandTableShopBuyHandler.class);
-        registerC(SandTablePlayerFightDetailRq.EXT_FIELD_NUMBER,SandTablePlayerFightDetailRs.EXT_FIELD_NUMBER, SandTablePlayerFightDetailHandler.class);
-        registerC(SandTableGetLinePlayersRq.EXT_FIELD_NUMBER,SandTableGetLinePlayersRs.EXT_FIELD_NUMBER, SandTableGetLinePlayersHandler.class);
+        registerC(SandTableEnrollRq.EXT_FIELD_NUMBER, SandTableEnrollRs.EXT_FIELD_NUMBER, SandTableEnrollHandler.class);
+        registerC(SandTableUpdateArmyRq.EXT_FIELD_NUMBER, SandTableUpdateArmyRs.EXT_FIELD_NUMBER, SandTableUpdateArmyHandler.class);
+        registerC(SandTableChangeLineRq.EXT_FIELD_NUMBER, SandTableChangeLineRs.EXT_FIELD_NUMBER, SandTableChangeLineHandler.class);
+        registerC(SandTableAdjustLineRq.EXT_FIELD_NUMBER, SandTableAdjustLineRs.EXT_FIELD_NUMBER, SandTableAdjustLineHandler.class);
+        registerC(SandTableGetInfoRq.EXT_FIELD_NUMBER, SandTableGetInfoRs.EXT_FIELD_NUMBER, SandTableGetInfoHandler.class);
+        registerC(SandTableHisRankRq.EXT_FIELD_NUMBER, SandTableHisRankRs.EXT_FIELD_NUMBER, SandTableHisRankHandler.class);
+        registerC(SandTableHisContestRq.EXT_FIELD_NUMBER, SandTableHisContestRs.EXT_FIELD_NUMBER, SandTableHisContestHandler.class);
+        registerC(SandTableReplayRq.EXT_FIELD_NUMBER, SandTableReplayRs.EXT_FIELD_NUMBER, SandTableReplayHandler.class);
+        registerC(SandTableShopBuyRq.EXT_FIELD_NUMBER, SandTableShopBuyRs.EXT_FIELD_NUMBER, SandTableShopBuyHandler.class);
+        registerC(SandTablePlayerFightDetailRq.EXT_FIELD_NUMBER, SandTablePlayerFightDetailRs.EXT_FIELD_NUMBER, SandTablePlayerFightDetailHandler.class);
+        registerC(SandTableGetLinePlayersRq.EXT_FIELD_NUMBER, SandTableGetLinePlayersRs.EXT_FIELD_NUMBER, SandTableGetLinePlayersHandler.class);
 
         //战火燎原
         //战火燎原---积分相关
@@ -1167,18 +1168,18 @@ public class MessagePool implements IMessagePool {
         registerC(OnHookGetAwardRq.EXT_FIELD_NUMBER, OnHookGetAwardRs.EXT_FIELD_NUMBER, OnHookGetAwardHandler.class);
 
         //赛季
-        registerC(SeasonGetInfoRq.EXT_FIELD_NUMBER,SeasonGetInfoRs.EXT_FIELD_NUMBER, SeasonGetInfoHandler.class);
-        registerC(SeasonGetTreasuryInfoRq.EXT_FIELD_NUMBER,SeasonGetTreasuryInfoRs.EXT_FIELD_NUMBER, SeasonGetTreasuryInfoHandler.class);
-        registerC(SeasonGetTaskInfoRq.EXT_FIELD_NUMBER,SeasonGetTaskInfoRs.EXT_FIELD_NUMBER, SeasonGetTaskInfoHandler.class);
-        registerC(SeasonGenerateTreasuryAwardRq.EXT_FIELD_NUMBER,SeasonGenerateTreasuryAwardRs.EXT_FIELD_NUMBER, SeasonGenerateTreasuryAwardHandler.class);
-        registerC(SeasonGetTreasuryAwardRq.EXT_FIELD_NUMBER,SeasonGetTreasuryAwardRs.EXT_FIELD_NUMBER, SeasonGetTreasuryAwardHandler.class);
-        registerC(SeasonGetTaskAwardRq.EXT_FIELD_NUMBER,SeasonGetTaskAwardRs.EXT_FIELD_NUMBER, SeasonGetTaskAwardHandler.class);
-        registerC(SeasonGetRankRq.EXT_FIELD_NUMBER,SeasonGetRankRs.EXT_FIELD_NUMBER, SeasonGetRankHandler.class);
+        registerC(SeasonGetInfoRq.EXT_FIELD_NUMBER, SeasonGetInfoRs.EXT_FIELD_NUMBER, SeasonGetInfoHandler.class);
+        registerC(SeasonGetTreasuryInfoRq.EXT_FIELD_NUMBER, SeasonGetTreasuryInfoRs.EXT_FIELD_NUMBER, SeasonGetTreasuryInfoHandler.class);
+        registerC(SeasonGetTaskInfoRq.EXT_FIELD_NUMBER, SeasonGetTaskInfoRs.EXT_FIELD_NUMBER, SeasonGetTaskInfoHandler.class);
+        registerC(SeasonGenerateTreasuryAwardRq.EXT_FIELD_NUMBER, SeasonGenerateTreasuryAwardRs.EXT_FIELD_NUMBER, SeasonGenerateTreasuryAwardHandler.class);
+        registerC(SeasonGetTreasuryAwardRq.EXT_FIELD_NUMBER, SeasonGetTreasuryAwardRs.EXT_FIELD_NUMBER, SeasonGetTreasuryAwardHandler.class);
+        registerC(SeasonGetTaskAwardRq.EXT_FIELD_NUMBER, SeasonGetTaskAwardRs.EXT_FIELD_NUMBER, SeasonGetTaskAwardHandler.class);
+        registerC(SeasonGetRankRq.EXT_FIELD_NUMBER, SeasonGetRankRs.EXT_FIELD_NUMBER, SeasonGetRankHandler.class);
 
         //赛季英雄
-        registerC(SynthSeasonHeroRq.EXT_FIELD_NUMBER,SynthSeasonHeroRs.EXT_FIELD_NUMBER, SeasonSynthHeroHandler.class);
-        registerC(UpgradeHeroCgyRq.EXT_FIELD_NUMBER,UpgradeHeroCgyRs.EXT_FIELD_NUMBER, SeasonUpgradeHeroCgyHandler.class);
-        registerC(UpgradeHeroSkillRq.EXT_FIELD_NUMBER,UpgradeHeroSkillRs.EXT_FIELD_NUMBER, SeasonUpgradeHeroSkillHandler.class);
+        registerC(SynthSeasonHeroRq.EXT_FIELD_NUMBER, SynthSeasonHeroRs.EXT_FIELD_NUMBER, SeasonSynthHeroHandler.class);
+        registerC(UpgradeHeroCgyRq.EXT_FIELD_NUMBER, UpgradeHeroCgyRs.EXT_FIELD_NUMBER, SeasonUpgradeHeroCgyHandler.class);
+        registerC(UpgradeHeroSkillRq.EXT_FIELD_NUMBER, UpgradeHeroSkillRs.EXT_FIELD_NUMBER, SeasonUpgradeHeroSkillHandler.class);
 
         //活动
         registerC(GetActivityDataInfoRq.EXT_FIELD_NUMBER, GetActivityDataInfoRs.EXT_FIELD_NUMBER, GetActivityDataInfoHandler.class);
@@ -1202,8 +1203,6 @@ public class MessagePool implements IMessagePool {
         registerC(CrtMusicPersonRankRq.EXT_FIELD_NUMBER, CrtMusicPersonRankRs.EXT_FIELD_NUMBER, CrtMusicPersonRankHandler.class);// 音乐节-歌曲创作-个人排名信息
         registerC(DrawProgressRq.EXT_FIELD_NUMBER, DrawProgressRs.EXT_FIELD_NUMBER, DrawProgressHandler.class);// 音乐节-歌曲创作-领取进度奖励
         registerC(MusicSpecialThanksRq.EXT_FIELD_NUMBER, MusicSpecialThanksRs.EXT_FIELD_NUMBER, GetSpecialThanksHandler.class);// 音乐节-歌曲创作-特别鸣谢
-
-
 
 
         //赛季天赋
@@ -1349,7 +1348,7 @@ public class MessagePool implements IMessagePool {
         registerC(GetChapterTaskAwardRq.EXT_FIELD_NUMBER, GetChapterTaskAwardRs.EXT_FIELD_NUMBER, GetChapterTaskAwardHandler.class);
         registerC(GetChapterAwardRq.EXT_FIELD_NUMBER, GetChapterAwardRs.EXT_FIELD_NUMBER, GetChapterAwardHandler.class);
 
-		//跨服聊天
+        //跨服聊天
         registerC(GetGamePlayChatRoomRq.EXT_FIELD_NUMBER, GetGamePlayChatRoomRs.EXT_FIELD_NUMBER, GetGamePlayChatRoomHandler.class);
         registerC(GetChatRoomMsgRq.EXT_FIELD_NUMBER, GetChatRoomMsgRs.EXT_FIELD_NUMBER, GetChatRoomMsgHandler.class);
         registerC(GetRoomPlayerShowRq.EXT_FIELD_NUMBER, GetRoomPlayerShowRs.EXT_FIELD_NUMBER, GetRoomPlayerShowHandler.class);
@@ -1373,6 +1372,11 @@ public class MessagePool implements IMessagePool {
 
         // 搜索叛军
         registerC(SearchBanditRq.EXT_FIELD_NUMBER, SearchBanditRs.EXT_FIELD_NUMBER, SearchBanditHandler.class);
+
+        //遗迹 获取信息
+        registerC(GetRelicDataInfoRq.EXT_FIELD_NUMBER, GetRelicDataInfoRs.EXT_FIELD_NUMBER, GetRelicDataInfoHandler.class);
+        registerC(GetRelicDetailRq.EXT_FIELD_NUMBER, GetRelicDetailRs.EXT_FIELD_NUMBER, GetRelicDetailHandler.class);
+        registerC(GetRelicScoreAwardRq.EXT_FIELD_NUMBER, GetRelicScoreAwardRs.EXT_FIELD_NUMBER, GetRelicScoreAwardHandler.class);
     }
 
     /**

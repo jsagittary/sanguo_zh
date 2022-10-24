@@ -30,4 +30,8 @@ public class CreditsConstant {
      * 日常任务积分
      */
     public static final int DAILY_TASK = 6;
+    /**
+     * 王朝遗迹积分
+     */
+    public static final int RELIC_SCORE = 7;
 }

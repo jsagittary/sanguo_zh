@@ -4,18 +4,36 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
+import com.gryphpoem.game.zw.manager.MedalDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.SolarTermsDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
+import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
+import com.gryphpoem.game.zw.resource.pojo.DropPropRecord;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -25,7 +43,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName MineService.java
@@ -230,11 +257,107 @@ public class MineService {
         add = calcGainCollectEffectCnt(player, add, staticMine.getMineType(), startDate, army);
         grab.add(PbHelper.createAwardPb(staticMine.getReward().get(0).get(0), staticMine.getReward().get(0).get(1),
                 add));
+
+        // 计算活动期间，采集掉落的道具
+        // calcCollectDropProp(grab, now - army.getBeginTime(), player, now, staticMine.getMineId());
+        List<CommonPb.Award> collectDrop = activityDataManager.getCollectDrop(player, staticMine.getMineId(), now - army.getBeginTime(), StaticActBandit.ACT_HIT_DROP_TYPE_4);
+        grab.addAll(collectDrop);
+
         army.setGrab(grab);
+
         LogUtil.common("计算矿点采集, grab:", grab.get(0));
         EventDataUp.troop(player, 1, staticMine.getMineType(), staticMine.getLv(), now - startTime, grab);
         return resource;
     }
+
+
+    /**
+     * 计算活动期间，采集掉落的道具
+     *
+     * @param grab
+     * @param collectTime
+     */
+    public void calcCollectDropProp(List<CommonPb.Award> grab, int collectTime, Player player, int now, int mineId) {
+        // 采集掉落道具，对应配置表s_act_bandit
+        List<StaticActBandit> staticActBanditList = StaticActivityDataMgr.getActBanditList().stream()
+                .filter(actBandit -> actBandit.getType() == DropPropRecord.DROP_TYPE_4 && actBandit.getActivityType() == ActivityConst.ACT_DROP_CONTROL)
+                .collect(Collectors.toList());
+        for (StaticActBandit staticActBandit : staticActBanditList) {
+            // 获取最近开启的对应活动
+            int activityId = staticActBandit.getActivityId();
+            ActivityBase activityBase = StaticActivityDataMgr.getActivityByTypeAndActivityId(ActivityConst.ACT_DROP_CONTROL, activityId);
+            if (activityBase == null) {
+                continue;
+            }
+            // 获取对应可掉落的矿点区间，判断当前采集矿点是否在区间内
+            List<List<Integer>> mineIdListList = staticActBandit.getMineId();
+            boolean isInMineIdRange = false;
+            if (CheckNull.nonEmpty(mineIdListList)) {
+                for (List<Integer> mineIdList : mineIdListList) {
+                    if (mineIdList.size() == 2) {
+                        isInMineIdRange = mineId >= mineIdList.get(0) && mineId <= mineIdList.get(1);
+                        if (isInMineIdRange) {
+                            // 采集矿点在配置的任一范围矿点即可
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!isInMineIdRange) {
+                continue;
+            }
+            // 获取对应掉落的道具配置[[道具类型， 道具id， 道具数量(每满足条件掉落数量)], [道具类型， 道具id， 道具数量], [道具类型， 道具id， 道具数量]]
+            List<List<Integer>> configAwardList = staticActBandit.getDrop();
+            // 每日掉落上限（同一活动类型、同一活动id，共享每日上限）
+            int oneDayTotalCountLimit = staticActBandit.getTotal();
+            // 单次采集掉落上限
+            int onceTotalCountLimit = staticActBandit.getOnceTotal();
+            // 累计多少时间掉落一次
+            int dropTime = staticActBandit.getDropTime();
+            if (CheckNull.isEmpty(configAwardList)) {
+                continue;
+            }
+
+            for (List<Integer> configAward : configAwardList) {
+                if (configAward.size() < 3) {
+                    continue;
+                }
+                Integer awardType = configAward.get(0);
+                Integer awardId = configAward.get(1);
+                Integer singleAwardCount = configAward.get(2);
+
+                // 此次采集掉落总数（实际值：单次掉落 * 掉落次数），不得超过单次采集掉落上限
+                int finalGetCount = Math.min(onceTotalCountLimit, singleAwardCount * (collectTime / dropTime));
+                Date nowDate = TimeHelper.getDate((long) now);
+                // 获取玩家已掉落记录
+                DropPropRecord dropPropRecord = player.getDropPropRecord(ActivityConst.ACT_DROP_CONTROL, activityId);
+                if (dropPropRecord == null || !DateHelper.isSameDate(nowDate, TimeHelper.getDate((long) dropPropRecord.getDate()))) {
+                    // 未记录过，或非同一天
+                    player.removeDropPropRecord(ActivityConst.ACT_DROP_CONTROL, activityId);
+                    dropPropRecord = new DropPropRecord();
+                    dropPropRecord.setDropType(DropPropRecord.DROP_TYPE_4);
+                    dropPropRecord.setDate(now);
+                    dropPropRecord.setPropId(awardId);
+                    dropPropRecord.setTotalGainCount(Math.min(finalGetCount, oneDayTotalCountLimit));
+                    dropPropRecord.setActivityType(ActivityConst.ACT_DROP_CONTROL);
+                    dropPropRecord.setActivityId(activityId);
+                    player.getDropPropRecordList().add(dropPropRecord);
+                } else {
+                    // 如果是同一天的记录，则更新获取数量
+                    int totalGainCount = dropPropRecord.getTotalGainCount();
+                    finalGetCount = Math.min(finalGetCount, oneDayTotalCountLimit - totalGainCount);
+                    dropPropRecord.setTotalGainCount(totalGainCount + finalGetCount);
+                }
+
+                if (finalGetCount > 0) {
+                    CommonPb.Award dropAward = PbHelper.createAwardPb(awardType, awardId, finalGetCount);
+                    grab.add(dropAward);
+                }
+            }
+        }
+    }
+
 
     /**
      * 计算采集加成后的数量

@@ -138,11 +138,13 @@ public class DrawCardPlanTemplateService {
         if (CheckNull.isNull(drawCardCount) || CheckNull.isNull(drawCardCostType)) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
         }
+
         // 对应抽卡消耗类型扣除资源
+        int costGoldCnt = 0;
         ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
         switch (planFunction.getA()) {
             case DRAW_CARD:
-                service.checkCondition(player, drawCardCostType, drawCardCount, change, functionPlanData);
+                service.checkCondition(player, drawCardCostType, drawCardCount, change, functionPlanData, costGoldCnt);
                 break;
             default:
                 throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, costType:%d, countType:%d", roleId, req.getCostType(), req.getCountType()));
@@ -153,7 +155,7 @@ public class DrawCardPlanTemplateService {
         GamePb5.DrawActHeroCardRs.Builder builder = GamePb5.DrawActHeroCardRs.newBuilder();
         // 执行将领寻访逻辑
         for (int i = 0; i < drawCardCount.getCount(); i++) {
-            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, planFunction.getB(), 0, drawCardCount, drawCardCostType, weightConfig, now);
+            CommonPb.SearchHero sh = service.onceDraw(player, functionPlanData, planFunction.getB(), costGoldCnt, drawCardCount, drawCardCostType, weightConfig, now);
             if (null != sh) {
                 builder.addHero(sh);
             }

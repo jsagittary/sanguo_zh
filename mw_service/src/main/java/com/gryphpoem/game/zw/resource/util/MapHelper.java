@@ -263,12 +263,12 @@ public class MapHelper {
      * @param pos
      * @return
      */
-     public static int getRangeBlockByPos(int pos) {
-     Turple<Integer, Integer> turple = reducePos(pos);
-     int blockX = (turple.getA() % 100 - 1) / 10 + 1;
-     int blockY = (turple.getB() % 100 - 1) / 10;
-     return blockX + blockY * 10;
-     }
+    public static int getRangeBlockByPos(int pos) {
+        Turple<Integer, Integer> turple = reducePos(pos);
+        int blockX = (turple.getA() % 100 - 1) / 10 + 1;
+        int blockY = (turple.getB() % 100 - 1) / 10;
+        return blockX + blockY * 10;
+    }
 
     /**
      * 计算两个坐标点的距离，这里的距离不是直线距离，而是X、Y轴距离的和
@@ -669,114 +669,75 @@ public class MapHelper {
         return posList;
     }
 
-    // ============================= TEST =====================
-
-    public static void main(String[] args) {
-        // 252, 254
-
-        int pos = xy2Pos(252, 254);
-        System.out.println(pos);
-        // System.out.println("area:" + getAreaIdByPos(pos));
-        // System.out.println("block:" + block(pos));
-        // System.out.println("bToAare:" + blockToArea(block(pos)));
-        // getBlockInArea(getAreaIdByPos(pos)).stream().sorted().forEach(p -> {
-        // System.out.print(p + ",");
-        // });
-        // Turple<Integer, Integer> turple = getMinPosInBlock(21, 2);
-        // System.out.println(turple);
-        // int x = 57;
-        // int y = 354;
-        // int pos = x + y * 500;
-        // int areaId = getAreaIdByPos(pos);
-        // System.out.println("x:" + x + ", y:" + y + ", area:" + areaId);
-
-        // for (int i = 0; i < 30; i++) {
-        // System.out.println(randomPosInBlock(11, 5));
-        // }
-        // int pos = 201;
-        // System.out.println("x=" + pos % 500 + ",y=" + pos / 500);
-        // System.out.println(getAreaIdByPos(pos));
-
-        // int x = 16;
-        // int y = 468;
-        // int pos = x + y * 500;
-        // System.out.println(pos);
-        // System.out.println(getAreaIdByPos(pos));
-        // int x2 = 279;
-        // int y2 = 278;
-        // int pos2 = x2 + y2 * 500;
-        // System.out.println(pos2);
-        // System.out.println(getAreaIdByPos(pos2));
-
-        // // pos = 145210;
-        // Turple<Integer, Integer> xy = reducePos(pos);
-        // System.out.println("x=" + xy.getA() + ",y=" + xy.getB() + ",pos=" + pos);
-        // int areaId = getAreaIdByPos(pos);
-        // System.out.println("areaId=" + areaId);
-        // System.out.println(getBlockInArea(1));
-        // System.out.println("==========================");
-        // // System.out.println(getRangeBlockByPos(pos));
-        // System.out.println(getLineAcorss(pos, pos2));
-        // System.out.println(convertArea(12));
-
+    /**
+     * 以x坐标为中心在指定范围内随机一个坐标
+     *
+     * @param pos
+     * @param radius
+     * @return
+     */
+    public static int randomPosByCentre(int pos, int radius) {
+        Turple<Integer, Integer> xy = MapHelper.pos2Xy(pos);
+        int x = xy.getA(), y = xy.getB();
+        int minX = x - radius, maxX = x + radius;
+        int minY = y - radius, maxY = y + radius;
+        int rdmX = RandomUtil.randomIntIncludeEnd(minX, maxX);
+        int rdmY = RandomUtil.randomIntIncludeEnd(minY, maxY);
+        return xy2Pos(rdmX, rdmY);
     }
 
-    // private static void lead() {
-    // int pos = 125030;
-    // Turple<Integer, Integer> xy = reducePos(pos);
-    // // int x = xy.getA();
-    // // int y = xy.getB();
-    //
-    // // int x = 299;
-    // // int y = 300;
-    // int x = 200;
-    // int y = 399;
-    // pos = x + y * 500;
-    // int areaId = getAreaIdByPos(pos);
-    // System.out.println("x:" + x + ", y:" + y + ", area:" + areaId);
-    //
-    // // 计算区域范围
-    // Turple<Integer, Integer> beginXy = MapHelper.reduceXYInArea(areaId);
-    // int xMin = beginXy.getA();
-    // int yMin = beginXy.getB();
-    // int xMax = xMin + 99;
-    // int yMax = yMin + 99;
-    //
-    // System.out.println(String.format("area x(%d~%d), y(%d~%d)", xMin, xMax, yMin, yMax));
-    // int scope = 3;
-    // // 7*7范围
-    // int xPBegin = x - scope;
-    // int xPEnd = x + scope;
-    // int yPBegin = y - scope;
-    // int yPEnd = y + scope;
-    //
-    // // 不能超过范围,四个角落的情况
-    // if (xPBegin < xMin) { // 左边越界
-    // xPBegin = xMin;
-    // xPEnd = xPBegin + (2 * scope + 1);
-    // }
-    // if (xPEnd > xMax) {// 右边越界
-    // xPEnd = xMax;
-    // xPBegin = xPEnd - (2 * scope + 1);
-    // }
-    // if (yPBegin < yMin) {// 定边越界
-    // yPBegin = yMin;
-    // yPEnd = yPBegin + (2 * scope + 1);
-    // }
-    // if (yPEnd > yMax) {// 底边越界
-    // yPEnd = yMax;
-    // yPBegin = yPEnd - (2 * scope + 1);
-    // }
-    // System.out.println(String.format("%d,%d,%d,%d", xPBegin, xPEnd, yPBegin, yPEnd));
-    //
-    // for (int i = yPBegin; i <= yPEnd; i++) {
-    // for (int j = xPBegin; j <= xPEnd; j++) {
-    // int newPos = j + i * 500;
-    // System.out.print(j + ":" + i + ":" + getAreaIdByPos(newPos) + ", ");
-    //
-    // }
-    // System.out.println();
-    // }
-    //
-    // }
+    public static Turple<Integer, Integer> pos2Xy(int pos) {
+        return reducePos(pos);
+    }
+
+    public static List<Integer> getRoundPos0(int pos, int radius) {
+        List<Integer> posList = new ArrayList<>();
+        if (radius < 1) {
+            return posList;
+        }
+        Turple<Integer, Integer> xy = reducePos(pos);
+        int x = xy.getA();
+        int y = xy.getB();
+        pos = x + y * 500;
+        int areaId = getAreaIdByPos(pos);
+
+        // 计算区域范围
+        Turple<Integer, Integer> beginXy = MapHelper.reduceXYInArea(areaId);
+        int xMin = beginXy.getA();
+        int yMin = beginXy.getB();
+        int xMax = xMin + 99;
+        int yMax = yMin + 99;
+
+        int xPBegin = x - radius;
+        int xPEnd = x + radius;
+        int yPBegin = y - radius;
+        int yPEnd = y + radius;
+
+        // 不能超过范围,四个角落的情况
+        if (xPBegin < xMin) { // 左边越界
+            xPBegin = xMin;
+            xPEnd = xPBegin + radius;
+        }
+        if (xPEnd > xMax) {// 右边越界
+            xPEnd = xMax;
+            xPBegin = xPEnd - (radius + 1);
+        }
+        if (yPBegin < yMin) {// 定边越界
+            yPBegin = yMin;
+            yPEnd = yPBegin + (radius + 1);
+        }
+        if (yPEnd > yMax) {// 底边越界
+            yPEnd = yMax;
+            yPBegin = yPEnd - (radius + 1);
+        }
+        for (int posY = yPBegin; posY <= yPEnd; posY++) {
+            for (int posX = xPBegin; posX <= xPEnd; posX++) {
+                int newPos = posX + posY * 500;
+                posList.add(newPos);
+            }
+        }
+        return posList;
+    }
+    // ============================= TEST =====================
+
 }

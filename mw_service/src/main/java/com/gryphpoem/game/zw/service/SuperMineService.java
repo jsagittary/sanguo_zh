@@ -15,6 +15,7 @@ import com.gryphpoem.game.zw.pb.GamePb4.GetSuperMineRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSuperMine;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
@@ -76,6 +77,8 @@ public class SuperMineService {
     private BattlePassDataManager battlePassDataManager;
     @Autowired
     private SeasonTalentService seasonTalentService;
+    @Autowired
+    private ActivityDataManager activityDataManager;
 
     /**
      * 根据块获取超级矿点
@@ -560,6 +563,9 @@ public class SuperMineService {
             List<CommonPb.Award> grab = new ArrayList<>(); // 奖励
             grab.add(PbHelper.createAwardPb(sSm.getReward().get(0).get(0), sSm.getReward().get(0).get(1), gainRes));
             sg.getArmy().setCollectTime(collectTime); // 设置部队采集时间
+            // 获取采集掉落道具
+            List<CommonPb.Award> collectDrop = activityDataManager.getCollectDrop(player, sSm.getMineId(), collectTime, StaticActBandit.ACT_HIT_DROP_TYPE_5);
+            grab.addAll(collectDrop);
             sg.getArmy().setGrab(grab);
             // 给将领加经验
             Hero hero = player.heros.get(sg.getArmy().getHero().get(0).getV1());

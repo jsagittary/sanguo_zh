@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.gameplay.local.world.map;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
@@ -12,7 +13,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.CollectArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -21,7 +21,11 @@ import com.gryphpoem.game.zw.pb.CommonPb.MapForce.Builder;
 import com.gryphpoem.game.zw.pb.CommonPb.MapMinePb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
@@ -40,9 +44,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName MineMapEntity.java
  * @Description
- * @author QiuKun
  * @date 2019年3月20日
  */
 public class MineMapEntity extends BaseWorldEntity {
@@ -57,6 +61,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 小地图加上矿点
+     *
      * @return AreaMine
      */
     public CommonPb.AreaMine toAreaForcePb() {
@@ -162,7 +167,7 @@ public class MineMapEntity extends BaseWorldEntity {
         rewardDataManager.checkAndSubPlayerRes(invokePlayer, needCost, AwardFrom.ATK_POS); // 检测并扣除资源
         if (mineHasPlayer) { // 矿点有人
             if (guard.getPlayer().roleId != roleId) {
-                worldService.removeProTect(invokePlayer,AwardFrom.COLLECT_WAR,pos); // 移除保护罩
+                worldService.removeProTect(invokePlayer, AwardFrom.COLLECT_WAR, pos); // 移除保护罩
             }
         }
         // 部队添加
@@ -194,7 +199,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 判断采集队伍上限
-     * 
+     *
      * @param roleId
      * @param cmap
      * @throws MwException
@@ -221,7 +226,6 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 结算采集,把资源加到army中,并更新矿点剩余数量,并没有剩余资源时会移除,没有更新地图操作
-     * 
      */
     public CommonPb.MailCollect settleCollect(CrossWorldMap cMap) {
         if (guard == null) {
@@ -274,7 +278,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 计算剩余矿点
-     * 
+     *
      * @return
      */
     public int calcRemainRes() {
@@ -284,7 +288,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 计算采集了多少资源
-     * 
+     *
      * @param now
      * @return
      */
@@ -306,7 +310,7 @@ public class MineMapEntity extends BaseWorldEntity {
 
     /**
      * 可采集最大时间
-     * 
+     *
      * @param cMap
      * @param staticHero
      * @return

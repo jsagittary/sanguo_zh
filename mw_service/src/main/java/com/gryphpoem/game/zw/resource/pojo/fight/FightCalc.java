@@ -3,23 +3,25 @@ package com.gryphpoem.game.zw.resource.pojo.fight;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.manager.MedalDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.PlaneConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePvp;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMedalSpecialSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSkill;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.apache.commons.lang3.RandomUtils;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author TanDonghai
@@ -102,7 +104,7 @@ public class FightCalc {
 
         /**
          * 克制时	(兵种阶级-对方兵种阶级) * K9 + [基础K8 + (兵种阶级 * K10)]
-         * 被克制时	(兵种阶级-对方兵种阶级) * K9 - [基础K8 + (对方兵种阶级 * K10)]
+         * 被克制时	(兵种阶级-对方兵种阶级) * K9 - [基础K8 + (对方兵种阶级 * K10)] — 兵种克制减伤加成
          * 不可制	(兵种阶级-对方兵种阶级) * K9
          */
 
@@ -116,16 +118,47 @@ public class FightCalc {
                     double seasonTalentRestrain = (DataResource.getBean(SeasonTalentService.class).
                             getSeasonTalentEffectValue(forcePlayer, SeasonConst.TALENT_EFFECT_602) / Constant.TEN_THROUSAND);
                     LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
-                            "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "赛季天赋-以长攻短-加成比例: ", seasonTalentRestrain);
+                            "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "" +
+                            "赛季天赋-以长攻短-加成比例: ", seasonTalentRestrain);
                     restrain += seasonTalentRestrain;
                 }
             }
         } else if (haveArmyRestraint(target.armType, force.armType)) {
+            // 兵种克制减伤属性加成
+            double lessHurtFromArmyRestraint = getLessHurtFromArmyRestraint(force, target);
             restrain = restrain - (WorldConstant.K8 + (defHeroLv * WorldConstant.K10));
+            LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
+                            "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType),
+                    "赛季天赋-以短攻长-加成比例: ", restrain, " - ", (WorldConstant.K8 + (defHeroLv * WorldConstant.K10)),
+                    "兵种克制减伤加成比例: ", lessHurtFromArmyRestraint);
+            restrain -= lessHurtFromArmyRestraint;
         }
 
-
         return restrain;
+    }
+
+    /**
+     * 根据兵种克制关系，获取减伤系数
+     *
+     * @param force
+     * @param target
+     * @return
+     */
+    private static double getLessHurtFromArmyRestraint(Force force, Force target) {
+        double lessHurt = 0.00;
+        if (force.armType == Constant.ArmyType.INFANTRY_ARMY_TYPE) {
+            lessHurt = target.attrData.lessInfantryMut;
+        }
+
+        if (force.armType == Constant.ArmyType.CAVALRY_ARMY_TYPE) {
+            lessHurt = target.attrData.lessCavalryMut;
+        }
+
+        if (force.armType == Constant.ArmyType.ARCHER_ARMY_TYPE) {
+            lessHurt = target.attrData.lessArcherMut;
+        }
+
+        return lessHurt;
     }
 
     /**
@@ -187,6 +220,19 @@ public class FightCalc {
                     }
                 }
             }
+        }
+
+        // 对xxxx兵攻击提升
+        switch (target.armType) {
+            case Constant.ArmyType.INFANTRY_ARMY_TYPE:
+                calcAttack = calcAttack + force.attrData.moreInfantryAttack;
+                break;
+            case Constant.ArmyType.CAVALRY_ARMY_TYPE:
+                calcAttack = calcAttack + force.attrData.moreCavalryAttack;
+                break;
+            case Constant.ArmyType.ARCHER_ARMY_TYPE:
+                calcAttack = calcAttack + force.attrData.moreArcherAttack;
+                break;
         }
         return calcAttack;
     }
@@ -267,6 +313,10 @@ public class FightCalc {
         double atk = getFinalAtk(force, target, battleType);
         // 防御 = ( 防御 * ( 1 + 提升百分比 ) + 强防 )
         double def = getFinalDef(force, target, battleType);
+        // 破甲
+        int atkExt = getFinalAtkExt(force, target);
+        // 防护
+        int defExt = getFinalDefExt(force, target);
 
         //记录随机数 方便测试
         float hurt1Random;
@@ -284,7 +334,7 @@ public class FightCalc {
         }
 
         // 若类型2伤害结果小于零, 则认为类型2伤害结果为零
-        double hurt2 = (force.calcAtkExt() - target.calcDefExt() * K5) / K6 * (K7 * force.count / force.lead + 1 - K7);
+        double hurt2 = (atkExt - target.calcDefExt() * K5) / K6 * (K7 * force.count / force.lead + 1 - K7);
         double debugHurt2 = hurt2;
         //天赋优化加成
         if (hurt2 > 0) {
@@ -342,19 +392,61 @@ public class FightCalc {
         //进攻方类型
         String atkstr = getRoleTypeStr(force.roleType);
         String tarstr = getRoleTypeStr(target.roleType);
-        LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ",战斗回合===》战斗类型: ", battleType, strType,
-                ",进攻方类型/将领id/将领类型/强化等级: ", atkstr, "/", force.id, "/", force.armType, "/", force.intensifyLv,
-                ",进攻方基础攻击/计算后的攻击:", force.calcAttack(), "/", atk, ",防守方类型/将领id/将领类型/强化等级: ", tarstr, "/", target.id,
-                "/", target.armType, "/", target.intensifyLv, ",防守方基础防御/计算后的防御: ", target.calcDefend(), "/", def,
-                ",进攻方光环增伤: ",
-                MedalConst.getAuraSkillNum(force, target, MedalConst.INCREASE_HURT_AURA) / Constant.TEN_THROUSAND,
-                ",防守方光环减伤: ",
-                MedalConst.getAuraSkillNum(target, force, MedalConst.REDUCE_HURT_AURA) / Constant.TEN_THROUSAND,
-                ",伤害类型1: ", hurt1, ", 伤害类型1随机数: ", hurt1Random, "伤害类型2赛季天赋攻心扼吭加成前:", debugHurt2, "赛季天赋攻心扼吭加成:", hurt2 - debugHurt2,
-                ", 类型2总伤害(赛季天赋攻心扼吭加成后): ", hurt2, ", 伤害类型2随机数: ", hurt2Random, ", 计算暴击之前: ", debugHurt,
-                ",计算光环之前(计算暴击之后): ", beforeHurt, ", 计算光环之后的伤害值: ", beforeRestrain, ",兵种克制关系系数: ", finalRestrain, ", 对防守方当前兵种伤害加成: ", finalDamageToArms, ",最终伤害结果: ",
-                hurt);
+        LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, " ,战斗回合===》战斗类型: ", battleType, strType,
+                ", 进攻方类型/将领id/将领类型/强化等级: ", atkstr, "/", force.id, "/", force.armType, "/", force.intensifyLv,
+                ", 进攻方基础攻击/计算后的攻击: ", force.calcAttack(), "/", atk,
+                ", 进攻方基础破甲/计算后的破甲: ", force.calcAtkExt(), "/", atkExt,
+                ", 防守方类型/将领id/将领类型/强化等级: ", tarstr, "/", target.id, "/", target.armType, "/", target.intensifyLv,
+                ", 防守方基础防御/计算后的防御: ", target.calcDefend(), "/", def,
+                ", 防守方基础防护/计算后的防护: ", target.calcDefExt(), "/", defExt,
+                ", 进攻方光环增伤: ", MedalConst.getAuraSkillNum(force, target, MedalConst.INCREASE_HURT_AURA) / Constant.TEN_THROUSAND,
+                ", 防守方光环减伤: ", MedalConst.getAuraSkillNum(target, force, MedalConst.REDUCE_HURT_AURA) / Constant.TEN_THROUSAND,
+                ", 伤害类型1: ", hurt1,
+                ", 伤害类型1随机数: ", hurt1Random,
+                ", 伤害类型2赛季天赋攻心扼吭加成前:", debugHurt2,
+                ", 赛季天赋攻心扼吭加成:", hurt2 - debugHurt2,
+                ", 类型2总伤害(赛季天赋攻心扼吭加成后): ", hurt2,
+                ", 伤害类型2随机数: ", hurt2Random,
+                ", 计算暴击之前: ", debugHurt,
+                ", 计算光环之前(计算暴击之后): ", beforeHurt,
+                ", 计算光环之后的伤害值: ", beforeRestrain,
+                ", 兵种克制关系系数: ", finalRestrain,
+                ", 对防守方当前兵种伤害加成: ", finalDamageToArms,
+                ", 最终伤害结果: ", hurt);
         return (int) hurt;
+    }
+
+    /**
+     * 获取最终防护
+     * @param force
+     * @param target
+     * @return
+     */
+    private static int getFinalDefExt(Force force, Force target) {
+        return target.calcDefExt();
+    }
+
+    /**
+     * 获取最终破甲
+     * @param force
+     * @param target
+     * @return
+     */
+    private static int getFinalAtkExt(Force force, Force target) {
+        int atkExt = force.calcAtkExt();
+        switch (target.armType) {
+            case Constant.ArmyType.INFANTRY_ARMY_TYPE:
+                atkExt = atkExt + force.attrData.moreInfantryAttackExt;
+                break;
+            case Constant.ArmyType.CAVALRY_ARMY_TYPE:
+                atkExt = atkExt + force.attrData.moreCavalryAttackExt;
+                break;
+            case Constant.ArmyType.ARCHER_ARMY_TYPE:
+                atkExt = atkExt + force.attrData.moreArcherAttackExt;
+                break;
+        }
+
+        return atkExt;
     }
 
     /**

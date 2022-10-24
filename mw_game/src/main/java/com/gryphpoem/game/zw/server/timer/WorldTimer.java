@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.server.timer;
 import com.gryphpoem.game.zw.core.timer.TimerEvent;
 import com.gryphpoem.game.zw.server.AppGameServer;
 import com.gryphpoem.game.zw.service.*;
+import com.gryphpoem.game.zw.service.relic.RelicService;
 
 public class WorldTimer extends TimerEvent {
     public WorldTimer() {
@@ -20,8 +21,9 @@ public class WorldTimer extends TimerEvent {
         AppGameServer.ac.getBean(CityService.class).cityTimeLogic();
 
         AppGameServer.ac.getBean(SuperMineService.class).superMineStateChangeTimer();
-        
+
         AppGameServer.ac.getBean(AirshipService.class).runSecTimer();
 
+        AppGameServer.ac.getBean(RelicService.class).gameRunSec();
     }
 }

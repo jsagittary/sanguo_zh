@@ -2,14 +2,12 @@ package com.gryphpoem.game.zw.resource.pojo.fight;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticBattleDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePvp;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneSkill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSkill;
@@ -19,8 +17,6 @@ import com.gryphpoem.game.zw.resource.pojo.fight.skill.FightSkillUtils;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.zookeeper.Op;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
@@ -32,6 +28,7 @@ import java.util.*;
  * @date 创建时间：2017年3月31日 下午5:08:15
  */
 public class FightLogic {
+    public long fightId;
     public boolean recordFlag = true;
     private Fighter attacker;
     private Fighter defender;

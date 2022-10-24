@@ -1449,4 +1449,25 @@ public class LogLordHelper {
                 .append("|").append(major.getProfileId());
         GAME_LOGGER.info(message);
     }
+
+    /**
+     * @param from
+     * @param account
+     * @param lord
+     * @param count
+     * @param change
+     * @param params
+     * @return void
+     * @Title: honor
+     * @Description: 古籍
+     */
+    public static void ancientBook(AwardFrom from, Account account, Lord lord, int count, int change, Object... params) {
+        if (account == null || lord == null) {
+            return;
+        }
+        StringBuffer message = getCommonParams("ancientBook", from, account, lord).append("|").append(count).append("|")
+                .append(change);
+        contactParamsArr(message, params);
+        GAME_LOGGER.info(message);
+    }
 }

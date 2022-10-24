@@ -63,10 +63,12 @@ import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySuperSupply;
 import com.gryphpoem.game.zw.resource.pojo.party.PartySupply;
+import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.world.Area;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
@@ -300,6 +302,7 @@ public class PbHelper {
 
     /**
      * 奖励列表翻倍
+     *
      * @param awardList
      * @param multiple
      * @return
@@ -341,7 +344,7 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.Task createTaskPb(Task task,Object...objs) {
+    public static CommonPb.Task createTaskPb(Task task, Object... objs) {
         CommonPb.Task.Builder builder = CommonPb.Task.newBuilder();
         builder.setTaskId(task.getTaskId());
         builder.setSchedule(task.getSchedule());
@@ -436,7 +439,7 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static TwoStr createTwoStr(String v1,String v2){
+    public static TwoStr createTwoStr(String v1, String v2) {
         TwoStr.Builder builder = TwoStr.newBuilder();
         builder.setV1(v1);
         builder.setV2(v2);
@@ -553,6 +556,26 @@ public class PbHelper {
             });
         }
 
+        Map<Integer, TalentData> talentMap = hero.getTalent();
+        if (!CheckNull.isEmpty(talentMap)) {
+            CommonPb.TalentData.Builder data = CommonPb.TalentData.newBuilder();
+            talentMap.values().forEach(talentData -> {
+                if (CheckNull.isNull(talentData)) {
+                    return;
+                }
+                data.setStatus(talentData.getStatus());
+                Map<Integer, Integer> talentArr = talentData.getTalentArr();
+                if (!CheckNull.isEmpty(talentArr)) {
+                    for (Entry<Integer, Integer> en : talentArr.entrySet()) {
+                        data.addTalentArr(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
+                }
+                data.setIndex(talentData.getIndex());
+                builder.addTalentData(data.build());
+                data.clear();
+            });
+        }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
@@ -561,9 +584,9 @@ public class PbHelper {
             builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
-        Stream.iterate(1,i->i+1).limit(hero.getTotem().length-1).forEach(j -> {
-            if(hero.getTotemKey(j) > 0){
-                builder.addTotem(PbHelper.createTwoIntPb(j,hero.getTotemKey(j)));
+        Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
+            if (hero.getTotemKey(j) > 0) {
+                builder.addTotem(PbHelper.createTwoIntPb(j, hero.getTotemKey(j)));
             }
         });
         if (Objects.nonNull(hero.getTreasureWare())) {
@@ -652,6 +675,28 @@ public class PbHelper {
             });
         }
 
+        Map<Integer, TalentData> talentMap = hero.getTalent();
+        if (!CheckNull.isEmpty(talentMap)) {
+            CommonPb.TalentData.Builder data = CommonPb.TalentData.newBuilder();
+            talentMap.values().forEach(talentData -> {
+                if (CheckNull.isNull(talentData)) {
+                    return;
+                }
+                data.setStatus(talentData.getStatus());
+                Map<Integer, Integer> talentArr = talentData.getTalentArr();
+                if (!CheckNull.isEmpty(talentArr)) {
+                    for (Entry<Integer, Integer> en : talentArr.entrySet()) {
+                        data.addTalentArr(PbHelper.createTwoIntPb(en.getKey(), en.getValue()));
+                    }
+                }
+                data.setIndex(talentData.getIndex());
+                data.setAllPartActivated(talentData.getAllPartActivated());
+                data.setMaxPart(talentData.getMaxPart());
+                builder.addTalentData(data.build());
+                data.clear();
+            });
+        }
+
         builder.setSandTableState(hero.getSandTableState());
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
@@ -660,9 +705,9 @@ public class PbHelper {
             builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
-        Stream.iterate(1,i->i+1).limit(hero.getTotem().length-1).forEach(j -> {
-            if(hero.getTotemKey(j) > 0){
-                builder.addTotem(PbHelper.createTwoIntPb(j,hero.getTotemKey(j)));
+        Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
+            if (hero.getTotemKey(j) > 0) {
+                builder.addTotem(PbHelper.createTwoIntPb(j, hero.getTotemKey(j)));
             }
         });
         if (Objects.nonNull(hero.getTreasureWare())) {
@@ -1184,20 +1229,20 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
-        CommonPb.RptSummary.Builder builder = CommonPb.RptSummary.newBuilder();
-        builder.setTotal(total);
-        builder.setLost(lost);
-        if (camp >= 0) {
-            builder.setCamp(camp);
-        }
-        if (null != name) {
-            builder.setName(name);
-            builder.setPortrait(portrait);
-            builder.setPortraitFrame(portraitFrame);
-        }
-        return builder.build();
-    }
+//    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
+//        CommonPb.RptSummary.Builder builder = CommonPb.RptSummary.newBuilder();
+//        builder.setTotal(total);
+//        builder.setLost(lost);
+//        if (camp >= 0) {
+//            builder.setCamp(camp);
+//        }
+//        if (null != name) {
+//            builder.setName(name);
+//            builder.setPortrait(portrait);
+//            builder.setPortraitFrame(portraitFrame);
+//        }
+//        return builder.build();
+//    }
 
     public static CommonPb.RptOther createRptOtherPb(int type, int id, int pos, int camp, String extParam) {
         CommonPb.RptOther.Builder builder = CommonPb.RptOther.newBuilder();
@@ -2124,8 +2169,8 @@ public class PbHelper {
                 builder.addSave(createTwoIntPb(keyId, value));
             }
         }
-        if(!activity.getDataMap().isEmpty()){
-            activity.getDataMap().entrySet().forEach(entry -> builder.addData(createTwoStr(entry.getKey(),entry.getValue())));
+        if (!activity.getDataMap().isEmpty()) {
+            activity.getDataMap().entrySet().forEach(entry -> builder.addData(createTwoStr(entry.getKey(), entry.getValue())));
         }
         if (activity.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE
                 || activity.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE
@@ -2140,10 +2185,10 @@ public class PbHelper {
             builder.setEquipTurnplat(actTurnplat.ser());
         }
 
-        if (CheckNull.nonEmpty(activity.getDayTasks())){
+        if (CheckNull.nonEmpty(activity.getDayTasks())) {
             activity.getDayTasks().forEach((key, value) -> builder.addSerDayTask(buildSerDayTask(key, value)));
         }
-        if (CheckNull.nonEmpty(activity.getDayScore())){
+        if (CheckNull.nonEmpty(activity.getDayScore())) {
             activity.getDayScore().forEach((key, value) -> builder.addSerDayScore(buildSerDayScore(key, value)));
         }
 
@@ -3240,17 +3285,17 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static Collection<Award> mergeAwards(List<Award> awardList){
-        if(ListUtils.isBlank(awardList)){
+    public static Collection<Award> mergeAwards(List<Award> awardList) {
+        if (ListUtils.isBlank(awardList)) {
             return Collections.EMPTY_LIST;
         }
-        Map<Integer,Award> map = new HashMap<>();
+        Map<Integer, Award> map = new HashMap<>();
         awardList.forEach(o -> {
             Award award = map.get(o.getId());
-            if(Objects.isNull(award)){
-                map.put(o.getId(),o.toBuilder().build());
-            }else {
-                map.put(o.getId(),award.toBuilder().setCount(award.getCount() + o.getCount()).build());
+            if (Objects.isNull(award)) {
+                map.put(o.getId(), o.toBuilder().build());
+            } else {
+                map.put(o.getId(), award.toBuilder().setCount(award.getCount() + o.getCount()).build());
             }
         });
         return map.values();
@@ -3276,5 +3321,36 @@ public class PbHelper {
             consumeList.add(list);
         }
         return consumeList;
+    }
+
+    public static CommonPb.CampRankInfo buildCampRankInfo(CampRankData campRankData) {
+        CommonPb.CampRankInfo.Builder builder = CommonPb.CampRankInfo.newBuilder();
+        builder.setCamp(campRankData.camp);
+        builder.setValue(campRankData.value);
+        builder.setTime(campRankData.time);
+        builder.setRank(campRankData.rank);
+        return builder.build();
+    }
+
+    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame, int healingArmy) {
+        CommonPb.RptSummary.Builder builder = CommonPb.RptSummary.newBuilder();
+        builder.setTotal(total);
+        builder.setLost(lost);
+        if (camp >= 0) {
+            builder.setCamp(camp);
+        }
+        if (null != name) {
+            builder.setName(name);
+            builder.setPortrait(portrait);
+            builder.setPortraitFrame(portraitFrame);
+        }
+        if (healingArmy > 0) {
+            builder.setHealingArmy(healingArmy);
+        }
+        return builder.build();
+    }
+
+    public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
+        return createRptSummary(total, lost, camp, name, portrait, portraitFrame, 0);
     }
 }

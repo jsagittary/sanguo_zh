@@ -17,7 +17,7 @@ public class StudyHeroTalentHandler extends ClientHandler {
     public void action() throws MwException {
         GamePb5.StudyHeroTalentRq req = msg.getExtension(GamePb5.StudyHeroTalentRq.ext);
         HeroUpgradeService heroService = getService(HeroUpgradeService.class);
-        GamePb5.StudyHeroTalentRs resp = heroService.studyHeroTalent(getRoleId(), req.getHeroId(), req.getType(), req.hasIndex() ? req.getIndex() : 0);
+        GamePb5.StudyHeroTalentRs resp = heroService.activateOrClearHeroTalent(getRoleId(), req.getHeroId(), req.getType(), req.hasIndex() ? req.getIndex() : 0);
 
         if (null != resp) {
             sendMsgToPlayer(GamePb5.StudyHeroTalentRs.ext, resp);

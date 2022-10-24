@@ -856,6 +856,7 @@ public class PlayerService implements GmCmdService {
                     });
             builder.setFishingGuide(player.getFishingData().getGuide());
             builder.setFirstMakeTw(player.getMakeTreasureWare().createPb(false));
+            builder.setAncientBook(player.lord.getAncientBook());
             return builder.build();
         }
         return null;
