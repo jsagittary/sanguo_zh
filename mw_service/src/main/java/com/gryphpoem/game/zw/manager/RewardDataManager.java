@@ -3519,7 +3519,7 @@ public class RewardDataManager {
      * @Title: subPlayerResHasChecked
      * @Description: 扣除玩家资源
      */
-    private void subPlayerResHasChecked(Player player, int type, int id, int num, AwardFrom from, Object... param)
+    public void subPlayerResHasChecked(Player player, int type, int id, int num, AwardFrom from, Object... param)
             throws MwException {
         if (null == player || num == 0) {
             return;

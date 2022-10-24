@@ -705,6 +705,10 @@ public class WorldService {
         int now = TimeHelper.getCurrentSecond();
         int marchTime = marchTime(player, pos, worldDataManager.getBanditIdByPos(pos) > 0 ||
                 worldDataManager.getAirshipWorldDataMap().get(pos) != null);
+        // 遗迹行军时间减半
+        if (worldDataManager.isRelicPos(pos)) {
+            marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
+        }
         // 记录行军消耗
         List<Award> marchConsume = new ArrayList<>();
         // 子类型
@@ -952,11 +956,13 @@ public class WorldService {
             //探索遗迹
             DataResource.getBean(RelicService.class).checkArmy(player, pos);
             type = ArmyConstant.ARMY_TYPE_RELIC_BATTLE;
-            //遗迹行军时间减半
-            marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
             // 行军时间减少, 粮食消耗减少
-            rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD,
-                    checkMarchFood(player, marchTime, armCount), AwardFrom.ATK_POS);
+            rewardDataManager.subPlayerResHasChecked(player, AwardType.RESOURCE, AwardType.Resource.FOOD,
+                    needFood, AwardFrom.ATK_POS);
+            ChangeInfo change = ChangeInfo.newIns();
+            change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
+            // 向客户端同步玩家资源数据
+            rewardDataManager.syncRoleResChanged(player, change);
             DataResource.getBean(RelicService.class).checkArmyMarchTime(player, marchTime);
         } else {
             throw new MwException(GameError.ATTACK_POS_ERROR.getCode(), "AttackPos，坐标不正确, roleId:", roleId, ", pos:",
