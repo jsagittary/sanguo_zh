@@ -341,16 +341,19 @@ public class HeroUpgradeService implements GmCmdService {
         }
 
         if (type == HeroConstant.TALENT_HERO_TYPE_3) {
-            // 重置时, 武将没有激活或学习过的天赋
-            if (CheckNull.isEmpty(hero.getTalent()) || hero.getTalent().values().stream()
-                    .filter(talentDataTemp -> talentDataTemp.getTalentArr().entrySet().stream().anyMatch(talent -> talent.getValue() > 0))
-                    .count() < 1) {
+            // 未觉醒
+            if (CheckNull.isEmpty(hero.getTalent())) {
                 throw new MwException(GameError.AWAKEN_HERO_REGROUP_ERROR.getCode(), "已经没部位可以重置了, roleId:", player.roleId, ", heroId:", heroId);
             }
 
             // 重置则重置所有天赋页
             hero.getTalent().values().forEach(talentData_ -> {
-                if (CheckNull.isNull(talentData_)) {
+                // 天赋页未激活，不用重置
+                if (CheckNull.isNull(talentData_) || !talentData_.isActivate()) {
+                    return;
+                }
+                // 天赋页天赋球均未升级，不用重置
+                if (talentData_.getTalentArr().entrySet().stream().filter(talentPart ->talentPart.getValue() > 0).count() < 1) {
                     return;
                 }
                 if (talentData_.getMaxPart() <= 0) {
