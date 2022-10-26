@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.buff;
 
+import com.gryphpoem.game.zw.data.p.EffectValueData;
 import com.gryphpoem.game.zw.data.p.FightResult;
+import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 
@@ -14,22 +16,39 @@ public interface IFightEffect {
     /**
      * 效果生效
      *
-     * @param attacker   攻击者
-     * @param defender   被攻击者
+     * @param actingForce 被效果作用方
      * @param fightLogic
      * @param params
      * @return
      */
-    FightResult effectiveness(Force attacker, Force defender, FightLogic fightLogic, Object... params);
+    void effectiveness(Force actingForce, Force buffGiver, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
 
     /**
      * 效果结束, 属性等还原
      *
-     * @param attacker
-     * @param defender
+     * @param actingForce 被效果作用方
      * @param fightLogic
      * @param params
      * @return
      */
-    FightResult effectRestoration(Force attacker, Force defender, FightLogic fightLogic, Object... params);
+    void effectRestoration(Force actingForce, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
+
+    /**
+     * 算出效果强度值
+     *
+     * @param actingForce
+     * @param fightLogic
+     * @param params
+     * @return
+     */
+    Object calEffectValue(Force actingForce, Force attacker, FightLogic fightLogic, StaticBuff staticBuff, Object... params);
+
+    /**
+     * 比较两个效果强度大小
+     *
+     * @param e1
+     * @param e2
+     * @return
+     */
+    EffectValueData compareTo(EffectValueData e1, EffectValueData e2);
 }

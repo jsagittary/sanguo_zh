@@ -3,7 +3,9 @@ package com.gryphpoem.game.zw.util;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -121,5 +123,47 @@ public class FightUtil {
         }
 
         return affectedForce;
+    }
+
+    /**
+     * 释放效果
+     *
+     * @param attacker
+     * @param defender
+     * @param fightLogic
+     * @param fightResult
+     */
+    public static void releaseAllBuffEffect(Force attacker, Force defender, FightLogic fightLogic, FightResult fightResult, int timing) {
+        // 触发技能后buff释放
+        if (!CheckNull.isEmpty(attacker.buffList)) {
+            attacker.buffList.values().forEach(list -> {
+                list.values().forEach(fightBuffList -> {
+                    if (CheckNull.isEmpty(fightBuffList)) return;
+                    fightBuffList.forEach(fightBuff -> {
+                        fightBuff.releaseEffect(attacker, fightLogic, fightResult, timing);
+                    });
+                });
+            });
+        }
+
+        if (!CheckNull.isEmpty(defender.buffList)) {
+            defender.buffList.values().forEach(list -> {
+                list.values().forEach(fightBuffList -> {
+                    if (CheckNull.isEmpty(fightBuffList)) return;
+                    fightBuffList.forEach(fightBuff -> {
+                        fightBuff.releaseEffect(defender, fightLogic, fightResult, timing);
+                    });
+                });
+            });
+        }
+    }
+
+    public static boolean effectSameSize(FightConstant.BuffObjective buffObjective, IFightBuff fightBuff, FightLogic fightLogic, Force force) {
+        // 定义己方含义
+        Force myForce = fightLogic.attacker.ownerId == fightBuff.getBuffGiver().ownerId ? fightLogic.attacker : fightLogic.defender;
+        switch (buffObjective) {
+            case MY_PRINCIPAL_HERO:
+
+        }
     }
 }

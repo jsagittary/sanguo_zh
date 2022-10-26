@@ -6,4 +6,13 @@ package com.gryphpoem.game.zw.buff.abs.buff;
  * createTime: 2022-10-21 12:06
  */
 public abstract class AbsActiveBuff extends AbsConfigBuff {
+    protected boolean effect;
+
+    public boolean isEffect() {
+        return effect;
+    }
+
+    public void setEffect(boolean effect) {
+        this.effect = effect;
+    }
 }

@@ -55,17 +55,25 @@ public interface FightConstant {
 
     interface BuffEffectiveType {
         int ACTIVE = 1;
+        int INSTANT = 2;
+        int CONDITION = 3;
     }
 
     interface BuffEffect {
         int BUFF = 1;
         int EFFECT = 2;
+        int TIMING = 3;
     }
 
     /**
      * buff 作用目标
      */
     public enum BuffObjective {
+        /**
+         * buff挂载者
+         */
+        BUFF_LOADER(1, null),
+
         /**
          * 己方主将
          */

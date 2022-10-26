@@ -9,12 +9,13 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,7 +60,8 @@ public class FightManager {
                     LogUtil.error("", e);
                     continue;
                 }
-                buffWorkMap.put(iFightBuffWork.effectTiming(), iFightBuffWork);
+                if (ObjectUtils.isEmpty(iFightBuffWork.effectTiming())) continue;
+                Arrays.stream(iFightBuffWork.effectTiming()).forEach(i -> buffWorkMap.put(i, iFightBuffWork));
                 continue;
             }
 
@@ -87,17 +89,16 @@ public class FightManager {
     /**
      * 判断buff是否可以释放
      *
-     * @param attacker
-     * @param defender
+     * @param fightBuff
      * @param fightLogic
      * @param timing
      * @param params
      * @return
      */
-    public boolean buffCanRelease(Force attacker, Force defender, FightLogic fightLogic, int timing, StaticBuff staticBuff, Object... params) {
+    public boolean buffCanRelease(IFightBuff fightBuff, FightLogic fightLogic, int timing, StaticBuff staticBuff, List<Integer> conditionConfig, Object... params) {
         IFightBuffWork work;
         if ((work = buffWorkMap.get(timing)) != null) {
-            return work.buffCanEffect(attacker, defender, fightLogic, timing, staticBuff, params);
+            return work.buffCanEffect(fightBuff, fightLogic, conditionConfig, staticBuff, params);
         }
 
         return true;

@@ -6,9 +6,6 @@ package com.gryphpoem.game.zw.buff.abs.buff;
  * createTime: 2022-10-21 9:56
  */
 public abstract class AbsConditionBuff extends AbsConfigBuff {
-    /**
-     * 是否生效
-     */
     protected boolean effect;
 
     public boolean isEffect() {

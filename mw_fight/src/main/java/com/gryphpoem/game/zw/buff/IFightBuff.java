@@ -36,6 +36,20 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
     void setForce(S force);
 
     /**
+     * 设置buff施与方
+     *
+     * @param force
+     */
+    void setBuffGiver(Force force);
+
+    /**
+     * 获取buff施与方
+     *
+     * @return
+     */
+    Force getBuffGiver();
+
+    /**
      * 扣除buff次数
      */
     void deductBuffRounds();

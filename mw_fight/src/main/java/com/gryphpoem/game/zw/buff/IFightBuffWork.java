@@ -2,7 +2,8 @@ package com.gryphpoem.game.zw.buff;
 
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
-import com.gryphpoem.game.zw.pojo.p.Force;
+
+import java.util.List;
 
 /**
  * Description: buff生效判断 不同生效时机逻辑不同
@@ -15,17 +16,15 @@ public interface IFightBuffWork {
      *
      * @return
      */
-    int effectTiming();
+    int[] effectTiming();
 
     /**
      * buff 生效
      *
-     * @param attacker   攻击者
-     * @param defender   被攻击者
+     * @param fightBuff  buff
      * @param fightLogic
-     * @param timing     攻击(被攻击)时机
      * @param params
      * @return
      */
-    boolean buffCanEffect(Force attacker, Force defender, FightLogic fightLogic, int timing, StaticBuff staticBuff, Object... params);
+    boolean buffCanEffect(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, StaticBuff staticBuff, Object... params);
 }

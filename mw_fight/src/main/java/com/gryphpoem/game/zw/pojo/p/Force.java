@@ -42,6 +42,10 @@ public class Force {
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
     public Map<Integer, PlaneInfo> planeInfos = new HashMap<>();// 战机信息
     /**
+     * 是否是副将出手
+     */
+    public boolean assistantHero;
+    /**
      * 战斗buff集合 <主/副将, <武将id, buff列表>>
      */
     public Map<Integer, Map<Integer, LinkedList<IFightBuff>>> buffList = new HashMap<>();

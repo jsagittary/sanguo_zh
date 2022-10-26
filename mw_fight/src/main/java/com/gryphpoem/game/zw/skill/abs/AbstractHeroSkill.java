@@ -6,7 +6,7 @@ import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.skill.IHeroSkill;
-import com.gryphpoem.push.util.CheckNull;
+import com.gryphpoem.game.zw.util.FightUtil;
 
 import java.util.HashMap;
 
@@ -100,27 +100,6 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
     public void releaseSkill(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, FightResult fightResult, Object... params) {
         releaseSkillBuff(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
         releaseSkillEffect(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
-        // 触发技能后buff释放
-        if (!CheckNull.isEmpty(attacker.buffList)) {
-            attacker.buffList.values().forEach(list -> {
-                list.values().forEach(fightBuffList -> {
-                    if (CheckNull.isEmpty(fightBuffList)) return;
-                    fightBuffList.forEach(fightBuff -> {
-                        fightBuff.releaseEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
-                    });
-                });
-            });
-        }
-
-        if (!CheckNull.isEmpty(defender.buffList)) {
-            defender.buffList.values().forEach(list -> {
-                list.values().forEach(fightBuffList -> {
-                    if (CheckNull.isEmpty(fightBuffList)) return;
-                    fightBuffList.forEach(fightBuff -> {
-                        fightBuff.releaseEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
-                    });
-                });
-            });
-        }
+        FightUtil.releaseAllBuffEffect(attacker, defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
     }
 }
