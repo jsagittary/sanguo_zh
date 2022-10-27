@@ -31,10 +31,9 @@ public class SpecifiedBuffIdDisappearsEffectWork extends AbsFightEffectWork {
             return true;
         }
 
-        // 0 代表任何人
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
-        Force triggerForce = triggerForce(fightBuff, fightLogic, buffObjective);
+        Force triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
         if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
             return false;
         }

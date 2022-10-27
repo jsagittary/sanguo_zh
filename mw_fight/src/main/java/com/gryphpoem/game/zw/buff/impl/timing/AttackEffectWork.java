@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -31,12 +32,14 @@ public class AttackEffectWork extends AbsFightEffectWork {
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
 
-        Force triggerForce = triggerForce(fightBuff, fightLogic, buffObjective);
-        if (fightLogic.attacker.actionId == 0)
+        Force triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
+        if (fightLogic.attacker.actionId == 0) {
+            LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(), ", attacker.actionId = 0");
             return false;
-        // 无触发者
-        if (CheckNull.isEmpty(triggerForce.buffTriggerId))
-            return true;
+        }
+        if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
+            return false;
+        }
 
         List<Integer> forceList = new ArrayList<>(1);
         forceList.add(fightLogic.attacker.actionId);

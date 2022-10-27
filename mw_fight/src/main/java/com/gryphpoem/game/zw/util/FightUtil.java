@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
- * Description:
+ * Description: 战斗工具类
  * Author: zhangpeng
  * createTime: 2022-10-22 9:34
  */
@@ -85,6 +85,7 @@ public class FightUtil {
         }
 
         if (release) {
+            // 释放技能或buff 算出被作用方(被攻击方)是哪些武将
             if (CheckNull.isNull(affectedForce.beActionId))
                 affectedForce.beActionId = new ArrayList<>();
             if (!CheckNull.isEmpty(affectedForce.beActionId))
@@ -131,21 +132,11 @@ public class FightUtil {
      * @param fightLogic
      * @param fightResult
      */
-    public static void releaseAllBuffEffect(Force attacker, FightLogic fightLogic, FightResult fightResult, int timing) {
-        // 触发技能后buff释放
+    public static void releaseAllBuffEffect(Force attacker, FightLogic fightLogic, FightResult fightResult, int timing, Object... params) {
         if (!CheckNull.isEmpty(attacker.buffList)) {
             attacker.buffList.forEach(fightBuff -> {
-                fightBuff.releaseEffect(attacker, fightLogic, fightResult, timing);
+                fightBuff.releaseEffect(attacker, fightLogic, fightResult, timing, params);
             });
-        }
-    }
-
-    public static boolean effectSameSize(FightConstant.BuffObjective buffObjective, IFightBuff fightBuff, FightLogic fightLogic, Force force) {
-        // 定义己方含义
-        Force myForce = fightLogic.attacker.ownerId == fightBuff.getBuffGiver().ownerId ? fightLogic.attacker : fightLogic.defender;
-        switch (buffObjective) {
-            case MY_PRINCIPAL_HERO:
-
         }
     }
 }

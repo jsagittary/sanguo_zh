@@ -32,7 +32,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
         if (conditionConfig.get(0) > 0) {
             FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
             if (CheckNull.isNull(buffObjective)) return false;
-            triggerForce = triggerForce(fightBuff, fightLogic, buffObjective);
+            triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
             if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
                 return false;
             }
@@ -44,7 +44,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                         LinkedList<IFightBuff> buffList = triggerForce.buffList(heroId.intValue());
                         if (CheckNull.isEmpty(buffList))
                             continue;
-                        IFightBuff buff = buffList.stream().filter(b -> b.uniqueId() == conditionConfig.get(2)).findFirst().orElse(null);
+                        IFightBuff buff = buffList.stream().filter(b -> b.getBuffConfig().getBuffId() == conditionConfig.get(2)).findFirst().orElse(null);
                         if (Objects.nonNull(buff)) {
                             canRelease = true;
                             break;
@@ -56,14 +56,14 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                         LinkedList<IFightBuff> buffList = triggerForce.buffList(heroId.intValue());
                         if (CheckNull.isEmpty(buffList))
                             continue;
-                        IFightBuff buff = buffList.stream().filter(b -> b.uniqueId() == conditionConfig.get(2)).findFirst().orElse(null);
+                        IFightBuff buff = buffList.stream().filter(b -> b.getBuffConfig().getBuffId() == conditionConfig.get(2)).findFirst().orElse(null);
                         if (Objects.isNull(buff)) {
                             break;
                         }
                     }
                     break;
             }
-        } else {
+        } else if (conditionConfig.get(0) == 0) {
             return canRelease0(fightLogic.attacker, conditionConfig) || canRelease0(fightLogic.defender, conditionConfig);
         }
 
@@ -73,7 +73,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
     private boolean canRelease0(Force force, List<Integer> conditionConfig) {
         LinkedList<IFightBuff> buffList = force.buffList(force.id);
         if (!CheckNull.isEmpty(buffList)) {
-            IFightBuff buff = buffList.stream().filter(b -> b.uniqueId() == conditionConfig.get(2)).findFirst().orElse(null);
+            IFightBuff buff = buffList.stream().filter(b -> b.getBuffConfig().getBuffId() == conditionConfig.get(2)).findFirst().orElse(null);
             if (Objects.nonNull(buff))
                 return true;
         }
@@ -82,7 +82,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                 if (CheckNull.isNull(ass) || CheckNull.isEmpty(ass.getBuffList()))
                     continue;
                 buffList = ass.getBuffList();
-                IFightBuff buff = buffList.stream().filter(b -> b.uniqueId() == conditionConfig.get(2)).findFirst().orElse(null);
+                IFightBuff buff = buffList.stream().filter(b -> b.getBuffConfig().getBuffId() == conditionConfig.get(2)).findFirst().orElse(null);
                 if (Objects.nonNull(buff))
                     return true;
             }

@@ -128,7 +128,7 @@ public interface FightConstant {
 
     interface BuffEffectiveType {
         int ACTIVE = 1;
-        int INSTANT = 2;
+        int PASSIVE = 2;
         int CONDITION = 3;
     }
 

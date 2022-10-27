@@ -1,6 +1,6 @@
 package com.gryphpoem.game.zw.buff.impl.buff;
 
-import com.gryphpoem.game.zw.buff.abs.buff.AbsInstantBuff;
+import com.gryphpoem.game.zw.buff.abs.buff.AbsPassiveBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
@@ -15,8 +15,8 @@ import java.util.List;
  * Author: zhangpeng
  * createTime: 2022-10-26 11:49
  */
-@BuffEffectType(buffEffect = FightConstant.BuffEffect.BUFF, type = FightConstant.BuffEffectiveType.INSTANT)
-public class InstantBuffImpl extends AbsInstantBuff {
+@BuffEffectType(buffEffect = FightConstant.BuffEffect.BUFF, type = FightConstant.BuffEffectiveType.PASSIVE)
+public class PassiveBuffImpl extends AbsPassiveBuff {
     @Override
     public void releaseBuff(LinkedList actingBuffList, FightLogic fightLogic, List staticBuffConfig, FightResult fightResult, Object... params) {
         super.releaseBuff(actingBuffList, fightLogic, staticBuffConfig, fightResult, params);

@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.buff.abs.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightBuffWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -28,7 +29,7 @@ public abstract class AbsFightEffectWork implements IFightBuffWork {
      * @param buffObjective
      * @return
      */
-    protected Force triggerForce(IFightBuff fightBuff, FightLogic fightLogic, FightConstant.BuffObjective buffObjective) {
+    protected Force triggerForce(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, FightConstant.BuffObjective buffObjective) {
         Force buffAttacker;
         Force buffDefender;
         Force triggerForce;
@@ -91,6 +92,11 @@ public abstract class AbsFightEffectWork implements IFightBuffWork {
                     triggerForce.buffTriggerId.addAll(triggerForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
                 }
                 break;
+        }
+
+        if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
+            LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(),
+                    ", conditionConfig: ", conditionConfig, ", triggerList is empty");
         }
         return triggerForce;
     }

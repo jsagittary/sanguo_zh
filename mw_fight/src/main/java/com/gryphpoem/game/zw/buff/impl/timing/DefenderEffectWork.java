@@ -31,13 +31,13 @@ public class DefenderEffectWork extends AbsFightEffectWork {
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
 
-        Force triggerForce = triggerForce(fightBuff, fightLogic, buffObjective);
+        Force triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
 
         if (CheckNull.isEmpty(fightLogic.defender.beActionId))
             return false;
         // 无触发者
         if (CheckNull.isEmpty(triggerForce.buffTriggerId))
-            return true;
+            return false;
 
         return canRelease(triggerForce, fightLogic.defender.beActionId, buffObjective);
     }

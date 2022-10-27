@@ -29,11 +29,11 @@ public class BloodVolumeBelowPercentageEffectWork extends AbsFightEffectWork {
             FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
             if (CheckNull.isNull(buffObjective)) return false;
 
-            triggerForce = triggerForce(fightBuff, fightLogic, buffObjective);
+            triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
             if ((triggerForce.hp / triggerForce.maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND)) {
                 return true;
             }
-        } else {
+        } else if (conditionConfig.get(0) == 0) {
             if ((fightLogic.attacker.hp / fightLogic.attacker.maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
                 return true;
             if ((fightLogic.defender.hp / fightLogic.defender.maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
