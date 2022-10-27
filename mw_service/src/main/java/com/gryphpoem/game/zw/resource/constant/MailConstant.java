@@ -635,7 +635,6 @@ public class MailConstant {
      */
     public static final int MOLD_WORLD_SCHEDULE_RANK_AWARD = 123;
     /**
-     *
      * 新地图已经关闭
      */
     public static final int MOLD_WORLD_WAR_CLOSE = 124;
@@ -850,7 +849,7 @@ public class MailConstant {
     /**
      * 战火燎原积分不足 @Deprecated 废弃,请使用邮件ID 520
      */
-    public static final int MOLD_ACT_WAR_FIRE_SCROE_NOT_ENOUGH= 510;
+    public static final int MOLD_ACT_WAR_FIRE_SCROE_NOT_ENOUGH = 510;
 
     /**
      * 战火燎原相同阵营炸矿
@@ -968,10 +967,27 @@ public class MailConstant {
     public static final int MOD_LONG_LIGHT = 814;
 
     /**
-     *
      * 神兵宝具礼包邮件
      */
     public static final int ACT_MAGIC_TREASURE_WARE_GIFT_BAG = 815;
+
+
+    /*** 王朝遗迹 进攻成功*/
+    public static final int MOLD_HIS_REMAINS_ATTACK_SUCCESS = 902;
+    /*** 王朝遗迹 防守失败*/
+    public static final int MOLD_HIS_REMAINS_DEFEND_FAILURE = 904;
+    /*** 王朝遗迹 进攻失败*/
+    public static final int MOLD_HIS_REMAINS_ATTACK_FAILURE = 901;
+    /*** 王朝遗迹 防守成功*/
+    public static final int MOLD_HIS_REMAINS_DEFEND_SUCCESS = 903;
+    /*** 王朝遗迹 探索已结束*/
+    public static final int MOLD_RELIC_PROBE_OVER = 905;
+    /*** 王朝遗迹 王朝遗迹已消失*/
+    public static final int MOLD_RELIC_PROBE_VANISH = 906;
+    /*** 王朝遗迹 阵营排名奖励*/
+    public static final int RELIC_OVER_CAMPRANK_AWARD = 907;
+    /*** 王朝遗迹 积分奖励*/
+    public static final int RELIC_OVER_SCORE_AWARD = 908;
 
     /**
      * 限时活动物品自动兑换

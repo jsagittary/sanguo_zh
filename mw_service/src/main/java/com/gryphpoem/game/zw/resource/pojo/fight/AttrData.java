@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.resource.pojo.fight;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -11,11 +10,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
+ * @author TanDonghai
  * @ClassName AttrData.java
  * @Description 战斗属性
- * @author TanDonghai
  * @date 创建时间：2017年3月31日 下午5:18:21
- *
  */
 public class AttrData {
     public int attack;//攻击
@@ -35,6 +33,15 @@ public class AttrData {
     public int moreInfantryDamage;//对步兵增伤
     public int moreCavalryDamage;//对骑兵增伤
     public int moreArcherDamage;//对弓兵增伤
+    public double lessInfantryMut;//对步兵减伤
+    public double lessCavalryMut;//对骑兵减伤
+    public double lessArcherMut;//对弓兵减伤
+    public int moreInfantryAttack;//对步兵攻击提升
+    public int moreInfantryAttackExt;//对步兵破甲提升
+    public int moreCavalryAttack;//对骑兵攻击提升
+    public int moreCavalryAttackExt;//对骑兵破甲提升
+    public int moreArcherAttack;//对弓兵攻击提升
+    public int moreArcherAttackExt;//对弓兵破甲提升
 
     public AttrData(CommonPb.SerAttrData attrData) {
         this.attack = attrData.getAttack();
@@ -69,6 +76,7 @@ public class AttrData {
 
     /**
      * 阵型难度系数
+     *
      * @param attrMap
      * @param coef
      */
@@ -85,6 +93,7 @@ public class AttrData {
 
     /**
      * 添加属性
+     *
      * @param attrList
      */
     public void addAttrValue(List<CommonPb.TwoInt> attrList) {
@@ -124,8 +133,8 @@ public class AttrData {
                 this.crit += value;
                 break;
             case Constant.AttrId.CRIT_CHANCE:
-            	this.critChance += value;
-            	break;
+                this.critChance += value;
+                break;
             case Constant.AttrId.CRITDEF:
                 this.critDef += value;
                 break;
@@ -142,8 +151,8 @@ public class AttrData {
                 this.defTown += value;
                 break;
             case Constant.AttrId.EVADE:
-            	this.evade += value;
-            	break;
+                this.evade += value;
+                break;
             case Constant.AttrId.DMG_INC:
                 this.dmgInc += value;
                 break;
@@ -167,6 +176,109 @@ public class AttrData {
                 break;
             case Constant.AttrId.LEAD_MUT:
                 this.lead += (int) (this.lead * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LESS_INFANTRY_MUT:
+                this.lessInfantryMut += value / Constant.TEN_THROUSAND;
+                break;
+            case Constant.AttrId.LESS_CAVALRY_MUT:
+                this.lessCavalryMut += value  / Constant.TEN_THROUSAND;
+                break;
+            case Constant.AttrId.LESS_ARCHER_MUT:
+                this.lessArcherMut += value  / Constant.TEN_THROUSAND;
+                break;
+            case Constant.AttrId.MORE_INFANTRY_ATTACK:
+                this.moreInfantryAttack += value;
+                break;
+            case Constant.AttrId.MORE_INFANTRY_ATTACK_EXT:
+                this.moreInfantryAttackExt += value;
+                break;
+            case Constant.AttrId.MORE_CAVALRY_ATTACK:
+                this.moreCavalryAttack += value;
+                break;
+            case Constant.AttrId.MORE_CAVALRY_ATTACK_EXT:
+                this.moreCavalryAttackExt += value;
+                break;
+            case Constant.AttrId.MORE_ARCHER_ATTACK:
+                this.moreArcherAttack += value;
+                break;
+            case Constant.AttrId.MORE_ARCHER_ATTACK_EXT:
+                this.moreArcherAttackExt += value;
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 属性万分比
+     *
+     * @param attrId
+     * @param value
+     */
+    public void addRatioValue(int attrId, int value) {
+        switch (attrId) {
+            case Constant.AttrId.ATTACK:
+            case Constant.AttrId.ATK_MUT:
+                this.attack += (int) (this.attack * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.DEFEND:
+            case Constant.AttrId.DEF_MUT:
+                this.defend += (int) (this.defend * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LEAD:
+            case Constant.AttrId.LEAD_MUT:
+                this.lead += (int) (this.lead * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LINE:
+                this.line += (int) (this.line * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.CRIT:
+                this.crit += (int) (this.crit * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.CRIT_CHANCE:
+                this.critChance += (int) (this.critChance * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.CRITDEF:
+                this.critDef += (int) (this.critDef * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.ATTACK_EXT:
+                this.atkExt += (int) (this.atkExt * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.DEFEND_EXT:
+                this.defExt += (int) (this.defExt * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.ATTACK_TOWN:
+                this.atkTown += (int) (this.atkTown * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.DEFEND_TOWN:
+                this.defTown += (int) (this.defTown * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.EVADE:
+                this.evade += (int) (this.evade * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.DMG_INC:
+                this.dmgInc += (int) (this.dmgInc * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.DMG_DEC:
+                this.dmgDec += (int) (this.dmgDec * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.MORE_INFANTRY_DAMAGE:
+                this.moreInfantryDamage += (int) (this.moreInfantryDamage * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.MORE_ARCHER_DAMAGE:
+                this.moreArcherDamage += (int) (this.moreArcherDamage * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.MORE_CAVALRY_DAMAGE:
+                this.moreCavalryDamage += (int) (this.moreCavalryDamage * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LESS_INFANTRY_MUT:
+                this.lessInfantryMut += (int) (this.lessInfantryMut * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LESS_CAVALRY_MUT:
+                this.lessCavalryMut += (int) (this.lessCavalryMut * value / Constant.TEN_THROUSAND);
+                break;
+            case Constant.AttrId.LESS_ARCHER_MUT:
+                this.lessArcherMut += (int) (this.lessArcherMut * value / Constant.TEN_THROUSAND);
                 break;
             default:
                 break;
@@ -195,7 +307,8 @@ public class AttrData {
         });
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "AttrData{" + "attack=" + attack + ", defend=" + defend + ", lead=" + lead + ", line=" + line + ", crit="
                 + crit + ", critChance=" + critChance + ", critDef=" + critDef + ", atkTown=" + atkTown + ", defTown="
                 + defTown + ", atkExt=" + atkExt + ", defExt=" + defExt + ", evade=" + evade + '}';

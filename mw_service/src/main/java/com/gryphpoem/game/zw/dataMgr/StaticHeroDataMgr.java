@@ -339,6 +339,12 @@ public class StaticHeroDataMgr {
         return heroEvolveGroupMap.get(group);
     }
 
+    public static StaticHeroEvolve getHeroEvolve(int group, int page, int part, int lv) {
+        return getHeroEvolve(group).stream()
+                .filter(she -> she.getPage() == page && she.getPart() == part && she.getLv() == lv)
+                .findFirst().orElse(null);
+    }
+
     /**
      * 根据将领品质和等级获取升到本级的经验，如果该级不存在，返回0
      *

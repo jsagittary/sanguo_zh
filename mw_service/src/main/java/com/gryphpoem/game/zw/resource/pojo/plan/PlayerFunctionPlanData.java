@@ -120,9 +120,9 @@ public class PlayerFunctionPlanData implements GamePb<SerializePb.SerFunctionPla
                 map.forEach((index, value) -> {
                     extBuilder.addExtData(PbHelper.createTwoIntPb(index, value));
                 });
+                builder.addExtData(extBuilder.build());
+                extBuilder.clear();
             });
-            builder.addExtData(extBuilder.build());
-            extBuilder.clear();
         }
 
         return builder.build();

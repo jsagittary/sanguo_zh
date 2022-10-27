@@ -21,9 +21,9 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
+import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
 import com.gryphpoem.game.zw.resource.pojo.sandtable.SandTableContest;
 import com.gryphpoem.game.zw.resource.pojo.season.GlobalSeasonData;
-import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.pojo.world.Altar;
 import com.gryphpoem.game.zw.resource.pojo.world.Area;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
@@ -32,6 +32,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.pojo.world.Gestapo;
 import com.gryphpoem.game.zw.resource.pojo.world.GlobalRebellion;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
+import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.GlobalBattlePass;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
@@ -78,6 +79,10 @@ public class GameGlobal {
     private Map<Integer, LinkedList<CommonPb.Chat>> areaChat = new ConcurrentHashMap<>();
     // 大喇叭世界聊天
     private List<CommonPb.Chat> worldRoleChat = new LinkedList<CommonPb.Chat>();
+    /**
+     * 王朝遗迹聊天 不用存储到数据库
+     */
+    private LinkedList<CommonPb.Chat> relicChat = new LinkedList<>();
     // 活动消息
     private Map<Integer, LinkedList<CommonPb.Chat>> activityChat = new ConcurrentHashMap<>();
     // 红包
@@ -92,9 +97,11 @@ public class GameGlobal {
     private CounterAttack counterAttack;
     // 所有的飞艇 ,包含刷新中的飞艇
     private List<AirshipWorldData> allAirshipWorldData = new CopyOnWriteArrayList<>();
-	// 世界进度
-	private GlobalSchedule globalSchedule;
-    /** 世界争霸地图city npc 属性调整次数 */
+    // 世界进度
+    private GlobalSchedule globalSchedule;
+    /**
+     * 世界争霸地图city npc 属性调整次数
+     */
     private int crossCityNpcChgAttrCnt;
     // 战令功能的相关数据
     private GlobalBattlePass globalBattlePass;
@@ -113,6 +120,8 @@ public class GameGlobal {
     //标识当前的跨天定时器是否执行过
     public volatile int dayJobRun;
     public volatile boolean dayJobRunning;
+    //遗迹
+    private GlobalRelic globalRelic = new GlobalRelic();
 
     /**
      * 杂七杂八的 数据记录<br>
@@ -138,7 +147,7 @@ public class GameGlobal {
 
     /**
      * 新区开服不执行dser
-     * 
+     *
      * @return
      */
     public HonorDaily getHonorDaily() {
@@ -245,7 +254,7 @@ public class GameGlobal {
     public Map<Long, Map<Long, ChatDialog>> getDialogMap() {
         return dialogMap;
     }
-    
+
     public Map<Integer, LinkedList<CommonPb.Chat>> getCampChat() {
         return campChat;
     }
@@ -261,7 +270,7 @@ public class GameGlobal {
     public Map<Integer, LinkedList<CommonPb.Chat>> getActivityChat() {
         return activityChat;
     }
-    
+
     public Map<Integer, LightningWarBoss> getLightningWarBossMap() {
         return lightningWarBossMap;
     }
@@ -398,21 +407,21 @@ public class GameGlobal {
             LinkedList<Chat> chatList = kv.getValue();
             List<Chat> systemNoticelist = new ArrayList<>();
             for (Chat chat : chatList) {
-                if (chat.getChatId() > 0 && chat.getLordId()== 0) {
+                if (chat.getChatId() > 0 && chat.getLordId() == 0) {
                     systemNoticelist.add(chat);
                 }
             }
-            if (systemNoticelist.size()> ChatConst.SYSTEM_NOTICE_NUM) {
+            if (systemNoticelist.size() > ChatConst.SYSTEM_NOTICE_NUM) {
                 List<Chat> newNoticelist = new ArrayList<>();
-                for(Chat c1:systemNoticelist){
-                    if(ChatConst.SAVE_CHATID_LIST.contains(c1.getChatId())){
-                        newNoticelist.add(0,c1);
-                    }else {
+                for (Chat c1 : systemNoticelist) {
+                    if (ChatConst.SAVE_CHATID_LIST.contains(c1.getChatId())) {
+                        newNoticelist.add(0, c1);
+                    } else {
                         newNoticelist.add(c1);
                     }
                 }
-                newNoticelist = newNoticelist.subList(ChatConst.SYSTEM_NOTICE_NUM,newNoticelist.size());
-                for (Chat ct:newNoticelist){
+                newNoticelist = newNoticelist.subList(ChatConst.SYSTEM_NOTICE_NUM, newNoticelist.size());
+                for (Chat ct : newNoticelist) {
                     chatList.remove(ct);
                 }
             }
@@ -429,7 +438,7 @@ public class GameGlobal {
             ser.addAreaChat(b.build());
         }
         //活动消息
-        for(Entry<Integer, LinkedList<Chat>> kv : activityChat.entrySet()){
+        for (Entry<Integer, LinkedList<Chat>> kv : activityChat.entrySet()) {
             DbActivityChat.Builder b = DbActivityChat.newBuilder();
             b.setActivityId(kv.getKey());
             b.addAllChats(kv.getValue());
@@ -437,7 +446,7 @@ public class GameGlobal {
         }
         return ser.build().toByteArray();
     }
-    
+
 
     private byte[] serCabinetLead() {
         SerCabinetLead.Builder ser = SerCabinetLead.newBuilder();
@@ -472,15 +481,16 @@ public class GameGlobal {
         if (!CheckNull.isNull(globalBattlePass)) {
             ser.setGlobalBattlePass(globalBattlePass.ser());
         }
-        if(Objects.nonNull(sandTableContest)){
+        if (Objects.nonNull(sandTableContest)) {
             ser.setSandTableContest(sandTableContest.ser());
         }
-        if(Objects.nonNull(globalSeasonData)){
+        if (Objects.nonNull(globalSeasonData)) {
             ser.setSerSeasonGlobalData(globalSeasonData.ser());
         }
         if (CheckNull.nonEmpty(removedActData)) {
             ser.addAllRemovedActData(this.removedActData);
         }
+        ser.setSerGlobalRelic(this.globalRelic.ser());
         return ser.build().toByteArray();
     }
 
@@ -623,20 +633,20 @@ public class GameGlobal {
         for (Chat c : ser.getWorldRoleChatList()) {
             worldRoleChat.add(c);
         }
-        for(CommonPb.DbCampChat cc : ser.getCampChatList()){
+        for (CommonPb.DbCampChat cc : ser.getCampChatList()) {
             LinkedList<CommonPb.Chat> list = new LinkedList<>();
             list.addAll(cc.getChatsList());
-            campChat.put(cc.getCamp(),list);
+            campChat.put(cc.getCamp(), list);
         }
-        for(CommonPb.DbAreaChat ac : ser.getAreaChatList()){
+        for (CommonPb.DbAreaChat ac : ser.getAreaChatList()) {
             LinkedList<CommonPb.Chat> list = new LinkedList<>();
             list.addAll(ac.getChatsList());
-            areaChat.put(ac.getArea(),list);
+            areaChat.put(ac.getArea(), list);
         }
-        for(CommonPb.DbActivityChat acc : ser.getActivityChatList()){
+        for (CommonPb.DbActivityChat acc : ser.getActivityChatList()) {
             LinkedList<CommonPb.Chat> list = new LinkedList<>();
             list.addAll(acc.getChatsList());
-            activityChat.put(acc.getActivityId(),list);
+            activityChat.put(acc.getActivityId(), list);
         }
 
         int maxRedPackId = 1;// 找出最大值
@@ -701,7 +711,7 @@ public class GameGlobal {
             counterAttack.dser(ser.getCounterAttack());
             counterAttack.setFighter(createDserBossFighter(ser.getCounterAttack().getForceList()));
         }
-        if(ser.hasCrossCityNpcChgAttrCnt()){
+        if (ser.hasCrossCityNpcChgAttrCnt()) {
             crossCityNpcChgAttrCnt = ser.getCrossCityNpcChgAttrCnt();
         }
         for (SerMixtureData serMixtureData : ser.getMixtureDataList()) {
@@ -714,14 +724,17 @@ public class GameGlobal {
         if (ser.hasGlobalBattlePass()) {
             globalBattlePass.dser(ser.getGlobalBattlePass());
         }
-        if(ser.hasSandTableContest()){
+        if (ser.hasSandTableContest()) {
             sandTableContest.deser(ser.getSandTableContest());
         }
-        if(ser.hasSerSeasonGlobalData()){
+        if (ser.hasSerSeasonGlobalData()) {
             globalSeasonData.deser(ser.getSerSeasonGlobalData());
         }
         if (CheckNull.nonEmpty(ser.getRemovedActDataList())) {
             removedActData.addAll(ser.getRemovedActDataList());
+        }
+        if (ser.hasSerGlobalRelic()) {
+            globalRelic.dser(ser.getSerGlobalRelic());
         }
     }
 
@@ -849,7 +862,7 @@ public class GameGlobal {
 
     /**
      * boss反序列化回内存中是创建的fighter对象, 与新创建的fighter不一样
-     * 
+     *
      * @param npcIdList
      * @return
      */
@@ -875,7 +888,7 @@ public class GameGlobal {
 
     /**
      * 创建bossNpc的势力
-     * 
+     *
      * @param npcId
      * @param curHp 当前血量
      * @return
@@ -906,7 +919,7 @@ public class GameGlobal {
         return trophy;
     }
 
-	public GlobalSchedule getGlobalSchedule() {
+    public GlobalSchedule getGlobalSchedule() {
         return globalSchedule;
     }
 
@@ -934,8 +947,9 @@ public class GameGlobal {
 
     /**
      * 根据key和阵营取属性值
-     * @param key   {@link GlobalConstant } 中定义的key值
-     * @param camp  {@link Constant.Camp} 中定义的阵营
+     *
+     * @param key  {@link GlobalConstant } 中定义的key值
+     * @param camp {@link Constant.Camp} 中定义的阵营
      * @return 返回null, 说明这个key不区分阵营, {@link GlobalConstant} 中不包含这个key
      */
     public Map<Integer, Integer> getMixtureDataById(String key, int camp) {
@@ -963,5 +977,17 @@ public class GameGlobal {
 
     public GlobalSeasonData getGlobalSeasonData() {
         return globalSeasonData;
+    }
+
+    public GlobalRelic getGlobalRelic() {
+        return globalRelic;
+    }
+
+    public LinkedList<Chat> getRelicChat() {
+        return relicChat;
+    }
+
+    public void setRelicChat(LinkedList<Chat> relicChat) {
+        this.relicChat = relicChat;
     }
 }

@@ -126,20 +126,20 @@ public class GlobalDataManager {
         area.setArea(staticArea.getArea());
         gameGlobal.getAreaMap().put(area.getArea(), area);
 
-		if (staticArea.getOpenOrder() == WorldConstant.AREA_ORDER_1) {
-			area.setStatus(WorldConstant.AREA_STATUS_OPEN);// 分区开启，玩家可进入
-		} else {
-			// 世界任务触发
-			int worldTaskId = gameGlobal.getGlobalSchedule() != null
-					? gameGlobal.getGlobalSchedule().getCurrentScheduleId() : 1;
-			if (worldTaskId > TaskType.WORLD_BOSS_TASK_ID_1 && staticArea.getOpenOrder() == 2) {
-				area.setStatus(WorldConstant.AREA_STATUS_PASS);
-			} else if (worldTaskId >= TaskType.WORLD_BOSS_TASK_ID_2 && staticArea.getOpenOrder() == 3) {
-				area.setStatus(WorldConstant.AREA_STATUS_PASS);
-			} else {
-				area.setStatus(WorldConstant.AREA_STATUS_CLOSE);
-			}
-		}
+        if (staticArea.getOpenOrder() == WorldConstant.AREA_ORDER_1) {
+            area.setStatus(WorldConstant.AREA_STATUS_OPEN);// 分区开启，玩家可进入
+        } else {
+            // 世界任务触发
+            int worldTaskId = gameGlobal.getGlobalSchedule() != null
+                    ? gameGlobal.getGlobalSchedule().getCurrentScheduleId() : 1;
+            if (worldTaskId > TaskType.WORLD_BOSS_TASK_ID_1 && staticArea.getOpenOrder() == 2) {
+                area.setStatus(WorldConstant.AREA_STATUS_PASS);
+            } else if (worldTaskId >= TaskType.WORLD_BOSS_TASK_ID_2 && staticArea.getOpenOrder() == 3) {
+                area.setStatus(WorldConstant.AREA_STATUS_PASS);
+            } else {
+                area.setStatus(WorldConstant.AREA_STATUS_CLOSE);
+            }
+        }
 
         // 初始化城池数据
         initWorldCity(area.getArea());
@@ -177,32 +177,32 @@ public class GlobalDataManager {
         }
     }
 
-	/**
-	 * gm使用 重置区域的状态,临时使用
-	 */
-	public void resetAreaState() {
-		LogUtil.debug("----------重置区域状态命令开始----------");
-		for (StaticArea staticArea : StaticWorldDataMgr.getAreaMap().values()) {
-			Area area = gameGlobal.getAreaMap().get(staticArea.getArea());
-			if (area != null) {
-				if (staticArea.getOpenOrder() == WorldConstant.AREA_ORDER_1) {
-					area.setStatus(WorldConstant.AREA_STATUS_OPEN);// 分区开启，玩家可进入
-				} else {
-					// 世界任务触发
-					int worldTaskId = worldScheduleService.getCurrentSchduleId();
-					if (worldTaskId > TaskType.WORLD_BOSS_TASK_ID_1 && staticArea.getOpenOrder() == 2) {
-						area.setStatus(WorldConstant.AREA_STATUS_PASS);
-					} else if (worldTaskId >= TaskType.WORLD_BOSS_TASK_ID_2 && staticArea.getOpenOrder() == 3) {
-						area.setStatus(WorldConstant.AREA_STATUS_PASS);
-					} else {
-						area.setStatus(WorldConstant.AREA_STATUS_CLOSE);
-					}
-				}
-				LogUtil.debug("----------重置区域状态------- areaId", area.getArea(), ", status:", area.getStatus());
-			}
-		}
-		LogUtil.debug("----------重置区域状态命令结束-------");
-	}
+    /**
+     * gm使用 重置区域的状态,临时使用
+     */
+    public void resetAreaState() {
+        LogUtil.debug("----------重置区域状态命令开始----------");
+        for (StaticArea staticArea : StaticWorldDataMgr.getAreaMap().values()) {
+            Area area = gameGlobal.getAreaMap().get(staticArea.getArea());
+            if (area != null) {
+                if (staticArea.getOpenOrder() == WorldConstant.AREA_ORDER_1) {
+                    area.setStatus(WorldConstant.AREA_STATUS_OPEN);// 分区开启，玩家可进入
+                } else {
+                    // 世界任务触发
+                    int worldTaskId = worldScheduleService.getCurrentSchduleId();
+                    if (worldTaskId > TaskType.WORLD_BOSS_TASK_ID_1 && staticArea.getOpenOrder() == 2) {
+                        area.setStatus(WorldConstant.AREA_STATUS_PASS);
+                    } else if (worldTaskId >= TaskType.WORLD_BOSS_TASK_ID_2 && staticArea.getOpenOrder() == 3) {
+                        area.setStatus(WorldConstant.AREA_STATUS_PASS);
+                    } else {
+                        area.setStatus(WorldConstant.AREA_STATUS_CLOSE);
+                    }
+                }
+                LogUtil.debug("----------重置区域状态------- areaId", area.getArea(), ", status:", area.getStatus());
+            }
+        }
+        LogUtil.debug("----------重置区域状态命令结束-------");
+    }
 
     /**
      * 击杀boss开启区块
@@ -303,30 +303,28 @@ public class GlobalDataManager {
         }
     }
 
-	/**
-	 * 获取某个块空余随机的点
-	 *
-	 * @param area
-	 * @param block
-	 *            这里的分块不是大地图中的分块id，而是相对本分区从1开始计算的分块，范围1-100
-	 * @param cnt
-	 *            预计需要的空点
-	 * @return
-	 */
-	private List<Integer> randomEmptyByAreaBlock(int area, int block, int cnt) {
-		List<Integer> emptyPosLs = new ArrayList<>();
-		List<Integer> posList = MapHelper.getPosListByAreaBlock(area, block);
-		if (!CheckNull.isEmpty(posList)) {
-			Collections.shuffle(posList);
-			int size = Math.min(cnt, posList.size());
-			for (Integer pos : posList) {
-				if (size-- == 0)
-					break;
-				emptyPosLs.add(pos);
-			}
-		}
-		return emptyPosLs;
-	}
+    /**
+     * 获取某个块空余随机的点
+     *
+     * @param area
+     * @param block 这里的分块不是大地图中的分块id，而是相对本分区从1开始计算的分块，范围1-100
+     * @param cnt   预计需要的空点
+     * @return
+     */
+    private List<Integer> randomEmptyByAreaBlock(int area, int block, int cnt) {
+        List<Integer> emptyPosLs = new ArrayList<>();
+        List<Integer> posList = MapHelper.getPosListByAreaBlock(area, block);
+        if (!CheckNull.isEmpty(posList)) {
+            Collections.shuffle(posList);
+            int size = Math.min(cnt, posList.size());
+            for (Integer pos : posList) {
+                if (size-- == 0)
+                    break;
+                emptyPosLs.add(pos);
+            }
+        }
+        return emptyPosLs;
+    }
 
     /**
      * 初始化流寇数据
@@ -376,150 +374,150 @@ public class GlobalDataManager {
             }
         }
 
-		// ------------------------原来的-------------------------
-		// int lv;
-		// int pos;
-		// int count;
-		// List<StaticBandit> banditList;
-		// StaticBanditArea staticBanditArea =
-		// StaticBanditDataMgr.getBanditAreaMap().get(staticArea.getOpenOrder());
-		// if (null == staticBanditArea) {
-		// LogUtil.error("有分区的流寇数据没有配置, area:", staticArea.getOpenOrder());
-		// } else {
-		// for (Entry<Integer, Integer> entry :
-		// staticBanditArea.getBandits().entrySet()) {
-		// lv = entry.getKey();// 流寇等级
-		// count = entry.getValue();// 该等级流寇刷新数量
-		// LogUtil.error("开始生成流寇, lv:", lv, ", count:", count);
-		// for (int i = 0; i < count; i++) {
-		// int loop = 0;
-		// boolean noPos = false;//
-		// 记录当前分区是否已经没有可分配的坐标，如果连续1000次都随机不到空闲坐标，则认为坐标不足，跳出本分区的逻辑
-		// do {
-		// pos = MapHelper.randomPosInArea(staticArea.getArea());
-		// loop++;
-		//
-		// if (loop > 1000) {
-		// noPos = true;
-		// break;
-		// }
-		// } while (isNpcPos(pos));
-		//
-		// if (noPos) {
-		// LogUtil.error("分区已经没有足够的空闲坐标， area:", staticArea.getArea());
-		// break;
-		// }
-		//
-		// banditList = StaticBanditDataMgr.getBanditByLv(lv);
-		// if (CheckNull.isEmpty(banditList)) {
-		// LogUtil.error("该等级没有配置流寇, lv:" + lv);
-		// break;
-		// }
-		// // 在同等级中随机一个流寇
-		// gameGlobal.getBanditMap().put(pos,
-		// banditList.get(RandomHelper.randomInSize(banditList.size())).getBanditId());
-		// }
-		// }
-		// }
-	}
+        // ------------------------原来的-------------------------
+        // int lv;
+        // int pos;
+        // int count;
+        // List<StaticBandit> banditList;
+        // StaticBanditArea staticBanditArea =
+        // StaticBanditDataMgr.getBanditAreaMap().get(staticArea.getOpenOrder());
+        // if (null == staticBanditArea) {
+        // LogUtil.error("有分区的流寇数据没有配置, area:", staticArea.getOpenOrder());
+        // } else {
+        // for (Entry<Integer, Integer> entry :
+        // staticBanditArea.getBandits().entrySet()) {
+        // lv = entry.getKey();// 流寇等级
+        // count = entry.getValue();// 该等级流寇刷新数量
+        // LogUtil.error("开始生成流寇, lv:", lv, ", count:", count);
+        // for (int i = 0; i < count; i++) {
+        // int loop = 0;
+        // boolean noPos = false;//
+        // 记录当前分区是否已经没有可分配的坐标，如果连续1000次都随机不到空闲坐标，则认为坐标不足，跳出本分区的逻辑
+        // do {
+        // pos = MapHelper.randomPosInArea(staticArea.getArea());
+        // loop++;
+        //
+        // if (loop > 1000) {
+        // noPos = true;
+        // break;
+        // }
+        // } while (isNpcPos(pos));
+        //
+        // if (noPos) {
+        // LogUtil.error("分区已经没有足够的空闲坐标， area:", staticArea.getArea());
+        // break;
+        // }
+        //
+        // banditList = StaticBanditDataMgr.getBanditByLv(lv);
+        // if (CheckNull.isEmpty(banditList)) {
+        // LogUtil.error("该等级没有配置流寇, lv:" + lv);
+        // break;
+        // }
+        // // 在同等级中随机一个流寇
+        // gameGlobal.getBanditMap().put(pos,
+        // banditList.get(RandomHelper.randomInSize(banditList.size())).getBanditId());
+        // }
+        // }
+        // }
+    }
 
-	/**
-	 * 初始化矿点信息
-	 *
-	 * @param sa
-	 */
-	private void initWorldMine(StaticArea sa) {
-		final int area = sa.getArea();
-		List<StaticAreaRange> rangeList = StaticWorldDataMgr.getBlockRangeMap().get(sa.getOpenOrder());
-		if (!CheckNull.isEmpty(rangeList)) {
-			rangeList.forEach(sar -> {
-				List<Integer> blocks = sar.getBlock();
-				int blockSize = blocks.size();
-				Map<Integer, Integer> mineLv = sar.getMineLv();
-				// 计算每个小区块需配置的数量
-				Map<Integer, Integer> sLvAndCnt = new HashMap<>();
-				for (Entry<Integer, Integer> kv : mineLv.entrySet()) {
-					int lv = kv.getKey();
-					int cnt = kv.getValue();
-					int cntByBlock = cnt / blockSize;
-					sLvAndCnt.put(lv, cntByBlock);
-				}
-				// 每个块的逻辑处理
-				for (Integer b : blocks) {
-					int mapBlock = MapHelper.areaBlockToMapBlock(area, b);
-					for (Entry<Integer, Integer> pm : sLvAndCnt.entrySet()) {
-						int lv = pm.getKey();
-						int cnt = pm.getValue();// 配置数据
-						int needCnt = cnt;
-						LogUtil.world("----------刷矿点  区域:", area, ", 大地图的块:", mapBlock, ", 本区域块:", b, ", 矿点等级:", lv,
-								", 配置数量:", cnt, ", 需要刷的数量:", needCnt, "----------");
-						if (needCnt > 0) {
-							List<Integer> emptyPos = randomEmptyByAreaBlock(area, b, needCnt);
-							emptyPos.forEach(pos -> {
-								StaticMine mine = MineLvRandom.randomMineByLv(lv);
-								if (mine != null) {
-									// addMine(pos, mine);
-									gameGlobal.getMineMap().put(pos, new MineData(mine.getMineId()));
-									gameGlobal.getMineResourceMap().put(pos, mine.getReward().get(0).get(2));
-									Turple<Integer, Integer> xy = MapHelper.reducePos(pos);
-									LogUtil.world("---------- 新增矿点 位置:", pos, " [x=", xy.getA(), ",y=", xy.getB(),
-											"] lv:", mine.getLv(), ", mineType:", mine.getMineType(), "----------");
-								}
-							});
-						}
-					}
-				}
-			});
-		}
-		// ------------------------原来的-------------------------
-		// int pos;
-		// List<StaticAreaRange> rangeList =
-		// StaticWorldDataMgr.getBlockRangeMap().get(staticArea.getOpenOrder());
-		// if (CheckNull.isEmpty(rangeList)) {
-		// LogUtil.error("有分区等级的矿点数据未配置, order:", staticArea.getOpenOrder());
-		// } else {
-		// int mineLv;
-		// StaticMine mine;
-		// for (StaticAreaRange sab : rangeList) {
-		// for (Entry<Integer, Integer> entry : sab.getMineLv().entrySet()) {
-		// mineLv = entry.getKey();
-		// LogUtil.error("开始生成矿点, range:", sab.getRange(), ", lv:", mineLv, ",
-		// count:", entry.getValue());
-		// for (int i = 0; i < entry.getValue(); i++) {// 每个等级刷新一定数量的矿
-		// int loop = 0;
-		// boolean noPos = false;//
-		// 记录当前分区是否已经没有可分配的坐标，如果连续1000次都随机不到空闲坐标，则认为坐标不足，跳出本分区的逻辑
-		// do {
-		// pos = MapHelper.randomPosInBlockList(staticArea.getArea(),
-		// sab.getBlock());
-		// loop++;
-		//
-		// if (loop > 1000) {
-		// noPos = true;
-		// break;
-		// }
-		// } while (isNpcPos(pos));
-		//
-		// if (noPos) {
-		// LogUtil.error("分区已经没有足够的空闲坐标， area:", staticArea.getArea());
-		// break;
-		// }
-		//
-		// mine = MineLvRandom.randomMineByLv(mineLv);
-		// if (null != mine) {
-		// LogUtil.error(
-		// "staticArea=" + staticArea.getArea() + ",sOpenOrder=" +
-		// staticArea.getOpenOrder()
-		// + ",pos=" + pos + ",pos area=" + MapHelper.getAreaIdByPos(pos));
-		// gameGlobal.getMineMap().put(pos, mine.getMineId());
-		// gameGlobal.getMineResourceMap().put(pos,
-		// mine.getReward().get(0).get(2));
-		// }
-		// }
-		// }
-		// }
-		// }
-	}
+    /**
+     * 初始化矿点信息
+     *
+     * @param sa
+     */
+    private void initWorldMine(StaticArea sa) {
+        final int area = sa.getArea();
+        List<StaticAreaRange> rangeList = StaticWorldDataMgr.getBlockRangeMap().get(sa.getOpenOrder());
+        if (!CheckNull.isEmpty(rangeList)) {
+            rangeList.forEach(sar -> {
+                List<Integer> blocks = sar.getBlock();
+                int blockSize = blocks.size();
+                Map<Integer, Integer> mineLv = sar.getMineLv();
+                // 计算每个小区块需配置的数量
+                Map<Integer, Integer> sLvAndCnt = new HashMap<>();
+                for (Entry<Integer, Integer> kv : mineLv.entrySet()) {
+                    int lv = kv.getKey();
+                    int cnt = kv.getValue();
+                    int cntByBlock = cnt / blockSize;
+                    sLvAndCnt.put(lv, cntByBlock);
+                }
+                // 每个块的逻辑处理
+                for (Integer b : blocks) {
+                    int mapBlock = MapHelper.areaBlockToMapBlock(area, b);
+                    for (Entry<Integer, Integer> pm : sLvAndCnt.entrySet()) {
+                        int lv = pm.getKey();
+                        int cnt = pm.getValue();// 配置数据
+                        int needCnt = cnt;
+                        LogUtil.world("----------刷矿点  区域:", area, ", 大地图的块:", mapBlock, ", 本区域块:", b, ", 矿点等级:", lv,
+                                ", 配置数量:", cnt, ", 需要刷的数量:", needCnt, "----------");
+                        if (needCnt > 0) {
+                            List<Integer> emptyPos = randomEmptyByAreaBlock(area, b, needCnt);
+                            emptyPos.forEach(pos -> {
+                                StaticMine mine = MineLvRandom.randomMineByLv(lv);
+                                if (mine != null) {
+                                    // addMine(pos, mine);
+                                    gameGlobal.getMineMap().put(pos, new MineData(mine.getMineId()));
+                                    gameGlobal.getMineResourceMap().put(pos, mine.getReward().get(0).get(2));
+                                    Turple<Integer, Integer> xy = MapHelper.reducePos(pos);
+                                    LogUtil.world("---------- 新增矿点 位置:", pos, " [x=", xy.getA(), ",y=", xy.getB(),
+                                            "] lv:", mine.getLv(), ", mineType:", mine.getMineType(), "----------");
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        // ------------------------原来的-------------------------
+        // int pos;
+        // List<StaticAreaRange> rangeList =
+        // StaticWorldDataMgr.getBlockRangeMap().get(staticArea.getOpenOrder());
+        // if (CheckNull.isEmpty(rangeList)) {
+        // LogUtil.error("有分区等级的矿点数据未配置, order:", staticArea.getOpenOrder());
+        // } else {
+        // int mineLv;
+        // StaticMine mine;
+        // for (StaticAreaRange sab : rangeList) {
+        // for (Entry<Integer, Integer> entry : sab.getMineLv().entrySet()) {
+        // mineLv = entry.getKey();
+        // LogUtil.error("开始生成矿点, range:", sab.getRange(), ", lv:", mineLv, ",
+        // count:", entry.getValue());
+        // for (int i = 0; i < entry.getValue(); i++) {// 每个等级刷新一定数量的矿
+        // int loop = 0;
+        // boolean noPos = false;//
+        // 记录当前分区是否已经没有可分配的坐标，如果连续1000次都随机不到空闲坐标，则认为坐标不足，跳出本分区的逻辑
+        // do {
+        // pos = MapHelper.randomPosInBlockList(staticArea.getArea(),
+        // sab.getBlock());
+        // loop++;
+        //
+        // if (loop > 1000) {
+        // noPos = true;
+        // break;
+        // }
+        // } while (isNpcPos(pos));
+        //
+        // if (noPos) {
+        // LogUtil.error("分区已经没有足够的空闲坐标， area:", staticArea.getArea());
+        // break;
+        // }
+        //
+        // mine = MineLvRandom.randomMineByLv(mineLv);
+        // if (null != mine) {
+        // LogUtil.error(
+        // "staticArea=" + staticArea.getArea() + ",sOpenOrder=" +
+        // staticArea.getOpenOrder()
+        // + ",pos=" + pos + ",pos area=" + MapHelper.getAreaIdByPos(pos));
+        // gameGlobal.getMineMap().put(pos, mine.getMineId());
+        // gameGlobal.getMineResourceMap().put(pos,
+        // mine.getReward().get(0).get(2));
+        // }
+        // }
+        // }
+        // }
+        // }
+    }
 
     /**
      * 判断坐标是否是系统城池或NPC占领坐标, 注意:只能初始化地图的时候使用, 此方法没有判断玩家占用坐标的情况
@@ -576,5 +574,4 @@ public class GlobalDataManager {
         }
         return count;
     }
-
 }

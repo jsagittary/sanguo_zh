@@ -6,17 +6,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @author TanDonghai
  * @ClassName MailHelper.java
  * @Description 邮件工具类
- * @author TanDonghai
  * @date 创建时间：2017年4月11日 下午8:01:43
- *
  */
 public class MailHelper {
-    /** 记录各邮件的标题和内容参数个数 */
+    /**
+     * 记录各邮件的标题和内容参数个数
+     */
     private static Map<Integer, Turple<Integer, Integer>> paramNumMap;
 
-    /** 无参数 */
+    /**
+     * 无参数
+     */
     private static final Turple<Integer, Integer> nonParam = new Turple<Integer, Integer>(0, 0);
 
     static {
@@ -26,9 +29,9 @@ public class MailHelper {
 
     /**
      * 注册邮件参数个数
-     * 
-     * @param mailId 邮件id
-     * @param titleParamNum 标题参数个数
+     *
+     * @param mailId          邮件id
+     * @param titleParamNum   标题参数个数
      * @param contentParamNum 邮件内容参数个数
      */
     private static void putMailParamNum(int mailId, int titleParamNum, int contentParamNum) {
@@ -40,7 +43,7 @@ public class MailHelper {
      * 邮件参数个数统一在这里注册
      */
     public static void registerMailParamNum() {
-        putMailParamNum(MailConstant.ACT_CHRISTMAS_CAMP_RANK_MAIL,2,2);
+        putMailParamNum(MailConstant.ACT_CHRISTMAS_CAMP_RANK_MAIL, 2, 2);
         // 攻击流寇成功战报
         putMailParamNum(MailConstant.MOLD_ATK_BANDIT_SUCC, 2, 7);
         // 攻击流寇失败战报
@@ -375,73 +378,81 @@ public class MailHelper {
         putMailParamNum(MailConstant.MOLD_ACT_TIME_LIMIT_EXCHANGE_AWARD, 0, 4);
 
         //沙盘演武
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_CAMP_ENROLL,0,1);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ROUND_OVER_WIN,1,6);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ROUND_OVER_LOSE,1,6);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ROUND_OVER_DRAW,1,6);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_CAMP_RANK_REWARD,2,4);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD,1,3);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ENROLL_REWARD,0,3);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD_TWO,0,2);
-        putMailParamNum(MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD_THREE,0,2);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_CAMP_ENROLL, 0, 1);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ROUND_OVER_WIN, 1, 6);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ROUND_OVER_LOSE, 1, 6);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ROUND_OVER_DRAW, 1, 6);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_CAMP_RANK_REWARD, 2, 4);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD, 1, 3);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_ENROLL_REWARD, 0, 3);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD_TWO, 0, 2);
+        putMailParamNum(MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD_THREE, 0, 2);
 
         // 拜访圣坛
-        putMailParamNum(MailConstant.MOLD_VISIT_ALTAR_SUCCESS,0,1);
-        putMailParamNum(MailConstant.MOLD_VISIT_ALTAR_FAIL,0,1);
+        putMailParamNum(MailConstant.MOLD_VISIT_ALTAR_SUCCESS, 0, 1);
+        putMailParamNum(MailConstant.MOLD_VISIT_ALTAR_FAIL, 0, 1);
 
         //皮肤返场活动
-        putMailParamNum(MailConstant.MOLD_ACT_SKIN_ENCORE_SUCCESS,1,1);
-        putMailParamNum(MailConstant.MOLD_ACT_SKIN_ENCORE_FAIL,1,1);
+        putMailParamNum(MailConstant.MOLD_ACT_SKIN_ENCORE_SUCCESS, 1, 1);
+        putMailParamNum(MailConstant.MOLD_ACT_SKIN_ENCORE_FAIL, 1, 1);
 
         //赛季天赋结束邮件
-        putMailParamNum(MailConstant.RESET_END_SEASON_TALENT,0,1);
+        putMailParamNum(MailConstant.RESET_END_SEASON_TALENT, 0, 1);
 
         //秋季拍卖活动
-        putMailParamNum(MailConstant.SUCCESSFUL_BIDDING,0,3);
-        putMailParamNum(MailConstant.BID_WAS_OVERTAKEN,0,2);
-        putMailParamNum(MailConstant.BID_FAILED,0,2);
+        putMailParamNum(MailConstant.SUCCESSFUL_BIDDING, 0, 3);
+        putMailParamNum(MailConstant.BID_WAS_OVERTAKEN, 0, 2);
+        putMailParamNum(MailConstant.BID_FAILED, 0, 2);
 
         //音乐创作
         putMailParamNum(MailConstant.MUSIC_CAMP_RANK_AWARD, 0, 3);
         putMailParamNum(MailConstant.MUSIC_PLAYER_RANK_AWARD, 0, 2);
         putMailParamNum(MailConstant.MUSIC_CAMP_CONDUCT_SUCCESS, 0, 2);
 
-        putMailParamNum(MailConstant.MOD_LONG_LIGHT,1,1);
+        putMailParamNum(MailConstant.MOD_LONG_LIGHT, 1, 1);
 
         //跨服充值活动奖励发放
-        putMailParamNum(MailConstant.MOLD_ACT_CROSS_RECHARGE_TOTAL,0,1);
-        putMailParamNum(MailConstant.MOLD_ACT_CROSS_RECHARGE_DAILY,0,1);
+        putMailParamNum(MailConstant.MOLD_ACT_CROSS_RECHARGE_TOTAL, 0, 1);
+        putMailParamNum(MailConstant.MOLD_ACT_CROSS_RECHARGE_DAILY, 0, 1);
         putMailParamNum(MailConstant.ACT_MAGIC_TREASURE_WARE_GIFT_BAG, 1, 1);
 
-        putMailParamNum(MailConstant.CROSS_COLLECT_REPORT,2,4);
-        putMailParamNum(MailConstant.CROSS_COLLECT_NO_TARGET,0,0);
-        putMailParamNum(MailConstant.CROSS_COLLECT_ATK_FAIL,4,8);
-        putMailParamNum(MailConstant.CROSS_COLLECT_ATK_SUCCESS,4,8);
-        putMailParamNum(MailConstant.CROSS_COLLECT_DEF_SUCCESS,4,8);
-        putMailParamNum(MailConstant.CROSS_COLLECT_DEF_FAIL,4,8);
-        putMailParamNum(MailConstant.CROSS_COLLECT_RETREAT,0,4);
-        putMailParamNum(MailConstant.CROSS_PLAYER_DEF_FLEE_ATK,2,2);
-        putMailParamNum(MailConstant.MOLD_PLAYER_DEF_FLEE_DEF,2,2);
-        putMailParamNum(MailConstant.MOLD_PLAYER_ATK_RETREAT_DEF,7,7);
-        putMailParamNum(MailConstant.MOLD_PLAYER_ATK_RETREAT_ATK,7,7);
-        putMailParamNum(MailConstant.CROSS_ENEMY_SCOUT_SUCCESS,6,6);
-        putMailParamNum(MailConstant.CROSS_SCOUT_SUCCESS,6,6);
-        putMailParamNum(MailConstant.CROSS_SCOUT_FAIL,6,6);
-        putMailParamNum(MailConstant.CROSS_ENEMY_SCOUT_FAIL,6,6);
-        putMailParamNum(MailConstant.CROSS_DEF_PLAYER_FAIL,6,11);
-        putMailParamNum(MailConstant.CROSS_DEF_PLAYER_SUCCESS,6,10);
-        putMailParamNum(MailConstant.CROSS_ATK_PLAYER_FAIL,6,9);
-        putMailParamNum(MailConstant.CROSS_ATK_PLAYER_SUCCESS,6,10);
-        putMailParamNum(MailConstant.CROSS_HIT_FLY,2,2);
-        putMailParamNum(MailConstant.CROSS_MOLD_ATTACK_TARGET_FLY,2,2);
-        putMailParamNum(MailConstant.CROSS_WAR_FIRE_SAME_CAMP_COLLECT,0,3);
+        putMailParamNum(MailConstant.CROSS_COLLECT_REPORT, 2, 4);
+        putMailParamNum(MailConstant.CROSS_COLLECT_NO_TARGET, 0, 0);
+        putMailParamNum(MailConstant.CROSS_COLLECT_ATK_FAIL, 4, 8);
+        putMailParamNum(MailConstant.CROSS_COLLECT_ATK_SUCCESS, 4, 8);
+        putMailParamNum(MailConstant.CROSS_COLLECT_DEF_SUCCESS, 4, 8);
+        putMailParamNum(MailConstant.CROSS_COLLECT_DEF_FAIL, 4, 8);
+        putMailParamNum(MailConstant.CROSS_COLLECT_RETREAT, 0, 4);
+        putMailParamNum(MailConstant.CROSS_PLAYER_DEF_FLEE_ATK, 2, 2);
+        putMailParamNum(MailConstant.MOLD_PLAYER_DEF_FLEE_DEF, 2, 2);
+        putMailParamNum(MailConstant.MOLD_PLAYER_ATK_RETREAT_DEF, 7, 7);
+        putMailParamNum(MailConstant.MOLD_PLAYER_ATK_RETREAT_ATK, 7, 7);
+        putMailParamNum(MailConstant.CROSS_ENEMY_SCOUT_SUCCESS, 6, 6);
+        putMailParamNum(MailConstant.CROSS_SCOUT_SUCCESS, 6, 6);
+        putMailParamNum(MailConstant.CROSS_SCOUT_FAIL, 6, 6);
+        putMailParamNum(MailConstant.CROSS_ENEMY_SCOUT_FAIL, 6, 6);
+        putMailParamNum(MailConstant.CROSS_DEF_PLAYER_FAIL, 6, 11);
+        putMailParamNum(MailConstant.CROSS_DEF_PLAYER_SUCCESS, 6, 10);
+        putMailParamNum(MailConstant.CROSS_ATK_PLAYER_FAIL, 6, 9);
+        putMailParamNum(MailConstant.CROSS_ATK_PLAYER_SUCCESS, 6, 10);
+        putMailParamNum(MailConstant.CROSS_HIT_FLY, 2, 2);
+        putMailParamNum(MailConstant.CROSS_MOLD_ATTACK_TARGET_FLY, 2, 2);
+        putMailParamNum(MailConstant.CROSS_WAR_FIRE_SAME_CAMP_COLLECT, 0, 3);
         putMailParamNum(MailConstant.CROSS_WAR_FIRE_SCORE_NOT_ENOUGH, 0, 14);
         putMailParamNum(MailConstant.CROSS_WAR_FIRE_AWARD, 0, 17);
+
+        //王朝遗迹
+        putMailParamNum(MailConstant.MOLD_HIS_REMAINS_ATTACK_FAILURE, 4, 4);
+        putMailParamNum(MailConstant.MOLD_HIS_REMAINS_ATTACK_SUCCESS, 4, 4);
+        putMailParamNum(MailConstant.MOLD_HIS_REMAINS_DEFEND_FAILURE, 4, 4);
+        putMailParamNum(MailConstant.MOLD_HIS_REMAINS_DEFEND_SUCCESS, 4, 4);
+        putMailParamNum(MailConstant.MOLD_RELIC_PROBE_OVER, 0, 1);
+        putMailParamNum(MailConstant.MOLD_RELIC_PROBE_VANISH, 0, 0);
     }
 
     /**
      * 根据邮件id，返回邮件的标题和内容参数个数
-     * 
+     *
      * @param mailId
      * @return 返回参数个数
      */

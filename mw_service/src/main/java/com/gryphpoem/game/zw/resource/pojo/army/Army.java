@@ -7,9 +7,7 @@ import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author TanDonghai
@@ -105,6 +103,8 @@ public class Army {
      * 行军特效id, 在创建部队的时候确定
      */
     private int marchLineId;
+    private Map<Integer, Integer> recoverMap;//伤病恢复记录
+    private Map<Integer, Integer> totalLostHpMap;//将领损兵记录. k:将领ID, v:累计损兵记录
 
     public Army() {
     }
@@ -355,6 +355,30 @@ public class Army {
 
     public int getMarchLineId() {
         return marchLineId;
+    }
+
+    public int getHeroLeadCount() {
+        if (CheckNull.isEmpty(hero))
+            return 0;
+        return hero.stream().mapToInt(TwoInt::getV2).sum();
+    }
+
+    public Map<Integer, Integer> getAndCreateIfAbsentTotalLostHpMap() {
+        if (totalLostHpMap == null) totalLostHpMap = new HashMap<>();
+        return totalLostHpMap;
+    }
+
+    public Map<Integer, Integer> getRecoverMap() {
+        return recoverMap;
+    }
+
+    public Map<Integer, Integer> getAndCreateIfAbsentRecoverMap() {
+        if (recoverMap == null) recoverMap = new HashMap<>();
+        return recoverMap;
+    }
+
+    public void setRecoverMap(Map<Integer, Integer> recoverMap) {
+        this.recoverMap = recoverMap;
     }
 
     @Override

@@ -14,53 +14,59 @@ import java.util.Set;
  */
 public class StaticIniDao extends BaseDao {
 
-    public List<StaticWarFireBuffCross> selectStaticWarFireBuffCross(){
+    public List<StaticGeneration> selectStaticGenerationList() {
+        return getMapper(StaticIniMapper.class).selectStaticGenerationList();
+    }
+
+    public List<StaticWarFireBuffCross> selectStaticWarFireBuffCross() {
         return getMapper(StaticIniMapper.class).selectWarFireBuffCross();
     }
-    public Map<Integer,StaticSmallGame> selectSmallGameMap(){
+
+    public Map<Integer, StaticSmallGame> selectSmallGameMap() {
         return getMapper(StaticIniMapper.class).selectSmallGameMap();
     }
-    public List<StaticSummerCharge> selectStaticSummerChargeList(){
+
+    public List<StaticSummerCharge> selectStaticSummerChargeList() {
         return getMapper(StaticIniMapper.class).selectStaticSummerChargeList();
     }
 
-    public List<StaticSummerTurnplate> selectStaticSummerTurnplateList(){
+    public List<StaticSummerTurnplate> selectStaticSummerTurnplateList() {
         return getMapper(StaticIniMapper.class).selectStaticSummerTurnplateList();
     }
 
-    public Map<Integer, StaticSummerCastle> selectStaticSummerCastleMap(){
+    public Map<Integer, StaticSummerCastle> selectStaticSummerCastleMap() {
         return getMapper(StaticIniMapper.class).selectStaticSummerCastleMap();
     }
 
-    public List<StaticAnniversaryTurntable> selectStaticAnniversaryTurntableList(){
+    public List<StaticAnniversaryTurntable> selectStaticAnniversaryTurntableList() {
         return getMapper(StaticIniMapper.class).selectStaticAnniversaryTurntableList();
     }
 
-    public List<StaticAnniversaryEgg> selectStaticAnniversaryEggList(){
+    public List<StaticAnniversaryEgg> selectStaticAnniversaryEggList() {
         return getMapper(StaticIniMapper.class).selectStaticAnniversaryEggList();
     }
 
-    public List<StaticRandomLibrary> selectStaticRandomLibraryList(){
+    public List<StaticRandomLibrary> selectStaticRandomLibraryList() {
         return getMapper(StaticIniMapper.class).selectStaticRandomLibraryList();
     }
 
-    public Map<Integer, StaticActSkinEncore> selectStaticActSkinEncore(){
+    public Map<Integer, StaticActSkinEncore> selectStaticActSkinEncore() {
         return getMapper(StaticIniMapper.class).selectStaticActSkinEncore();
     }
 
-    public List<StaticFishBaitHerocombination> selectStaticFishBaitHerocombinationList(){
+    public List<StaticFishBaitHerocombination> selectStaticFishBaitHerocombinationList() {
         return getMapper(StaticIniMapper.class).selectStaticFishBaitHerocombinationList();
     }
 
-    public List<StaticFishBait> selectStaticFishBaitList(){
+    public List<StaticFishBait> selectStaticFishBaitList() {
         return getMapper(StaticIniMapper.class).selectStaticFishBaitList();
     }
 
-    public Map<Integer,StaticFishResults> selectStaticFishResultsMap(){
+    public Map<Integer, StaticFishResults> selectStaticFishResultsMap() {
         return getMapper(StaticIniMapper.class).selectStaticFishResultsMap();
     }
 
-    public Map<Integer,StaticFishattribute> selectStaticFishattributeMap(){
+    public Map<Integer, StaticFishattribute> selectStaticFishattributeMap() {
         return getMapper(StaticIniMapper.class).selectStaticFishattributeMap();
     }
 
@@ -68,15 +74,15 @@ public class StaticIniDao extends BaseDao {
         return getMapper(StaticIniMapper.class).selectStaticFishProficiencyList();
     }
 
-    public Map<Integer,StaticFishShop> selectStaticFishShopMap(){
+    public Map<Integer, StaticFishShop> selectStaticFishShopMap() {
         return getMapper(StaticIniMapper.class).selectStaticFishShopMap();
     }
 
-    public List<StaticAutumnTurnplate> selectStaticAutumnTurnplateList(){
+    public List<StaticAutumnTurnplate> selectStaticAutumnTurnplateList() {
         return getMapper(StaticIniMapper.class).selectStaticAutumnTurnplateList();
     }
 
-    public List<StaticActivityCrossPlan> selectStaticActivityPlanCross(){
+    public List<StaticActivityCrossPlan> selectStaticActivityPlanCross() {
         return getMapper(StaticIniMapper.class).selectStaticActivityPlanCross();
     }
 
@@ -88,27 +94,27 @@ public class StaticIniDao extends BaseDao {
         return getMapper(StaticIniMapper.class).selectStaticMusicFestivalBoxOfficeParamMap();
     }
 
-    public Map<Integer, StaticCreativeOffice> selectStaticCreativeOffice(){
+    public Map<Integer, StaticCreativeOffice> selectStaticCreativeOffice() {
         return getMapper(StaticIniMapper.class).selectStaticCreativeOffice();
     }
 
-    public Map<Integer, StaticCreativeOfficeAward> selectStaticCreativeOfficeAward(){
+    public Map<Integer, StaticCreativeOfficeAward> selectStaticCreativeOfficeAward() {
         return getMapper(StaticIniMapper.class).selectStaticCreativeOfficeAward();
     }
 
-    public List<StaticTotem> selectStaticTotemList(){
+    public List<StaticTotem> selectStaticTotemList() {
         return getMapper(StaticIniMapper.class).selectStaticTotemList();
     }
 
-    public List<StaticTotemLink> selectStaticTotemLinkList(){
+    public List<StaticTotemLink> selectStaticTotemLinkList() {
         return getMapper(StaticIniMapper.class).selectStaticTotemLinkList();
     }
 
-    public List<StaticTotemDrop> selectStaticTotemDropList(){
+    public List<StaticTotemDrop> selectStaticTotemDropList() {
         return getMapper(StaticIniMapper.class).selectStaticTotemDropList();
     }
 
-    public List<StaticTotemUp> selectStaticTotemUpList(){
+    public List<StaticTotemUp> selectStaticTotemUpList() {
         return getMapper(StaticIniMapper.class).selectStaticTotemUpList();
     }
 
@@ -137,15 +143,15 @@ public class StaticIniDao extends BaseDao {
         return getMapper(StaticIniMapper.class).selectTreasureWareProfile();
     }
 
-    public Map<Integer,StaticFireworks> selectStaticFireworksMap() {
+    public Map<Integer, StaticFireworks> selectStaticFireworksMap() {
         return getMapper(StaticIniMapper.class).selectStaticFireworksMap();
     }
 
-    public List<StaticFireworks> selectStaticFireworksList(){
+    public List<StaticFireworks> selectStaticFireworksList() {
         return getMapper(StaticIniMapper.class).selectStaticFireworksList();
     }
 
-    public List<StaticFishing> selectStaticFishingList(){
+    public List<StaticFishing> selectStaticFishingList() {
         return getMapper(StaticIniMapper.class).selectStaticFishingList();
     }
 
@@ -187,5 +193,17 @@ public class StaticIniDao extends BaseDao {
 
     public Map<Integer, StaticHeroBiographyShow> selectStaticHeroBiographyShowList() {
         return getMapper(StaticIniMapper.class).selectStaticHeroBiographyShowMap();
+    }
+
+    public List<StaticRelic> selectStaticRelicList() {
+        return getMapper(StaticIniMapper.class).selectStaticRelicList();
+    }
+
+    public List<StaticRelicShop> selectStaticRelicShopList() {
+        return getMapper(StaticIniMapper.class).selectStaticRelicShopList();
+    }
+
+    public Map<Integer, StaticRelicFraction> selectStaticRelicFractionMap() {
+        return getMapper(StaticIniMapper.class).selectStaticRelicFractionMap();
     }
 }

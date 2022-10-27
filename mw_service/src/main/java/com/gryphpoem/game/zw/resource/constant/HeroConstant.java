@@ -154,6 +154,11 @@ public class HeroConstant {
      */
     public static List<List<Integer>> OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
 
+    /**
+     * 限时寻访可购买自选箱触发的寻访次数配置
+     */
+    public static List<Integer> TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG;
+
     public static void loadSystem() {
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
         HERO_BATTLE_LEN = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_BATTLE_LEN, 4);
@@ -186,6 +191,7 @@ public class HeroConstant {
         ALL_HERO_GRADE_CAPS = SystemTabLoader.getListIntSystemValue(SystemId.ALL_HERO_GRADE_CAPS, "[]");
         DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = SystemTabLoader.getListListIntSystemValue(SystemId.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, "[]");
         OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG = SystemTabLoader.getListListIntSystemValue(SystemId.TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX, "[]");
+        TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT, "[]");
     }
 
     /**
@@ -409,7 +415,7 @@ public class HeroConstant {
     public static final int CHANGE_TREASURE_WARE_POS_TYPE = 4;
 
     /**
-     * 激活 1, 进化 2, 重组 3
+     * 激活 1, 升级 2, 重置 3
      */
     public static final int AWAKEN_HERO_TYPE_1 = 1;
     public static final int AWAKEN_HERO_TYPE_2 = 2;
@@ -417,6 +423,20 @@ public class HeroConstant {
 
     public static final int AWAKEN_PART_MIN = 1;
     public static final int AWAKEN_PART_MAX = 5;
+
+    /**
+     * 天赋操作：1-激活天赋页；2-升级天赋球；3-重置天赋
+     */
+    public static final int TALENT_HERO_TYPE_1 = 1;
+    public static final int TALENT_HERO_TYPE_2 = 2;
+    public static final int TALENT_HERO_TYPE_3 = 3;
+
+    /**
+     * 某一天赋页中天赋球部位上下限
+     */
+    public static final int TALENT_PART_MIN = 1;
+    public static final int TALENT_PART_MAX_OF_PURPLE_HERO = 4;
+    public static final int TALENT_PART_MAX_OF_ORANGE_HERO = 6;
 
     /**
      * 紫将

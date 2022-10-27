@@ -55,10 +55,13 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
+import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
+import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.relic.RelicService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -280,6 +283,17 @@ public class WorldService {
                         builder.addCity(areaCityBuilder.build());
                     });
         }
+
+        RelicEntity relicEntity = worldDataManager.getRelicEntityMap().values().stream().filter(o -> o.getArea() == area).findFirst().orElse(null);
+        Optional.ofNullable(relicEntity).ifPresent(o -> {
+            GlobalRelic globalRelic = globalDataManager.getGameGlobal().getGlobalRelic();
+            CommonPb.MapRelicForce.Builder mapRelicForce = CommonPb.MapRelicForce.newBuilder();
+            mapRelicForce.setPos(o.getPos());
+            mapRelicForce.setSafeExpire(globalRelic.getSafeExpire());
+            mapRelicForce.setOverExpire(globalRelic.getOverExpire());
+            mapRelicForce.setHoldCamp(o.getHoldCamp());
+            builder.addMapRelicForce(mapRelicForce);
+        });
         return builder.build();
     }
 
@@ -592,6 +606,9 @@ public class WorldService {
             }
             // 圣坛地图上的数据
             ramadanVisitAltarService.getMap(block, builder);
+
+            //遗迹
+            DataResource.getBean(RelicService.class).getMapForce(block, builder);
         }
         builder.addAllBlock(blockList);
         return builder.build();
@@ -688,6 +705,10 @@ public class WorldService {
         int now = TimeHelper.getCurrentSecond();
         int marchTime = marchTime(player, pos, worldDataManager.getBanditIdByPos(pos) > 0 ||
                 worldDataManager.getAirshipWorldDataMap().get(pos) != null);
+        // 遗迹行军时间减半
+        if (worldDataManager.isRelicPos(pos)) {
+            marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
+        }
         // 记录行军消耗
         List<Award> marchConsume = new ArrayList<>();
         // 子类型
@@ -931,6 +952,18 @@ public class WorldService {
             rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood, AwardFrom.ATK_POS);
             type = ArmyConstant.ARMY_TYPE_ALTAR;
             subType = reqType;
+        } else if (worldDataManager.isRelicPos(pos)) {
+            //探索遗迹
+            DataResource.getBean(RelicService.class).checkArmy(player, pos);
+            type = ArmyConstant.ARMY_TYPE_RELIC_BATTLE;
+            // 行军时间减少, 粮食消耗减少
+            rewardDataManager.subPlayerResHasChecked(player, AwardType.RESOURCE, AwardType.Resource.FOOD,
+                    needFood, AwardFrom.ATK_POS);
+            ChangeInfo change = ChangeInfo.newIns();
+            change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
+            // 向客户端同步玩家资源数据
+            rewardDataManager.syncRoleResChanged(player, change);
+            DataResource.getBean(RelicService.class).checkArmyMarchTime(player, marchTime);
         } else {
             throw new MwException(GameError.ATTACK_POS_ERROR.getCode(), "AttackPos，坐标不正确, roleId:", roleId, ", pos:",
                     pos);
@@ -1733,6 +1766,8 @@ public class WorldService {
             decisiveBattleService.retreatDecisiveArmy(roleId, player, type, army);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP) {// 飞艇的返回
             airshipService.retreatArmy(player, army, type);
+        } else if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE) {
+            DataResource.getBean(RelicService.class).retreatArmy(player, army);
         } else {
             // 原来行军返回处理
             originalReturnArmyProcess(roleId, player, keyId, type, army);
@@ -4408,6 +4443,10 @@ public class WorldService {
         // 半路撤回
         marchTime = berlinWarService.getMarchTime(player, army, marchTime);
         marchTime = gestapoService.getGestapoMarchTime(army, marchTime);
+
+        //遗迹行军减半
+        if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE)
+            marchTime = (int) (marchTime * ActParamConstant.RELIC_MARCH_SPEEDUP / NumberUtil.TEN_THOUSAND_DOUBLE);
 
         // 皇城并且是跨区域判断重新计算
         int startArea = MapHelper.getAreaIdByPos(player.lord.getPos());

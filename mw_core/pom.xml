@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>com.gryphpoem</groupId>
 			<artifactId>sanguo-proto</artifactId>
-			<version>1.0.31-SNAPSHOT</version>
+			<version>1.0.32-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

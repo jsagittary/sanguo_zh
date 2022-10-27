@@ -7,7 +7,7 @@
 		select
 		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
 		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
-		treasureWareGolden,treasureWareDust,treasureWareEssence
+		treasureWareGolden,treasureWareDust,treasureWareEssence, ancientBook
 		from p_lord where lordId=#{lordId}
 	</select>
 
@@ -23,7 +23,7 @@
 		select
 		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
 		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
-		treasureWareGolden,treasureWareDust,treasureWareEssence
+		treasureWareGolden,treasureWareDust,treasureWareEssence, ancientBook
 		from p_lord a WHERE a.nick is not NULL ORDER BY level DESC LIMIT
 		#{rank}
 	</select>
@@ -32,7 +32,7 @@
 		select
 		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
 		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
-		treasureWareGolden,treasureWareDust,treasureWareEssence
+		treasureWareGolden,treasureWareDust,treasureWareEssence, ancientBook
 		from p_lord where lordId in
 		<foreach item="lordIds" index="index" collection="list" open="("
 			separator="," close=")">
@@ -44,7 +44,7 @@
 		select
 		lordId,nick,portrait,sex,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,onTime,
 		olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
-		treasureWareGolden,treasureWareDust,treasureWareEssence
+		treasureWareGolden,treasureWareDust,treasureWareEssence, ancientBook
 		from p_lord where nick=#{nick}
 	</select>
 
@@ -79,7 +79,7 @@
 		ranks=#{ranks},exploit=#{exploit},job=#{job},fight=#{fight},newState=#{newState},newerGift=#{newerGift},onTime=#{onTime},olTime=#{olTime},offTime=#{offTime},ctTime=#{ctTime},olAward=#{olAward},olMonth=#{olMonth},silence=#{silence},
 		combatId=#{combatId},heroToken=#{heroToken},mouthCardDay=#{mouthCardDay},mouthCLastTime=#{mouthCLastTime},
 		credit=#{credit},refreshTime=#{refreshTime},signature=#{signature},honor=#{honor},goldBar=#{goldBar},
-		treasureWareGolden=#{treasureWareGolden},treasureWareDust=#{treasureWareDust},treasureWareEssence=#{treasureWareEssence}
+		treasureWareGolden=#{treasureWareGolden},treasureWareDust=#{treasureWareDust},treasureWareEssence=#{treasureWareEssence},ancientBook=#{ancientBook}
 		where
 		lordId=#{lordId}
 	</update>
@@ -90,7 +90,7 @@
 		ranks=#{ranks},exploit=#{exploit},job=#{job},fight=#{fight},newState=#{newState},newerGift=#{newerGift},onTime=#{onTime},olTime=#{olTime},offTime=#{offTime},ctTime=#{ctTime},olAward=#{olAward},olMonth=#{olMonth},silence=#{silence},
 		combatId=#{combatId},heroToken=#{heroToken},mouthCardDay=#{mouthCardDay},mouthCLastTime=#{mouthCLastTime},
 		credit=#{credit},refreshTime=#{refreshTime},signature=#{signature},honor=#{honor},goldBar=#{goldBar},
-		treasureWareGolden=#{treasureWareGolden},treasureWareDust=#{treasureWareDust},treasureWareEssence=#{treasureWareEssence}
+		treasureWareGolden=#{treasureWareGolden},treasureWareDust=#{treasureWareDust},treasureWareEssence=#{treasureWareEssence},ancientBook=#{ancientBook}
 	</insert>
 
 	<update id="updateFight" parameterType="Lord">
@@ -108,10 +108,10 @@
 		insert into
 		p_lord(lordId,camp,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,
 		newerGift,onTime,olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
-		treasureWareGolden,treasureWareDust,treasureWareEssence)
+		treasureWareGolden,treasureWareDust,treasureWareEssence, ancientBook)
 		values(#{lordId},#{camp},#{level},#{exp},#{vip},#{vipExp},#{topup},#{area},#{pos},#{gold},#{goldCost},#{goldGive},#{power},#{ranks},#{exploit},#{job},#{fight},#{newState},#{newerGift},
 		#{onTime},#{olTime},#{offTime},#{ctTime},#{olAward},#{olMonth},#{silence},#{combatId},#{heroToken},#{mouthCardDay},#{mouthCLastTime},#{credit},#{refreshTime},#{signature},#{honor},#{goldBar},
-		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence})
+		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence},#{ancientBook})
 	</insert>
 
 	<insert id="insertFullLord" parameterType="Lord"
@@ -119,10 +119,10 @@
 		insert into
 		p_lord(lordId,nick,portrait,sex,level,exp,vip,vipExp,topup,area,pos,gold,goldCost,goldGive,power,ranks,exploit,job,fight,newState,newerGift,
 		onTime,olTime,offTime,ctTime,olAward,olMonth,silence,combatId,heroToken,mouthCardDay,mouthCLastTime,credit,refreshTime,signature,honor,goldBar,
-		treasureWareGolden,treasureWareDust,treasureWareEssence)
+		treasureWareGolden,treasureWareDust,treasureWareEssence,ancientBook)
 		values(#{lordId},#{nick},#{portrait},#{sex},#{level},#{exp},#{vip},#{vipExp},#{topup},#{area},#{pos},#{gold},#{goldCost},#{goldGive},#{power},#{ranks},#{exploit},#{job},#{fight},#{newState},#{newerGift},
 		#{onTime},#{olTime},#{offTime},#{ctTime},#{olAward},#{olMonth},#{silence},#{combatId},#{heroToken},#{mouthCardDay},#{mouthCLastTime},#{credit},#{refreshTime},#{signature},#{honor},#{goldBar},
-		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence})
+		#{treasureWareGolden},#{treasureWareDust},#{treasureWareEssence}, #{ancientBook})
 	</insert>
 
 	<select id="load" parameterType="Map" resultType="Lord">
@@ -167,7 +167,8 @@
 		p_lord.goldBar,
 		p_lord.treasureWareGolden,
 		p_lord.treasureWareDust,
-		p_lord.treasureWareEssence
+		p_lord.treasureWareEssence,
+		p_lord.ancientBook
 		FROM
 		p_lord
 		INNER JOIN p_account ON p_lord.lordId = p_account.lordId

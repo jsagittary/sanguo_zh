@@ -32,11 +32,17 @@ public class TaskType {
     public static final int COND_BATTLE_STATE_LV_CNT = 16; // 参与国战攻下任意1座地图据点(等级， 次数)0 表示任意等级
     public static final int COND_BATTLE_CITY_LV_CNT = 17; // 参与城战击飞任意3座玩家城池(等级，次数)0 表示任意等级
 
-    /** 累计采集铀矿xx小时 */
+    /**
+     * 累计采集铀矿xx小时
+     */
     public static final int COND_WORLD_WAR_MINE_CNT = 18;
-    /** 招募兵力xx */
+    /**
+     * 招募兵力xx
+     */
     public static final int COND_RECRUIT_ARMS_CNT = 19;
-    /** 获得xx补给数量 */
+    /**
+     * 获得xx补给数量
+     */
     public static final int COND_PLUNDER_RESOURCE_CNT = 20;
 
     public static final int COND_18 = 18;// 建筑开始升级就算完成，不要求立升级结束
@@ -151,6 +157,7 @@ public class TaskType {
     public static final int COND_HERO_EQUIPID = 113; // 给武将穿装备，穿戴指定装备ID
     public static final int COND_USE_PROP = 114;// 使用指定道具
     public static final int COND_ONLINE_AWARD_CNT = 115; // 领取在线奖励次数
+    public static final int COND_RELIC_SCORE = 251; // 王朝遗迹个人积分达到xx
 
     //新增任务
     public static final int COND_500 = 500;//研究科技X等级LV.X
@@ -207,19 +214,25 @@ public class TaskType {
     public static final int WORLD_TASK_TYPE_CITY = 2; // 打城市
     public static final int WORLD_TASK_TYPE_BOSS = 3; // 世界boss
 
-    /** 第一个Boss死亡后通知的任务ID */
+    /**
+     * 第一个Boss死亡后通知的任务ID
+     */
     public static final int WORLD_BOSS_TASK_ID_1 = 5;//
-    /** 第二个Boss死亡后通知的任务ID */
+    /**
+     * 第二个Boss死亡后通知的任务ID
+     */
     public static final int WORLD_BOSS_TASK_ID_2 = 9;//
 
 
     public static final int SECOND_FIRST_ID = 9;
     public static final int SECOND_SECTION_ID = 11;
 
-    /** 被动更新任务类型数组，需要主动调用更新任务方法才会更新任务状态 */
-    public static final int[] UNACTIVE_UPDATE_TASK = { COND_COMBAT_ID_WIN, COND_BANDIT_LV_CNT, COND_ARM_CNT,
+    /**
+     * 被动更新任务类型数组，需要主动调用更新任务方法才会更新任务状态
+     */
+    public static final int[] UNACTIVE_UPDATE_TASK = {COND_COMBAT_ID_WIN, COND_BANDIT_LV_CNT, COND_ARM_CNT,
             COND_ARM_TYPE_CNT, COND_BUILDING_TYPE_LV, COND_BATTLE_STATE_LV_CNT, COND_BATTLE_CITY_LV_CNT, COND_18,
             COND_19, COND_22, COND_26, COND_27, COND_28, COND_29, COND_30, COND_31, COND_33, COND_FREE_CD,
             COND_RES_AWARD, COND_EQUIP, COND_EQUIP_BUILD, COND_TREASURE, COND_HERO_UP, COND_FACTORY_RECRUIT,
-            COND_EQUIP_SPEED, COND_COMMAND_ADD, COND_EQUIP_BAPTIZE, COND_CHEMICAL };
+            COND_EQUIP_SPEED, COND_COMMAND_ADD, COND_EQUIP_BAPTIZE, COND_CHEMICAL};
 }

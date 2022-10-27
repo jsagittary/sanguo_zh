@@ -346,6 +346,8 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="evolveGroup" property="evolveGroup"
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="activateFight" property="activateFight"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 	</resultMap>
 
 	<select id="selectHeroMap" resultMap="heroMap">
@@ -2306,6 +2308,7 @@
 		<id column="id" property="id" />
 		<result column="drop" property="drop" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 		<result column="return" property="convert" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
+		<result column="mineId" property="mineId" typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 	</resultMap>
 	<select id="selectStaticActBanditList" resultMap="staticActBandit">
 		SELECT * FROM s_act_bandit

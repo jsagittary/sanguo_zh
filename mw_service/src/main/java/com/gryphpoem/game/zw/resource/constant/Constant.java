@@ -23,6 +23,9 @@ public final class Constant {
      * 角色id计算中，服务器id需要乘的倍数，PS：roleId=12000001，表示serverId=12，multi=1000000
      */
     public final static int ROLE_ID_MULTI = 1000000;
+
+    /*** 王朝遗迹中防守部队上限*/
+    public static int RELIC_DEFEND_ARMY_MAX_COUNT = 10000;
     /**
      * 玩家开启世界地图功能的等级限制
      */
@@ -961,19 +964,33 @@ public final class Constant {
      */
     public static int TREASURE_WARE_RES_OUTPUT_TIME_UNIT;
 
-    /** 宝具洗练, 主体宝具属性系数 */
+    /**
+     * 宝具洗练, 主体宝具属性系数
+     */
     public static Map<Integer, Integer> TREASURE_WARE_MASTER_ATTR_COEFFICIENT;
-    /** 宝具洗练, 主体宝具属性评价系数*/
+    /**
+     * 宝具洗练, 主体宝具属性评价系数
+     */
     public static List<Integer> TREASURE_WARE_MASTER_STAGE_COEFFICIENT;
-    /** 宝具洗练, 材料宝具属性系数 */
+    /**
+     * 宝具洗练, 材料宝具属性系数
+     */
     public static Map<Integer, Integer> TREASURE_WARE_MATERIAL_ATTR_COEFFICIENT;
-    /** 宝具洗练, 材料宝具属性评价系数*/
+    /**
+     * 宝具洗练, 材料宝具属性评价系数
+     */
     public static List<Integer> TREASURE_WARE_MATERIAL_STAGE_COEFFICIENT;
-    /** 蓝/紫宝具总体评价区间 */
+    /**
+     * 蓝/紫宝具总体评价区间
+     */
     public static List<List<Integer>> TREASURE_WARE_LOWER_STAGE;
-    /** 橙/红/远古宝具总体评价区间 */
+    /**
+     * 橙/红/远古宝具总体评价区间
+     */
     public static List<List<Integer>> TREASURE_WARE_HIGHER_STAGE;
-    /** 宝具属性阶数对应的评估分值 KEY: 属性阶数 VALUE: 阶数对应的分值*/
+    /**
+     * 宝具属性阶数对应的评估分值 KEY: 属性阶数 VALUE: 阶数对应的分值
+     */
     public static Map<Integer, Integer> TREASURE_WARE_ATTR_STAGE_SCORE;
 
     //图腾 万能碎片
@@ -1010,6 +1027,7 @@ public final class Constant {
      * 叛军掉落图纸保底配置
      */
     public static List<List<Integer>> REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION;
+
     /**
      * s_system表中定义的常量初始化
      */
@@ -1023,12 +1041,12 @@ public final class Constant {
         TREASURE_WARE_MASTER_STAGE_COEFFICIENT = SystemTabLoader.getListIntSystemValue(SystemId.TREASURE_WARE_MASTER_STAGE_COEFFICIENT, "[]");
         TREASURE_WARE_MASTER_ATTR_COEFFICIENT = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_MASTER_ATTR_COEFFICIENT, "[[]]");
 
-        LONG_LIGHT_DAY_AWARD = ActParamTabLoader.getListListIntSystemValue(369,"[[]]");
+        LONG_LIGHT_DAY_AWARD = ActParamTabLoader.getListListIntSystemValue(369, "[[]]");
 
-        TOTEM_UNIVERSAL_CHIP_ID = SystemTabLoader.getIntegerSystemValue(3005,100193);
-        TOTEM_QH_MATERIAL_PROB = SystemTabLoader.getIntegerSystemValue(3000,400);
-        TOTEM_QH_MATERIAL_MAX = SystemTabLoader.getIntegerSystemValue(3001,10);
-        TOTEM_UNLOCK_PLACE_LV = SystemTabLoader.getListIntSystemValue(3002,"[120,125,130,135,140,145,150,155]");
+        TOTEM_UNIVERSAL_CHIP_ID = SystemTabLoader.getIntegerSystemValue(3005, 100193);
+        TOTEM_QH_MATERIAL_PROB = SystemTabLoader.getIntegerSystemValue(3000, 400);
+        TOTEM_QH_MATERIAL_MAX = SystemTabLoader.getIntegerSystemValue(3001, 10);
+        TOTEM_UNLOCK_PLACE_LV = SystemTabLoader.getListIntSystemValue(3002, "[120,125,130,135,140,145,150,155]");
 
         DOCK_RED_MATERIAL_SCHEDULE = SystemTabLoader.getIntegerSystemValue(1087, 13);
         FORGE_RED_EQUIP_SCHEDULE = SystemTabLoader.getIntegerSystemValue(1086, 13);
@@ -1383,6 +1401,16 @@ public final class Constant {
         int DMG_INC = 10001;//增伤
         int DMG_DEC = 10002;//伤害减免
         int SPEED = 11001;
+        int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
+        int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
+        int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
+        int MORE_INFANTRY_ATTACK = 101;//对步兵攻击提升
+        int MORE_INFANTRY_ATTACK_EXT = 135;//对步兵破甲提升
+        int MORE_CAVALRY_ATTACK = 201;//对骑兵攻击提升
+        int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
+        int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
+        int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
+
     }
 
     public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,
@@ -1394,7 +1422,7 @@ public final class Constant {
      * 扩展属性
      */
     public static int[] EXT_ATTRS = new int[]{AttrId.ATTACK_TOWN, AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT,
-            AttrId.DEFEND_EXT, AttrId.FIGHT};
+            AttrId.DEFEND_EXT, AttrId.FIGHT, AttrId.LESS_INFANTRY_MUT, AttrId.LESS_CAVALRY_MUT, AttrId.LESS_ARCHER_MUT};
 
     /**
      * 显示战力id定义
