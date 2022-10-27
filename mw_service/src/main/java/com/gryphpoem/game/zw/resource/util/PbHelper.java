@@ -571,6 +571,8 @@ public class PbHelper {
                     }
                 }
                 data.setIndex(talentData.getIndex());
+                data.setAllPartActivated(talentData.getAllPartActivated());
+                data.setMaxPart(talentData.getMaxPart());
                 builder.addTalentData(data.build());
                 data.clear();
             });
