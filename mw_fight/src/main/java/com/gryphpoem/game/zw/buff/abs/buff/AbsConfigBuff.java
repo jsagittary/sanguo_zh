@@ -35,6 +35,14 @@ public abstract class AbsConfigBuff implements IFightBuff {
      */
     protected Force buffGiver;
     /**
+     * buff拥有者id
+     */
+    protected int forceId;
+    /**
+     * buff施予方id
+     */
+    protected int buffGiverId;
+    /**
      * buff配置
      */
     protected StaticBuff staticBuff;
@@ -118,6 +126,22 @@ public abstract class AbsConfigBuff implements IFightBuff {
         return buffEffectiveRounds;
     }
 
+    @Override
+    public int getForceId() {
+        return this.forceId;
+    }
+
+    @Override
+    public void setForceId(int heroId) {
+        this.forceId = heroId;
+    }
+
+    @Override
+    public int getBuffGiverId() {
+        return this.buffGiverId;
+    }
+
+    @Override
     public Force getForce() {
         return force;
     }
@@ -130,6 +154,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
     @Override
     public void setBuffGiver(Force force) {
         this.buffGiver = force;
+        this.buffGiverId = force.actionId;
     }
 
     @Override

@@ -8,5 +8,4 @@ import com.gryphpoem.game.zw.buff.IFightEffect;
  * createTime: 2022-10-20 18:31
  */
 public abstract class AbsFightEffect implements IFightEffect {
-
 }

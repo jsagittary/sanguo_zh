@@ -29,11 +29,39 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
     int getBuffEffectiveRounds();
 
     /**
+     * 获取buff拥有者武将id
+     *
+     * @return
+     */
+    int getForceId();
+
+    /**
+     * 设置buff拥有者武将id
+     *
+     * @param heroId
+     */
+    void setForceId(int heroId);
+
+    /**
+     * 获取buff释放者武将id
+     *
+     * @return
+     */
+    int getBuffGiverId();
+
+    /**
      * 设置被作用方
      *
      * @param force
      */
     void setForce(S force);
+
+    /**
+     * 获取buff作用方
+     *
+     * @return
+     */
+    Force getForce();
 
     /**
      * 设置buff施与方

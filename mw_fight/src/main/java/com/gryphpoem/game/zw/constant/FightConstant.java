@@ -10,6 +10,10 @@ import org.springframework.util.ObjectUtils;
  */
 public interface FightConstant {
     /**
+     * 万分比除数
+     */
+    public static final double TEN_THOUSAND = 10000.0;
+    /**
      * 攻击方
      */
     static final int[] ATK_SIZE = new int[]{1};
@@ -48,9 +52,78 @@ public interface FightConstant {
      * BUFF 生效时机
      */
     interface BuffEffectTiming {
+        /**
+         * 回合开始
+         */
         int ROUND_START = 0;
-        int SKILL_BEFORE = 1;
-        int SKILL_AFTER = 2;
+        /**
+         * 技能后
+         */
+        int SKILL_BEFORE = 11;
+        /**
+         * 技能后
+         */
+        int SKILL_AFTER = 12;
+        /**
+         * 普攻前
+         */
+        int BEFORE_GENERAL_ATTACK = 21;
+        /**
+         * 普攻后
+         */
+        int AFTER_GENERAL_ATTACK = 22;
+        /**
+         * 被普攻前
+         */
+        int BEFORE_BEING_ATTACKED = 31;
+        /**
+         * 被普攻后
+         */
+        int AFTER_BEING_ATTACKED = 32;
+        /**
+         * 受技能伤害前
+         */
+        int BEFORE_SKILL_DAMAGE = 41;
+        /**
+         * 受技能伤害后
+         */
+        int AFTER_SKILL_DAMAGE = 42;
+        /**
+         * 受击前
+         */
+        int BEFORE_BEING_HIT = 51;
+        /**
+         * 受击后
+         */
+        int AFTER_BEING_HIT = 52;
+        /**
+         * 掉血前
+         */
+        int BEFORE_BLEEDING = 61;
+        /**
+         * 掉血后
+         */
+        int AFTER_BLEEDING = 62;
+        /**
+         * 指定回合开始
+         */
+        int START_OF_DESIGNATED_ROUND = 102;
+        /**
+         * 血量低于百分比
+         */
+        int BLOOD_VOLUME_BELOW_PERCENTAGE = 103;
+        /**
+         * 存在指定BUFF_ID
+         */
+        int SPECIFIED_BUFF_ID_EXISTS = 104;
+        /**
+         * 指定BUFF_ID消失时
+         */
+        int SPECIFIED_BUFF_ID_DISAPPEARS = 105;
+        /**
+         * 指定BUFF_ID叠加到指定层数
+         */
+        int SPECIFY_BUFF_TO_STACK_TO_THE_SPECIFIED_LAYER_NUM = 106;
     }
 
     interface BuffEffectiveType {
@@ -72,7 +145,7 @@ public interface FightConstant {
         /**
          * buff挂载者
          */
-        BUFF_LOADER(1, null),
+        BUFF_LOADER(3, null),
 
         /**
          * 己方主将
@@ -93,7 +166,10 @@ public interface FightConstant {
          * 己方所有将领
          */
         ALL_MY_HERO(14, ATK_SIZE),
-
+        /**
+         * 己方至少一将
+         */
+        AT_LEAST_ONE_HERO_FROM_MY_SIDE(15, ATK_SIZE),
         /**
          * 敌方主将
          */
@@ -113,6 +189,11 @@ public interface FightConstant {
          * 敌方所有将领
          */
         ALL_ENEMY_HERO(24, DEF_SIZE),
+
+        /**
+         * 敌方至少一将
+         */
+        AT_LEAST_ONE_HERO_FROM_ENEMY_SIDE(25, DEF_SIZE),
         ;
 
         private int type;

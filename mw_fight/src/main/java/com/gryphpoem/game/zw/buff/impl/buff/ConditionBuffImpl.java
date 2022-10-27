@@ -25,7 +25,7 @@ public class ConditionBuffImpl extends AbsConditionBuff {
     public void releaseBuff(LinkedList actingBuffList, FightLogic fightLogic, List staticBuffConfig, FightResult fightResult, Object... params) {
         super.releaseBuff(actingBuffList, fightLogic, staticBuffConfig, fightResult, params);
         if (CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
-            // 若触发条件为空,
+            // 若触发条件为空, 则直接触发
             releaseEffect(this.force, fightLogic, fightResult, -1, params);
         }
     }
@@ -47,7 +47,7 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             boolean canRelease = true;
             for (List<Integer> config : this.staticBuff.getBuffTriggerCondition()) {
                 if (CheckNull.isEmpty(config) || config.size() < 2) continue;
-                if (!fightManager.buffCanRelease(this, fightLogic, config.get(1), this.staticBuff, config, params)) {
+                if (!fightManager.buffCanRelease(this, fightLogic, config.get(1), this.staticBuff, config)) {
                     canRelease = false;
                     break;
                 }

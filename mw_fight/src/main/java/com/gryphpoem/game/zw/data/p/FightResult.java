@@ -23,12 +23,23 @@ public class FightResult {
     private Map<Integer, Integer> effectMap;
 
     /**
-     * buff转为effect总览
+     * buff效果转为effect总览
      */
     public void buffTransferEffect() {
         if (CheckNull.isEmpty(buffEffectMap))
             return;
-        effectMap = new HashMap<>();
+        if (CheckNull.isNull(effectMap))
+            effectMap = new HashMap<>();
         buffEffectMap.values().forEach(effectMap::putAll);
+    }
+
+    /**
+     * 清除当前这回合中buff 效果信息
+     */
+    public void clear() {
+        if (!CheckNull.isEmpty(buffEffectMap))
+            buffEffectMap.clear();
+        if (!CheckNull.isEmpty(effectMap))
+            effectMap.clear();
     }
 }

@@ -60,14 +60,15 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 if (CheckNull.isNull(staticBuff))
                     continue;
 
-                Force actingForce = FightUtil.actingForce(attacker, defender, buffObjective);
+                Force actingForce = FightUtil.actingForce(attacker, defender, buffObjective, true);
                 Map<Integer, LinkedList<IFightBuff>> buffMap = FightUtil.actingForceBuff(actingForce, buffObjective);
                 if (CheckNull.isNull(buffMap)) {
                     continue;
                 }
 
-                for (LinkedList<IFightBuff> buffs : buffMap.values()) {
+                for (Map.Entry<Integer, LinkedList<IFightBuff>> buffsEntry : buffMap.entrySet()) {
                     boolean addBuff = true;
+                    LinkedList<IFightBuff> buffs = buffsEntry.getValue();
                     if (!CheckNull.isEmpty(buffs)) {
                         for (IFightBuff fightBuff : buffs) {
                             if (CheckNull.isNull(fightBuff)) continue;
@@ -111,6 +112,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                     IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
                     fightBuff.setForce(actingForce);
                     fightBuff.setBuffGiver(attacker);
+                    fightBuff.setForceId(buffsEntry.getKey());
                     fightBuff.releaseBuff(buffs, fightLogic, buffConfig, fightResult, params);
                     if (!CheckNull.isEmpty(removeBuffList)) {
                         buffs.removeAll(removeBuffList);
@@ -120,7 +122,8 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                         removeBuffList.clear();
                     }
                     // 释放技能主体效果之前
-                    FightUtil.releaseAllBuffEffect(attacker, defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_BEFORE);
+                    FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_BEFORE);
+                    FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_BEFORE);
                 }
             }
         }

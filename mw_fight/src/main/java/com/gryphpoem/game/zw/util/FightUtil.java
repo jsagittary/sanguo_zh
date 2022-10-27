@@ -11,6 +11,7 @@ import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Description:
@@ -33,60 +34,21 @@ public class FightUtil {
     public static Map<Integer, LinkedList<IFightBuff>> actingForceBuff(Force affectedForce, FightConstant.BuffObjective buffObjective) {
         if (CheckNull.isNull(buffObjective))
             return null;
-        if (CheckNull.isNull(affectedForce) || CheckNull.isNull(affectedForce.buffList))
+        if (CheckNull.isNull(affectedForce) || CheckNull.isEmpty(affectedForce.beActionId))
             return null;
 
-        Map<Integer, Map<Integer, LinkedList<IFightBuff>>> affectedBuffList = affectedForce.buffList;
-        Map<Integer, LinkedList<IFightBuff>> actingForce = null;
-        switch (buffObjective) {
-            case MY_PRINCIPAL_HERO:
-            case ENEMY_PRINCIPAL_HERO:
-                if (CheckNull.isNull(affectedBuffList)) return null;
-                actingForce = new HashMap<>();
-                actingForce.put(affectedForce.id, affectedBuffList.computeIfAbsent(FightConstant.HeroType.PRINCIPAL_HERO, m -> new HashMap<>()).
-                        computeIfAbsent(affectedForce.id, l -> new LinkedList<>()));
-                break;
-            case MY_DEPUTY_HERO:
-            case ENEMY_DEPUTY_HERO:
-                if (CheckNull.isNull(affectedBuffList)) return null;
-                if (CheckNull.isEmpty(affectedForce.assistantHeroList)) return null;
-                actingForce = new HashMap<>(affectedForce.assistantHeroList.size());
-                for (FightAssistantHero assistantHero : affectedForce.assistantHeroList) {
-                    if (CheckNull.isNull(assistantHero)) continue;
-                    actingForce.put(assistantHero.getHeroId(), affectedBuffList.computeIfAbsent(FightConstant.HeroType.DEPUTY_HERO, m -> new HashMap<>()).
-                            computeIfAbsent(assistantHero.getHeroId(), l -> new LinkedList<>()));
-                }
-                break;
-            case RANDOM_MY_HERO:
-            case RANDOM_ENEMY_HERO:
-                if (CheckNull.isNull(affectedBuffList)) return null;
-                int randomSize = 1;
-                if (!CheckNull.isEmpty(affectedForce.assistantHeroList))
-                    randomSize += affectedForce.assistantHeroList.size();
-                List<Integer> randomHeroIdList = new ArrayList<>(randomSize);
-                randomHeroIdList.add(affectedForce.id);
-                affectedForce.assistantHeroList.stream().filter(h -> Objects.nonNull(h)).forEach(h -> randomHeroIdList.add(h.getHeroId()));
-                int randomHeroId = randomHeroIdList.get(RandomHelper.randomInSize(randomHeroIdList.size()));
-                actingForce = new HashMap<>(1);
-                int heroType = randomHeroId == affectedForce.id ? FightConstant.HeroType.PRINCIPAL_HERO : FightConstant.HeroType.DEPUTY_HERO;
-                actingForce.put(randomHeroId, affectedBuffList.computeIfAbsent(heroType, m -> new HashMap<>()).
-                        computeIfAbsent(randomHeroId, l -> new LinkedList<>()));
-                break;
-            case ALL_MY_HERO:
-            case ALL_ENEMY_HERO:
-                if (CheckNull.isNull(affectedBuffList)) return null;
-                int totalSize = 1;
-                if (!CheckNull.isEmpty(affectedForce.assistantHeroList))
-                    totalSize += affectedForce.assistantHeroList.size();
-                actingForce = new HashMap<>(totalSize);
-                actingForce.put(affectedForce.id, affectedBuffList.computeIfAbsent(FightConstant.HeroType.PRINCIPAL_HERO, m -> new HashMap<>()).
-                        computeIfAbsent(affectedForce.id, l -> new LinkedList<>()));
-                for (FightAssistantHero assistantHero : affectedForce.assistantHeroList) {
-                    if (CheckNull.isNull(assistantHero)) continue;
-                    actingForce.put(assistantHero.getHeroId(), affectedBuffList.computeIfAbsent(FightConstant.HeroType.DEPUTY_HERO, m -> new HashMap<>()).
-                            computeIfAbsent(assistantHero.getHeroId(), l -> new LinkedList<>()));
-                }
-                break;
+        Map<Integer, LinkedList<IFightBuff>> actingForce = new HashMap<>(affectedForce.beActionId.size());
+        for (Integer heroId : affectedForce.beActionId) {
+            if (heroId == affectedForce.id) {
+                actingForce.put(affectedForce.id, affectedForce.buffList);
+                continue;
+            }
+            if (CheckNull.isEmpty(affectedForce.assistantHeroList))
+                continue;
+            FightAssistantHero assistantHero = affectedForce.assistantHeroList.stream().filter(ass ->
+                    ass.getHeroId() == heroId.intValue()).findFirst().orElse(null);
+            if (CheckNull.isNull(assistantHero)) continue;
+            actingForce.put(assistantHero.getHeroId(), assistantHero.getBuffList());
         }
 
         return actingForce;
@@ -110,7 +72,7 @@ public class FightUtil {
      * @param buffObjective
      * @return
      */
-    public static Force actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective) {
+    public static Force actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective, boolean release) {
         Force affectedForce = null;
         Boolean atk = buffObjective.isAttackerSize(FightConstant.ForceSide.ATTACKER);
         if (Objects.nonNull(attacker) && Objects.nonNull(atk) && atk) {
@@ -122,6 +84,43 @@ public class FightUtil {
             }
         }
 
+        if (release) {
+            if (CheckNull.isNull(affectedForce.beActionId))
+                affectedForce.beActionId = new ArrayList<>();
+            if (!CheckNull.isEmpty(affectedForce.beActionId))
+                affectedForce.beActionId.clear();
+
+            switch (buffObjective) {
+                case MY_PRINCIPAL_HERO:
+                case ENEMY_PRINCIPAL_HERO:
+                    affectedForce.beActionId.add(affectedForce.id);
+                    break;
+                case MY_DEPUTY_HERO:
+                case ENEMY_DEPUTY_HERO:
+                    if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
+                        affectedForce.beActionId.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                    }
+                    break;
+                case RANDOM_MY_HERO:
+                case RANDOM_ENEMY_HERO:
+                    int randomSize = 1;
+                    if (!CheckNull.isEmpty(affectedForce.assistantHeroList))
+                        randomSize += affectedForce.assistantHeroList.size();
+                    List<Integer> randomHeroIdList = new ArrayList<>(randomSize);
+                    randomHeroIdList.add(affectedForce.id);
+                    affectedForce.assistantHeroList.stream().filter(h -> Objects.nonNull(h)).forEach(h -> randomHeroIdList.add(h.getHeroId()));
+                    affectedForce.beActionId.add(randomHeroIdList.get(RandomHelper.randomInSize(randomHeroIdList.size())));
+                    break;
+                case ALL_MY_HERO:
+                case ALL_ENEMY_HERO:
+                    affectedForce.beActionId.add(affectedForce.id);
+                    if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
+                        affectedForce.beActionId.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                    }
+                    break;
+            }
+        }
+
         return affectedForce;
     }
 
@@ -129,31 +128,14 @@ public class FightUtil {
      * 释放效果
      *
      * @param attacker
-     * @param defender
      * @param fightLogic
      * @param fightResult
      */
-    public static void releaseAllBuffEffect(Force attacker, Force defender, FightLogic fightLogic, FightResult fightResult, int timing) {
+    public static void releaseAllBuffEffect(Force attacker, FightLogic fightLogic, FightResult fightResult, int timing) {
         // 触发技能后buff释放
         if (!CheckNull.isEmpty(attacker.buffList)) {
-            attacker.buffList.values().forEach(list -> {
-                list.values().forEach(fightBuffList -> {
-                    if (CheckNull.isEmpty(fightBuffList)) return;
-                    fightBuffList.forEach(fightBuff -> {
-                        fightBuff.releaseEffect(attacker, fightLogic, fightResult, timing);
-                    });
-                });
-            });
-        }
-
-        if (!CheckNull.isEmpty(defender.buffList)) {
-            defender.buffList.values().forEach(list -> {
-                list.values().forEach(fightBuffList -> {
-                    if (CheckNull.isEmpty(fightBuffList)) return;
-                    fightBuffList.forEach(fightBuff -> {
-                        fightBuff.releaseEffect(defender, fightLogic, fightResult, timing);
-                    });
-                });
+            attacker.buffList.forEach(fightBuff -> {
+                fightBuff.releaseEffect(attacker, fightLogic, fightResult, timing);
             });
         }
     }

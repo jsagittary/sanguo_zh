@@ -4,9 +4,7 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author TanDonghai
@@ -42,17 +40,25 @@ public class Force {
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
     public Map<Integer, PlaneInfo> planeInfos = new HashMap<>();// 战机信息
     /**
-     * 是否是副将出手
+     * 发起动作的武将id
      */
-    public boolean assistantHero;
+    public int actionId;
     /**
-     * 战斗buff集合 <主/副将, <武将id, buff列表>>
+     * 被攻击的武将idList
      */
-    public Map<Integer, Map<Integer, LinkedList<IFightBuff>>> buffList = new HashMap<>();
+    public List<Integer> beActionId;
+    /**
+     * 触发buff的武将idList
+     */
+    public List<Integer> buffTriggerId;
+    /**
+     * 战斗buff集合 主将的buff列表
+     */
+    public LinkedList<IFightBuff> buffList = new LinkedList<>();
     /**
      * 副将列表
      */
-    public LinkedList<FightAssistantHero> assistantHeroList = new LinkedList<>();
+    public ArrayList<FightAssistantHero> assistantHeroList = new ArrayList<>();
 
     public Force() {
     }
@@ -62,8 +68,6 @@ public class Force {
         this.armType = armType;
         this.curLine = 0;
         this.maxLine = line;
-        // this.lead = attrData.lead;
-        // this.count = attrData.lead;
         this.lead = attrData.lead / line;
         this.count = attrData.lead / line;
         this.maxHp = count * maxLine;
@@ -180,6 +184,18 @@ public class Force {
 //        }
 
         return lost;
+    }
+
+    public LinkedList<IFightBuff> buffList(int heroId) {
+        if (heroId == this.id)
+            return buffList;
+        if (!CheckNull.isEmpty(assistantHeroList)) {
+            FightAssistantHero assistantHero = assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).findFirst().orElse(null);
+            if (Objects.nonNull(assistantHero))
+                return assistantHero.getBuffList();
+        }
+
+        return null;
     }
 
     /**

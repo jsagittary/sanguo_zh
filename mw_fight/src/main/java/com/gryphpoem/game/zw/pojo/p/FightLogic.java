@@ -13,9 +13,12 @@ public class FightLogic {
      * <buff唯一id, map<效果id, 效果值>>
      */
     public HashMap<Long, HashMap<Integer, Object>> effectValueMap;
-    public boolean atk;
     public Force attacker;
     public Force defender;
+    /**
+     * 回合数
+     */
+    public int roundNum;
 //    public long fightId;
 //    public boolean recordFlag = true;
 //    private Fighter attacker;
