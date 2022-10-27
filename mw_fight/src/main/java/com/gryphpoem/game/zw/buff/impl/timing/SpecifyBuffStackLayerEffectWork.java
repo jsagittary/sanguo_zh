@@ -58,6 +58,7 @@ public class SpecifyBuffStackLayerEffectWork extends AbsFightEffectWork {
                             break;
                         }
                     }
+                    canRelease = true;
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {
