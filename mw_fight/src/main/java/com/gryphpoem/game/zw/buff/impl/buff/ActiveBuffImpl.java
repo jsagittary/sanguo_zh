@@ -20,7 +20,7 @@ public class ActiveBuffImpl extends AbsActiveBuff {
         if (timing != FightConstant.BuffEffectTiming.ROUND_START)
             return;
 
-        releaseBuffEffect(actingForce, fightLogic, fightResult);
+        releaseBuffEffect(fightLogic, fightResult);
         // buff作用次数扣除
         this.effect = true;
         if (this.buffEffectiveTimes > 0) {

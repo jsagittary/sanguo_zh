@@ -833,4 +833,15 @@ public class FightLogic {
 //    public void setBattleType(int battleType) {
 //        this.battleType = battleType;
 //    }
+
+    /**
+     * 伤害计算通用接口
+     *
+     * @param attacker
+     * @param defender
+     * @param damage
+     */
+    public void hurt(Force attacker, Force defender, int damage) {
+
+    }
 }

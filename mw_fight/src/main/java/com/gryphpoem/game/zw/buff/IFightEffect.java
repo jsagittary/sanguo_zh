@@ -16,32 +16,32 @@ public interface IFightEffect {
     /**
      * 效果生效
      *
-     * @param actingForce 被效果作用方
+     * @param fightBuff  战斗buff
      * @param fightLogic
      * @param params
      * @return
      */
-    void effectiveness(Force actingForce, Force buffGiver, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
+    void effectiveness(IFightBuff fightBuff, Force buffGiver, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
 
     /**
      * 效果结束, 属性等还原
      *
-     * @param actingForce 被效果作用方
+     * @param fightBuff  战斗buff
      * @param fightLogic
      * @param params
      * @return
      */
-    void effectRestoration(Force actingForce, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
+    void effectRestoration(IFightBuff fightBuff, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
 
     /**
      * 算出效果强度值
      *
-     * @param actingForce
+     * @param fightBuff  战斗buff
      * @param fightLogic
      * @param params
      * @return
      */
-    Object calEffectValue(Force actingForce, Force attacker, FightLogic fightLogic, StaticBuff staticBuff, Object... params);
+    Object calEffectValue(IFightBuff fightBuff, FightLogic fightLogic, StaticBuff staticBuff, Object... params);
 
     /**
      * 比较两个效果强度大小

@@ -102,5 +102,7 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
         releaseSkillEffect(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
         FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
         FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
+        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, staticHeroSkill);
+        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, staticHeroSkill);
     }
 }

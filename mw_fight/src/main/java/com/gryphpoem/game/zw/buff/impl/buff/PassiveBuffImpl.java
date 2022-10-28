@@ -30,11 +30,11 @@ public class PassiveBuffImpl extends AbsPassiveBuff {
             return;
 
         // 被动释放一次后, 不再释放
-        releaseBuffEffect(actingForce, fightLogic, fightResult);
+        releaseBuffEffect(fightLogic, fightResult);
     }
 
     @Override
     public void buffLoseEffectiveness(Force attacker, Force defender, FightLogic fightLogic, FightResult fightResult, Object... params) {
-        buffEffectiveness(this.force, fightLogic, fightResult);
+        buffEffectiveness(fightLogic, fightResult);
     }
 }

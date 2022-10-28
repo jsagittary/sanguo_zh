@@ -31,7 +31,13 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
 
     @Override
     public void releaseSkillEffect(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, FightResult fightResult, Object... params) {
+        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
+        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
 
+        // TODO 计算技能伤害并扣血
+
+        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
+        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
     }
 
     @Override

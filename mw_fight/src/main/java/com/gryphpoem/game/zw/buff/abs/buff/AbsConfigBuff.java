@@ -183,12 +183,11 @@ public abstract class AbsConfigBuff implements IFightBuff {
     /**
      * 释放buff所有效果通用逻辑
      *
-     * @param actingForce
      * @param fightLogic
      * @param fightResult
      * @param params
      */
-    protected void releaseBuffEffect(Force actingForce, FightLogic fightLogic, FightResult fightResult, Object... params) {
+    protected void releaseBuffEffect(FightLogic fightLogic, FightResult fightResult, Object... params) {
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
@@ -198,19 +197,18 @@ public abstract class AbsConfigBuff implements IFightBuff {
             if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
                 continue;
 
-            fightEffect.effectiveness(actingForce, buffGiver, fightLogic, fightResult, staticBuff, params);
+            fightEffect.effectiveness(this, buffGiver, fightLogic, fightResult, staticBuff, params);
         }
     }
 
     /**
      * 还原buff所有效果通用逻辑
      *
-     * @param actingForce
      * @param fightLogic
      * @param fightResult
      * @param params
      */
-    protected void buffEffectiveness(Force actingForce, FightLogic fightLogic, FightResult fightResult, Object... params) {
+    protected void buffEffectiveness(FightLogic fightLogic, FightResult fightResult, Object... params) {
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
@@ -219,7 +217,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(0));
             if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
                 continue;
-            fightEffect.effectRestoration(this.force, fightLogic, fightResult, staticBuff, params);
+            fightEffect.effectRestoration(this, fightLogic, fightResult, staticBuff, params);
         }
     }
 }

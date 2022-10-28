@@ -124,6 +124,18 @@ public interface FightConstant {
          * 指定BUFF_ID叠加到指定层数
          */
         int SPECIFY_BUFF_TO_STACK_TO_THE_SPECIFIED_LAYER_NUM = 106;
+        /**
+         * 指定技能组施放后
+         */
+        int AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP = 107;
+        /**
+         * 存在BUFF分组
+         */
+        int BUFF_GROUP_EXISTS = 108;
+        /**
+         * 存在一定数量BUFF分组
+         */
+        int BUFF_GROUP_NUM_EXISTS = 109;
     }
 
     interface BuffEffectiveType {
@@ -239,7 +251,7 @@ public interface FightConstant {
     interface DamageType {
         int SKILL = 1;
         int ORIGINAL_ATTACK = 2;
-        int OTHER_DAMAGE = 3;
+        int BUFF_DAMAGE = 3;
     }
 
     interface ReplacementBuffRule {
@@ -252,4 +264,5 @@ public interface FightConstant {
          */
         int LONGER_ROUNDS = 2;
     }
+
 }

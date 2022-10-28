@@ -58,7 +58,8 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             }
         }
 
-        releaseBuffEffect(actingForce, fightLogic, fightResult);
+        // 释放此buff所有效果
+        releaseBuffEffect(fightLogic, fightResult);
         this.effect = true;
         if (this.buffEffectiveTimes > 0) {
             this.buffEffectiveTimes--;
@@ -72,6 +73,6 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             return;
         }
 
-        buffEffectiveness(this.force, fightLogic, fightResult);
+        buffEffectiveness(fightLogic, fightResult);
     }
 }
