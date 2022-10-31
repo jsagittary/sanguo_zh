@@ -424,7 +424,8 @@ public class ActivityService {
                 if (isAllGainActivity(player, actBase, activity)) {
                     continue;
                 }
-                if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType)) { // 部分活动结束后还显示
+                if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType) &&
+                        activityType != ActivityConst.FAMOUS_GENERAL_TURNPLATE) { // 部分活动结束后还显示
                     continue;
                 }
                 int tips_ = AbsSimpleActivityService.getTipsInActList(player, activityType);
