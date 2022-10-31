@@ -1,8 +1,7 @@
 package com.gryphpoem.game.zw.buff;
 
-import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 
 import java.util.LinkedList;
@@ -94,42 +93,38 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
     /**
      * buff是否还有生效次数
      *
-     * @param attacker
-     * @param defender
-     * @param fightLogic
+     * @param contextHolder
      * @param params
      * @return
      */
-    boolean hasRemainBuffTimes(Force attacker, Force defender, FightLogic fightLogic, Object... params);
+    boolean hasRemainBuffTimes(FightContextHolder contextHolder, Object... params);
 
     /**
      * 释放技能, buff添加
      *
      * @param actingBuffList 被作用方的buff列表
-     * @param fightLogic
+     * @param contextHolder
      * @param params
      * @return
      */
-    void releaseBuff(LinkedList<IFightBuff> actingBuffList, FightLogic fightLogic, List<Integer> staticBuffConfig, FightResult fightResult, Object... params);
+    void releaseBuff(LinkedList<IFightBuff> actingBuffList, FightContextHolder contextHolder, List<Integer> staticBuffConfig, Object... params);
 
     /**
      * buff的效果添加
      *
-     * @param actingForce 攻击者
-     * @param fightLogic
+     * @param actingForce   攻击者
+     * @param contextHolder
      * @param params
      * @return
      */
-    void releaseEffect(Force actingForce, FightLogic fightLogic, FightResult fightResult, int timing, Object... params);
+    void releaseEffect(Force actingForce, FightContextHolder contextHolder, int timing, Object... params);
 
     /**
      * buff失效, 效果还原
      *
-     * @param attacker
-     * @param defender
-     * @param fightLogic
+     * @param contextHolder
      * @param params
      * @return
      */
-    void buffLoseEffectiveness(Force attacker, Force defender, FightLogic fightLogic, FightResult fightResult, Object... params);
+    void buffLoseEffectiveness(FightContextHolder contextHolder, Object... params);
 }

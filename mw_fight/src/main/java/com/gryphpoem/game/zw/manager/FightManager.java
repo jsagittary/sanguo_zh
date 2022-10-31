@@ -8,7 +8,7 @@ import com.gryphpoem.game.zw.core.util.ClassUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.push.util.CheckNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -90,15 +90,15 @@ public class FightManager {
      * 判断buff是否可以释放
      *
      * @param fightBuff
-     * @param fightLogic
+     * @param contextHolder
      * @param timing
      * @param params
      * @return
      */
-    public boolean buffCanRelease(IFightBuff fightBuff, FightLogic fightLogic, int timing, StaticBuff staticBuff, List<Integer> conditionConfig, Object... params) {
+    public boolean buffCanRelease(IFightBuff fightBuff, FightContextHolder contextHolder, int timing, List<Integer> conditionConfig, Object... params) {
         IFightBuffWork work;
         if ((work = buffWorkMap.get(timing)) != null) {
-            return work.buffCanEffect(fightBuff, fightLogic, conditionConfig, staticBuff, params);
+            return work.buffCanEffect(fightBuff, contextHolder, conditionConfig, params);
         }
 
         return true;

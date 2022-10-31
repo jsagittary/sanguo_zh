@@ -1,10 +1,7 @@
 package com.gryphpoem.game.zw.buff;
 
 import com.gryphpoem.game.zw.data.p.EffectValueData;
-import com.gryphpoem.game.zw.data.p.FightResult;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 
 /**
  * Description: 效果接口
@@ -12,36 +9,36 @@ import com.gryphpoem.game.zw.pojo.p.Force;
  * Author: zhangpeng
  * createTime: 2022-10-20 17:24
  */
-public interface IFightEffect {
+public interface IFightEffect<T> {
     /**
      * 效果生效
      *
-     * @param fightBuff  战斗buff
-     * @param fightLogic
+     * @param fightBuff     战斗buff
+     * @param contextHolder
      * @param params
      * @return
      */
-    void effectiveness(IFightBuff fightBuff, Force buffGiver, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
+    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, Object... params);
 
     /**
      * 效果结束, 属性等还原
      *
-     * @param fightBuff  战斗buff
-     * @param fightLogic
+     * @param fightBuff     战斗buff
+     * @param contextHolder
      * @param params
      * @return
      */
-    void effectRestoration(IFightBuff fightBuff, FightLogic fightLogic, FightResult fightResult, StaticBuff staticBuff, Object... params);
+    void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, Object... params);
 
     /**
      * 算出效果强度值
      *
-     * @param fightBuff  战斗buff
-     * @param fightLogic
+     * @param fightBuff     战斗buff
+     * @param contextHolder
      * @param params
      * @return
      */
-    Object calEffectValue(IFightBuff fightBuff, FightLogic fightLogic, StaticBuff staticBuff, Object... params);
+    T calEffectValue(IFightBuff fightBuff, FightContextHolder contextHolder, Object... params);
 
     /**
      * 比较两个效果强度大小
@@ -50,5 +47,15 @@ public interface IFightEffect {
      * @param e2
      * @return
      */
-    EffectValueData compareTo(EffectValueData e1, EffectValueData e2);
+    EffectValueData compareTo(EffectValueData<T> e1, EffectValueData<T> e2);
+
+    /**
+     * 相同效果之前的覆盖或叠加
+     *
+     * @param originFightBuff
+     * @param effectValue
+     * @param contextHolder
+     * @param params
+     */
+    void effectCalculateValue(IFightBuff originFightBuff, T effectValue, FightContextHolder contextHolder, Object... params);
 }

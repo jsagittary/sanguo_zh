@@ -5,12 +5,11 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
-import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.skill.abs.AbstractHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
@@ -30,18 +29,17 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     }
 
     @Override
-    public void releaseSkillEffect(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, FightResult fightResult, Object... params) {
-        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
-        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
+    public void releaseSkillEffect(FightContextHolder contextHolder, StaticHeroSkill staticHeroSkill, Object... params) {
+        // TODO 计算技能伤害
 
-        // TODO 计算技能伤害并扣血
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
+        // TODO 扣血
 
-        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
-        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
     }
 
     @Override
-    public void releaseSkillBuff(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, FightResult fightResult, Object... params) {
+    public void releaseSkillBuff(FightContextHolder contextHolder, StaticHeroSkill staticHeroSkill, Object... params) {
         if (CheckNull.isNull(staticHeroSkill)) {
             // 技能配置为空
             LogUtil.error("skill config is null, activeBuffImpl");
@@ -66,7 +64,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 if (CheckNull.isNull(staticBuff))
                     continue;
 
-                Force actingForce = FightUtil.actingForce(attacker, defender, buffObjective, true);
+                Force actingForce = FightUtil.actingForce(contextHolder.getContext().getAttacker(), contextHolder.getContext().getDefender(), buffObjective, true);
                 Map<Integer, LinkedList<IFightBuff>> buffMap = FightUtil.actingForceBuff(actingForce, buffObjective);
                 if (CheckNull.isNull(buffMap)) {
                     continue;
@@ -117,19 +115,16 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
 
                     IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
                     fightBuff.setForce(actingForce);
-                    fightBuff.setBuffGiver(attacker);
+                    fightBuff.setBuffGiver(contextHolder.getContext().getAttacker());
                     fightBuff.setForceId(buffsEntry.getKey());
-                    fightBuff.releaseBuff(buffs, fightLogic, buffConfig, fightResult, params);
+                    fightBuff.releaseBuff(buffs, contextHolder, buffConfig, params);
                     if (!CheckNull.isEmpty(removeBuffList)) {
                         buffs.removeAll(removeBuffList);
                         // TODO 预留buff失效还原逻辑
-                        removeBuffList.forEach(buff -> buff.buffLoseEffectiveness(attacker, defender, fightLogic, fightResult, params));
+                        removeBuffList.forEach(buff -> buff.buffLoseEffectiveness(contextHolder, params));
                         // TODO 客户端表现PB 处理
                         removeBuffList.clear();
                     }
-                    // 释放技能主体效果之前
-                    FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_BEFORE);
-                    FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_BEFORE);
                 }
             }
         }

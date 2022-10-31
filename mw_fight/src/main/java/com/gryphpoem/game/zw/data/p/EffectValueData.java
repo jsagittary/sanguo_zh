@@ -8,9 +8,9 @@ import lombok.Data;
  * createTime: 2022-10-26 17:15
  */
 @Data
-public class EffectValueData {
+public class EffectValueData<T> {
     private long keyId;
-    private Object value;
+    private T value;
 
     public void clear() {
         this.keyId = 0;

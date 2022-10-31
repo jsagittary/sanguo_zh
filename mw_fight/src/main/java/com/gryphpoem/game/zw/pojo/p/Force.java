@@ -153,6 +153,42 @@ public class Force {
         this.id = id;
     }
 
+    public boolean isBuffListEmpty() {
+        if (!CheckNull.isEmpty(this.buffList)) return false;
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            for (FightAssistantHero assistantHero : this.assistantHeroList) {
+                if (!CheckNull.isEmpty(assistantHero.getBuffList()))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 释放buff效果
+     *
+     * @param contextHolder
+     * @param timing
+     * @param params
+     */
+    public void releaseBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
+        if (!CheckNull.isEmpty(this.buffList)) {
+            buffList.forEach(fightBuff -> {
+                fightBuff.releaseEffect(this, contextHolder, timing, params);
+            });
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            for (FightAssistantHero assistantHero : this.assistantHeroList) {
+                if (!CheckNull.isEmpty(assistantHero.getBuffList())) {
+                    assistantHero.getBuffList().forEach(fightBuff -> {
+                        fightBuff.releaseEffect(this, contextHolder, timing, params);
+                    });
+                }
+            }
+        }
+    }
+
     /**
      * 兵力大于0
      *

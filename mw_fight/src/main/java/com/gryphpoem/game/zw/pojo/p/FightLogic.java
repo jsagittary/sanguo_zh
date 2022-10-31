@@ -1,7 +1,5 @@
 package com.gryphpoem.game.zw.pojo.p;
 
-import java.util.HashMap;
-
 /**
  * @author TanDonghai
  * @ClassName FightLogic.java
@@ -9,16 +7,8 @@ import java.util.HashMap;
  * @date 创建时间：2017年3月31日 下午5:08:15
  */
 public class FightLogic {
-    /**
-     * <buff唯一id, map<效果id, 效果值>>
-     */
-    public HashMap<Long, HashMap<Integer, Object>> effectValueMap;
-    public Force attacker;
-    public Force defender;
-    /**
-     * 回合数
-     */
-    public int roundNum;
+    public FightContextHolder contextHolder;
+
 //    public long fightId;
 //    public boolean recordFlag = true;
 //    private Fighter attacker;

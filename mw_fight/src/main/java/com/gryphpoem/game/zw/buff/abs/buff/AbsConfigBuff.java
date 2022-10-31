@@ -3,11 +3,10 @@ package com.gryphpoem.game.zw.buff.abs.buff;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -62,7 +61,6 @@ public abstract class AbsConfigBuff implements IFightBuff {
         this.buffKeyId = FightUtil.uniqueId();
         this.staticBuff = staticBuff;
         this.buffEffectiveRounds = this.staticBuff.getContinuousRound();
-        this.buffEffectiveTimes = this.staticBuff.getBuffEffectiveTimes();
     }
 
     @Override
@@ -72,7 +70,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public void deductBuffRounds() {
-        if (this.buffEffectiveRounds == 999)
+        if (this.buffEffectiveRounds == -1)
             return;
         this.buffEffectiveRounds--;
     }
@@ -117,8 +115,12 @@ public abstract class AbsConfigBuff implements IFightBuff {
     }
 
     @Override
-    public boolean hasRemainBuffTimes(Force attacker, Force defender, FightLogic fightLogic, Object... params) {
-        return this.buffEffectiveRounds > 0 && this.buffEffectiveTimes > 0;
+    public boolean hasRemainBuffTimes(FightContextHolder contextHolder, Object... params) {
+        if (this.buffEffectiveRounds == -1) {
+            return this.staticBuff.getBuffEffectiveTimes() > 0 && this.buffEffectiveTimes < this.staticBuff.getBuffEffectiveTimes();
+        } else {
+            return this.buffEffectiveRounds > 0 && this.staticBuff.getBuffEffectiveTimes() > 0 && this.buffEffectiveTimes < this.staticBuff.getBuffEffectiveTimes();
+        }
     }
 
     @Override
@@ -176,18 +178,17 @@ public abstract class AbsConfigBuff implements IFightBuff {
     }
 
     @Override
-    public void releaseBuff(LinkedList actingBuffList, FightLogic fightLogic, List staticBuffConfig, FightResult fightResult, Object... params) {
+    public void releaseBuff(LinkedList actingBuffList, FightContextHolder contextHolder, List staticBuffConfig, Object... params) {
         actingBuffList.add(this);
     }
 
     /**
      * 释放buff所有效果通用逻辑
      *
-     * @param fightLogic
-     * @param fightResult
+     * @param contextHolder
      * @param params
      */
-    protected void releaseBuffEffect(FightLogic fightLogic, FightResult fightResult, Object... params) {
+    protected void releaseBuffEffect(FightContextHolder contextHolder, Object... params) {
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
@@ -197,18 +198,17 @@ public abstract class AbsConfigBuff implements IFightBuff {
             if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
                 continue;
 
-            fightEffect.effectiveness(this, buffGiver, fightLogic, fightResult, staticBuff, params);
+            fightEffect.effectiveness(this, contextHolder, params);
         }
     }
 
     /**
      * 还原buff所有效果通用逻辑
      *
-     * @param fightLogic
-     * @param fightResult
+     * @param contextHolder
      * @param params
      */
-    protected void buffEffectiveness(FightLogic fightLogic, FightResult fightResult, Object... params) {
+    protected void buffEffectiveness(FightContextHolder contextHolder, Object... params) {
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
@@ -217,7 +217,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(0));
             if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
                 continue;
-            fightEffect.effectRestoration(this, fightLogic, fightResult, staticBuff, params);
+            fightEffect.effectRestoration(this, contextHolder, params);
         }
     }
 }

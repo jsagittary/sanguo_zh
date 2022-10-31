@@ -1,10 +1,8 @@
 package com.gryphpoem.game.zw.skill.abs;
 
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.skill.IHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 
@@ -89,20 +87,19 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
     /**
      * 释放技能
      *
-     * @param attacker
-     * @param defender
-     * @param fightLogic
+     * @param contextHolder
      * @param staticHeroSkill
-     * @param fightResult
      * @param params
      */
     @Override
-    public void releaseSkill(Force attacker, Force defender, FightLogic fightLogic, StaticHeroSkill staticHeroSkill, FightResult fightResult, Object... params) {
-        releaseSkillBuff(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
-        releaseSkillEffect(attacker, defender, fightLogic, staticHeroSkill, fightResult, params);
-        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
-        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.SKILL_AFTER);
-        FightUtil.releaseAllBuffEffect(attacker, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, staticHeroSkill);
-        FightUtil.releaseAllBuffEffect(defender, fightLogic, fightResult, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, staticHeroSkill);
+    public void releaseSkill(FightContextHolder contextHolder, StaticHeroSkill staticHeroSkill, Object... params) {
+        // 释放技能buff
+        releaseSkillBuff(contextHolder, staticHeroSkill, params);
+        // 释放技能主体效果之前
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SKILL_BEFORE);
+        // 释放技能主体效果
+        releaseSkillEffect(contextHolder, staticHeroSkill, params);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SKILL_AFTER);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, staticHeroSkill);
     }
 }

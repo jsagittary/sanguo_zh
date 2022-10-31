@@ -3,8 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightBuffWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public class DesignatedRoundEffectWork implements IFightBuffWork {
     }
 
     @Override
-    public boolean buffCanEffect(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, StaticBuff staticBuff, Object... params) {
+    public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
         if (CheckNull.isEmpty(conditionConfig))
             return false;
         if (conditionConfig.size() < 2)
@@ -29,7 +28,7 @@ public class DesignatedRoundEffectWork implements IFightBuffWork {
         List<Integer> roundsNum = conditionConfig.subList(1, conditionConfig.size() - 1);
         if (CheckNull.isEmpty(roundsNum))
             return false;
-        Integer configRounds = roundsNum.stream().filter(r -> r.intValue() == fightLogic.roundNum).findFirst().orElse(null);
+        Integer configRounds = roundsNum.stream().filter(r -> r.intValue() == contextHolder.getContext().getRoundNum()).findFirst().orElse(null);
         if (CheckNull.isNull(configRounds))
             return false;
         return true;

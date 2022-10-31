@@ -3,9 +3,8 @@ package com.gryphpoem.game.zw.util;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
-import com.gryphpoem.game.zw.data.p.FightResult;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -125,18 +124,22 @@ public class FightUtil {
         return affectedForce;
     }
 
+    public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
+        if (!contextHolder.getContext().getAttacker().isBuffListEmpty()) {
+            releaseBuffEffect(contextHolder.getContext().getAttacker(), contextHolder, timing, params);
+        }
+        if (!contextHolder.getContext().getDefender().isBuffListEmpty()) {
+            releaseBuffEffect(contextHolder.getContext().getDefender(), contextHolder, timing, params);
+        }
+    }
+
     /**
      * 释放效果
      *
      * @param attacker
-     * @param fightLogic
-     * @param fightResult
+     * @param contextHolder
      */
-    public static void releaseAllBuffEffect(Force attacker, FightLogic fightLogic, FightResult fightResult, int timing, Object... params) {
-        if (!CheckNull.isEmpty(attacker.buffList)) {
-            attacker.buffList.forEach(fightBuff -> {
-                fightBuff.releaseEffect(attacker, fightLogic, fightResult, timing, params);
-            });
-        }
+    public static void releaseBuffEffect(Force attacker, FightContextHolder contextHolder, int timing, Object... params) {
+        attacker.releaseBuffEffect(contextHolder, timing, params);
     }
 }

@@ -1,7 +1,6 @@
 package com.gryphpoem.game.zw.buff;
 
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 
 import java.util.List;
 
@@ -21,10 +20,9 @@ public interface IFightBuffWork {
     /**
      * buff 生效
      *
-     * @param fightBuff  buff
-     * @param fightLogic
+     * @param fightBuff buff
      * @param params
      * @return
      */
-    boolean buffCanEffect(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, StaticBuff staticBuff, Object... params);
+    boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params);
 }
