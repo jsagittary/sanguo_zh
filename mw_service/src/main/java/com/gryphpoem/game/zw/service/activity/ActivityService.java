@@ -1486,6 +1486,11 @@ public class ActivityService {
             throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), "活动未开启, roleId:,", roleId, ", type:",
                     actExchange.getType());
         }
+        if (activityBase.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE &&
+                activityBase.getBaseOpen() == ActivityConst.OPEN_AWARD) {
+            throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), " 幸运/名将 转盘活动未开启,或未初始化 roleId:", roleId);
+        }
+
         List<List<Integer>> awardList = actExchange.getAwardList();
         // 检测背包是否已满
         rewardDataManager.checkBag(player, awardList);
@@ -2388,6 +2393,9 @@ public class ActivityService {
 
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         if (CheckNull.isNull(activityBase)) {
+            throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), " 幸运/名将 转盘活动未开启,或未初始化 roleId:", roleId);
+        }
+        if (activityType == ActivityConst.FAMOUS_GENERAL_TURNPLATE && activityBase.getBaseOpen() == ActivityConst.OPEN_AWARD) {
             throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), " 幸运/名将 转盘活动未开启,或未初始化 roleId:", roleId);
         }
 
