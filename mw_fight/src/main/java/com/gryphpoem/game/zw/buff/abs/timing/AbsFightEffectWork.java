@@ -5,7 +5,7 @@ import com.gryphpoem.game.zw.buff.IFightBuffWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -25,20 +25,20 @@ public abstract class AbsFightEffectWork implements IFightBuffWork {
      * 触发者
      *
      * @param fightBuff
-     * @param fightLogic
+     * @param contextHolder
      * @param buffObjective
      * @return
      */
-    protected Force triggerForce(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, FightConstant.BuffObjective buffObjective) {
+    protected Force triggerForce(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, FightConstant.BuffObjective buffObjective) {
         Force buffAttacker;
         Force buffDefender;
         Force triggerForce;
-        if (fightLogic.attacker.ownerId == fightBuff.getBuffGiver().ownerId) {
-            buffAttacker = fightLogic.attacker;
-            buffDefender = fightLogic.defender;
+        if (contextHolder.getContext().getAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+            buffAttacker = contextHolder.getContext().getAttacker();
+            buffDefender = contextHolder.getContext().getDefender();
         } else {
-            buffAttacker = fightLogic.defender;
-            buffDefender = fightLogic.attacker;
+            buffAttacker = contextHolder.getContext().getDefender();
+            buffDefender = contextHolder.getContext().getAttacker();
         }
 
         if (FightConstant.BuffObjective.BUFF_LOADER.equals(buffObjective)) {

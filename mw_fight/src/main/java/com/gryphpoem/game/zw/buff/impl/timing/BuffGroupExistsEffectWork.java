@@ -3,9 +3,8 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -25,14 +24,14 @@ public class BuffGroupExistsEffectWork extends AbsFightEffectWork {
     }
 
     @Override
-    public boolean buffCanEffect(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, StaticBuff staticBuff, Object... params) {
+    public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
         // 0 代表任何人
         Force triggerForce;
         boolean canRelease = false;
         if (conditionConfig.get(0) > 0) {
             FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
             if (CheckNull.isNull(buffObjective)) return false;
-            triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
+            triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
             if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
                 return false;
             }
@@ -65,7 +64,7 @@ public class BuffGroupExistsEffectWork extends AbsFightEffectWork {
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {
-            return canRelease0(fightLogic.attacker, conditionConfig) || canRelease0(fightLogic.defender, conditionConfig);
+            return canRelease0(contextHolder.getContext().getAttacker(), conditionConfig) || canRelease0(contextHolder.getContext().getDefender(), conditionConfig);
         }
 
         return canRelease;

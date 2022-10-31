@@ -3,8 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -25,20 +24,20 @@ public class DefenderEffectWork extends AbsFightEffectWork {
     }
 
     @Override
-    public boolean buffCanEffect(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, StaticBuff staticBuff, Object... params) {
+    public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
         // 0 代表任何人
         if (conditionConfig.get(0) == 0) return true;
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
 
-        Force triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
+        Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
 
-        if (CheckNull.isEmpty(fightLogic.defender.beActionId))
+        if (CheckNull.isEmpty(contextHolder.getContext().getDefender().beActionId))
             return false;
         // 无触发者
         if (CheckNull.isEmpty(triggerForce.buffTriggerId))
             return false;
 
-        return canRelease(triggerForce, fightLogic.defender.beActionId, buffObjective);
+        return canRelease(triggerForce, contextHolder.getContext().getDefender().beActionId, buffObjective);
     }
 }

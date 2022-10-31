@@ -3,8 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -22,7 +21,7 @@ public class SpecifiedBuffIdDisappearsEffectWork extends AbsFightEffectWork {
     }
 
     @Override
-    public boolean buffCanEffect(IFightBuff fightBuff, FightLogic fightLogic, List<Integer> conditionConfig, StaticBuff staticBuff, Object... params) {
+    public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
         IFightBuff lostBuff = (IFightBuff) params[0];
         if (lostBuff.getBuffConfig().getBuffId() != conditionConfig.get(2)) {
             return false;
@@ -33,7 +32,7 @@ public class SpecifiedBuffIdDisappearsEffectWork extends AbsFightEffectWork {
 
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
-        Force triggerForce = triggerForce(fightBuff, fightLogic, conditionConfig, buffObjective);
+        Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
         if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
             return false;
         }
