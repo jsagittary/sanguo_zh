@@ -10,19 +10,19 @@ import com.gryphpoem.game.zw.pb.CommonPb;
  */
 public class LifeSimulatorInfo {
 
-    private int type;  // 模拟器类型
+    private Integer type;  // 模拟器类型
 
-    private long stepId; // 进行到哪一步了
+    private Long stepId; // 进行到哪一步了
 
-    private int addDate; // 城镇事件刷新的日期(秒)
+    private Integer addDate; // 城镇事件刷新的日期(秒)
 
-    private int pauseTime; // 事件暂停的时间点(秒)
+    private Integer pauseTime; // 事件暂停的时间点(秒)
 
-    private int delay; // 到下一步的延时(天)
+    private Integer delay; // 到下一步的延时(天)
 
-    private int bindType; // 1-绑定的建筑; 2-绑定的NPC
+    private Integer bindType; // 1-绑定的建筑; 2-绑定的NPC
 
-    private int bindId; // 模拟器绑定的建筑或NPC的id
+    private Integer bindId; // 模拟器绑定的建筑或NPC的id
 
     public LifeSimulatorInfo() {
     }
@@ -33,64 +33,64 @@ public class LifeSimulatorInfo {
         this.bindId = bindId;
     }
 
-    public int getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
-    public long getStepId() {
+    public Long getStepId() {
         return stepId;
     }
 
-    public void setStepId(long stepId) {
+    public void setStepId(Long stepId) {
         this.stepId = stepId;
     }
 
-    public int getAddDate() {
+    public Integer getAddDate() {
         return addDate;
     }
 
-    public void setAddDate(int addDate) {
+    public void setAddDate(Integer addDate) {
         this.addDate = addDate;
     }
 
-    public int getPauseTime() {
+    public Integer getPauseTime() {
         return pauseTime;
     }
 
-    public void setPauseTime(int pauseTime) {
+    public void setPauseTime(Integer pauseTime) {
         this.pauseTime = pauseTime;
     }
 
-    public int getDelay() {
+    public Integer getDelay() {
         return delay;
     }
 
-    public void setDelay(int delay) {
+    public void setDelay(Integer delay) {
         this.delay = delay;
     }
 
-    public int getBindType() {
+    public Integer getBindType() {
         return bindType;
     }
 
-    public void setBindType(int bindType) {
+    public void setBindType(Integer bindType) {
         this.bindType = bindType;
     }
 
-    public int getBindId() {
+    public Integer getBindId() {
         return bindId;
     }
 
-    public void setBindId(int bindId) {
+    public void setBindId(Integer bindId) {
         this.bindId = bindId;
     }
 
-    public CommonPb.LifeSimulatorInfoPb ser() {
-        CommonPb.LifeSimulatorInfoPb.Builder builder = CommonPb.LifeSimulatorInfoPb.newBuilder();
+    public CommonPb.LifeSimulatorInfo ser() {
+        CommonPb.LifeSimulatorInfo.Builder builder = CommonPb.LifeSimulatorInfo.newBuilder();
         builder.setType(this.type);
         builder.setStepId(this.stepId);
         builder.setAddDate(this.addDate);
@@ -101,7 +101,7 @@ public class LifeSimulatorInfo {
         return builder.build();
     }
 
-    public LifeSimulatorInfo dser(CommonPb.LifeSimulatorInfoPb pb) {
+    public LifeSimulatorInfo dser(CommonPb.LifeSimulatorInfo pb) {
         this.type = pb.getType();
         this.stepId = pb.getStepId();
         this.addDate = pb.getAddDate();

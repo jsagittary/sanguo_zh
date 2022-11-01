@@ -1256,6 +1256,7 @@ public class PlayerDataManager implements PlayerDM {
         SyncRoleInfoRs.Builder builder = SyncRoleInfoRs.newBuilder();
         builder.setLevel(player.lord.getLevel());
         builder.setExp(player.lord.getExp());
+        builder.addAllCharacter(PbHelper.createTwoIntListByMap(player.getCharacterData()));
         if (player.ctx != null) {
             Base.Builder msg = PbHelper.createSynBase(SyncRoleInfoRs.EXT_FIELD_NUMBER, SyncRoleInfoRs.ext,
                     builder.build());

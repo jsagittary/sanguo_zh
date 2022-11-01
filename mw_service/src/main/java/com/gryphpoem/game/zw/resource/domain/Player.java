@@ -2223,7 +2223,7 @@ public class Player {
         // 模拟器信息
         if (CheckNull.nonEmpty(lifeSimulatorRecordMap)) {
             for (Entry<Integer, List<LifeSimulatorInfo>> entry : lifeSimulatorRecordMap.entrySet()) {
-                CommonPb.LifeSimulatorRecordPb.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecordPb.newBuilder();
+                CommonPb.LifeSimulatorRecord.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecord.newBuilder();
                 Integer triggerMode = entry.getKey();
                 lifeSimulatorRecordBuilder.setTriggerMode(triggerMode);
                 for (LifeSimulatorInfo lifeSimulatorInfo : entry.getValue()) {
@@ -2859,10 +2859,10 @@ public class Player {
         Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(), o.getV2())));
         // 模拟器记录
         if (CheckNull.nonEmpty(ser.getLifeSimulatorRecordList())) {
-            for (CommonPb.LifeSimulatorRecordPb lifeSimulatorRecordPb : ser.getLifeSimulatorRecordList()) {
+            for (CommonPb.LifeSimulatorRecord lifeSimulatorRecordPb : ser.getLifeSimulatorRecordList()) {
                 int triggerMode = lifeSimulatorRecordPb.getTriggerMode();
                 List<LifeSimulatorInfo> lifeSimulatorInfoList = new ArrayList<>();
-                for (CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb : lifeSimulatorRecordPb.getLifeSimulatorInfoList()) {
+                for (CommonPb.LifeSimulatorInfo lifeSimulatorInfoPb : lifeSimulatorRecordPb.getLifeSimulatorInfoList()) {
                     lifeSimulatorInfoList.add(new LifeSimulatorInfo().dser(lifeSimulatorInfoPb));
                 }
                 this.lifeSimulatorRecordMap.put(triggerMode, lifeSimulatorInfoList);
@@ -3823,18 +3823,22 @@ public class Player {
         return playerRelic;
     }
 
-    public List<CommonPb.LifeSimulatorRecordPb> createSimulatorRecordList() {
-        List<CommonPb.LifeSimulatorRecordPb> data = new ArrayList<>();
+    public List<CommonPb.LifeSimulatorRecord> createSimulatorRecordList() {
+        List<CommonPb.LifeSimulatorRecord> data = new ArrayList<>();
 
         // 非城镇事件模拟器
         if (CheckNull.isEmpty(this.getLifeSimulatorRecordMap())) {
             this.setLifeSimulatorRecordMap(new HashMap<>());
         }
         for (Entry<Integer, List<LifeSimulatorInfo>> entry : this.lifeSimulatorRecordMap.entrySet()) {
-            CommonPb.LifeSimulatorRecordPb.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecordPb.newBuilder();
+            CommonPb.LifeSimulatorRecord.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecord.newBuilder();
             lifeSimulatorRecordBuilder.setTriggerMode(entry.getKey());
             for (LifeSimulatorInfo lifeSimulatorInfo : entry.getValue()) {
-                CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
+                if (lifeSimulatorInfo.getDelay() > 0) {
+                    // 只同步客户端可执行的模拟器
+                    continue;
+                }
+                CommonPb.LifeSimulatorInfo lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
                 lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfoPb);
             }
             data.add(lifeSimulatorRecordBuilder.build());
@@ -3843,21 +3847,19 @@ public class Player {
         // 城镇事件模拟器
         if (CheckNull.isNull(this.getCityEvent())) {
             CityEvent cityEvent = new CityEvent();
-            cityEvent.setLifeSimulatorInfoList(new ArrayList<>());
-            cityEvent.setStartTime(0);
-            cityEvent.setEndTime(0);
-            cityEvent.setTotalCountCurPeriod(0);
-            cityEvent.setPeriodCount(0);
             this.setCityEvent(cityEvent);
         }
-        CommonPb.LifeSimulatorRecordPb.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecordPb.newBuilder();
+        CommonPb.LifeSimulatorRecord.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecord.newBuilder();
         lifeSimulatorRecordBuilder.setTriggerMode(3);
         for (LifeSimulatorInfo lifeSimulatorInfo : this.cityEvent.getLifeSimulatorInfoList()) {
-            CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
+            if (lifeSimulatorInfo.getDelay() > 0) {
+                // 只同步客户端可执行的模拟器
+                continue;
+            }
+            CommonPb.LifeSimulatorInfo lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
             lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfoPb);
         }
         data.add(lifeSimulatorRecordBuilder.build());
-
         return data;
     }
 }

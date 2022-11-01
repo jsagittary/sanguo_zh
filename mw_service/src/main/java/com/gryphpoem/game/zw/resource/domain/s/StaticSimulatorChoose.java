@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class StaticSimulatorChoose {
 
-    private int id; // 主键id
+    private Integer id; // 主键id
 
     // private String des; // 文本描述
 
@@ -18,17 +18,17 @@ public class StaticSimulatorChoose {
 
     private List<Integer> miniGame; // 小游戏接口, [类型, 关卡]
 
-    private int combatId; // 进入的战斗关卡配置
+    private Integer combatId; // 进入的战斗关卡配置
 
     private List<List<Integer>> buff; // 获得的buff, [类型,增益,持续时间]
 
     private List<List<Integer>> characterFix; // 此选项对性格值的影响, [[性格id,影响值,1]], 1增加, 2减少
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -48,11 +48,11 @@ public class StaticSimulatorChoose {
         this.miniGame = miniGame;
     }
 
-    public int getCombatId() {
+    public Integer getCombatId() {
         return combatId;
     }
 
-    public void setCombatId(int combatId) {
+    public void setCombatId(Integer combatId) {
         this.combatId = combatId;
     }
 

@@ -15,45 +15,53 @@ import java.util.List;
  */
 public class CityEvent {
 
-    private int startTime; // 周期开始时间
+    private Integer startTime; // 周期开始时间
 
-    private int endTime; // 周期结束时间
+    private Integer endTime; // 周期结束时间
 
-    private int totalCountCurPeriod; // 当前周期内累计事件数量
+    private Integer totalCountCurPeriod; // 当前周期内累计事件数量
 
-    private int periodCount; // 累计周期数
+    private Integer periodCount; // 累计周期数
 
     private List<LifeSimulatorInfo> lifeSimulatorInfoList = new ArrayList<>(); // 周期内的城镇事件(模拟器信息)
 
-    public int getStartTime() {
+    public CityEvent() {
+        this.startTime = 0;
+        this.endTime = 0;
+        this.totalCountCurPeriod = 0;
+        this.periodCount = 0;
+        this.lifeSimulatorInfoList = new ArrayList<>();
+    }
+
+    public Integer getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(int startTime) {
+    public void setStartTime(Integer startTime) {
         this.startTime = startTime;
     }
 
-    public int getEndTime() {
+    public Integer getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(int endTime) {
+    public void setEndTime(Integer endTime) {
         this.endTime = endTime;
     }
 
-    public int getTotalCountCurPeriod() {
+    public Integer getTotalCountCurPeriod() {
         return totalCountCurPeriod;
     }
 
-    public void setTotalCountCurPeriod(int totalCountCurPeriod) {
+    public void setTotalCountCurPeriod(Integer totalCountCurPeriod) {
         this.totalCountCurPeriod = totalCountCurPeriod;
     }
 
-    public int getPeriodCount() {
+    public Integer getPeriodCount() {
         return periodCount;
     }
 
-    public void setPeriodCount(int periodCount) {
+    public void setPeriodCount(Integer periodCount) {
         this.periodCount = periodCount;
     }
 
@@ -65,8 +73,8 @@ public class CityEvent {
         this.lifeSimulatorInfoList = lifeSimulatorInfoList;
     }
 
-    public SerializePb.CityEventPb ser() {
-        SerializePb.CityEventPb.Builder builder = SerializePb.CityEventPb.newBuilder();
+    public SerializePb.CityEvent ser() {
+        SerializePb.CityEvent.Builder builder = SerializePb.CityEvent.newBuilder();
         builder.setStartTime(this.startTime);
         builder.setEndTime(this.endTime);
         builder.setTotalCountCurPeriod(this.totalCountCurPeriod);
@@ -77,14 +85,14 @@ public class CityEvent {
         return builder.build();
     }
 
-    public CityEvent dser(SerializePb.CityEventPb pb) {
+    public CityEvent dser(SerializePb.CityEvent pb) {
         this.startTime = pb.getStartTime();
         this.endTime = pb.getEndTime();
         this.totalCountCurPeriod = pb.getTotalCountCurPeriod();
         this.periodCount = pb.getPeriodCount();
         if (CheckNull.nonEmpty(pb.getLifeSimulatorInfoList())) {
-            for (CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb : pb.getLifeSimulatorInfoList()) {
-                this.lifeSimulatorInfoList.add(new LifeSimulatorInfo().dser(lifeSimulatorInfoPb));
+            for (CommonPb.LifeSimulatorInfo lifeSimulatorInfo : pb.getLifeSimulatorInfoList()) {
+                this.lifeSimulatorInfoList.add(new LifeSimulatorInfo().dser(lifeSimulatorInfo));
             }
         }
         return this;

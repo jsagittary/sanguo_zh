@@ -10,37 +10,37 @@ import java.util.List;
  */
 public class StaticSimulatorStep {
 
-    private long id;
+    private Long id;
 
-    private int type; // 模拟器类型，同一组模拟器定义type一致
+    private Integer type; // 模拟器类型，同一组模拟器定义type一致
 
-    private long nextId; // 下一步id
+    private Long nextId; // 下一步id
 
     private List<List<Long>> choose; // 本步展示的选择, [[选项id, 跳转步id, 选择此项的百分比]], 没有不填, 支持多个, 如是最后一步, 跳转步id填0
 
-    private int delay; // 仅限于周期城镇事件, 触发的下个步骤延迟时间。填1为次日8点触发, 填2则加一天, 依次类推
+    private Integer delay; // 仅限于周期城镇事件, 触发的下个步骤延迟时间。填1为次日8点触发, 填2则加一天, 依次类推
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public int getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
-    public long getNextId() {
+    public Long getNextId() {
         return nextId;
     }
 
-    public void setNextId(long nextId) {
+    public void setNextId(Long nextId) {
         this.nextId = nextId;
     }
 
@@ -52,11 +52,11 @@ public class StaticSimulatorStep {
         this.choose = choose;
     }
 
-    public int getDelay() {
+    public Integer getDelay() {
         return delay;
     }
 
-    public void setDelay(int delay) {
+    public void setDelay(Integer delay) {
         this.delay = delay;
     }
 
