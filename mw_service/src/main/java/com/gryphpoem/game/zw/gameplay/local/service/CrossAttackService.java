@@ -1,12 +1,13 @@
 package com.gryphpoem.game.zw.gameplay.local.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticScoutDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticScoutDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -14,7 +15,8 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.ScoutPosRs;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRq;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -22,7 +24,10 @@ import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.StaticScoutCost;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.HonorDailyService;
 import com.gryphpoem.game.zw.service.WorldService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +40,9 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName CrossAttackService.java
  * @Description 跨服攻打的业务逻辑
- * @author QiuKun
  * @date 2019年3月22日
  */
 @Component
@@ -59,7 +64,7 @@ public class CrossAttackService {
 
     /**
      * 攻击某个点
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -115,7 +120,7 @@ public class CrossAttackService {
 
     /**
      * 检查玩家的出征将领
-     * 
+     *
      * @param player
      * @param heroIdList
      * @param pos
@@ -198,7 +203,7 @@ public class CrossAttackService {
 
     /**
      * 侦查
-     * 
+     *
      * @param player
      * @param pos
      * @param type

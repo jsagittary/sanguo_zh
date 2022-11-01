@@ -1,7 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo;
 
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.resource.util.Turple;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

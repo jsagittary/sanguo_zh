@@ -154,6 +154,7 @@ public interface FightConstant {
      * buff 作用目标
      */
     public enum BuffObjective {
+        RELEASE_SKILL(1, null),
         /**
          * buff挂载者
          */
@@ -265,4 +266,8 @@ public interface FightConstant {
         int LONGER_ROUNDS = 2;
     }
 
+    interface EffectType {
+        int SKILL_DAMAGE = 3;
+        int ATTACK_INCREASE = 51;
+    }
 }

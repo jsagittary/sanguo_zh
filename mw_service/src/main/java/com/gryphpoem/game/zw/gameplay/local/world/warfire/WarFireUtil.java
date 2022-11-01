@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.gameplay.local.world.warfire;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.army.AttackWFCityArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
@@ -8,7 +10,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.WFCityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.WFMineMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -21,7 +22,6 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.hundredcent.game.ai.util.CheckNull;
 
 import java.util.*;
@@ -124,6 +124,7 @@ public final class WarFireUtil {
 
     /**
      * 计算杀敌与损兵
+     *
      * @param fighter
      * @return KEY:roleId,VALUE: 杀敌与损兵
      */

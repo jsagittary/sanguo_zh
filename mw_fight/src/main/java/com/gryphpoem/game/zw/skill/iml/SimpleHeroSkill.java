@@ -106,7 +106,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                                     case FightConstant.ReplacementBuffRule.MORE_STRONG:
                                         // 保留更强buff
                                         // TODO 比较两个相同buffId的强度(相同buffId比较相同效果)
-
+                                        
                                         break;
                                 }
                             }

@@ -198,7 +198,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
                 continue;
 
-            fightEffect.effectiveness(this, contextHolder, params);
+            fightEffect.effectiveness(this, contextHolder, effectList, params);
         }
     }
 
@@ -217,7 +217,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(0));
             if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
                 continue;
-            fightEffect.effectRestoration(this, contextHolder, params);
+            fightEffect.effectRestoration(this, contextHolder, effectList, params);
         }
     }
 }

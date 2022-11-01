@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLightningWarDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
@@ -45,35 +46,50 @@ import java.util.stream.Collectors;
  * @description: 闪电战消息推送, 战斗逻辑, 加入闪电战, 同步闪电战信息
  * @modified By:
  */
-@Service public class LightningWarService {
+@Service
+public class LightningWarService {
 
-    @Autowired private FightService fightService;
+    @Autowired
+    private FightService fightService;
 
-    @Autowired private WorldService worldService;
+    @Autowired
+    private WorldService worldService;
 
-    @Autowired private WarService warService;
+    @Autowired
+    private WarService warService;
 
-    @Autowired private WorldDataManager worldDataManager;
+    @Autowired
+    private WorldDataManager worldDataManager;
 
-    @Autowired private PlayerDataManager playerDataManager;
+    @Autowired
+    private PlayerDataManager playerDataManager;
 
-    @Autowired private ActivityDataManager activityDataManager;
+    @Autowired
+    private ActivityDataManager activityDataManager;
 
-    @Autowired private WarDataManager warDataManager;
+    @Autowired
+    private WarDataManager warDataManager;
 
-    @Autowired private RewardDataManager rewardDataManager;
+    @Autowired
+    private RewardDataManager rewardDataManager;
 
-    @Autowired private MailDataManager mailDataManager;
+    @Autowired
+    private MailDataManager mailDataManager;
 
-    @Autowired private SolarTermsDataManager solarTermsDataManager;
+    @Autowired
+    private SolarTermsDataManager solarTermsDataManager;
 
-    @Autowired private HonorDailyDataManager honorDailyDataManager;
+    @Autowired
+    private HonorDailyDataManager honorDailyDataManager;
 
-    @Autowired private MedalDataManager medalDataManager;
+    @Autowired
+    private MedalDataManager medalDataManager;
 
-    @Autowired private ChatDataManager chatDataManager;
+    @Autowired
+    private ChatDataManager chatDataManager;
 
-    @Autowired private CounterAtkService counterAtkService;
+    @Autowired
+    private CounterAtkService counterAtkService;
 
     @Autowired
     private BattlePassDataManager battlePassDataManager;
@@ -329,8 +345,8 @@ import java.util.stream.Collectors;
         fightLogic.fight();// 战斗
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
         boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
@@ -442,11 +458,8 @@ import java.util.stream.Collectors;
         // 通知客户端玩家资源变化
         warService.sendRoleResChange(changeMap);
         // 战斗打日志
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
-
-
-
 
 
     /**
@@ -461,8 +474,8 @@ import java.util.stream.Collectors;
      * @param recoverArmyAwardMap
      */
     private void sendLightningWarBattleMail(Battle battle, StaticCity staticCity, boolean atkSuccess,
-            CommonPb.Report.Builder report, Map<Long, List<CommonPb.Award>> awardProp, int now,
-            Map<Long, List<CommonPb.Award>> recoverArmyAwardMap) {
+                                            CommonPb.Report.Builder report, Map<Long, List<CommonPb.Award>> awardProp, int now,
+                                            Map<Long, List<CommonPb.Award>> recoverArmyAwardMap) {
         List<CommonPb.BattleRole> atkList = battle.getAtkList();
         Set<Long> ids = new HashSet<>();
         for (CommonPb.BattleRole battleRole : atkList) {
@@ -509,8 +522,8 @@ import java.util.stream.Collectors;
      * @param battle
      */
     private void addAttackReaward(List<Force> forces, AwardFrom lightningWarAttack,
-            HashMap<Long, List<List<Integer>>> attackAward, Fighter defender, LightningWarBoss boss, Battle battle,
-            int totalHp, int curLost) {
+                                  HashMap<Long, List<List<Integer>>> attackAward, Fighter defender, LightningWarBoss boss, Battle battle,
+                                  int totalHp, int curLost) {
         HashMap<Long, Integer> killCnt = mergeKill(forces);
         for (Map.Entry<Long, Integer> entry : killCnt.entrySet()) {
             Long roleId = entry.getKey();
@@ -704,7 +717,7 @@ import java.util.stream.Collectors;
 
         // 破护盾 攻击方
         if (camp != battle.getDefCamp()) {
-            worldService.removeProTect(player,AwardFrom.LIGHTNING_WAR,pos);
+            worldService.removeProTect(player, AwardFrom.LIGHTNING_WAR, pos);
             battle.getAtkRoles().add(roleId);
         }
 

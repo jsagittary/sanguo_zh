@@ -1,21 +1,14 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.RetreatArmyParamDto;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.AirshipMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.MedalDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -37,7 +30,6 @@ import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipWorldData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.MarchService;
 import com.gryphpoem.game.zw.service.WarService;
@@ -45,10 +37,13 @@ import com.gryphpoem.game.zw.service.WorldService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
+ * @author QiuKun
  * @ClassName AirshipArmy.java
  * @Description 攻打飞艇部队
- * @author QiuKun
  * @date 2019年4月23日
  */
 public class AirshipArmy extends BaseArmy {
@@ -93,7 +88,7 @@ public class AirshipArmy extends BaseArmy {
 
     @Override
     public void retreat(RetreatArmyParamDto param) {
-   
+
         if (army.getState() == ArmyConstant.ARMY_STATE_ATTACK_AIRSHIP_WAIT) {
             CrossWorldMap cMap = param.getCrossWorldMap();
             BaseWorldEntity baseEntity = cMap.getAllMap().get(getTargetPos());
@@ -103,7 +98,7 @@ public class AirshipArmy extends BaseArmy {
                 List<BattleRole> roleList = airshipMapEntity.getAirshipWorldData().getJoinRoles()
                         .get(player.lord.getCamp());
                 if (!CheckNull.isEmpty(roleList)) {
-                    for (Iterator<BattleRole> it = roleList.iterator(); it.hasNext();) {
+                    for (Iterator<BattleRole> it = roleList.iterator(); it.hasNext(); ) {
                         BattleRole rb = it.next();
                         if (rb.getRoleId() == player.roleId && rb.getKeyId() == army.getKeyId()) {
                             it.remove();
@@ -116,7 +111,7 @@ public class AirshipArmy extends BaseArmy {
     }
 
     private void fightAirShip(CrossWorldMap cMap, AirshipMapEntity airshipMapEntity, List<BattleRole> battleRoles,
-            int camp) {
+                              int camp) {
         int now = TimeHelper.getCurrentSecond();
         AirshipWorldData airShip = airshipMapEntity.getAirshipWorldData();
         int airShipId = airShip.getId();
@@ -141,7 +136,7 @@ public class AirshipArmy extends BaseArmy {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
 
         boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
         // 需要返回的玩家
@@ -244,7 +239,7 @@ public class AirshipArmy extends BaseArmy {
                 }
             }
         });
-        marchService.logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos,attacker,firstAttackPlayer, rpt.getAtkHeroList(), String.valueOf(airShipId));
+        marchService.logAirShipBattle(areaId, battleRoles, atkSuccess, airShip.getKeyId() + "_" + airShipId, airShipPos, attacker, firstAttackPlayer, rpt.getAtkHeroList(), String.valueOf(airShipId));
     }
 
 }

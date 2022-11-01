@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.holder.BooleanHolder;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
@@ -79,7 +80,9 @@ public class WorldScheduleService {
     @Autowired
     private FightSettleLogic fightSettleLogic;
 
-    /** 世界进程排行榜数据 */
+    /**
+     * 世界进程排行榜数据
+     */
     @Autowired
     private WorldScheduleRankService worldScheduleRankService;
 
@@ -164,6 +167,7 @@ public class WorldScheduleService {
 
     /**
      * 公共活动时间轮
+     *
      * @return time round
      */
     public int globalActNextOpenTemplate() {
@@ -324,7 +328,7 @@ public class WorldScheduleService {
     /**
      * 进攻世界boss
      */
-    public GamePb4.AttckScheduleBossRs attackScheduleBoss(long roleId) throws MwException{
+    public GamePb4.AttckScheduleBossRs attackScheduleBoss(long roleId) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
         // 检查等级是否开启
@@ -383,8 +387,8 @@ public class WorldScheduleService {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
         // 更新世界目标进度，攻打世界boss
         updateScheduleGoal(player, ScheduleConstant.GOAL_COND_ATTACK_BOSS, curId);
@@ -460,12 +464,12 @@ public class WorldScheduleService {
                 // 开启军团官员功能
                 campService.openPartyJobDelay();
                 chatDataManager.sendSysChat(ChatConst.CHAT_WORLD_BOSS_1, player.lord.getCamp(),
-                        0,ScheduleConstant.SCHEDULE_BOOS_1_ID);
+                        0, ScheduleConstant.SCHEDULE_BOOS_1_ID);
                 // 开启匪军叛乱
                 initRebellion();
             } else if (curId == ScheduleConstant.SCHEDULE_BOOS_2_ID) {
                 chatDataManager.sendSysChat(ChatConst.CHAT_WORLD_BOSS_2, player.lord.getCamp(),
-                        0,ScheduleConstant.SCHEDULE_BOOS_2_ID);
+                        0, ScheduleConstant.SCHEDULE_BOOS_2_ID);
             }
             // 处理刷新世界进度
             globalSchedule.processRefreshSchedule();
@@ -620,8 +624,8 @@ public class WorldScheduleService {
      * 获取世界boss状态,主要给 {@link WorldService#bossDeadState()} 调用,为了兼容原来的代码
      *
      * @return 0 第1个boss未打死, 1 第1个boss打死, 2 第2个boss打死 </br>
-     *         对应的常量:{@link ScheduleConstant#BOSS_NO_DEAD} {@link ScheduleConstant#BOSS_1_DEAD}
-     *         {@link ScheduleConstant#BOSS_2_DEAD}
+     * 对应的常量:{@link ScheduleConstant#BOSS_NO_DEAD} {@link ScheduleConstant#BOSS_1_DEAD}
+     * {@link ScheduleConstant#BOSS_2_DEAD}
      */
     public int getBossDeadState() {
         int curId = globalSchedule.getCurrentScheduleId();
@@ -818,8 +822,8 @@ public class WorldScheduleService {
      * @param dropList
      */
     private void sendAtkScheduleBossMail(Player player, int now, int pos, int curId,
-            List<CommonPb.Award> recoverArmyAward, Lord lord, boolean isSuccess, CommonPb.Report.Builder report,
-            List<CommonPb.Award> dropList) {
+                                         List<CommonPb.Award> recoverArmyAward, Lord lord, boolean isSuccess, CommonPb.Report.Builder report,
+                                         List<CommonPb.Award> dropList) {
         Turple<Integer, Integer> xy;
         List<String> tParam = new ArrayList<>();
         tParam.add(lord.getNick());
@@ -852,7 +856,7 @@ public class WorldScheduleService {
      * @return
      */
     private CommonPb.RptAtkBandit.Builder createAtkScheduleBossRpt(Player player, int pos, int curId, Fighter attacker,
-            Fighter defender, CommonPb.Record record, Lord lord, boolean isSuccess) {
+                                                                   Fighter defender, CommonPb.Record record, Lord lord, boolean isSuccess) {
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));
@@ -926,7 +930,7 @@ public class WorldScheduleService {
             // 领奖限时目标
             for (List<Integer> list : sScheduleGoal.getAward()) {
                 builder.addAward(rewardDataManager.addAwardSignle(player, list, AwardFrom.SCHEDULE_GOAL_COND_AWARD,
-                    sScheduleGoal.getScheduleId(), sScheduleGoal.getId()));
+                        sScheduleGoal.getScheduleId(), sScheduleGoal.getId()));
             }
             scheduleGoal.receiveAward(roleId);
         }
@@ -975,6 +979,7 @@ public class WorldScheduleService {
 
     /**
      * 全服有N个N次觉醒英雄
+     *
      * @param ssg 进程限时目标配置
      * @return 达成条件的觉醒将领数量
      */

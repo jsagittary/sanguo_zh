@@ -15,13 +15,22 @@ import java.util.List;
 @Data
 public class FightAssistantHero {
     private int heroId;
+    /**
+     * 兵种类型
+     */
+    public int armType;
     private AttrData attrData;
     private List<IHeroSkill> skillList;
     private LinkedList<IFightBuff> buffList = new LinkedList<>();
+    /**
+     * 战斗中的buff与效果
+     */
+    private FightBuffEffect fightBuffEffect;
 
     public FightAssistantHero(int heroId, AttrData attrData, List<IHeroSkill> skillList) {
         this.heroId = heroId;
         this.attrData = attrData;
         this.skillList = skillList;
+        this.fightBuffEffect = new FightBuffEffect();
     }
 }

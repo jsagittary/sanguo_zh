@@ -46,11 +46,15 @@ public class Force {
     /**
      * 被攻击的武将idList
      */
-    public List<Integer> beActionId;
+    public List<Integer> beActionId = new ArrayList<>();
     /**
      * 触发buff的武将idList
      */
-    public List<Integer> buffTriggerId;
+    public List<Integer> buffTriggerId = new ArrayList<>();
+    /**
+     * 效果被执行者
+     */
+    public List<Integer> effectExecutor = new ArrayList<>();
     /**
      * 战斗buff集合 主将的buff列表
      */
@@ -59,6 +63,10 @@ public class Force {
      * 副将列表
      */
     public ArrayList<FightAssistantHero> assistantHeroList = new ArrayList<>();
+    /**
+     * 战斗中的buff与效果
+     */
+    private FightBuffEffect fightBuffEffect = new FightBuffEffect();
 
     public Force() {
     }
@@ -187,6 +195,13 @@ public class Force {
                 }
             }
         }
+    }
+
+    public FightBuffEffect getFightEffectMap(int heroId) {
+        if (heroId == this.id) return this.fightBuffEffect;
+        if (CheckNull.isEmpty(this.assistantHeroList)) return null;
+        return this.assistantHeroList.stream().filter(ass ->
+                ass.getHeroId() == heroId).map(ass -> ass.getFightBuffEffect()).findFirst().orElse(null);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.resource.pojo.world;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticBerlinWarDataMgr;
 import com.gryphpoem.game.zw.manager.GlobalDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -118,7 +119,7 @@ public class BerlinWar {
 
     /**
      * 更新柏林会战记录
-     * 
+     *
      * @param now
      */
     public void updateBerlinRecord(Lord lord, Fighter fighter, int now) {
@@ -164,7 +165,7 @@ public class BerlinWar {
     }
 
     private void addPlayerRank(LinkedList<ActRank> rankList, long lordId, int type, Long value, int maxRank, int order,
-            int rankTime) {
+                               int rankTime) {
         int time = rankTime;
         if (time <= 0) {
             time = TimeHelper.getCurrentSecond();
@@ -268,7 +269,7 @@ public class BerlinWar {
     public void initBerlinWar() {
         int now = TimeHelper.getCurrentSecond();
 //        setLastDate(new Date());
-        LogUtil.error("初始化柏林会战, 现在时间: " , DateHelper.getDateFormat1().format(now));
+        LogUtil.error("初始化柏林会战, 现在时间: ", DateHelper.getDateFormat1().format(now));
         StaticBerlinWar staticBerlinWar = StaticBerlinWarDataMgr.getBerlinSetting();
         if (CheckNull.isNull(staticBerlinWar)) {
             LogUtil.error("初始化柏林会战出错,s_berlin_war表没有配置柏林");
@@ -565,6 +566,7 @@ public class BerlinWar {
 
     /**
      * 获取柏林会战记录数据
+     *
      * @param roleId
      * @return
      */
@@ -579,7 +581,7 @@ public class BerlinWar {
 
     /**
      * 柏林玩家数据
-     * 
+     *
      * @param roleId
      * @return
      */
@@ -599,6 +601,7 @@ public class BerlinWar {
 
     /**
      * 更新世界进程阶段
+     *
      * @param scheduleId 世界进程阶段
      */
     public void updateScheduleId(int scheduleId) {
@@ -650,6 +653,7 @@ public class BerlinWar {
 
     /**
      * 序列化战斗狂热
+     *
      * @return 战斗狂热
      */
     public CommonPb.BerlinBattleFrenzy serBBF() {
@@ -664,6 +668,7 @@ public class BerlinWar {
 
     /**
      * 当前是否处于战斗狂热阶段
+     *
      * @return
      */
     public boolean isInBattleFrenzy() {

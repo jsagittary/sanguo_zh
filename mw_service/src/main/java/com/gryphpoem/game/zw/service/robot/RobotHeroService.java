@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service.robot;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
@@ -14,7 +15,6 @@ import com.gryphpoem.game.zw.resource.domain.p.Common;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.ArmyService;
 import com.gryphpoem.game.zw.service.HeroService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +23,9 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
- * @Description AI机器人将领相关服务类
  * @author TanDonghai
+ * @Description AI机器人将领相关服务类
  * @date 创建时间：2017年10月17日 下午7:42:40
- *
  */
 @Service
 public class RobotHeroService {
@@ -83,7 +82,7 @@ public class RobotHeroService {
 
     /**
      * 检查是否有更好的将领可以上阵，有则上阵
-     * 
+     *
      * @param player
      */
     private void checkAndAppointBetterBattleHero(Player player) {
@@ -108,12 +107,12 @@ public class RobotHeroService {
                     battleHero.setCount(0);
                     StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
 //                    if (Objects.nonNull(staticHero)) {
-                        // 获取武将对应类型的兵力
+                    // 获取武将对应类型的兵力
 //                        int armType = staticHero.getType();
-                        // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
-                        //         battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+                    // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
+                    //         battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
 
-                        // 上报玩家兵力变化
+                    // 上报玩家兵力变化
 //                        LogLordHelper.playerArm(
 //                                AwardFrom.HERO_DOWN,
 //                                player,
@@ -152,7 +151,7 @@ public class RobotHeroService {
 
     /**
      * 获取上阵将领中品质最低的将领信息
-     * 
+     *
      * @param player
      * @return 返回将领的上阵位置和将领的品质，如果当前还没有设置过上阵将领，这两个值将会是-1
      */
@@ -177,7 +176,7 @@ public class RobotHeroService {
 
     /**
      * 获取无所事事的将领（未上阵）中品质最高的
-     * 
+     *
      * @param heros
      * @return 返回将领的heroId和品质，如果没有闲置的将领，这两个值将会是-1
      */

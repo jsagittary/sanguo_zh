@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.manager;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
@@ -898,7 +899,8 @@ public class MedalDataManager {
 
     /**
      * 勋章特技效果   【铜墙铁壁】  对打的时候执行    判断防守方是否有该特技
-     * @param player    玩家对象
+     *
+     * @param player 玩家对象
      * @param heroId 将领对象
      * @return 是否激活了铜墙铁壁特技
      */

@@ -64,6 +64,89 @@ public class FightUtil {
     }
 
     /**
+     * 填充玩家作用列表
+     *
+     * @param fightBuff
+     * @param triggerForce
+     * @param buffObjective
+     */
+    public static void fillActingHeroList(IFightBuff fightBuff, Force triggerForce, List<Integer> heroList, FightConstant.BuffObjective buffObjective) {
+        if (!CheckNull.isEmpty(heroList))
+            heroList.clear();
+
+        switch (buffObjective) {
+            case BUFF_LOADER:
+                if (!CheckNull.isEmpty(triggerForce.buffList)) {
+                    IFightBuff buff = triggerForce.buffList.stream().filter(t -> t.uniqueId() == fightBuff.uniqueId()).findFirst().orElse(null);
+                    if (Objects.nonNull(buff)) {
+                        heroList.add(triggerForce.id);
+                        break;
+                    }
+                }
+                if (!CheckNull.isEmpty(triggerForce.assistantHeroList)) {
+                    for (FightAssistantHero assistantHero : triggerForce.assistantHeroList) {
+                        if (CheckNull.isNull(assistantHero) || CheckNull.isEmpty(assistantHero.getBuffList()))
+                            continue;
+                        IFightBuff buff = assistantHero.getBuffList().stream().filter(t -> t.uniqueId() == fightBuff.uniqueId()).findFirst().orElse(null);
+                        if (Objects.nonNull(buff)) {
+                            heroList.add(assistantHero.getHeroId());
+                            break;
+                        }
+                    }
+                }
+                break;
+            case MY_PRINCIPAL_HERO:
+            case ENEMY_PRINCIPAL_HERO:
+                heroList.add(triggerForce.id);
+                break;
+            case MY_DEPUTY_HERO:
+            case ENEMY_DEPUTY_HERO:
+                if (!CheckNull.isEmpty(triggerForce.assistantHeroList)) {
+                    heroList.addAll(triggerForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                }
+                break;
+            case ALL_MY_HERO:
+            case ALL_ENEMY_HERO:
+            case AT_LEAST_ONE_HERO_FROM_MY_SIDE:
+            case AT_LEAST_ONE_HERO_FROM_ENEMY_SIDE:
+                heroList.add(triggerForce.id);
+                if (!CheckNull.isEmpty(triggerForce.assistantHeroList)) {
+                    heroList.addAll(triggerForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                }
+                break;
+        }
+    }
+
+    /**
+     * buff的施予方(释放技能方)为己方时, 计算敌我双方将领作用方
+     *
+     * @param fightBuff
+     * @param contextHolder
+     * @param buffObjective
+     * @return
+     */
+    public static Force getActingForce(IFightBuff fightBuff, FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective) {
+        Force buffAttacker;
+        Force buffDefender;
+        Force executorForce;
+        if (contextHolder.getContext().getAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+            buffAttacker = contextHolder.getContext().getAttacker();
+            buffDefender = contextHolder.getContext().getDefender();
+        } else {
+            buffAttacker = contextHolder.getContext().getDefender();
+            buffDefender = contextHolder.getContext().getAttacker();
+        }
+
+        if (FightConstant.BuffObjective.BUFF_LOADER.equals(buffObjective)) {
+            executorForce = fightBuff.getForce();
+        } else {
+            executorForce = FightUtil.actingForce(buffAttacker, buffDefender, buffObjective, false);
+        }
+
+        return executorForce;
+    }
+
+    /**
      * 获得buff被作用方
      *
      * @param attacker
@@ -72,6 +155,10 @@ public class FightUtil {
      * @return
      */
     public static Force actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective, boolean release) {
+        if (FightConstant.BuffObjective.RELEASE_SKILL.equals(buffObjective)) {
+            return attacker;
+        }
+
         Force affectedForce = null;
         Boolean atk = buffObjective.isAttackerSize(FightConstant.ForceSide.ATTACKER);
         if (Objects.nonNull(attacker) && Objects.nonNull(atk) && atk) {

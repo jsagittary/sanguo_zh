@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
@@ -247,13 +248,14 @@ public class RebelService extends BaseAwkwardDataManager {
 
     /**
      * 修复老服的匪军叛乱
+     *
      * @return
      */
     private boolean oldServerOpenRebellion() {
         //  修复老服的匪军叛乱的开启时间
         Map<Integer, Integer> nextOpenMap = globalDataManager.getGameGlobal().getMixtureDataById(GlobalConstant.REBEL_NEXT_OPEN_TIME);
         // 老服的世界boss已经打死了, 并且没有下一次的开启时间
-        if (checkUnLock() && nextOpenMap.getOrDefault(0,0) == 0) {
+        if (checkUnLock() && nextOpenMap.getOrDefault(0, 0) == 0) {
             worldScheduleService.initRebellion();
             return true;
         }
@@ -453,7 +455,7 @@ public class RebelService extends BaseAwkwardDataManager {
         }
         // 添加人员
         List<Long> roleIds = playerDataManager.getPlayers().values().stream().filter(
-                p -> p.lord.getLevel() >= Constant.REBEL_ROLE_LV_COND && p.lord.getArea() <= WorldConstant.AREA_MAX_ID)
+                        p -> p.lord.getLevel() >= Constant.REBEL_ROLE_LV_COND && p.lord.getArea() <= WorldConstant.AREA_MAX_ID)
                 .map(p -> p.roleId).collect(Collectors.toList());
         globalRebellion.getJoinRoleId().addAll(roleIds);
         for (Long roleId : globalRebellion.getJoinRoleId()) {
@@ -735,8 +737,8 @@ public class RebelService extends BaseAwkwardDataManager {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         boolean defSucce = !(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
         // 记录玩家有改变的资源类型, key:roleId
@@ -773,7 +775,7 @@ public class RebelService extends BaseAwkwardDataManager {
                     playerRebellion.getCredit(), sRound.getCredit());
             playerRebellion.addAndGetCredit(sRound.getCredit());
             //上报数数
-            EventDataUp.credits(defPlayer.account, defPlayer.lord,playerRebellion.getCredit(),sRound.getCredit(),CreditsConstant.REBELLION,AwardFrom.REBELLION_BATTLE_DEF);
+            EventDataUp.credits(defPlayer.account, defPlayer.lord, playerRebellion.getCredit(), sRound.getCredit(), CreditsConstant.REBELLION, AwardFrom.REBELLION_BATTLE_DEF);
             if (sRound.getCredit() > 0) {
                 dropList.add(PbHelper.createAwardPb(AwardType.MONEY, AwardType.Money.REBEL_CREDIT, sRound.getCredit()));
             }
@@ -800,7 +802,7 @@ public class RebelService extends BaseAwkwardDataManager {
         LogLordHelper.commonLog("rebelBattle", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, sRound.getId(),
                 sRound.getRound(), defSucce);
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 帮助人的部队返回
         warService.retreatBattleArmy(battle, now);
     }
@@ -1170,7 +1172,7 @@ public class RebelService extends BaseAwkwardDataManager {
         int hasCredit = player.getPlayerRebellion().getCredit();
         player.getPlayerRebellion().setCredit(hasCredit - price);
         //上报数数
-        EventDataUp.credits(player.account, player.lord,playerRebellion.getCredit(),- price,CreditsConstant.REBELLION,AwardFrom.REBELLION_BATTLE_DEF);
+        EventDataUp.credits(player.account, player.lord, playerRebellion.getCredit(), -price, CreditsConstant.REBELLION, AwardFrom.REBELLION_BATTLE_DEF);
         // 记录购买次数
         buyRecord.put(shopId, count + 1);
         // 给奖励

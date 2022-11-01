@@ -6,6 +6,9 @@ import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.rank.SimpleRank4SkipSet;
 import com.gryphpoem.game.zw.core.rank.SimpleRankComparatorFactory;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
@@ -17,8 +20,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.AttackPlayerBattle;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.map.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -601,8 +602,8 @@ public class GlobalWarFire {
                 StaticTitle staticTitle = StaticLordDataMgr.getTitleMapById(StaticCastleSkin.WAR_FIRE_WINNER_TITLE_ID);
                 rewardDataManager.addAward(player, AwardType.TITLE, staticTitle.getId(), Math.toIntExact(staticTitle.getDuration()), AwardFrom.WAR_FIRE_PERSONAL_RANK_AWARD);
             }
-        }catch (Exception e){
-            LogUtil.error("对前三名发送称号",e);
+        } catch (Exception e) {
+            LogUtil.error("对前三名发送称号", e);
         }
         playerWarFireMap.forEach((k, v) -> {
             if (v.getStatus() == PlayerWarFire.NOT_REGISTRY_STATUS) {
@@ -1169,12 +1170,12 @@ public class GlobalWarFire {
         }
 
         //上报数数
-        EventDataUp.credits(player.account,player.lord,pwf.getScore(),addScore,CreditsConstant.WARFIRE,from);
-        
+        EventDataUp.credits(player.account, player.lord, pwf.getScore(), addScore, CreditsConstant.WARFIRE, from);
+
         //参与活动任务
         TaskService.handleTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.WAR_FIRE.getCategory());
-        ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY,FeatureCategory.WAR_FIRE.getCategory());
-        TaskService.processTask(player, ETask.JOIN_ACTIVITY,FeatureCategory.WAR_FIRE.getCategory());
+        ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.WAR_FIRE.getCategory());
+        TaskService.processTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.WAR_FIRE.getCategory());
     }
 
     private void updatePlayerScoreRank(Player player, PlayerWarFire pwf) {

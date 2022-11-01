@@ -21,8 +21,4 @@ public class FightContext {
      * 回合数
      */
     private int roundNum;
-    /**
-     * 战斗中的buff与效果
-     */
-    private FightBuffEffect fightBuffEffect;
 }

@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.RetreatArmyParamDto;
@@ -16,13 +17,12 @@ import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.WorldService;
 
 /**
+ * @author QiuKun
  * @ClassName AttackPlayerArmy.java
  * @Description
- * @author QiuKun
  * @date 2019年3月23日
  */
 public class AttackPlayerArmy extends BaseArmy {
@@ -85,7 +85,6 @@ public class AttackPlayerArmy extends BaseArmy {
                 MapEvent.mapEntity(getTargetPos(), MapCurdEvent.UPDATE)); // 事件通知
     }
 
-     
 
     @Override
     public void retreat(RetreatArmyParamDto param) {
@@ -125,7 +124,7 @@ public class AttackPlayerArmy extends BaseArmy {
 
     /**
      * 检测这个支部队 ，是不是这个玩家在这个点的最后一支部队
-     * 
+     *
      * @param mapMarch
      * @param army
      * @return true是最后一支部队

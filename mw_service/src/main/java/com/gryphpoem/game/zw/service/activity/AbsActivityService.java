@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service.activity;
 import com.google.protobuf.GeneratedMessage;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.ActivityDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
@@ -20,10 +21,8 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActVoucher;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -145,7 +144,8 @@ abstract class AbsActivityService {
 
     /**
      * 更新总排行榜
-     *  取的当前的排行值
+     * 取的当前的排行值
+     *
      * @param value              玩家当前值
      * @param activity           玩家的活动数据 statusCnt:key=0排行值 key=1入榜时间戳
      * @param globalActivityData 全局的活动数据
@@ -160,18 +160,19 @@ abstract class AbsActivityService {
 
     /**
      * 更新总排行榜
+     *
      * @param player
-     * @param addVal 增加值
-     * @param time 时间戳
+     * @param addVal             增加值
+     * @param time               时间戳
      * @param activity
      * @param globalActivityData
      */
-    protected void addGeneralRank0(Player player,long addVal,int time,Activity activity,GlobalActivityData globalActivityData){
-        if(canAddRank(player,addVal,activity,globalActivityData,1)){
-            if(addVal > 0){
-                long val = activity.getStatusCnt().merge(0,addVal,Long::sum);
-                activity.getStatusCnt().put(1,Long.valueOf(time));
-                globalActivityData.addPlayerRank(player,val,activity.getActivityType(),time);
+    protected void addGeneralRank0(Player player, long addVal, int time, Activity activity, GlobalActivityData globalActivityData) {
+        if (canAddRank(player, addVal, activity, globalActivityData, 1)) {
+            if (addVal > 0) {
+                long val = activity.getStatusCnt().merge(0, addVal, Long::sum);
+                activity.getStatusCnt().put(1, Long.valueOf(time));
+                globalActivityData.addPlayerRank(player, val, activity.getActivityType(), time);
             }
         }
     }
@@ -326,11 +327,11 @@ abstract class AbsActivityService {
         return globalActivityData;
     }
 
-    protected GlobalActivityData getGlobalActivity(int activityType){
+    protected GlobalActivityData getGlobalActivity(int activityType) {
         return activityDataManager.getGlobalActivity(activityType);
     }
 
-    protected void addOtherJob(ActivityBase activityBase,Date now){
+    protected void addOtherJob(ActivityBase activityBase, Date now) {
 
     }
 
@@ -377,7 +378,7 @@ abstract class AbsActivityService {
         return true;
     }
 
-    public boolean isAllGainActivity(Player player, ActivityBase actBase, Activity activity){
+    public boolean isAllGainActivity(Player player, ActivityBase actBase, Activity activity) {
         return false;
     }
 

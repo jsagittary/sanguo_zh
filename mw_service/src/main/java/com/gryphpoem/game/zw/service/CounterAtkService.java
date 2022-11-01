@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -21,12 +22,12 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCounterAttack;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCounterAttackShop;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -272,8 +273,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
             builder.setAward(rewardDataManager.addAwardSignle(player, shopConf.getAward(), AwardFrom.COUNTER_SHOP_BUY));
             LogLordHelper.commonLog("counterAtkCredit", AwardFrom.COUNTER_SHOP_BUY, player, redit, shopConf.getPrice());
             //上报数数
-            EventDataUp.credits(player.account,player.lord,player.getMixtureDataById(PlayerConstant.COUNTER_ATK_CREDIT),-shopConf.getPrice(), CreditsConstant.COUNTER_ATK,AwardFrom.COUNTER_SHOP_BUY);
-            
+            EventDataUp.credits(player.account, player.lord, player.getMixtureDataById(PlayerConstant.COUNTER_ATK_CREDIT), -shopConf.getPrice(), CreditsConstant.COUNTER_ATK, AwardFrom.COUNTER_SHOP_BUY);
+
         }
 
         if (!CheckNull.isEmpty(counterShop)) {
@@ -877,8 +878,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
         boolean atkSuc = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
@@ -966,7 +967,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         }
 
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 部队返回
         warService.retreatBattleArmy(battle, sendMailTime);
     }
@@ -1006,8 +1007,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
         boolean defSuc = !(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
 
@@ -1074,7 +1075,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         LogLordHelper.commonLog("counterAtkBattle", AwardFrom.COUNTER_BOSS_ATK, defPlayer, defSuc);
 
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 部队返回
         warService.retreatBattleArmy(battle, sendMailTime);
     }
@@ -1110,7 +1111,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         player.setMixtureData(PlayerConstant.COUNTER_ATK_CREDIT, add + credit);
         LogLordHelper.commonLog("counterAtkCredit", AwardFrom.COUNTER_FIGHT_AWARD, player, credit, add);
         //上报数数
-        EventDataUp.credits(player.account,player.lord,add + credit,add, CreditsConstant.COUNTER_ATK,AwardFrom.COUNTER_FIGHT_AWARD);
+        EventDataUp.credits(player.account, player.lord, add + credit, add, CreditsConstant.COUNTER_ATK, AwardFrom.COUNTER_FIGHT_AWARD);
     }
 
     /**

@@ -1,62 +1,86 @@
 package com.gryphpoem.game.zw.resource.pojo.medal;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMedalGeneralSkill;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.Turple;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * @author chenqi
  * @ClassName: Medal
  * @Description: 玩家勋章
- * @author chenqi
  * @date 2018年9月11日
- *
  */
 public class Medal {
 
-    /** 勋章私有id */
+    /**
+     * 勋章私有id
+     */
     private int keyId;
 
-    /** 勋章id */
+    /**
+     * 勋章id
+     */
     private Integer medalId;
 
-    /** 穿戴了该勋章的将领id，未穿戴为0 */
+    /**
+     * 穿戴了该勋章的将领id，未穿戴为0
+     */
     private int heroId;
 
-    /** 品质 */
+    /**
+     * 品质
+     */
     private Integer quality;
 
-    /** 勋章等级 */
+    /**
+     * 勋章等级
+     */
     private Integer level;
 
-    /** 普通技能 */
+    /**
+     * 普通技能
+     */
     private List<Integer> generalSkillId;
 
-    /** 该勋章绑定的特技,橙色勋章才有 0为未激活 */
+    /**
+     * 该勋章绑定的特技,橙色勋章才有 0为未激活
+     */
     private Integer specialSkillId;
 
-    /** 该勋章的光环,橙色勋章才有 0为未激活 */
+    /**
+     * 该勋章的光环,橙色勋章才有 0为未激活
+     */
     private Integer auraSkillId;
 
-    /** 该勋章初始化的光环,橙色勋章才有，激活就是激活该光环 */
+    /**
+     * 该勋章初始化的光环,橙色勋章才有，激活就是激活该光环
+     */
     private Integer initAuraSkillId;
 
-    /** 勋章属性 A为属性id B为属性值 */
+    /**
+     * 勋章属性 A为属性id B为属性值
+     */
 //    @JSONField(deserialize = false)
     private Turple<Integer, Integer> medalAttr;
 
-    /** 强化的次数 */
+    /**
+     * 强化的次数
+     */
     private Integer intensifyCnt;
 
-    /** 花费的金条数 */
+    /**
+     * 花费的金条数
+     */
     private Integer goldBarCnt;
 
-    /** 是否加锁 0否 1是 */
+    /**
+     * 是否加锁 0否 1是
+     */
     private Integer isLock;
 
     private int lastTime; // CD时间
@@ -112,7 +136,7 @@ public class Medal {
 
     /**
      * 光环技能是否解锁
-     * 
+     *
      * @return
      */
     public boolean hasAuraSkill() {
@@ -121,6 +145,7 @@ public class Medal {
 
     /**
      * 特技是否解锁
+     *
      * @return
      */
     public boolean hasSpecialSkill() {
@@ -167,21 +192,19 @@ public class Medal {
     }
 
     /**
-     *
+     * @return void
      * @Title: addIntensifyCnt
      * @Description: 增加强化次数
-     * @return void
      */
     public void addIntensifyCnt() {
         this.intensifyCnt++;
     }
 
     /**
-     *
-     * @Title: addGoldBarCnt
-     * @Description: 增加金条花费
      * @param golgBarNum
      * @return void
+     * @Title: addGoldBarCnt
+     * @Description: 增加金条花费
      */
     public void addGoldBarCnt(int golgBarNum) {
         this.goldBarCnt += golgBarNum;

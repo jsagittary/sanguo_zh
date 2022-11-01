@@ -3,6 +3,9 @@ package com.gryphpoem.game.zw.gameplay.local.world.battle;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
@@ -14,8 +17,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -28,11 +29,13 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightRecord;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PartyLogHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -88,8 +91,8 @@ public class AttackCityBattle extends AbsCommonBattle {
         fightLogic.fight();// 战斗逻辑处理方法
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 军功显赫 <roleId, <heroId, exploit>>
         HashMap<Long, Map<Integer, Integer>> exploitAwardMap = new HashMap<>();
@@ -100,12 +103,12 @@ public class AttackCityBattle extends AbsCommonBattle {
         // 结果处理
         boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
         // 世界争霸难度系数调整 （纽约城 被攻打成功 并且满足可调整系数）
-        if(city.getCityId() == CrossWorldMapConstant.NEW_YORK_CITY_ID  && atkSuccess
-                && fightLogic.getAttrChangeState() == ArmyConstant.ATTR_CHANGE_STATE_YES){
+        if (city.getCityId() == CrossWorldMapConstant.NEW_YORK_CITY_ID && atkSuccess
+                && fightLogic.getAttrChangeState() == ArmyConstant.ATTR_CHANGE_STATE_YES) {
             // 调整世界争霸城池难度系数
             int cur = globalDataManager.getGameGlobal().getCrossCityNpcChgAttrCnt();
             globalDataManager.getGameGlobal().setCrossCityNpcChgAttrCnt(cur + 1);
-            LogUtil.common("调整世界争霸城池难度系数 cur_up_count ",cur," add_up_count ",1);
+            LogUtil.common("调整世界争霸城池难度系数 cur_up_count ", cur, " add_up_count ", 1);
         }
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
@@ -353,12 +356,12 @@ public class AttackCityBattle extends AbsCommonBattle {
         // 通知客户端玩家资源变化
         warService.sendRoleResChange(changeMap);
         // 战斗打日志
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
 
     /**
      * 兵力回复
-     * 
+     *
      * @param city
      * @param staticCity
      */
@@ -378,7 +381,7 @@ public class AttackCityBattle extends AbsCommonBattle {
 
     /**
      * 加上战斗
-     * 
+     *
      * @param param 参数
      * @throws MwException 自定义异常
      */
@@ -402,7 +405,7 @@ public class AttackCityBattle extends AbsCommonBattle {
         // 补给检测
         checkAndSubFood(param);
         BaseArmy baseArmy = createBaseArmy(param, now, ArmyConstant.ARMY_TYPE_ATK_CAMP);
-        addBattleRole(param,AwardFrom.ATTACK_CITY_BATTLE);
+        addBattleRole(param, AwardFrom.ATTACK_CITY_BATTLE);
         // 事件通知
         crossWorldMap.publishMapEvent(baseArmy.createMapEvent(MapCurdEvent.CREATE),
                 MapEvent.mapEntity(player.lord.getPos(), MapCurdEvent.UPDATE));

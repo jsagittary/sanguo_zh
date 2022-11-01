@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.util;
 
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 
 import java.util.HashMap;

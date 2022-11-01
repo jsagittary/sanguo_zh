@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -19,17 +20,20 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSuperMine;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperGuard;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -41,9 +45,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName SuperMineService.java
  * @Description 超级矿点
- * @author QiuKun
  * @date 2018年7月14日
  */
 @Component
@@ -79,7 +83,7 @@ public class SuperMineService {
 
     /**
      * 根据块获取超级矿点
-     * 
+     *
      * @param block
      * @return
      */
@@ -94,7 +98,7 @@ public class SuperMineService {
 
     /**
      * 获取矿点信息
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -118,7 +122,7 @@ public class SuperMineService {
 
     /**
      * 超级矿点 采集,驻防,攻打
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -152,7 +156,7 @@ public class SuperMineService {
 
     /**
      * 检测将领状态
-     * 
+     *
      * @param player
      * @param heroIdList
      * @param isCollect
@@ -241,7 +245,7 @@ public class SuperMineService {
 
     /**
      * 超级矿点采集
-     * 
+     *
      * @param player
      * @param superMine
      * @param heroIdList
@@ -279,7 +283,7 @@ public class SuperMineService {
 
     /**
      * 攻击超级矿点
-     * 
+     *
      * @param player
      * @param superMine
      * @param heroIdList
@@ -329,7 +333,7 @@ public class SuperMineService {
 //        syncAttackRoleStatus(superMine, player, battle.getBattleTime(), WorldConstant.ATTACK_ROLE_1);
 
         // 破罩子
-        worldService.removeProTect(player,AwardFrom.SUPER_MINE_WAR,battle.getPos());
+        worldService.removeProTect(player, AwardFrom.SUPER_MINE_WAR, battle.getPos());
         // 添加行军线
         armyService.addMarchAndChangeHeroState(player, army, pos);
         superMine.getBattleIds().add(battle.getBattleId());
@@ -348,7 +352,7 @@ public class SuperMineService {
 
     /**
      * 驻防超级矿点
-     * 
+     *
      * @param player
      * @param superMine
      * @param heroIdList
@@ -417,9 +421,10 @@ public class SuperMineService {
     }
 
     /*---------------------------------部队返回处理 start------------------------------------*/
+
     /**
      * 玩家主动返回正在采集的部队
-     * 
+     *
      * @param player
      * @param army
      */
@@ -465,7 +470,7 @@ public class SuperMineService {
 
     /**
      * 超级矿点攻击主动返回
-     * 
+     *
      * @param player
      * @param army
      */
@@ -507,7 +512,7 @@ public class SuperMineService {
 
     /**
      * 超级矿点驻防主动返回
-     * 
+     *
      * @param player
      * @param army
      */
@@ -530,7 +535,7 @@ public class SuperMineService {
 
     /**
      * 结束采集处理
-     * 
+     *
      * @param sg
      * @param now
      */
@@ -540,7 +545,7 @@ public class SuperMineService {
 
     /**
      * 结束采集处理
-     * 
+     *
      * @param sg
      * @param now
      * @param syncMarch 是否需要同步线
@@ -574,8 +579,8 @@ public class SuperMineService {
                     sg.getSuperMine().getConfigId(), gainRes, sg.getSuperMine().getConfigId(), xy.getA(), xy.getB());
 
             //貂蝉任务-采集资源 超级矿
-            ActivityDiaoChanService.completeTask(player, ETask.COLLECT_RES,grab.get(0).getId(),grab.get(0).getCount());
-            TaskService.processTask(player, ETask.COLLECT_RES,grab.get(0).getId(),grab.get(0).getCount());
+            ActivityDiaoChanService.completeTask(player, ETask.COLLECT_RES, grab.get(0).getId(), grab.get(0).getCount());
+            TaskService.processTask(player, ETask.COLLECT_RES, grab.get(0).getId(), grab.get(0).getCount());
         } catch (Exception e) {
             LogUtil.error("超级矿点采集完成 出错 roleId:", player.roleId, ", army:", sg.getArmy());
         } finally {
@@ -592,6 +597,7 @@ public class SuperMineService {
     }
 
     /*----------------------------------定时器状态处理 start------------------------------*/
+
     /**
      * 读秒定时器执行
      */
@@ -603,7 +609,7 @@ public class SuperMineService {
 
     /**
      * 处理矿点
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -623,7 +629,7 @@ public class SuperMineService {
 
     /**
      * 处理生产状态矿点
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -651,7 +657,7 @@ public class SuperMineService {
 
     /**
      * 重置状态处理
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -663,7 +669,7 @@ public class SuperMineService {
 
     /**
      * 停产状态处理
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -677,7 +683,7 @@ public class SuperMineService {
 
     /**
      * 充值超级矿点
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -701,7 +707,7 @@ public class SuperMineService {
 
     /**
      * 返回该矿点的所有采集部队和驻防部队
-     * 
+     *
      * @param sm
      * @param now
      * @param isSyncMap 是否同步地图
@@ -738,7 +744,7 @@ public class SuperMineService {
 
     /**
      * 检测驻防部队是否可以返回
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -766,9 +772,10 @@ public class SuperMineService {
     /*----------------------------------定时器状态处理 end------------------------------*/
 
     /*----------------------------------行军结束处理 start------------------------------*/
+
     /**
      * 采集部队到超级矿点的逻辑处理
-     * 
+     *
      * @param player
      * @param army
      * @param now
@@ -820,6 +827,7 @@ public class SuperMineService {
 
     /**
      * 同步刚到采集点的部队报警
+     *
      * @param superMine
      * @param player
      */
@@ -842,6 +850,7 @@ public class SuperMineService {
 
     /**
      * 同步撤回部队被攻击报警
+     *
      * @param superMine
      * @param player
      */
@@ -864,7 +873,7 @@ public class SuperMineService {
 
     /**
      * 攻击超级矿点
-     * 
+     *
      * @param player
      * @param army
      * @param now
@@ -904,15 +913,17 @@ public class SuperMineService {
                 fightLogic.fight();
 
                 //貂蝉任务-杀敌阵亡数量
-                ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-                ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+                ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+                ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
                 boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS; // 是否胜利
 
                 Map<Long, ChangeInfo> changeMap = new HashMap<>(); // 记录需要推送的值
                 // 损兵处理
-                if (attacker.lost > 0) warService.subBattleHeroArm(attacker.forces, changeMap, AwardFrom.SUPER_MINE_BATTLE);
-                if (defender.lost > 0) warService.subBattleHeroArm(defender.forces, changeMap, AwardFrom.SUPER_MINE_BATTLE);
+                if (attacker.lost > 0)
+                    warService.subBattleHeroArm(attacker.forces, changeMap, AwardFrom.SUPER_MINE_BATTLE);
+                if (defender.lost > 0)
+                    warService.subBattleHeroArm(defender.forces, changeMap, AwardFrom.SUPER_MINE_BATTLE);
 
                 // 执行勋章白衣天使特技逻辑
                 medalDataManager.angelInWhite(attacker, recoverArmyAwardMap);
@@ -980,12 +991,12 @@ public class SuperMineService {
                         .post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
 
                 //上报数数(攻击方)
-                EventDataUp.battle(player.account, player.lord,attacker,"atk", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
-                        String.valueOf(fightLogic.getWinState()),player.roleId, rpt.getAtkHeroList());
+                EventDataUp.battle(player.account, player.lord, attacker, "atk", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
+                        String.valueOf(fightLogic.getWinState()), player.roleId, rpt.getAtkHeroList());
                 //上报数数(防守方)
                 defPlayers.forEach(p -> {
-                    EventDataUp.battle(p.account, p.lord,defender,"def", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
-                            String.valueOf(fightLogic.getWinState()),player.roleId, rpt.getDefHeroList());
+                    EventDataUp.battle(p.account, p.lord, defender, "def", CheckNull.isNull(army.getBattleId()) ? "" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_SUPER_MINE),
+                            String.valueOf(fightLogic.getWinState()), player.roleId, rpt.getDefHeroList());
                 });
             } finally {
                 //取消被攻击人报警
@@ -996,6 +1007,7 @@ public class SuperMineService {
 
     /**
      * 添加被攻击报警
+     *
      * @param superMine
      * @param player
      * @param battleTime
@@ -1035,7 +1047,7 @@ public class SuperMineService {
 
     /**
      * 更新兵力
-     * 
+     *
      * @param sm
      * @param now
      */
@@ -1099,7 +1111,7 @@ public class SuperMineService {
 
     /**
      * 移除战斗
-     * 
+     *
      * @param pos
      * @param battleId
      */
@@ -1117,7 +1129,7 @@ public class SuperMineService {
     }
 
     private void addHeroExploit(List<Force> forces, CommonPb.RptAtkPlayer.Builder rpt, AwardFrom from,
-            boolean isAttacker, Map<Long, ChangeInfo> changeMap) {
+                                boolean isAttacker, Map<Long, ChangeInfo> changeMap) {
         for (Force force : forces) {
             // 奖励记录
             ChangeInfo info = changeMap.get(force.ownerId);
@@ -1148,7 +1160,7 @@ public class SuperMineService {
 
     /**
      * 超级矿点驻防
-     * 
+     *
      * @param player
      * @param army
      * @param now
@@ -1234,7 +1246,7 @@ public class SuperMineService {
 
     /**
      * 城池争夺状态修改
-     * 
+     *
      * @param city
      */
     public void changeSuperState(City city) {
@@ -1271,7 +1283,7 @@ public class SuperMineService {
 
     /**
      * 推送采集部队状态
-     * 
+     *
      * @param sm
      * @param now
      */

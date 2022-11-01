@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
@@ -211,13 +212,13 @@ public class BuildingService {
 
             buildingBase = BuildingBase.newBuilder();
             buildingBase.setId(BuildingType.SEASON_TREASURY).setType(BuildingType.SEASON_TREASURY).setLv(1)
-                    .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.SEASON_TREASURY));
+                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.SEASON_TREASURY));
             builder.addBuildingBase(buildingBase);
 
             //码头
             buildingBase = BuildingBase.newBuilder();
             buildingBase.setId(BuildingType.WHARF).setType(BuildingType.WHARF).setLv(1)
-                    .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.WHARF));
+                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WHARF));
             builder.addBuildingBase(buildingBase);
 
             BuildingExt train = player.buildingExts.get(BuildingType.TRAIN_FACTORY_1);
@@ -1639,8 +1640,8 @@ public class BuildingService {
                     AwardFrom.BUILDING_SPEED, que.getPos());
         } else {
             StaticProp prop = StaticPropDataMgr.getPropMap(itemId);
-            if(Objects.isNull(prop))
-                throw new MwException(GameError.NO_CONFIG.getCode(),"招募加速，使用道具加速错误，道具不存在, itemId=" + itemId);
+            if (Objects.isNull(prop))
+                throw new MwException(GameError.NO_CONFIG.getCode(), "招募加速，使用道具加速错误，道具不存在, itemId=" + itemId);
             //计算实际需要几个道具
 //            int a_ = prop.getDuration() / second;
 //            int b_ = prop.getDuration() % second;
@@ -2036,7 +2037,7 @@ public class BuildingService {
         }
         // 获取当前任务id
         // List<Integer> curTaskIds = taskDataManager.getCurTask(player);
-        List<StaticTask> buildTask =  player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
+        List<StaticTask> buildTask = player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
                 .filter(t -> Objects.nonNull(t) && (t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
                         || t.getCond() == TaskType.COND_RES_OIL_CNT || t.getCond() == TaskType.COND_RES_ELE_CNT
                         || t.getCond() == TaskType.COND_RES_ORE_CNT))
@@ -2053,7 +2054,7 @@ public class BuildingService {
                     }
                     // 拿最新的任务状态
                     Task currentTask = taskDataManager.currentMajorTask(player, task, sTask);
-                    return currentTask != null && currentTask.getStatus() == TaskType.TYPE_STATUS_UNFINISH  && currentTask.getSchedule() < sTask.getSchedule();
+                    return currentTask != null && currentTask.getStatus() == TaskType.TYPE_STATUS_UNFINISH && currentTask.getSchedule() < sTask.getSchedule();
                 })
                 .collect(Collectors.toList());
         if (CheckNull.isEmpty(buildTask)) {// 任务中没有建筑升级
@@ -2109,7 +2110,7 @@ public class BuildingService {
      */
     private int getTaskAutoBuildId(Player player, List<StaticTask> buildTask) {
         // 过滤不能自动建造的建筑
-        buildTask = buildTask.stream().filter(st ->  getBuildType(st) != null)
+        buildTask = buildTask.stream().filter(st -> getBuildType(st) != null)
                 .filter(st -> {
                     Turple turple = getBuildType(st);
                     int buildType = (int) turple.getB();

@@ -1,4 +1,4 @@
-package com.gryphpoem.game.zw.resource.util;
+package com.gryphpoem.game.zw.core.util;
 
 public class Turple<T, V> {
     private T a;

@@ -3,6 +3,9 @@ package com.gryphpoem.game.zw.gameplay.local.world.battle;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.service.newyork.NewYorkWarService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
@@ -15,8 +18,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.NewYorkWar;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Report;
@@ -35,7 +36,6 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.WarService;
 import com.gryphpoem.game.zw.service.WorldService;
@@ -53,19 +53,21 @@ import java.util.stream.Collectors;
  *
  * @author pengshuo
  */
-public class NewYorkWarBattle extends AbsCommonBattle{
+public class NewYorkWarBattle extends AbsCommonBattle {
 
     public NewYorkWarBattle(Battle battle) {
         super(battle);
     }
 
-    /** 战斗逻辑 */
+    /**
+     * 战斗逻辑
+     */
     @Override
     public void doFight(int now, MapWarData mapWarData) {
         int pos = getBattle().getPos();
         CrossWorldMap cmap = mapWarData.getCrossWorldMap();
         BaseWorldEntity baseWorldEntity = cmap.getAllMap().get(pos);
-        if (baseWorldEntity == null || baseWorldEntity.getType() != WorldEntityType.CITY){
+        if (baseWorldEntity == null || baseWorldEntity.getType() != WorldEntityType.CITY) {
             // 取消战斗
             cancelBattleAndReturnArmy(mapWarData, CancelBattleType.UNKNOW);
             return;
@@ -79,7 +81,7 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         }
         CrossWorldMapDataManager crossWorldMapDataManager = DataResource.ac.getBean(CrossWorldMapDataManager.class);
         NewYorkWar newYorkWar = crossWorldMapDataManager.getNewYorkWar();
-        if(newYorkWar == null){
+        if (newYorkWar == null) {
             LogUtil.error("纽约争夺战异常结束");
             cancelBattleAndReturnArmy(mapWarData, CancelBattleType.UNKNOW);
             return;
@@ -101,8 +103,8 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         fightLogic.fight();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 军功显赫 <roleId, <heroId, exploit>>
         HashMap<Long, Map<Integer, Integer>> exploitAwardMap = new HashMap<>(5);
@@ -151,7 +153,7 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         rpt.setRecord(record);
         // 记录双方汇总信息
         int cityId = city.getCityId();
-        rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost,-1, null,0, 0));
+        rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, -1, null, 0, 0));
         rpt.setDefCity(PbHelper.createRptCityPb(cityId, pos));
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, battle.getDefCamp(), null, 0, 0));
         Turple<Integer, Integer> atkPos = new Turple<>(0, 0);
@@ -168,9 +170,9 @@ public class NewYorkWarBattle extends AbsCommonBattle{
             armRepair(city, staticCity);
 
             newYorkWar.setFinalOccupyCamp(killCamp);
-            if(newYorkWar.getCurrentRound() + 1 < newYorkWar.getTotalRound()){
+            if (newYorkWar.getCurrentRound() + 1 < newYorkWar.getTotalRound()) {
                 city.setStatus(WorldConstant.CITY_STATUS_CALM);
-            }else{
+            } else {
                 city.setStatus(WorldConstant.CITY_STATUS_FREE);
                 city.setProtectTime(now + WorldConstant.CITY_PROTECT_TIME_NEW_MAP * TimeHelper.MINUTE);
             }
@@ -180,8 +182,8 @@ public class NewYorkWarBattle extends AbsCommonBattle{
                     .collect(Collectors.toList())
                     .stream().map(battleId -> mapWarData.getAllBattles().get(battleId))
                     .filter(b -> b != null).forEach(b ->
-                        b.cancelBattleAndReturnArmy(mapWarData, CancelBattleType.UNKNOW)
-            );
+                            b.cancelBattleAndReturnArmy(mapWarData, CancelBattleType.UNKNOW)
+                    );
         } else {
             // 修改城池状态
             List<BaseMapBattle> cityBattleList = mapWarData.getBattlesByPos(pos);
@@ -212,21 +214,23 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         report.setRptPlayer(rpt);
         // recordMap
         Map<Long, FightRecord> recordMap = new HashMap<>(8);
-        recordRoleFight(recordMap,attacker.forces,true);
-        recordRoleFight(recordMap,defender.forces,false);
+        recordRoleFight(recordMap, attacker.forces, true);
+        recordRoleFight(recordMap, defender.forces, false);
         // 纽约争霸奖励
         Map<Long, List<CommonPb.Award>> dropMap = sendResourceReward(recordMap, changeMap);
         // 发送战报
-        sendNewYorkWarBattleMail(battle,atkSuccess,report,recordMap,dropMap,now,recoverArmyAwardMap,atkPos,aliveForceLordId);
+        sendNewYorkWarBattleMail(battle, atkSuccess, report, recordMap, dropMap, now, recoverArmyAwardMap, atkPos, aliveForceLordId);
         // 推送改点的信息
         mapWarData.getCrossWorldMap().publishMapEvent(MapEvent.mapEntity(battle.getPos(), MapCurdEvent.UPDATE));
         // 通知客户端玩家资源变化
         warService.sendRoleResChange(changeMap);
         // 战斗打日志
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
 
-    /** 加入战斗 */
+    /**
+     * 加入战斗
+     */
     @Override
     public void joinBattle(AttackParamDto param) throws MwException {
         int now = TimeHelper.getCurrentSecond();
@@ -244,19 +248,19 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         if (camp == battle.getDefCamp()) {
             battle.getDefRoles().add(roleId);
             int count = battle.getDefArm() + param.getArmCount();
-            if(count < 0){
+            if (count < 0) {
                 battle.setDefArm(0);
-            }else{
+            } else {
                 battle.setDefArm(count);
             }
         } else {
             WorldService worldService = DataResource.ac.getBean(WorldService.class);
-            worldService.removeProTect(player,AwardFrom.NEW_YORK_WAR,battle.getPos());
+            worldService.removeProTect(player, AwardFrom.NEW_YORK_WAR, battle.getPos());
             battle.getAtkRoles().add(roleId);
             int count = battle.getAtkArm() + param.getArmCount();
-            if(count < 0){
+            if (count < 0) {
                 battle.setAtkArm(0);
-            }else{
+            } else {
                 battle.setAtkArm(count);
             }
         }
@@ -288,69 +292,73 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         }
     }
 
-    /** 发送纽约争霸战报 */
+    /**
+     * 发送纽约争霸战报
+     */
     private void sendNewYorkWarBattleMail(Battle battle, boolean atkSuccess, Report.Builder report
-            ,Map<Long, FightRecord> recordMap,Map<Long,List<CommonPb.Award>> dropMap,int now
-            ,Map<Long,List<CommonPb.Award>> recoverArmyAwardMap,Turple<Integer, Integer> atkPos,long aliveForceLordId){
+            , Map<Long, FightRecord> recordMap, Map<Long, List<CommonPb.Award>> dropMap, int now
+            , Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Turple<Integer, Integer> atkPos, long aliveForceLordId) {
         MailDataManager mailDataManager = DataResource.ac.getBean(MailDataManager.class);
         PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
         int defineCamp = battle.getDefCamp();
-        int a = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s-> s.get(0)).orElse(1);
-        int b = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s-> s.get(1)).orElse(1);
+        int a = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s -> s.get(0)).orElse(1);
+        int b = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s -> s.get(1)).orElse(1);
         // 攻打成功
-        if(atkSuccess){
+        if (atkSuccess) {
             // 攻击方发送攻击成功战报
             String alivePlayerNick =
-                    Optional.ofNullable(playerDataManager.getPlayer(aliveForceLordId)).map(p-> p.lord.getNick()).orElse("");
-            battle.getAtkRoles().forEach(lordId ->{
+                    Optional.ofNullable(playerDataManager.getPlayer(aliveForceLordId)).map(p -> p.lord.getNick()).orElse("");
+            battle.getAtkRoles().forEach(lordId -> {
                 Player player = playerDataManager.getPlayer(lordId);
-                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r->r.getLost()).orElse(0);
+                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r -> r.getLost()).orElse(0);
                 Optional.ofNullable(player).ifPresent(p ->
-                    mailDataManager.sendReportMail(p,report,MailConstant.MOLD_NEWYORK_WAR_ROUND_ATTACK_SUCCESS,
-                            dropMap.get(lordId),now,recoverArmyAwardMap,defineCamp,defineCamp,alivePlayerNick,
-                            atkPos.getA(),atkPos.getB(),lost,lost * b / a)
+                        mailDataManager.sendReportMail(p, report, MailConstant.MOLD_NEWYORK_WAR_ROUND_ATTACK_SUCCESS,
+                                dropMap.get(lordId), now, recoverArmyAwardMap, defineCamp, defineCamp, alivePlayerNick,
+                                atkPos.getA(), atkPos.getB(), lost, lost * b / a)
                 );
             });
             // 防守方发送防守失败战报
-            battle.getDefRoles().forEach(lordId ->{
+            battle.getDefRoles().forEach(lordId -> {
                 Player player = playerDataManager.getPlayer(lordId);
-                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r->r.getLost()).orElse(0);
+                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r -> r.getLost()).orElse(0);
                 Optional.ofNullable(player).ifPresent(p ->
-                    mailDataManager.sendReportMail(p,report,MailConstant.MOLD_NEWYORK_WAR_ROUND_DEFINE_FAIL,
-                            dropMap.get(lordId),now,recoverArmyAwardMap,defineCamp,defineCamp,lost,lost * b / a)
+                        mailDataManager.sendReportMail(p, report, MailConstant.MOLD_NEWYORK_WAR_ROUND_DEFINE_FAIL,
+                                dropMap.get(lordId), now, recoverArmyAwardMap, defineCamp, defineCamp, lost, lost * b / a)
                 );
             });
         }
         // 攻打失败
-        else{
+        else {
             // 攻击方发送攻击失败战报
-            battle.getAtkRoles().forEach(lordId ->{
+            battle.getAtkRoles().forEach(lordId -> {
                 Player player = playerDataManager.getPlayer(lordId);
-                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r->r.getLost()).orElse(0);
+                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r -> r.getLost()).orElse(0);
                 Optional.ofNullable(player).ifPresent(p ->
-                    mailDataManager.sendReportMail(p,report,MailConstant.MOLD_NEWYORK_WAR_ROUND_ATTACK_FAIL,
-                            dropMap.get(lordId),now,recoverArmyAwardMap,defineCamp,defineCamp,lost,lost * b / a)
+                        mailDataManager.sendReportMail(p, report, MailConstant.MOLD_NEWYORK_WAR_ROUND_ATTACK_FAIL,
+                                dropMap.get(lordId), now, recoverArmyAwardMap, defineCamp, defineCamp, lost, lost * b / a)
                 );
             });
             // 防守方发送防守成功战报
-            battle.getDefRoles().forEach(lordId ->{
+            battle.getDefRoles().forEach(lordId -> {
                 Player player = playerDataManager.getPlayer(lordId);
-                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r->r.getLost()).orElse(0);
+                int lost = Optional.ofNullable(recordMap.get(lordId)).map(r -> r.getLost()).orElse(0);
                 Optional.ofNullable(player).ifPresent(p ->
-                    mailDataManager.sendReportMail(player,report,MailConstant.MOLD_NEWYORK_WAR_ROUND_DEFINE_SUCCESS,
-                            dropMap.get(lordId),now,recoverArmyAwardMap,defineCamp,defineCamp,lost,lost * b / a)
+                        mailDataManager.sendReportMail(player, report, MailConstant.MOLD_NEWYORK_WAR_ROUND_DEFINE_SUCCESS,
+                                dropMap.get(lordId), now, recoverArmyAwardMap, defineCamp, defineCamp, lost, lost * b / a)
                 );
             });
         }
     }
 
-    /** 奖励生成 */
+    /**
+     * 奖励生成
+     */
     private Map<Long, List<CommonPb.Award>> sendResourceReward(Map<Long, FightRecord> recordMap, Map<Long, ChangeInfo> changeMap) {
         Map<Long, List<CommonPb.Award>> campDropMap = new HashMap<>(10);
         PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
         RewardDataManager rewardDataManager = DataResource.ac.getBean(RewardDataManager.class);
-        int a = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s-> s.get(0)).orElse(1);
-        int b = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s-> s.get(1)).orElse(1);
+        int a = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s -> s.get(0)).orElse(1);
+        int b = Optional.ofNullable(WorldConstant.NEWYORK_WAR_LOST_EXP).map(s -> s.get(1)).orElse(1);
         for (FightRecord record : recordMap.values()) {
             Player player = playerDataManager.getPlayer(record.getRoleId());
             if (player == null) {
@@ -361,12 +369,12 @@ public class NewYorkWarBattle extends AbsCommonBattle{
                 info = ChangeInfo.newIns();
                 changeMap.put(record.getRoleId(), info);
             }
-            if(record.getLost() > 0){
+            if (record.getLost() > 0) {
                 // 损兵增加 玩家经验*5
                 int exp = record.getLost() * b / a;
                 List<CommonPb.Award> dropList = new ArrayList<>(2);
                 campDropMap.put(record.getRoleId(), dropList);
-                rewardDataManager.addAward(player, AwardType.MONEY, AwardType.Money.EXP, exp,AwardFrom.NEWYORK_WAR_JOIN_AWARD);
+                rewardDataManager.addAward(player, AwardType.MONEY, AwardType.Money.EXP, exp, AwardFrom.NEWYORK_WAR_JOIN_AWARD);
                 dropList.add(PbHelper.createAwardPb(AwardType.MONEY, AwardType.Money.EXP, exp));
                 info.addChangeType(AwardType.MONEY, AwardType.Money.EXP);
             }
@@ -374,20 +382,22 @@ public class NewYorkWarBattle extends AbsCommonBattle{
         return campDropMap;
     }
 
-    /** 统计战斗记录 */
-    private void recordRoleFight( Map<Long, FightRecord> recordMap,List<Force> forces,boolean attacker){
-        Optional.ofNullable(forces).ifPresent(fs->
-            fs.stream().filter(f-> f.roleType == Constant.Role.PLAYER && f.ownerId != 0).forEach(f->{
-                long roleId = f.ownerId;
-                FightRecord record = recordMap.get(roleId);
-                if (null == record) {
-                    record = new FightRecord(roleId);
-                    recordMap.put(roleId, record);
-                }
-                record.addLost(f.totalLost);
-                record.addKilled(f.killed);
-                record.setAttacker(attacker);
-            })
+    /**
+     * 统计战斗记录
+     */
+    private void recordRoleFight(Map<Long, FightRecord> recordMap, List<Force> forces, boolean attacker) {
+        Optional.ofNullable(forces).ifPresent(fs ->
+                fs.stream().filter(f -> f.roleType == Constant.Role.PLAYER && f.ownerId != 0).forEach(f -> {
+                    long roleId = f.ownerId;
+                    FightRecord record = recordMap.get(roleId);
+                    if (null == record) {
+                        record = new FightRecord(roleId);
+                        recordMap.put(roleId, record);
+                    }
+                    record.addLost(f.totalLost);
+                    record.addKilled(f.killed);
+                    record.setAttacker(attacker);
+                })
         );
     }
 }

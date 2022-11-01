@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
@@ -9,7 +11,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.WFCityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
@@ -27,7 +28,6 @@ import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.WarService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;

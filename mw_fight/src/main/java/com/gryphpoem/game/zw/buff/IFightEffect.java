@@ -3,6 +3,8 @@ package com.gryphpoem.game.zw.buff;
 import com.gryphpoem.game.zw.data.p.EffectValueData;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 
+import java.util.List;
+
 /**
  * Description: 效果接口
  * <p>
@@ -10,6 +12,9 @@ import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
  * createTime: 2022-10-20 17:24
  */
 public interface IFightEffect<T> {
+
+    int effectType();
+
     /**
      * 效果生效
      *
@@ -18,7 +23,7 @@ public interface IFightEffect<T> {
      * @param params
      * @return
      */
-    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, Object... params);
+    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, Object... params);
 
     /**
      * 效果结束, 属性等还原
@@ -28,7 +33,7 @@ public interface IFightEffect<T> {
      * @param params
      * @return
      */
-    void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, Object... params);
+    void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, Object... params);
 
     /**
      * 算出效果强度值
@@ -50,12 +55,11 @@ public interface IFightEffect<T> {
     EffectValueData compareTo(EffectValueData<T> e1, EffectValueData<T> e2);
 
     /**
-     * 相同效果之前的覆盖或叠加
+     * 公式结算时, 算出效果值参数
      *
-     * @param originFightBuff
-     * @param effectValue
      * @param contextHolder
      * @param params
+     * @return
      */
-    void effectCalculateValue(IFightBuff originFightBuff, T effectValue, FightContextHolder contextHolder, Object... params);
+    List<Integer> effectCalculateValue(FightContextHolder contextHolder, Object... params);
 }

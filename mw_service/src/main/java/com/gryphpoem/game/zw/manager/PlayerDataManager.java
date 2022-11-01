@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -27,8 +28,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.Task;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -518,9 +519,10 @@ public class PlayerDataManager implements PlayerDM {
 
     /**
      * 创建全服唯一的id
+     *
      * @param account 账号信息
-     * @param lord 角色信息
-     * @return long 由创建唯一id服务创建, 这里还有有重复的风险。例如单服单渠道的导入到上限了999999； null 没有获取到lordId 
+     * @param lord    角色信息
+     * @return long 由创建唯一id服务创建, 这里还有有重复的风险。例如单服单渠道的导入到上限了999999； null 没有获取到lordId
      */
     private Long createLordId(Account account, Lord lord) {
         Long lordId = null;
@@ -1002,7 +1004,7 @@ public class PlayerDataManager implements PlayerDM {
             } else {
                 lord.setPowerTime(now);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             LogUtil.error(e);
         }
     }
@@ -1059,6 +1061,7 @@ public class PlayerDataManager implements PlayerDM {
 
     /**
      * 赛季天赋优化增益
+     *
      * @param player
      * @return
      */
@@ -1358,5 +1361,5 @@ public class PlayerDataManager implements PlayerDM {
         return allPlayer;
     }
 
-    
+
 }
