@@ -206,4 +206,24 @@ public class StaticIniDao extends BaseDao {
     public Map<Integer, StaticRelicFraction> selectStaticRelicFractionMap() {
         return getMapper(StaticIniMapper.class).selectStaticRelicFractionMap();
     }
+
+    public List<StaticSimulatorChoose> selectStaticSimulatorChooseList() {
+        return getMapper(StaticIniMapper.class).selectStaticSimulatorChooseList();
+    }
+
+    public List<StaticSimulatorStep> selectStaticSimulatorStepList() {
+        return getMapper(StaticIniMapper.class).selectStaticSimulatorStepList();
+    }
+
+    public List<StaticCharacter> selectStaticCharacterList() {
+        return getMapper(StaticIniMapper.class).selectStaticCharacterList();
+    }
+
+    public List<StaticCharacterReward> selectStaticCharacterRewardList() {
+        return getMapper(StaticIniMapper.class).selectStaticCharacterRewardList();
+    }
+
+    public List<StaticSimCity> selectStaticSimCityList() {
+        return getMapper(StaticIniMapper.class).selectStaticSimCityList();
+    }
 }

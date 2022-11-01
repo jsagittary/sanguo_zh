@@ -344,4 +344,39 @@ public interface StaticIniMapper {
     })
     @MapKey("id")
     Map<Integer, StaticRelicFraction> selectStaticRelicFractionMap();
+
+    @Select("select * from sim_choose")
+    @Results({
+            @Result(column = "reward", property = "rewardList", typeHandler = ListListTypeHandler.class),
+            @Result(column = "miniGame", property = "miniGame", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "buff", property = "buff", typeHandler = ListListTypeHandler.class),
+            @Result(column = "characterFix", property = "characterFix", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticSimulatorChoose> selectStaticSimulatorChooseList();
+
+    @Select("select * from sim_beginnerguide")
+    @Results({
+            @Result(column = "choose", property = "choose", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticSimulatorStep> selectStaticSimulatorStepList();
+
+    @Select("select * from sim_lord_character")
+    @Results({
+            @Result(column = "range", property = "range", typeHandler = ListIntTypeHandler.class)
+    })
+    List<StaticCharacter> selectStaticCharacterList();
+
+    @Select("select * from sim_character_reward")
+    @Results({
+            @Result(column = "need", property = "need", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "reward", property = "reward", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticCharacterReward> selectStaticCharacterRewardList();
+
+    @Select("select * from sim_city")
+    @Results({
+            @Result(column = "buildLv", property = "buildLv", typeHandler = ListListTypeHandler.class),
+            @Result(column = "open", property = "open", typeHandler = ListIntTypeHandler.class)
+    })
+    List<StaticSimCity> selectStaticSimCityList();
 }

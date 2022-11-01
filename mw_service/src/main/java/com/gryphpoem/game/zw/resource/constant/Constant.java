@@ -1029,6 +1029,11 @@ public final class Constant {
     public static List<List<Integer>> REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION;
 
     /**
+     * 城镇事件刷新配置 [刷新周期, 同一周期内刷新上限]
+     */
+    public static List<Integer> CITY_EVENT_REFRESH_CONFIG;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
@@ -1330,6 +1335,7 @@ public final class Constant {
         EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = SystemTabLoader.getListListIntSystemValue(SystemId.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT, "[[]]");
         BATTLE_PICK_BOX_DROP_CAP = SystemTabLoader.getListListIntSystemValue(SystemId.BATTLE_PICK_BOX_DROP_CAP, "[[]]");
         REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = SystemTabLoader.getListListIntSystemValue(SystemId.REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION, "[[]]");
+        CITY_EVENT_REFRESH_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.CITY_EVENT_REFRESH_CONFIG, "[]");
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

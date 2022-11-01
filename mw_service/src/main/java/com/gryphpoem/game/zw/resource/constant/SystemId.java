@@ -1953,4 +1953,9 @@ public class SystemId {
      */
     public static final int CROSS_WAR_FIRE_WINNER_PORTRAIT = 2012;
 
+    /**
+     * 城镇事件刷新配置
+     */
+    public static final int CITY_EVENT_REFRESH_CONFIG = 800;
+
 }

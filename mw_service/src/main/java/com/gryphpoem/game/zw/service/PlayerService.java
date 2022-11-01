@@ -6,36 +6,136 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
+import com.gryphpoem.game.zw.manager.BattlePassDataManager;
+import com.gryphpoem.game.zw.manager.BuildingDataManager;
+import com.gryphpoem.game.zw.manager.ChatDataManager;
+import com.gryphpoem.game.zw.manager.GlobalDataManager;
+import com.gryphpoem.game.zw.manager.MailDataManager;
+import com.gryphpoem.game.zw.manager.MedalDataManager;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RankDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.SmallIdManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.VipDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.ChemicalQue;
 import com.gryphpoem.game.zw.pb.CommonPb.OffLineBuild;
-import com.gryphpoem.game.zw.pb.GamePb1.*;
+import com.gryphpoem.game.zw.pb.GamePb1.BeginGameRs;
+import com.gryphpoem.game.zw.pb.GamePb1.CreateRoleRq;
+import com.gryphpoem.game.zw.pb.GamePb1.CreateRoleRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetLordRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetTimeRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GiftCodeRs;
+import com.gryphpoem.game.zw.pb.GamePb1.RoleLoginRs;
+import com.gryphpoem.game.zw.pb.GamePb1.SeachPlayerRq;
+import com.gryphpoem.game.zw.pb.GamePb1.SeachPlayerRs;
+import com.gryphpoem.game.zw.pb.GamePb1.SetGuideRq;
+import com.gryphpoem.game.zw.pb.GamePb1.SetGuideRs;
 import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.pb.GamePb4.*;
+import com.gryphpoem.game.zw.pb.GamePb4.ChangeChatBubbleRq;
+import com.gryphpoem.game.zw.pb.GamePb4.ChangeChatBubbleRs;
+import com.gryphpoem.game.zw.pb.GamePb4.ChangeLordNameRs;
+import com.gryphpoem.game.zw.pb.GamePb4.ChangeSignatureRs;
+import com.gryphpoem.game.zw.pb.GamePb4.CompareNotesRs;
+import com.gryphpoem.game.zw.pb.GamePb4.GetMixtureDataRs;
+import com.gryphpoem.game.zw.pb.GamePb4.GetMonthCardRs;
+import com.gryphpoem.game.zw.pb.GamePb4.JoinCommunityRs;
+import com.gryphpoem.game.zw.pb.GamePb4.OffLineIncomeRs;
+import com.gryphpoem.game.zw.pb.GamePb4.OnHookGetAwardRs;
+import com.gryphpoem.game.zw.pb.GamePb4.OnHookGetInfoRs;
+import com.gryphpoem.game.zw.pb.GamePb4.OnHookOperateRs;
+import com.gryphpoem.game.zw.pb.GamePb4.OnHookReplenishRs;
+import com.gryphpoem.game.zw.pb.GamePb4.SyncForceUpdateRs;
+import com.gryphpoem.game.zw.pb.GamePb4.SyncLoginStateRs;
+import com.gryphpoem.game.zw.pb.GamePb4.SyncOnHookDataRs;
 import com.gryphpoem.game.zw.pb.HttpPb.SendRoleInfosRq;
 import com.gryphpoem.game.zw.pb.HttpPb.UseGiftCodeRq;
 import com.gryphpoem.game.zw.pb.HttpPb.UseGiftCodeRs;
 import com.gryphpoem.game.zw.pb.HttpPb.VerifyRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.ChatConst;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.EArmyType;
+import com.gryphpoem.game.zw.resource.constant.EffectConstant;
+import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.GlobalConstant;
+import com.gryphpoem.game.zw.resource.constant.LoginConstant;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.PartyConstant;
+import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
+import com.gryphpoem.game.zw.resource.constant.PropConstant;
+import com.gryphpoem.game.zw.resource.constant.PushConstant;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.Role;
-import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.domain.p.Account;
+import com.gryphpoem.game.zw.resource.domain.p.Activity;
+import com.gryphpoem.game.zw.resource.domain.p.ArmQue;
+import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.p.Chemical;
+import com.gryphpoem.game.zw.resource.domain.p.DecisiveInfo;
+import com.gryphpoem.game.zw.resource.domain.p.Effect;
+import com.gryphpoem.game.zw.resource.domain.p.EquipQue;
+import com.gryphpoem.game.zw.resource.domain.p.Factory;
+import com.gryphpoem.game.zw.resource.domain.p.Lord;
+import com.gryphpoem.game.zw.resource.domain.p.Mill;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerOnHook;
+import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.p.TargetServerCamp;
+import com.gryphpoem.game.zw.resource.domain.p.Tech;
+import com.gryphpoem.game.zw.resource.domain.p.TechLv;
+import com.gryphpoem.game.zw.resource.domain.p.TechQue;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticChatBubble;
+import com.gryphpoem.game.zw.resource.domain.s.StaticGuidAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticPay;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.daily.HonorDaily;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.AccountHelper;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.ChatHelper;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.EmojiHelper;
+import com.gryphpoem.game.zw.resource.util.ListUtils;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.NumberHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.PushMessageUtil;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.server.SavePlayerServer;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -44,6 +144,7 @@ import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.activity.AnniversaryEggService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
+import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,8 +154,18 @@ import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -137,6 +248,8 @@ public class PlayerService implements GmCmdService {
     private String initName;
     @Autowired
     private TreasureChallengePlayerService challengePlayerService;
+    @Autowired
+    private LifeSimulatorService lifeSimulatorService;
 
     /**
      * 账号服务器的验证返回处理
@@ -356,11 +469,46 @@ public class PlayerService implements GmCmdService {
             }
 
             if (playerDataManager.takeNick(nick)) {
+                // 领主初始属性配置
                 StaticIniLord ini = StaticIniDataMgr.getLordIniData();
+                // 初始模拟器的奖励及性格影响
+                boolean isEnd = false;
+                List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = req.getLifeSimulatorStepList();
+                List<List<Integer>> finalRewardList = new ArrayList<>();
+                List<List<Integer>> finalCharacterFixList = new ArrayList<>();
+                int portrait = ini.getPortrait();
+                for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
+                    int chooseId = lifeSimulatorStep.getChooseId();
+                    if (chooseId > 0) {
+                        StaticSimulatorChoose sSimulatorChoose = StaticDataMgr.getStaticSimulatorChoose(chooseId);
+                        // 性格值变化
+                        List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
+                        finalCharacterFixList.addAll(characterFix);
+                        List<List<Integer>> rewardList = sSimulatorChoose.getRewardList();
+                        List<Integer> portraitAward = rewardList.stream().filter(tmp -> tmp.size() == 4 && tmp.get(0) == AwardType.PORTRAIT).findFirst().orElse(null);
+                        if (portraitAward != null) {
+                            portrait = portraitAward.get(1); // 头像类型的奖励, 小类即其具体id, 对应s_portrait的id
+                        }
+                        finalRewardList.addAll(rewardList);
+                        // TODO 更新buff增益
+                        List<List<Integer>> buff = sSimulatorChoose.getBuff();
+                    }
+                    int stepId = lifeSimulatorStep.getStepId();
+                    StaticSimulatorStep staticSimulatorStep = StaticDataMgr.getStaticSimulatorStep(stepId);
+                    // 根据配置, 判断模拟器是否结束
+                    if (!isEnd) {
+                        long nextId = staticSimulatorStep.getNextId();
+                        List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
+                        boolean isExistForwardStep = staticChooseList.stream().anyMatch(temp -> temp.get(0) == (long) chooseId && temp.get(1) == 0L);
+                        if (nextId == 0L && isExistForwardStep) {
+                            isEnd = true;
+                        }
+                    }
+                }
                 int recommendCamp = tjCamp != 0 ? tjCamp : newPlayer.lord.getCamp();// 优先选择客户端传过来的推荐阵营(合服需求)
                 newPlayer.account.setCreated(LoginConstant.ROLE_CREATED);
                 newPlayer.account.setCreateDate(new Date());
-                newPlayer.lord.setPortrait(ini.getPortrait());
+                newPlayer.lord.setPortrait(portrait);
                 newPlayer.lord.setSex(ini.getSex());
                 newPlayer.lord.setNick(nick);
                 newPlayer.lord.setCamp(camp);
@@ -411,6 +559,43 @@ public class PlayerService implements GmCmdService {
                     }
                     // 特殊将领皮肤设置
                     newPlayer.heroSkin = heroSkin;
+
+                    // 玩家将模拟器玩完, 再发送奖励
+                    if (isEnd) {
+                        // 更新性格值并发送对应奖励
+                        if (CheckNull.nonEmpty(finalCharacterFixList)) {
+                            if (CheckNull.isEmpty(player.getCharacterData())) {
+                                player.setCharacterData(new HashMap<>(6));
+                            }
+                            if (CheckNull.isEmpty(player.getCharacterRewardRecord())) {
+                                player.setCharacterRewardRecord(new HashMap<>(8));
+                            }
+                            for (List<Integer> characterChange : finalCharacterFixList) {
+                                Integer index = characterChange.get(0);
+                                Integer value = characterChange.get(1);
+                                Integer addOrSub = characterChange.get(0);
+                                lifeSimulatorService.updateCharacterData(player.getCharacterData(), index, value, addOrSub);
+                            }
+                            lifeSimulatorService.checkAndSendCharacterReward(player);
+                        }
+                        // 更新对应奖励变化
+                        if (CheckNull.nonEmpty(finalRewardList)) {
+                            for (List<Integer> reward : finalRewardList) {
+                                Integer awardType = reward.get(0);
+                                Integer awardId = reward.get(1);
+                                Integer awardCount = reward.get(2);
+                                Integer addOrSub = reward.get(3);
+                                switch (addOrSub) {
+                                    case 1:
+                                        rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
+                                        break;
+                                    case 0:
+                                        rewardDataManager.checkAndSubPlayerRes(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, true, "");
+                                        break;
+                                }
+                            }
+                        }
+                    }
 
                     playerDataManager.campRoleNumArr[camp]++;
                     // mailDataManager.sendNormalMail(player, MailConstant.MOLD_MAIL_WELLCOME,
@@ -857,6 +1042,7 @@ public class PlayerService implements GmCmdService {
             builder.setFishingGuide(player.getFishingData().getGuide());
             builder.setFirstMakeTw(player.getMakeTreasureWare().createPb(false));
             builder.setAncientBook(player.lord.getAncientBook());
+            builder.addAllCharacter(PbHelper.createTwoIntListByMap(player.getCharacterData()));
             return builder.build();
         }
         return null;

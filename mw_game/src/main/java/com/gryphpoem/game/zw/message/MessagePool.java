@@ -89,6 +89,8 @@ import com.gryphpoem.game.zw.handler.client.season.*;
 import com.gryphpoem.game.zw.handler.client.shop.*;
 import com.gryphpoem.game.zw.handler.client.signin.GetSignInInfoRqHandler;
 import com.gryphpoem.game.zw.handler.client.signin.GetSignInRewardRqHandler;
+import com.gryphpoem.game.zw.handler.client.simulator.GetSimulatorInfoHandler;
+import com.gryphpoem.game.zw.handler.client.simulator.RecordSimulatorHandler;
 import com.gryphpoem.game.zw.handler.client.smallgame.DrawSmallGameAwardHandler;
 import com.gryphpoem.game.zw.handler.client.smallgame.GetSmallGameHandler;
 import com.gryphpoem.game.zw.handler.client.stone.*;
@@ -1377,6 +1379,10 @@ public class MessagePool implements IMessagePool {
         registerC(GetRelicDataInfoRq.EXT_FIELD_NUMBER, GetRelicDataInfoRs.EXT_FIELD_NUMBER, GetRelicDataInfoHandler.class);
         registerC(GetRelicDetailRq.EXT_FIELD_NUMBER, GetRelicDetailRs.EXT_FIELD_NUMBER, GetRelicDetailHandler.class);
         registerC(GetRelicScoreAwardRq.EXT_FIELD_NUMBER, GetRelicScoreAwardRs.EXT_FIELD_NUMBER, GetRelicScoreAwardHandler.class);
+
+        // 记录模拟器信息
+        registerC(RecordLifeSimulatorRq.EXT_FIELD_NUMBER, RecordLifeSimulatorRs.EXT_FIELD_NUMBER, RecordSimulatorHandler.class);
+        registerC(GetLifeSimulatorInfoRq.EXT_FIELD_NUMBER, GetLifeSimulatorInfoRs.EXT_FIELD_NUMBER, GetSimulatorInfoHandler.class);
     }
 
     /**

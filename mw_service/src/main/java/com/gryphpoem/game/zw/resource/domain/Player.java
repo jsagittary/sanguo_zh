@@ -10,48 +10,149 @@ import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.*;
+import com.gryphpoem.game.zw.pb.CommonPb.Award;
+import com.gryphpoem.game.zw.pb.CommonPb.BuildingBase;
+import com.gryphpoem.game.zw.pb.CommonPb.ChemicalQue;
+import com.gryphpoem.game.zw.pb.CommonPb.CombatFB;
+import com.gryphpoem.game.zw.pb.CommonPb.DbSpecialProp;
+import com.gryphpoem.game.zw.pb.CommonPb.IntListInt;
+import com.gryphpoem.game.zw.pb.CommonPb.OffLineBuild;
+import com.gryphpoem.game.zw.pb.CommonPb.Report;
+import com.gryphpoem.game.zw.pb.CommonPb.RobinHood;
+import com.gryphpoem.game.zw.pb.CommonPb.RoleOpt;
+import com.gryphpoem.game.zw.pb.CommonPb.SignInInfo;
+import com.gryphpoem.game.zw.pb.CommonPb.StrInt;
+import com.gryphpoem.game.zw.pb.CommonPb.TotemDataInfo;
+import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
+import com.gryphpoem.game.zw.pb.CommonPb.TypeAwards;
 import com.gryphpoem.game.zw.pb.SerializePb;
-import com.gryphpoem.game.zw.pb.SerializePb.*;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.pb.SerializePb.DbActivity;
+import com.gryphpoem.game.zw.pb.SerializePb.DbAirshipPersonData;
+import com.gryphpoem.game.zw.pb.SerializePb.DbAtkCityAct;
+import com.gryphpoem.game.zw.pb.SerializePb.DbDay7Act;
+import com.gryphpoem.game.zw.pb.SerializePb.DbDay7ActStatus;
+import com.gryphpoem.game.zw.pb.SerializePb.DbTriggerGiftMap;
+import com.gryphpoem.game.zw.pb.SerializePb.DbWarPlane;
+import com.gryphpoem.game.zw.pb.SerializePb.SerAcquisition;
+import com.gryphpoem.game.zw.pb.SerializePb.SerActivity;
+import com.gryphpoem.game.zw.pb.SerializePb.SerArmy;
+import com.gryphpoem.game.zw.pb.SerializePb.SerBuildQue;
+import com.gryphpoem.game.zw.pb.SerializePb.SerCabinet;
+import com.gryphpoem.game.zw.pb.SerializePb.SerChapterTask;
+import com.gryphpoem.game.zw.pb.SerializePb.SerChemical;
+import com.gryphpoem.game.zw.pb.SerializePb.SerCombat;
+import com.gryphpoem.game.zw.pb.SerializePb.SerCombatFb;
+import com.gryphpoem.game.zw.pb.SerializePb.SerCrossPersonalData;
+import com.gryphpoem.game.zw.pb.SerializePb.SerData;
+import com.gryphpoem.game.zw.pb.SerializePb.SerDrawCardData;
+import com.gryphpoem.game.zw.pb.SerializePb.SerEffects;
+import com.gryphpoem.game.zw.pb.SerializePb.SerEquip;
+import com.gryphpoem.game.zw.pb.SerializePb.SerEquipQue;
+import com.gryphpoem.game.zw.pb.SerializePb.SerFactory;
+import com.gryphpoem.game.zw.pb.SerializePb.SerFriend;
+import com.gryphpoem.game.zw.pb.SerializePb.SerGains;
+import com.gryphpoem.game.zw.pb.SerializePb.SerHero;
+import com.gryphpoem.game.zw.pb.SerializePb.SerMasterApprentice;
+import com.gryphpoem.game.zw.pb.SerializePb.SerMedal;
+import com.gryphpoem.game.zw.pb.SerializePb.SerMill;
+import com.gryphpoem.game.zw.pb.SerializePb.SerPlayerExt;
+import com.gryphpoem.game.zw.pb.SerializePb.SerProp;
+import com.gryphpoem.game.zw.pb.SerializePb.SerRoleOpt;
+import com.gryphpoem.game.zw.pb.SerializePb.SerShop;
+import com.gryphpoem.game.zw.pb.SerializePb.SerSignInInfo;
+import com.gryphpoem.game.zw.pb.SerializePb.SerSuperEquip;
+import com.gryphpoem.game.zw.pb.SerializePb.SerSuperEquipQue;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTask;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTech;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTreasure;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTreasureWares;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTriggerGift;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTrophy;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTypeAwards;
+import com.gryphpoem.game.zw.pb.SerializePb.SerTypeInfo;
+import com.gryphpoem.game.zw.pb.SerializePb.SerWallNpc;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.EffectConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
+import com.gryphpoem.game.zw.resource.constant.PushConstant;
+import com.gryphpoem.game.zw.resource.domain.p.Account;
 import com.gryphpoem.game.zw.resource.domain.p.ActBarton;
 import com.gryphpoem.game.zw.resource.domain.p.ActBlackhawk;
+import com.gryphpoem.game.zw.resource.domain.p.ActRobinHood;
+import com.gryphpoem.game.zw.resource.domain.p.ActTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.ArmQue;
+import com.gryphpoem.game.zw.resource.domain.p.AtkCityAct;
 import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
+import com.gryphpoem.game.zw.resource.domain.p.Building;
+import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
+import com.gryphpoem.game.zw.resource.domain.p.Chemical;
+import com.gryphpoem.game.zw.resource.domain.p.Cia;
+import com.gryphpoem.game.zw.resource.domain.p.CityEvent;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
+import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
+import com.gryphpoem.game.zw.resource.domain.p.CombatInfo;
+import com.gryphpoem.game.zw.resource.domain.p.Common;
+import com.gryphpoem.game.zw.resource.domain.p.CrossPersonalData;
+import com.gryphpoem.game.zw.resource.domain.p.CrossPlayerLocalData;
+import com.gryphpoem.game.zw.resource.domain.p.DataNew;
 import com.gryphpoem.game.zw.resource.domain.p.Day7Act;
 import com.gryphpoem.game.zw.resource.domain.p.DbFriend;
 import com.gryphpoem.game.zw.resource.domain.p.DbMasterApprentice;
+import com.gryphpoem.game.zw.resource.domain.p.DecisiveInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.p.EquipQue;
+import com.gryphpoem.game.zw.resource.domain.p.EquipTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Factory;
 import com.gryphpoem.game.zw.resource.domain.p.Gains;
 import com.gryphpoem.game.zw.resource.domain.p.History;
+import com.gryphpoem.game.zw.resource.domain.p.LifeSimulatorInfo;
+import com.gryphpoem.game.zw.resource.domain.p.Lord;
+import com.gryphpoem.game.zw.resource.domain.p.MailData;
+import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.p.MultCombat;
+import com.gryphpoem.game.zw.resource.domain.p.PersonalActs;
 import com.gryphpoem.game.zw.resource.domain.p.PitchCombat;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerOnHook;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerRebellion;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.p.Sectiontask;
+import com.gryphpoem.game.zw.resource.domain.p.Shop;
+import com.gryphpoem.game.zw.resource.domain.p.SiginInfo;
 import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
 import com.gryphpoem.game.zw.resource.domain.p.StoneInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Summon;
 import com.gryphpoem.game.zw.resource.domain.p.Tech;
+import com.gryphpoem.game.zw.resource.domain.p.TechLv;
 import com.gryphpoem.game.zw.resource.domain.p.TechQue;
+import com.gryphpoem.game.zw.resource.domain.p.Treasure;
+import com.gryphpoem.game.zw.resource.domain.p.TriggerGift;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
-import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.EquipJewel;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
+import com.gryphpoem.game.zw.resource.pojo.MailReportMap;
+import com.gryphpoem.game.zw.resource.pojo.PlaneChip;
+import com.gryphpoem.game.zw.resource.pojo.PlayerWorldWarData;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
+import com.gryphpoem.game.zw.resource.pojo.Ring;
 import com.gryphpoem.game.zw.resource.pojo.SmallGame;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
-import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
@@ -75,13 +176,31 @@ import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipPersonData;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.BattlePassPersonInfo;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.PlayerSerHelper;
+import com.gryphpoem.game.zw.resource.util.RandomHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.PlayerService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -759,9 +878,60 @@ public class Player {
     private PersonalActs personalActs = new PersonalActs();
 
     /**
-     * 掉落道具活动记录
+     * 人生模拟器记录, 非城镇事件的模拟器信息记录在这<br>
+     * <触发方式, 模拟器信息>
      */
-    private List<DropPropRecord> dropPropRecordList = new ArrayList<>();
+    private Map<Integer, List<LifeSimulatorInfo>> lifeSimulatorRecordMap = new HashMap<>();
+
+    public Map<Integer,  List<LifeSimulatorInfo>> getLifeSimulatorRecordMap() {
+        return lifeSimulatorRecordMap;
+    }
+
+    public void setLifeSimulatorRecordMap(Map<Integer, List<LifeSimulatorInfo>> lifeSimulatorRecordMap) {
+        this.lifeSimulatorRecordMap = lifeSimulatorRecordMap;
+    }
+
+    /**
+     * 周期性城镇事件
+     */
+    private CityEvent cityEvent = new CityEvent();
+
+    public CityEvent getCityEvent() {
+        return cityEvent;
+    }
+
+    public void setCityEvent(CityEvent cityEvent) {
+        this.cityEvent = cityEvent;
+    }
+
+    /**
+     * 性格：1-武断; 2-多疑; 3-感性; 4-强硬; 5-尚武; 6-崇文 <br>
+     * <性格id, 性格值>
+     */
+    private Map<Integer, Integer> characterData = new HashMap<>(6);
+
+    public Map<Integer, Integer> getCharacterData() {
+        return characterData;
+    }
+
+    public void setCharacterData(Map<Integer, Integer> characterData) {
+        this.characterData = characterData;
+    }
+
+
+    /**
+     * 性格奖励记录 <br>
+     * <奖励配置id(对应sim_character_reward的id), 是否已获取(1-是; 0-否)>
+     */
+    private Map<Integer, Integer> characterRewardRecord = new HashMap<>(8);
+
+    public Map<Integer, Integer> getCharacterRewardRecord() {
+        return characterRewardRecord;
+    }
+
+    public void setCharacterRewardRecord(Map<Integer, Integer> characterRewardRecord) {
+        this.characterRewardRecord = characterRewardRecord;
+    }
 
     /**
      * 是否第一次打造宝具
@@ -2050,9 +2220,29 @@ public class Player {
         if (CheckNull.nonEmpty(recruitReward)) {
             recruitReward.forEach((k, v) -> ser.addRecruitRewardRecord(PbHelper.createTwoIntPb(k, v)));
         }
-        // 掉落道具活动记录
-        if (CheckNull.nonEmpty(dropPropRecordList)) {
-            dropPropRecordList.forEach(dropPropRecord -> ser.addSerDropPropRecord(dropPropRecord.ser()));
+        // 模拟器信息
+        if (CheckNull.nonEmpty(lifeSimulatorRecordMap)) {
+            for (Entry<Integer, List<LifeSimulatorInfo>> entry : lifeSimulatorRecordMap.entrySet()) {
+                CommonPb.LifeSimulatorRecordPb.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecordPb.newBuilder();
+                Integer triggerMode = entry.getKey();
+                lifeSimulatorRecordBuilder.setTriggerMode(triggerMode);
+                for (LifeSimulatorInfo lifeSimulatorInfo : entry.getValue()) {
+                    lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfo.ser());
+                }
+                ser.addLifeSimulatorRecord(lifeSimulatorRecordBuilder.build());
+            }
+        }
+        // 城镇事件
+        if (!CheckNull.isNull(cityEvent)) {
+            ser.setCityEvent(cityEvent.ser());
+        }
+        // 性格
+        if (CheckNull.nonEmpty(characterData)) {
+            ser.addAllCharacterData(PbHelper.createTwoIntListByMap(characterData));
+        }
+        // 性格奖励记录
+        if (CheckNull.nonEmpty(characterRewardRecord)) {
+            ser.addAllCharacterRewardRecord(PbHelper.createTwoIntListByMap(characterRewardRecord));
         }
         return ser.build().toByteArray();
     }
@@ -2667,12 +2857,25 @@ public class Player {
             this.playerRelic.dser(ser.getSerPlayerRelic());
         }
         Optional.ofNullable(ser.getRecruitRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.recruitReward.put(o.getV1(), o.getV2())));
-        // 掉落道具活动记录
-        Optional.ofNullable(ser.getSerDropPropRecordList()).ifPresent(serDropPropRecordList ->
-                serDropPropRecordList.forEach(
-                        serDropPropRecord -> this.dropPropRecordList.add(new DropPropRecord().dser(serDropPropRecord))
-                )
-        );
+        // 模拟器记录
+        if (CheckNull.nonEmpty(ser.getLifeSimulatorRecordList())) {
+            for (CommonPb.LifeSimulatorRecordPb lifeSimulatorRecordPb : ser.getLifeSimulatorRecordList()) {
+                int triggerMode = lifeSimulatorRecordPb.getTriggerMode();
+                List<LifeSimulatorInfo> lifeSimulatorInfoList = new ArrayList<>();
+                for (CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb : lifeSimulatorRecordPb.getLifeSimulatorInfoList()) {
+                    lifeSimulatorInfoList.add(new LifeSimulatorInfo().dser(lifeSimulatorInfoPb));
+                }
+                this.lifeSimulatorRecordMap.put(triggerMode, lifeSimulatorInfoList);
+            }
+        }
+        // 城镇事件
+        if (ser.hasCityEvent()) {
+            this.cityEvent = this.cityEvent.dser(ser.getCityEvent());
+        }
+        // 性格值
+        Optional.ofNullable(ser.getCharacterDataList()).ifPresent(tmp -> tmp.forEach(o -> this.characterData.put(o.getV1(), o.getV2())));
+        // 性格奖励记录
+        Optional.ofNullable(ser.getCharacterRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.characterRewardRecord.put(o.getV1(), o.getV2())));
     }
 
     private void dserTrophy(SerTrophy ser) {
@@ -3620,21 +3823,41 @@ public class Player {
         return playerRelic;
     }
 
-    public List<DropPropRecord> getDropPropRecordList() {
-        return dropPropRecordList;
-    }
+    public List<CommonPb.LifeSimulatorRecordPb> createSimulatorRecordList() {
+        List<CommonPb.LifeSimulatorRecordPb> data = new ArrayList<>();
 
-    public void setDropPropRecordList(List<DropPropRecord> dropPropRecordList) {
-        this.dropPropRecordList = dropPropRecordList;
-    }
+        // 非城镇事件模拟器
+        if (CheckNull.isEmpty(this.getLifeSimulatorRecordMap())) {
+            this.setLifeSimulatorRecordMap(new HashMap<>());
+        }
+        for (Entry<Integer, List<LifeSimulatorInfo>> entry : this.lifeSimulatorRecordMap.entrySet()) {
+            CommonPb.LifeSimulatorRecordPb.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecordPb.newBuilder();
+            lifeSimulatorRecordBuilder.setTriggerMode(entry.getKey());
+            for (LifeSimulatorInfo lifeSimulatorInfo : entry.getValue()) {
+                CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
+                lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfoPb);
+            }
+            data.add(lifeSimulatorRecordBuilder.build());
+        }
 
-    public DropPropRecord getDropPropRecord(int activityType, int activityId) {
-        return this.dropPropRecordList.stream()
-                .filter(dropPropRecord -> dropPropRecord.getActivityType() == activityType && dropPropRecord.getActivityId() == activityId)
-                .max(Comparator.comparingInt(DropPropRecord::getDate)).orElse(null);
-    }
+        // 城镇事件模拟器
+        if (CheckNull.isNull(this.getCityEvent())) {
+            CityEvent cityEvent = new CityEvent();
+            cityEvent.setLifeSimulatorInfoList(new ArrayList<>());
+            cityEvent.setStartTime(0);
+            cityEvent.setEndTime(0);
+            cityEvent.setTotalCountCurPeriod(0);
+            cityEvent.setPeriodCount(0);
+            this.setCityEvent(cityEvent);
+        }
+        CommonPb.LifeSimulatorRecordPb.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecordPb.newBuilder();
+        lifeSimulatorRecordBuilder.setTriggerMode(3);
+        for (LifeSimulatorInfo lifeSimulatorInfo : this.cityEvent.getLifeSimulatorInfoList()) {
+            CommonPb.LifeSimulatorInfoPb lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
+            lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfoPb);
+        }
+        data.add(lifeSimulatorRecordBuilder.build());
 
-    public void removeDropPropRecord(int activityType, int activityId) {
-        this.dropPropRecordList.removeIf(dropPropRecord -> dropPropRecord.getActivityType() == activityType && dropPropRecord.getActivityId() == activityId);
+        return data;
     }
 }

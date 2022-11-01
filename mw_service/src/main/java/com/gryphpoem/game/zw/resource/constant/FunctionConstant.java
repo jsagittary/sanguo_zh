@@ -130,6 +130,10 @@ public class FunctionConstant {
      */
     public static final int SEARCH_BANDIT = 1052;
     /**
+     * 城镇事件
+     */
+    public static final int CITY_EVENT = 1053;
+    /**
      * 功能：战令
      */
     public static final int FUNC_ID_BATTLE_PASS = 2025;

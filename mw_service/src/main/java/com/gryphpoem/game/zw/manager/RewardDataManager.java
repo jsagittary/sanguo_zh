@@ -37,6 +37,7 @@ import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.MusicFestivalCreativeService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
+import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import com.gryphpoem.game.zw.service.totem.TotemService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -1987,6 +1988,18 @@ public class RewardDataManager {
             LogLordHelper.gameLog(LogParamConstant.LEVEL_UP, player, from, preLv, lv);
             // 活动处理玩家升级
             EventBus.getDefault().post(new Events.ActLevelUpEvent(lord.getLordId(), preLv, lv));
+            // 校验武将等级是否达到城镇事件开启等级
+            StaticFunctionOpen sOpen = StaticFunctionDataMgr.getOpenById(FunctionConstant.CITY_EVENT);
+            if (sOpen == null) {
+                LogUtil.debug("未找到城镇事件解锁配置   buildingId:", FunctionConstant.CITY_EVENT);
+            } else {
+                // 等级条件
+                int cityEventNeedLv = sOpen.getLv();
+                if (lvThroughList.contains(cityEventNeedLv)) {
+                    // 如果条件满足, 立刻开启
+                    DataResource.ac.getBean(LifeSimulatorService.class).assignCityEventToPlayerJob(player);
+                }
+            }
         }
         // 向客户端同步等级
         playerDataManager.syncRoleInfo(player);
