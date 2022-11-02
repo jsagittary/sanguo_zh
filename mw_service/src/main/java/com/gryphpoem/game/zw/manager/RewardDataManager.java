@@ -1988,11 +1988,9 @@ public class RewardDataManager {
             LogLordHelper.gameLog(LogParamConstant.LEVEL_UP, player, from, preLv, lv);
             // 活动处理玩家升级
             EventBus.getDefault().post(new Events.ActLevelUpEvent(lord.getLordId(), preLv, lv));
-            // 校验武将等级是否达到城镇事件开启等级
+            // 校验领主等级是否达到城镇事件开启等级
             StaticFunctionOpen sOpen = StaticFunctionDataMgr.getOpenById(FunctionConstant.CITY_EVENT);
-            if (sOpen == null) {
-                LogUtil.debug("未找到城镇事件解锁配置   buildingId:", FunctionConstant.CITY_EVENT);
-            } else {
+            if (sOpen != null) {
                 // 等级条件
                 int cityEventNeedLv = sOpen.getLv();
                 if (lvThroughList.contains(cityEventNeedLv)) {

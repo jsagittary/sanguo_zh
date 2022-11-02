@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service.simulator;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -9,6 +10,7 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.CityEvent;
@@ -22,7 +24,6 @@ import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.service.CombatService;
 import com.gryphpoem.game.zw.service.PlayerService;
 import com.gryphpoem.game.zw.service.RefreshTimerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 人生模拟器器
+ *
  * @Author: GeYuanpeng
  * @Date: 2022/11/1 9:28
  */
@@ -46,8 +49,6 @@ public class LifeSimulatorService implements RefreshTimerService {
     private RewardDataManager rewardDataManager;
     @Autowired
     private PlayerService playerService;
-    @Autowired
-    private CombatService combatService;
 
     /**
      * 记录玩家人生模拟器选择
@@ -88,7 +89,7 @@ public class LifeSimulatorService implements RefreshTimerService {
             List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
             List<Long> playerChoose = new ArrayList<>();
             if (CheckNull.nonEmpty(staticChooseList)) {
-                playerChoose = staticChooseList.stream().filter(tmp -> tmp.size() == 3 && tmp.get(0) == (long)chooseId && tmp.get(1) != 0L).findFirst().orElse(null);
+                playerChoose = staticChooseList.stream().filter(tmp -> tmp.size() == 3 && tmp.get(0) == (long) chooseId && tmp.get(1) != 0L).findFirst().orElse(null);
             }
             if (CheckNull.nonEmpty(playerChoose)) {
                 nextId = playerChoose.get(1);
@@ -235,8 +236,15 @@ public class LifeSimulatorService implements RefreshTimerService {
 
     /**
      * 分配城镇事件给玩家(转点执行)
+     *
+     * @param player
      */
     public void assignCityEventToPlayerJob(Player player) {
+        // 校验领主是否达到城镇事件开启条件
+        if (!StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.CITY_EVENT)) {
+            return;
+        }
+
         if (CheckNull.isNull(player.getCityEvent())) {
             CityEvent cityEvent = new CityEvent();
             player.setCityEvent(cityEvent);
@@ -283,7 +291,7 @@ public class LifeSimulatorService implements RefreshTimerService {
     }
 
     /**
-     * 定时更新玩家模拟器信息
+     * 更新玩家模拟器信息(定时刷新)
      *
      * @param player
      */
@@ -302,6 +310,11 @@ public class LifeSimulatorService implements RefreshTimerService {
         syncSimulatorDelayStateRefresh(player);
     }
 
+    /**
+     * 向客户端同步玩家模拟器信息
+     *
+     * @param player
+     */
     private void syncSimulatorDelayStateRefresh(Player player) {
         GamePb1.SyncSimulatorDelayStateRefreshRs.Builder builder = GamePb1.SyncSimulatorDelayStateRefreshRs.newBuilder();
         builder.addAllLifeSimulatorRecord(player.createSimulatorRecordList());

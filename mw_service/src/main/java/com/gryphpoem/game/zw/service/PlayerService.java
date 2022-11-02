@@ -859,6 +859,8 @@ public class PlayerService implements GmCmdService {
                     challengePlayerService.acrossTheDayProcess(p);
                     // 功能计划过天处理
                     Java8Utils.invokeNoExceptionICommand(() -> drawCardPlanTemplateService.execFunctionDay(p));
+                    // 周期性城镇事件刷新
+                    lifeSimulatorService.assignCityEventToPlayerJob(p);
                 } catch (Exception e) {
                     LogUtil.error("roleId: ", p.roleId, ", 转点定时任务出错: ", e);
                 }
