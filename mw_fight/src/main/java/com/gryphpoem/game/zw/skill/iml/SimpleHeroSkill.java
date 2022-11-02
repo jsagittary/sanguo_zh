@@ -55,6 +55,8 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             FightManager fightManager = DataResource.ac.getBean(FightManager.class);
             StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
 
+            boolean addBuff;
+            boolean removed;
             // 释放buff
             for (List<Integer> buffConfig : staticHeroSkill.getBuff()) {
                 // 概率释放
@@ -74,7 +76,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 }
 
                 for (Map.Entry<Integer, LinkedList<IFightBuff>> buffsEntry : buffMap.entrySet()) {
-                    boolean addBuff = true;
+                    addBuff = true;
                     LinkedList<IFightBuff> buffs = buffsEntry.getValue();
                     if (!CheckNull.isEmpty(buffs)) {
                         for (IFightBuff fightBuff : buffs) {
@@ -110,8 +112,8 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                                         // 保留更强buff
                                         // TODO 比较两个相同buffId的强度(相同buffId比较相同效果)
                                         if (!CheckNull.isEmpty(staticBuff.getEffects())) {
+                                            removed = false;
                                             FightBuffEffect fightBuffEffect = actingForce.getFightEffectMap(buffsEntry.getKey());
-                                            boolean removed = false;
                                             for (List<Integer> effectConfig : staticBuff.getEffects()) {
                                                 if (CheckNull.isEmpty(effectConfig))
                                                     continue;
