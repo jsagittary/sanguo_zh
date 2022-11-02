@@ -266,8 +266,36 @@ public interface FightConstant {
         int LONGER_ROUNDS = 2;
     }
 
-    interface EffectType {
+    interface EffectLogicId {
         int SKILL_DAMAGE = 3;
-        int ATTACK_INCREASE = 51;
+        int ATTACK_INCREASED = 51;
+        int REDUCED_ATTACK = 52;
+        int DEFENSE_INCREASED = 53;
+        int REDUCED_DEFENSE = 54;
+        /**
+         * 破城提升
+         */
+        int BROKEN_CITY_PROMOTION = 55;
+        int BROKEN_CITY_REDUCED = 56;
+        /**
+         * 守城提升
+         */
+        int UPWARD_GUARDING = 57;
+        int GUARD_CITY_REDUCED = 58;
+        /**
+         * 破甲提升
+         */
+        int ARMOR_PIERCING_ENHANCEMENT = 59;
+        int ARMOR_PIERCING_REDUCTION = 60;
+        /**
+         * 防护提升
+         */
+        int PROTECTION_LIFTING = 61;
+        int REDUCED_PROTECTION = 62;
+        /**
+         * 速度提升
+         */
+        int SPEED_INCREASE = 63;
+        int SPEED_REDUCTION = 64;
     }
 }

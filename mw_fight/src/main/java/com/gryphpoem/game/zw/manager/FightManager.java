@@ -10,6 +10,7 @@ import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.push.util.CheckNull;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -17,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,7 +80,9 @@ public class FightManager {
                         LogUtil.error("", e);
                         break;
                     }
-                    effectMap.put(wayAnn.type(), fightEffect);
+                    if (Objects.nonNull(fightEffect) && !ArrayUtils.isEmpty(fightEffect.effectType())) {
+                        Arrays.stream(fightEffect.effectType()).forEach(e -> effectMap.put(e, fightEffect));
+                    }
                     break;
                 default:
                     break;
@@ -125,10 +129,10 @@ public class FightManager {
     /**
      * 返回技能效果实例
      *
-     * @param effectType
+     * @param effectLogicId
      * @return
      */
-    public IFightEffect getSkillEffect(int effectType) {
-        return effectMap.get(effectType);
+    public IFightEffect getSkillEffect(int effectLogicId) {
+        return effectMap.get(effectLogicId);
     }
 }

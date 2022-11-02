@@ -378,36 +378,103 @@ public class Force {
         return 0d;
     }
 
-    public int calcAttack() {
-        return attrData.attack;
+    public int calcAttack(int heroId) {
+        if (this.id == heroId) {
+            return attrData.attack;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().attack).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcDefend() {
-        return attrData.defend;
+    public int calcDefend(int heroId) {
+        if (this.id == heroId) {
+            return attrData.defend;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().defend).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcCrit() {
-        return attrData.crit;
+    public int calcCrit(int heroId) {
+        if (this.id == heroId) {
+            return attrData.crit;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().crit).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcCritDef() {
-        return attrData.critDef;
+    public int calcCritDef(int heroId) {
+        if (this.id == heroId) {
+            return attrData.critDef;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().critDef).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcAtkExt() {
-        return attrData.atkExt;
+    public int calcAtkExt(int heroId) {
+        if (this.id == heroId) {
+            return attrData.atkExt;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().atkExt).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcDefExt() {
-        return attrData.defExt;
+    public int calcDefExt(int heroId) {
+        if (this.id == heroId) {
+            return attrData.defExt;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().defExt).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcAtkTown() {
-        return attrData.atkTown;
+    public int calcAtkTown(int heroId) {
+        if (this.id == heroId) {
+            return attrData.atkTown;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().atkTown).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
-    public int calcDefTown() {
-        return attrData.defTown;
+    public int calcDefTown(int heroId) {
+        if (this.id == heroId) {
+            return attrData.defTown;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().defTown).findFirst().orElse(null);
+        }
+
+        return 0;
+    }
+
+    public int calSpeed(int heroId) {
+        if (this.id == heroId) {
+            return attrData.speed;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().speed).findFirst().orElse(null);
+        }
+
+        return 0;
     }
 
     public int getCamp() {

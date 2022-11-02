@@ -1,7 +1,8 @@
 package com.gryphpoem.game.zw.buff;
 
-import com.gryphpoem.game.zw.data.p.EffectValueData;
+import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.pojo.p.Force;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public interface IFightEffect<T> {
 
-    int effectType();
+    int[] effectType();
 
     /**
      * 效果生效
@@ -36,30 +37,21 @@ public interface IFightEffect<T> {
     void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, Object... params);
 
     /**
-     * 算出效果强度值
+     * 比较效果值大小
      *
-     * @param fightBuff     战斗buff
-     * @param contextHolder
-     * @param params
+     * @param sameIdBuffList  相同的buff列表
+     * @param effectConfig    被比较的效果配置
+     * @param fightBuffEffect buff持有人的buff效果总览
      * @return
      */
-    T calEffectValue(IFightBuff fightBuff, FightContextHolder contextHolder, Object... params);
-
-    /**
-     * 比较两个效果强度大小
-     *
-     * @param e1
-     * @param e2
-     * @return
-     */
-    EffectValueData compareTo(EffectValueData<T> e1, EffectValueData<T> e2);
+    boolean compareTo(List<IFightBuff> sameIdBuffList, List<Integer> effectConfig, FightBuffEffect fightBuffEffect);
 
     /**
      * 公式结算时, 算出效果值参数
      *
-     * @param contextHolder
+     * @param actingForce
      * @param params
      * @return
      */
-    List<Integer> effectCalculateValue(FightContextHolder contextHolder, Object... params);
+    Object effectCalculateValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params);
 }

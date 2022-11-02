@@ -9,7 +9,20 @@ import lombok.Data;
  */
 @Data
 public class StaticEffectRule {
+    /**
+     * 效果id
+     */
     private int effectId;
+    /**
+     * 效果逻辑id
+     */
+    private int effectLogicId;
+    /**
+     * 相同buff来源规则
+     */
     private int sameBuffRule;
+    /**
+     * 相同buff来源规则
+     */
     private int diffBuffRule;
 }

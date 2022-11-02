@@ -194,8 +194,8 @@ public abstract class AbsConfigBuff implements IFightBuff {
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> effectList : staticBuff.getEffects()) {
             if (CheckNull.isEmpty(effectList)) continue;
-            IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(0));
-            if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
+            IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(2));
+            if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(2)) == null)
                 continue;
 
             fightEffect.effectiveness(this, contextHolder, effectList, params);
@@ -214,8 +214,8 @@ public abstract class AbsConfigBuff implements IFightBuff {
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> effectList : staticBuff.getEffects()) {
             if (CheckNull.isEmpty(effectList)) continue;
-            IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(0));
-            if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(0)) == null)
+            IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(2));
+            if (CheckNull.isNull(fightEffect) || staticFightManager.getStaticFightEffect(effectList.get(2)) == null)
                 continue;
             fightEffect.effectRestoration(this, contextHolder, effectList, params);
         }

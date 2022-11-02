@@ -13,5 +13,5 @@ import java.lang.annotation.*;
 public @interface BuffEffectType {
     int buffEffect();
 
-    int type();
+    int type() default -1;
 }

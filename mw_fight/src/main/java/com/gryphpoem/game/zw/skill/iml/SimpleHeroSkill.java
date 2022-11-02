@@ -1,14 +1,17 @@
 package com.gryphpoem.game.zw.skill.iml;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
+import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
+import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
+import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.skill.abs.AbstractHeroSkill;
@@ -106,12 +109,33 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                                     case FightConstant.ReplacementBuffRule.MORE_STRONG:
                                         // 保留更强buff
                                         // TODO 比较两个相同buffId的强度(相同buffId比较相同效果)
-                                        
+                                        if (!CheckNull.isEmpty(staticBuff.getEffects())) {
+                                            FightBuffEffect fightBuffEffect = actingForce.getFightEffectMap(buffsEntry.getKey());
+                                            boolean removed = false;
+                                            for (List<Integer> effectConfig : staticBuff.getEffects()) {
+                                                if (CheckNull.isEmpty(effectConfig))
+                                                    continue;
+                                                StaticEffectRule rule = staticFightManager.getStaticEffectRule(effectConfig.get(2));
+                                                if (CheckNull.isNull(rule))
+                                                    continue;
+                                                IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
+                                                if (CheckNull.isNull(fightEffect)) continue;
+                                                if (fightEffect.compareTo(sameIdBuffList, effectConfig, fightBuffEffect)) {
+                                                    removeBuffList.add(sameIdBuffList.get(0));
+                                                    removed = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!removed) addBuff = false;
+                                        }
                                         break;
                                 }
                             }
                         }
                     }
+
+                    if (!addBuff)
+                        continue;
 
                     IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
                     fightBuff.setForce(actingForce);
