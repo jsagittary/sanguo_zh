@@ -272,7 +272,7 @@ public class HeroUpgradeService implements GmCmdService {
      * @return 操作后的将领数据
      * @throws MwException 自定义异常
      */
-    public GamePb5.StudyHeroTalentRs activateOrClearHeroTalent(long roleId, int heroId, int type, int index) throws MwException {
+    public GamePb5.StudyHeroTalentRs activateOrClearHeroTalent(long roleId, int heroId, int type, int pageIndex) throws MwException {
         // 角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
@@ -285,27 +285,31 @@ public class HeroUpgradeService implements GmCmdService {
         if (sHero == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:", heroId);
         }
-        if (CheckNull.isEmpty(sHero.getEvolveGroup()) || sHero.getEvolveGroup().size() < index) {
+        if (CheckNull.isEmpty(sHero.getEvolveGroup()) || sHero.getEvolveGroup().size() < pageIndex) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "英雄天赋组未找到, roleId:", player.roleId, ", heroId:", heroId);
         }
-
-        // 获取武将对应天赋页数据
-        TalentData talentDataMap = hero.getTalent().get(index);
-
+        Integer heroTalentGroup = sHero.getEvolveGroup().get(pageIndex - 1);
+        if ((hero.getQuality() == HeroConstant.QUALITY_PURPLE_HERO && heroTalentGroup >= 100) || (hero.getQuality() == HeroConstant.QUALITY_ORANGE_HERO && heroTalentGroup < 100)) {
+            throw new MwException(GameError.NO_CONFIG.getCode(), "将领天赋组错误, roleId:", player.roleId, ", heroId:", heroId);
+        }
         // 获取武将对应天赋页的天赋组配置
-        List<StaticHeroEvolve> sHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(index - 1));
+        List<StaticHeroEvolve> sHeroEvolveList = StaticHeroDataMgr.getHeroEvolve(heroTalentGroup);
         if (CheckNull.isEmpty(sHeroEvolveList)) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "将领找不到配置, roleId:", player.roleId, ", heroId:", heroId);
         }
 
+        // 获取武将对应天赋页数据
+        TalentData talentDataMap = hero.getTalent().get(pageIndex);
+
+        // 激活
         if (type == HeroConstant.TALENT_HERO_TYPE_1) {
-            // 激活时, 校验武将觉醒层数
-            if (hero.getDecorated() < index) {
-                throw new MwException(GameError.HERO_INSUFFICIENT_AWAKENING_CONDITIONS.getCode(), "武将觉醒条件不足, roleId:", player.roleId, ", heroId:", heroId);
+            // 校验校验武将等级
+            if (hero.getLevel() < Constant.HERO_LEVEL_OF_OPEN_TALENT) {
+                throw new MwException(GameError.INSUFFICIENT_CONDITIONS_FOR_HERO_TALENT.getCode(), "激活天赋时, 武将等级不够, roleId:", player.roleId, ", heroId:", heroId);
             }
             // 激活当前页签, 需要确认之前的天赋页签是否全部学习完毕
-            if (index > 1) {
-                int count = index;
+            if (pageIndex > 1) {
+                int count = pageIndex;
                 while (--count >= 1) {
                     TalentData preTalentDataMap = hero.getTalent().get(count);
                     if (CheckNull.isNull(preTalentDataMap) || !preTalentDataMap.isActivate() || !preTalentDataMap.isAllPartActivated()) {
@@ -328,8 +332,8 @@ public class HeroUpgradeService implements GmCmdService {
                     default:
                         throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
                 }
-                talentDataMap = new TalentData(1, index, maxPart);
-                hero.getTalent().put(index, talentDataMap);
+                talentDataMap = new TalentData(1, pageIndex, maxPart);
+                hero.getTalent().put(pageIndex, talentDataMap);
             } else {
                 if (talentDataMap.isActivate()) {
                     throw new MwException(GameError.AWAKEN_HERO_ERROR.getCode(), "将领已经激活过了, roleId:", player.roleId, ", heroId:", heroId);
@@ -340,8 +344,8 @@ public class HeroUpgradeService implements GmCmdService {
             rewardDataManager.checkAndSubPlayerRes(player, sHero.getActivateConsume(), AwardFrom.AWAKEN_HERO_ACTIVE_CONSUME, heroId);
         }
 
+        // 重置
         if (type == HeroConstant.TALENT_HERO_TYPE_3) {
-            // 未觉醒
             if (CheckNull.isEmpty(hero.getTalent())) {
                 throw new MwException(GameError.AWAKEN_HERO_REGROUP_ERROR.getCode(), "已经没部位可以重置了, roleId:", player.roleId, ", heroId:", heroId);
             }
@@ -436,9 +440,9 @@ public class HeroUpgradeService implements GmCmdService {
             throw new MwException(GameError.NO_CONFIG.getCode(), "将领天赋组错误, roleId:", player.roleId, ", heroId:", heroId);
         }
 
-        // 升级天赋时, 校验武将觉醒层数
-        if (hero.getDecorated() < pageIndex) { // 觉醒次数对应天赋页数
-            throw new MwException(GameError.HERO_INSUFFICIENT_AWAKENING_CONDITIONS.getCode(), "武将觉醒条件不足, roleId:", player.roleId, ", heroId:", heroId);
+        // 升级天赋时, 校验武将等级
+        if (hero.getLevel() < Constant.HERO_LEVEL_OF_OPEN_TALENT) {
+            throw new MwException(GameError.INSUFFICIENT_CONDITIONS_FOR_HERO_TALENT.getCode(), "升级天赋时, 武将等级不够, roleId:", player.roleId, ", heroId:", heroId);
         }
 
         TalentData talentData = hero.getTalent().get(pageIndex);
