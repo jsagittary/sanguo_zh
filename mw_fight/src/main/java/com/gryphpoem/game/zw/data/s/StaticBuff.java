@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.data.s;
 
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * createTime: 2022-10-20 17:29
  */
 @Data
+@ToString
 public class StaticBuff {
     /**
      * 唯一id

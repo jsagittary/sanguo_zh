@@ -14,11 +14,19 @@ import java.util.Map;
 @Data
 public class FightBuffEffect {
     /**
-     * 效果map  <效果id， 效果列表>
+     * 效果map  <效果逻辑id, <效果id， 效果列表>>
      */
     private Map<Integer, Map<Integer, List<FightEffectData>>> effectMap;
 
-    public FightBuffEffect() {
+    private Map<Integer, Integer> randomValueMap;
+
+    private Force force;
+
+    private int heroId;
+
+    public FightBuffEffect(Force force, int heroId) {
+        this.force = force;
+        this.heroId = heroId;
         this.effectMap = new HashMap<>();
     }
 }

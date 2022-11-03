@@ -17,4 +17,20 @@ public class StaticHeroSkill {
     private int level;
     private List<List<Integer>> skillEffect;
     private List<List<Integer>> buff;
+    /**
+     * 技能能量槽上限
+     */
+    private int energyUpperLimit;
+    /**
+     * 释放技能时需要能量
+     */
+    private int releaseNeedEnergy;
+    /**
+     * 技能登场时能量
+     */
+    private int debutEnergy;
+    /**
+     * 每回合充能
+     */
+    private List<Integer> chargeEveryRound;
 }

@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.manager.s;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.data.s.StaticFightEffect;
+import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 @Component
 public class StaticFightManager {
     private HashMap<Integer, StaticBuff> buffHashMap = new HashMap<>();
+    private HashMap<Integer, StaticHeroSkill> heroSkillHashMap = new HashMap<>();
     private HashMap<Integer, StaticFightEffect> effectHashMap = new HashMap<>();
     private HashMap<Integer, StaticEffectRule> effectRuleHashMap = new HashMap<>();
 
@@ -28,5 +30,9 @@ public class StaticFightManager {
 
     public StaticEffectRule getStaticEffectRule(int id) {
         return effectRuleHashMap.get(id);
+    }
+
+    public StaticHeroSkill getStaticHeroSkill(int id) {
+        return heroSkillHashMap.get(id);
     }
 }

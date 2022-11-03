@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
@@ -38,7 +39,10 @@ public class Force {
     public int effect; // 强化克制比
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
-    public Map<Integer, PlaneInfo> planeInfos = new HashMap<>();// 战机信息
+    // 技能信息
+    public List<SimpleHeroSkill> skillList = new ArrayList<>();
+    // 武将士气
+    public int morale;
     /**
      * 发起动作的武将id
      */
@@ -66,7 +70,7 @@ public class Force {
     /**
      * 战斗中的buff与效果
      */
-    private FightBuffEffect fightBuffEffect = new FightBuffEffect();
+    private FightBuffEffect fightBuffEffect;
 
     public Force() {
     }
@@ -161,6 +165,14 @@ public class Force {
         this.id = id;
     }
 
+    public FightBuffEffect getFightBuffEffect() {
+        return fightBuffEffect;
+    }
+
+    public void setFightBuffEffect(FightBuffEffect fightBuffEffect) {
+        this.fightBuffEffect = fightBuffEffect;
+    }
+
     public boolean isBuffListEmpty() {
         if (!CheckNull.isEmpty(this.buffList)) return false;
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
@@ -202,6 +214,13 @@ public class Force {
         if (CheckNull.isEmpty(this.assistantHeroList)) return null;
         return this.assistantHeroList.stream().filter(ass ->
                 ass.getHeroId() == heroId).map(ass -> ass.getFightBuffEffect()).findFirst().orElse(null);
+    }
+
+    public List<SimpleHeroSkill> getSkillList(int heroId) {
+        if (heroId == this.id) return this.skillList;
+        if (CheckNull.isEmpty(this.assistantHeroList)) return null;
+        return this.assistantHeroList.stream().filter(ass ->
+                ass.getHeroId() == heroId).map(ass -> ass.getSkillList()).findFirst().orElse(null);
     }
 
     /**
@@ -411,6 +430,17 @@ public class Force {
         return 0;
     }
 
+    public int calCritChance(int heroId) {
+        if (this.id == heroId) {
+            return attrData.critChance;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().critChance).findFirst().orElse(null);
+        }
+
+        return 0;
+    }
+
     public int calcCritDef(int heroId) {
         if (this.id == heroId) {
             return attrData.critDef;
@@ -476,6 +506,18 @@ public class Force {
 
         return 0;
     }
+
+    public int calEnergyChargingSpeed(int heroId) {
+        if (this.id == heroId) {
+            return attrData.energyChargingSpeed;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().energyChargingSpeed).findFirst().orElse(null);
+        }
+
+        return 0;
+    }
+
 
     public int getCamp() {
         return camp;

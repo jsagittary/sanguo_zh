@@ -10,16 +10,15 @@ import com.gryphpoem.game.zw.pojo.p.Force;
 import java.util.List;
 
 /**
- * Description: 技能伤害效果 填表格式：[[执行者,执行对象,效果ID1,0,万分比,固定值],[执行者,执行对象,效果ID2,0,万分比,固定值]…]
+ * Description: 伤害变化效果
  * Author: zhangpeng
- * createTime: 2022-10-28 10:13
+ * createTime: 2022-11-03 19:55
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.EFFECT)
-public class SkillDamageFightEffectImpl extends AbsFightEffect {
-
+public class DamageChangeEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{FightConstant.EffectLogicId.SKILL_DAMAGE};
+        return new int[0];
     }
 
     @Override

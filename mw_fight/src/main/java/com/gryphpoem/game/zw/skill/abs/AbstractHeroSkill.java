@@ -93,12 +93,12 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
      */
     @Override
     public void releaseSkill(FightContextHolder contextHolder, StaticHeroSkill staticHeroSkill, Object... params) {
-        // 释放技能buff
-        releaseSkillBuff(contextHolder, staticHeroSkill, params);
         // 释放技能主体效果之前
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SKILL_BEFORE);
         // 释放技能主体效果
         releaseSkillEffect(contextHolder, staticHeroSkill, params);
+        // 释放技能buff
+        releaseSkillBuff(contextHolder, staticHeroSkill, params);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SKILL_AFTER);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, staticHeroSkill);
     }

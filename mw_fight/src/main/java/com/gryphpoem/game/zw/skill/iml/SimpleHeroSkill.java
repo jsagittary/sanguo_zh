@@ -27,8 +27,50 @@ import java.util.stream.Collectors;
  * createTime: 2022-10-20 17:08
  */
 public class SimpleHeroSkill extends AbstractHeroSkill {
+
+    /**
+     * 技能唯一id
+     */
+    private long skillKeyId;
+    /**
+     * 技能当前能量值
+     */
+    private int curEnergy;
+    /**
+     * 是否是登场技能
+     */
+    private boolean isOnStageSkill = false;
+
     public SimpleHeroSkill(StaticHeroSkill s_skill) {
         super(s_skill);
+        this.skillKeyId = FightUtil.uniqueId();
+        this.curEnergy = s_skill.getDebutEnergy();
+    }
+
+    public SimpleHeroSkill(StaticHeroSkill s_skill, boolean isOnStageSkill) {
+        super(s_skill);
+        this.isOnStageSkill = isOnStageSkill;
+        this.curEnergy = s_skill.getDebutEnergy();
+    }
+
+    public boolean isOnStageSkill() {
+        return isOnStageSkill;
+    }
+
+    public int getCurEnergy() {
+        return curEnergy;
+    }
+
+    public void setCurEnergy(int curEnergy) {
+        if (curEnergy < 0) {
+            this.curEnergy = 0;
+            return;
+        }
+        if (curEnergy > s_skill.getEnergyUpperLimit()) {
+            this.curEnergy = s_skill.getEnergyUpperLimit();
+            return;
+        }
+        this.curEnergy = curEnergy;
     }
 
     @Override
@@ -110,9 +152,9 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                                         break;
                                     case FightConstant.ReplacementBuffRule.MORE_STRONG:
                                         // 保留更强buff
-                                        // TODO 比较两个相同buffId的强度(相同buffId比较相同效果)
                                         if (!CheckNull.isEmpty(staticBuff.getEffects())) {
                                             removed = false;
+                                            IFightBuff removedBuff;
                                             FightBuffEffect fightBuffEffect = actingForce.getFightEffectMap(buffsEntry.getKey());
                                             for (List<Integer> effectConfig : staticBuff.getEffects()) {
                                                 if (CheckNull.isEmpty(effectConfig))
@@ -122,8 +164,8 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                                                     continue;
                                                 IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
                                                 if (CheckNull.isNull(fightEffect)) continue;
-                                                if (fightEffect.compareTo(sameIdBuffList, effectConfig, fightBuffEffect)) {
-                                                    removeBuffList.add(sameIdBuffList.get(0));
+                                                if ((removedBuff = fightEffect.compareTo(sameIdBuffList, effectConfig, fightBuffEffect)) != null) {
+                                                    removeBuffList.add(removedBuff);
                                                     removed = true;
                                                     break;
                                                 }
@@ -154,5 +196,23 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 }
             }
         }
+    }
+
+    @Override
+    public long uniqueId() {
+        return this.skillKeyId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleHeroSkill that = (SimpleHeroSkill) o;
+        return skillKeyId == that.skillKeyId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(skillKeyId);
     }
 }

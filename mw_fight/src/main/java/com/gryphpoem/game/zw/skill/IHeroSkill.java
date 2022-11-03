@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.skill;
 
+import com.gryphpoem.game.zw.buff.IUniqueId;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 
@@ -8,7 +9,7 @@ import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
  * Author: zhangpeng
  * createTime: 2022-10-20 16:40
  */
-public interface IHeroSkill {
+public interface IHeroSkill extends IUniqueId {
     /**
      * 释放技能
      *

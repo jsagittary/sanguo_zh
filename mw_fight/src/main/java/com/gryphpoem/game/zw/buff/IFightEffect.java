@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.buff;
 
+import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface IFightEffect<T> {
      * @param params
      * @return
      */
-    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, Object... params);
+    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, StaticEffectRule rule, Object... params);
 
     /**
      * 效果结束, 属性等还原
@@ -34,24 +34,31 @@ public interface IFightEffect<T> {
      * @param params
      * @return
      */
-    void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, Object... params);
+    void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, StaticEffectRule rule, Object... params);
 
     /**
-     * 比较效果值大小
+     * 相同buff下比较相同效果值大小
      *
      * @param sameIdBuffList  相同的buff列表
      * @param effectConfig    被比较的效果配置
      * @param fightBuffEffect buff持有人的buff效果总览
      * @return
      */
-    boolean compareTo(List<IFightBuff> sameIdBuffList, List<Integer> effectConfig, FightBuffEffect fightBuffEffect);
+    IFightBuff compareTo(List<IFightBuff> sameIdBuffList, List<Integer> effectConfig, FightBuffEffect fightBuffEffect);
 
     /**
      * 公式结算时, 算出效果值参数
      *
-     * @param actingForce
+     * @param fightBuffEffect
      * @param params
      * @return
      */
-    Object effectCalculateValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params);
+    Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params);
+
+    /**
+     * 随机数值
+     *
+     * @param fightBuffEffect
+     */
+    void randomRoundValue(FightBuffEffect fightBuffEffect);
 }

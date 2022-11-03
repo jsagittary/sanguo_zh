@@ -266,11 +266,49 @@ public interface FightConstant {
         int LONGER_ROUNDS = 2;
     }
 
+    /**
+     * 效果逻辑id
+     */
     interface EffectLogicId {
+        /**
+         * 技能伤害
+         */
         int SKILL_DAMAGE = 3;
+        /**
+         * 能量恢复
+         */
+        int ENERGY_RECOVERY = 4;
+        /**
+         * 能量扣除
+         */
+        int ENERGY_DEDUCTION = 5;
+        /**
+         * 士气恢复
+         */
+        int MORALE_RECOVERY = 6;
+        /**
+         * 士气扣除
+         */
+        int MORALE_DEDUCTION = 7;
+        /**
+         * 护盾
+         */
+        int SHIELD = 8;
+        /**
+         * 攻击提升
+         */
         int ATTACK_INCREASED = 51;
+        /**
+         * 攻击降低
+         */
         int REDUCED_ATTACK = 52;
+        /**
+         * 防御提升
+         */
         int DEFENSE_INCREASED = 53;
+        /**
+         * 防御降低
+         */
         int REDUCED_DEFENSE = 54;
         /**
          * 破城提升
@@ -297,5 +335,29 @@ public interface FightConstant {
          */
         int SPEED_INCREASE = 63;
         int SPEED_REDUCTION = 64;
+        /**
+         * 能量恢复值提升
+         */
+        int ENERGY_RECOVERY_VALUE_INCREASED = 65;
+        /**
+         * 能量恢复值降低
+         */
+        int ENERGY_RECOVERY_VALUE_DECREASES = 66;
+        /**
+         * 暴击率提升万分比
+         */
+        int INCREASE_CRITICAL_HIT_RATE = 102;
+        /**
+         * 暴击伤害提升
+         */
+        int CRITICAL_DAMAGE_INCREASED = 103;
+        /**
+         * 技能额外暴击率提升万分比
+         */
+        int INCREASED_EXTRA_CRITICAL_HIT_RATE_OF_SKILL = 104;
+        /**
+         * 技能额外暴击伤害提升万分比
+         */
+        int INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL = 105;
     }
 }

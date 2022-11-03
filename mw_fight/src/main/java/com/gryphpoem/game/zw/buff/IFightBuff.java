@@ -77,6 +77,13 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
     Force getBuffGiver();
 
     /**
+     * buff关联的技能配置id
+     *
+     * @return
+     */
+    int getSkillConfigId();
+
+    /**
      * 扣除buff次数
      */
     void deductBuffRounds();
