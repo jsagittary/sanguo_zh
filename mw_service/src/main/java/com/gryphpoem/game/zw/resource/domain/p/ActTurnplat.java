@@ -69,6 +69,9 @@ public class ActTurnplat extends Activity {
 
     public ActTurnplat(ActivityBase activityBase, int begin, Player player) {
         super(activityBase, begin);
+        if (activityBase.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE &&
+                activityBase.getStep0() == ActivityConst.OPEN_AWARD)
+            return;
         this.setRefreshCount(getFreeCountByVip(player.lord.getVip()));
     }
 
