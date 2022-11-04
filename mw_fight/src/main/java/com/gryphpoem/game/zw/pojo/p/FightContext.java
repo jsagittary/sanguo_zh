@@ -21,4 +21,11 @@ public class FightContext {
      * 回合数
      */
     private int roundNum;
+
+    public void clear() {
+        this.effectValueMap.clear();
+        this.attacker = null;
+        this.defender = null;
+        this.roundNum = 0;
+    }
 }

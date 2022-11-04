@@ -295,6 +295,27 @@ public interface FightConstant {
          */
         int SHIELD = 8;
         /**
+         * 无视所有伤害
+         */
+        int INVINCIBLE_DAMAGE = 22;
+        /**
+         * 沉默
+         */
+        int SILENCE = 32;
+        /**
+         * 净化buff
+         */
+        int PURIFY = 33;
+        /**
+         * 兵种克制时伤害提升
+         */
+        int DAMAGE_INCREASED_FIGHTING = 45;
+        /**
+         * 兵种被克制时受伤降低
+         */
+        int DAMAGE_REDUCED_ARM_RESTRAINED = 46;
+
+        /**
          * 攻击提升
          */
         int ATTACK_INCREASED = 51;
@@ -343,6 +364,58 @@ public interface FightConstant {
          * 能量恢复值降低
          */
         int ENERGY_RECOVERY_VALUE_DECREASES = 66;
+        /**
+         * 普攻伤害提升
+         */
+        int INCREASE_COMMON_ATTACK_DAMAGE = 71;
+        /**
+         * 普攻伤害降低
+         */
+        int COMMON_ATTACK_DAMAGE_REDUCED = 72;
+        /**
+         * 技能伤害提升
+         */
+        int SKILL_DAMAGE_INCREASED = 73;
+        /**
+         * 技能伤害降低
+         */
+        int SKILL_DAMAGE_REDUCED = 74;
+        /**
+         * 最终伤害提升
+         */
+        int INCREASE_FINAL_DAMAGE = 75;
+        /**
+         * 最终伤害降低
+         */
+        int FINAL_DAMAGE_REDUCED = 76;
+        /**
+         * 受普攻伤害提升
+         */
+        int Increased_damage_general_attack = 77;
+        /**
+         * 受普攻伤害降低
+         */
+        int BE_COMMON_ATTACK_DAMAGE_REDUCED = 78;
+        /**
+         * 受技能伤害提升
+         */
+        int BE_INCREASED_SKILL_DAMAGE = 79;
+        /**
+         * 受技能伤害降低
+         */
+        int BE_SKILL_DAMAGE_REDUCED = 80;
+        /**
+         * 受最终伤害提升
+         */
+        int BE_INCREASE_FINAL_DAMAGE = 81;
+        /**
+         * 受最终伤害降低
+         */
+        int BE_FINAL_DAMAGE_REDUCED = 82;
+        /**
+         * 效果内加buff
+         */
+        int ADD_BUFF_TO_THE_EFFECT = 99;
         /**
          * 暴击率提升万分比
          */

@@ -77,13 +77,11 @@ public class FightCalc {
      * @return
      */
     public static final int attributeValue(int attrId, Force force, int heroId) {
-        FightManager fightManager = DataResource.ac.getBean(FightManager.class);
-        FightBuffEffect fightBuffEffect = force.getFightEffectMap(heroId);
         switch (attrId) {
             case 1:
-                return calAttrValue(force, heroId, FightConstant.EffectLogicId.ATTACK_INCREASED, FightConstant.EffectLogicId.REDUCED_ATTACK);
+                return calAttrValue(force, heroId, force.calcAttack(heroId), FightConstant.EffectLogicId.ATTACK_INCREASED, FightConstant.EffectLogicId.REDUCED_ATTACK);
             case 2:
-                return calAttrValue(force, heroId, FightConstant.EffectLogicId.DEFENSE_INCREASED, FightConstant.EffectLogicId.REDUCED_DEFENSE);
+                return calAttrValue(force, heroId, force.calcDefend(heroId), FightConstant.EffectLogicId.DEFENSE_INCREASED, FightConstant.EffectLogicId.REDUCED_DEFENSE);
             default:
                 return 0;
         }
@@ -98,7 +96,7 @@ public class FightCalc {
      * @param effectLogicId2
      * @return
      */
-    private static final int calAttrValue(Force force, int heroId, int effectLogicId1, int effectLogicId2) {
+    private static final int calAttrValue(Force force, int heroId, int attrValue, int effectLogicId1, int effectLogicId2) {
         int tenThousandthRatio_ = 0, fixValue_ = 0, tenThousandthRatio = 0, fixValue = 0;
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         FightBuffEffect fightBuffEffect = force.getFightEffectMap(heroId);
@@ -119,7 +117,7 @@ public class FightCalc {
                 fixValue = var.getB();
             }
         }
-        return (int) (force.calcAttack(heroId) * (1 + ((
+        return (int) (attrValue * (1 + ((
                 tenThousandthRatio_ - tenThousandthRatio) / FightConstant.TEN_THOUSAND)) + fixValue_ - fixValue);
     }
 }

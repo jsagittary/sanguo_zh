@@ -1,9 +1,10 @@
 package com.gryphpoem.game.zw.pojo.p;
 
-import lombok.AllArgsConstructor;
+import com.gryphpoem.game.zw.util.FightUtil;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description:
@@ -11,8 +12,8 @@ import java.util.List;
  * createTime: 2022-11-01 14:42
  */
 @Data
-@AllArgsConstructor
 public class FightEffectData {
+    private long effectKeyId;
     private long buffKeyId;
     private int buffId;
     /**
@@ -28,9 +29,30 @@ public class FightEffectData {
      */
     private int index;
 
+    public FightEffectData(long buffKeyId, int buffId, int value) {
+        this.effectKeyId = FightUtil.uniqueId();
+        this.buffKeyId = buffKeyId;
+        this.buffId = buffId;
+        this.value = value;
+    }
+
     public FightEffectData(long buffKeyId, int buffId, List<Integer> data) {
+        this.effectKeyId = FightUtil.uniqueId();
         this.buffKeyId = buffKeyId;
         this.buffId = buffId;
         this.data = data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FightEffectData data = (FightEffectData) o;
+        return effectKeyId == data.effectKeyId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(effectKeyId);
     }
 }

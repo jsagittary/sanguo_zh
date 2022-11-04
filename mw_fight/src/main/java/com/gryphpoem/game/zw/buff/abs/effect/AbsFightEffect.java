@@ -153,10 +153,10 @@ public abstract class AbsFightEffect implements IFightEffect {
         }
         if (!CheckNull.isEmpty(executor.effectExecutor)) {
             if (Objects.nonNull(rule)) {
-                int nextIndex = 0;
-                FightEffectData data = new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig_.subList(4, 6));
+                int nextIndex;
                 for (Integer heroId : executor.effectExecutor) {
                     FightBuffEffect fbe = executor.getFightEffectMap(heroId);
+                    FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe);
                     Map<Integer, List<FightEffectData>> dataMap = fbe.getEffectMap().get(rule.getEffectLogicId());
                     if (CheckNull.isEmpty(dataMap)) {
                         nextIndex = 0;
@@ -236,4 +236,6 @@ public abstract class AbsFightEffect implements IFightEffect {
      * @return
      */
     protected abstract double calValue(Force force, int heroId, int effectLogicId, Object... params);
+
+    protected abstract FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe);
 }

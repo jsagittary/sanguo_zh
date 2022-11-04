@@ -8,13 +8,11 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
-import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
-import com.gryphpoem.game.zw.pojo.p.FightCalc;
-import com.gryphpoem.game.zw.pojo.p.FightEffectData;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Description: 护盾
@@ -29,25 +27,48 @@ public class ShieldEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect) {
-        Map<Integer, List<FightEffectData>> effectMap = fightBuffEffect.getEffectMap().get(FightConstant.EffectLogicId.SHIELD);
-        if (CheckNull.isEmpty(effectMap)) {
-            LogUtil.error("异常情况, 有相同的buff, 但在效果里找不到护盾?");
-            return (IFightBuff) sameIdBuffList.get(0);
+    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
+        List<Integer> effectConfig_ = effectConfig;
+        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
+        if (CheckNull.isNull(buffObjective)) {
+            LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
+            return null;
         }
         List<IFightBuff> sameIdBuffList_ = sameIdBuffList;
-        // 找到护盾值最低的护盾效果
-        FightEffectData effectData = sameIdBuffList_.stream().map(buff -> {
-            List<FightEffectData> dataList = effectMap.get(effectConfig.get(2));
-            if (CheckNull.isEmpty(dataList)) return null;
-            return dataList.stream().filter(data -> data.getBuffKeyId() == buff.uniqueId()).findFirst().orElse(null);
-        }).filter(data -> Objects.nonNull(data)).min(Comparator.comparingInt(FightEffectData::getValue)).orElse(null);
-        if (CheckNull.isNull(effectData)) return sameIdBuffList_.get(0);
-        if (FightCalc.attributeValue((int) effectConfig.get(3), fightBuffEffect.getForce(), fightBuffEffect.getHeroId()) > effectData.getValue()) {
-            return sameIdBuffList_.stream().filter(buff -> buff.uniqueId() == effectData.getBuffKeyId()).findFirst().orElse(null);
+        Force executorForce = executorForce(sameIdBuffList_.get(0), contextHolder, effectConfig_, buffObjective);
+        if (CheckNull.isNull(executorForce) || CheckNull.isEmpty(executorForce.effectExecutor)) {
+            return null;
         }
 
-        return null;
+        // 找到最低护盾值
+        int curShieldValue = 0;
+        Map<Integer, List<FightEffectData>> effectMap;
+        Map<IFightBuff, Integer> effectValue = new HashMap<>(sameIdBuffList_.size());
+        for (Integer heroId : executorForce.effectExecutor) {
+            curShieldValue += calEffectValue(executorForce, heroId, effectConfig_);
+            FightBuffEffect buffEffect = executorForce.getFightEffectMap(heroId.intValue());
+            if (CheckNull.isNull(buffEffect) || (effectMap = buffEffect.getEffectMap().get(FightConstant.EffectLogicId.SHIELD)) == null)
+                continue;
+            List<FightEffectData> dataList = effectMap.get(effectConfig.get(2));
+            if (CheckNull.isEmpty(dataList)) continue;
+            sameIdBuffList_.stream().forEach(fightBuff -> {
+                List<FightEffectData> dataList_ = dataList.stream().filter(data -> data.getBuffKeyId() == fightBuff.uniqueId()).collect(Collectors.toList());
+                if (CheckNull.isEmpty(dataList_)) return;
+                effectValue.putIfAbsent(fightBuff, 0);
+                effectValue.merge(fightBuff, dataList_.stream().mapToInt(FightEffectData::getValue).sum(), Integer::sum);
+            });
+        }
+
+        if (CheckNull.isEmpty(effectValue))
+            return sameIdBuffList_.get(0);
+        Map.Entry<IFightBuff, Integer> minShieldValue = effectValue.entrySet().stream().min(Comparator.comparingInt(e -> e.getValue())).orElse(null);
+        if (CheckNull.isNull(minShieldValue)) return sameIdBuffList_.get(0);
+        return curShieldValue > minShieldValue.getValue() ? minShieldValue.getKey() : null;
+    }
+
+    private int calEffectValue(Force force, int heroId, List<Integer> effectConfig) {
+        int attributeValue = FightCalc.attributeValue(effectConfig.get(3), force, heroId);
+        return (int) (attributeValue * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5));
     }
 
     @Override
@@ -58,6 +79,11 @@ public class ShieldEffectImpl extends AbsFightEffect {
     @Override
     protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
         return 0;
+    }
+
+    @Override
+    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), calEffectValue(fbe.getForce(), fbe.getHeroId(), effectConfig));
     }
 
     @Override

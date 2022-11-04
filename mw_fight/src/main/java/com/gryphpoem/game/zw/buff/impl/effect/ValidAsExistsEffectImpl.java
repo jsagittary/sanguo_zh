@@ -8,30 +8,30 @@ import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
 
 /**
- * Description: 技能伤害效果 填表格式：[[执行者,执行对象,效果ID1,0,万分比,固定值],[执行者,执行对象,效果ID2,0,万分比,固定值]…]
+ * Description: 无敌, 沉默效果
  * Author: zhangpeng
- * createTime: 2022-10-28 10:13
+ * createTime: 2022-11-04 15:59
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.EFFECT)
-public class SkillDamageFightEffectImpl extends AbsFightEffect {
-
+public class ValidAsExistsEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{FightConstant.EffectLogicId.SKILL_DAMAGE};
+        return new int[]{FightConstant.EffectLogicId.INVINCIBLE_DAMAGE, FightConstant.EffectLogicId.SILENCE};
     }
 
     @Override
     public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return null;
+        return (IFightBuff) sameIdBuffList.get(0);
     }
 
     @Override
     protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return (int) params[0] < (int) params[1];
+        return false;
     }
 
     @Override
@@ -41,11 +41,11 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
     @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.get(5));
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), -1);
     }
 
     @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
-        return null;
+        return !CheckNull.isEmpty(fightBuffEffect.getEffectMap().get(effectLogicId));
     }
 }

@@ -6,10 +6,7 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
-import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
-import com.gryphpoem.game.zw.pojo.p.FightCalc;
-import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -29,7 +26,7 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect) {
+    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
         return (IFightBuff) sameIdBuffList.get(0);
     }
 
@@ -46,6 +43,11 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
     @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
         return null;
+    }
+
+    @Override
+    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.subList(4, 6));
     }
 
     /**

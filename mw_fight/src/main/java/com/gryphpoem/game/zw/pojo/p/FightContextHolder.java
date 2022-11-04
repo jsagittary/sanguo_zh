@@ -21,6 +21,6 @@ public class FightContextHolder {
     }
 
     public void battleEnd() {
-        threadLocal.remove();
+        threadLocal.get().clear();
     }
 }
