@@ -407,19 +407,6 @@ public class ScheduleManager {
         ActivityTemplateService activityTemplateService = DataResource.ac.getBean(ActivityTemplateService.class);
         for (ActivityBase ab : actBaseList) {
             StaticActivityPlan plan = ab.getPlan();
-            // if (plan.getBeginTime() == null || plan.getEndTime() == null || plan.getDisplayTime() == null) {
-            // continue;
-            // }
-            // if (plan.getDisplayTime().getTime() <= nowDate.getTime()) {
-            // continue;
-            // }
-            // 盖世太保活动特殊处理
-            /*Date jobTime = CheckNull.isNull(ab.getDisplayTime())
-                    && ab.getActivityType() == ActivityConst.ACT_ATK_GESTAPO
-                    || ab.getActivityType() == ActivityConst.ACT_ATTACK_CITY_NEW
-                    || ab.getActivityType() == ActivityConst.ACT_WAR_ROAD
-                    || ab.getActivityType() == ActivityConst.ACT_LUCKY_TURNPLATE
-                    ? ab.getEndTime() : ab.getDisplayTime();*/
             if (ab.getActivityType() == ActivityConst.ACT_SUPPLY_DORP) {  //空降补给结束不发，每天会检测
                 continue;
             }
@@ -450,11 +437,11 @@ public class ScheduleManager {
                 StringBuilder name = new StringBuilder();
                 name.append(plan.getActivityType()).append("_").append(plan.getActivityId()).append("_").append(plan.getKeyId());
                 // 加入定时器
-//                if (ab.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
-//                    QuartzHelper.addJob(sched, name.toString(), "actMail", ActMailJob.class, ab.getPlan().getEndTime());
-//                } else {
+                if (ab.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
+                    QuartzHelper.addJob(sched, name.toString(), "actMail", ActMailJob.class, ab.getEndTime());
+                } else {
                     QuartzHelper.addJob(sched, name.toString(), "actMail", ActMailJob.class, jobTime);
-//                }
+                }
 
                 LogUtil.debug("----------添加活动定时任务 :", plan.getName(), name.toString(), ", Date,", DateHelper.formatDateMiniTime(jobTime), "-------------------");
             }

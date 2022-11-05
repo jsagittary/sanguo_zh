@@ -573,9 +573,6 @@ public class ActivityDataManager {
      */
     public Activity getActivityInfo(Player player, int activityType) {
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
-//        if(activityType == ActivityConst.ACT_DIAOCHAN || activityType == ActivityConst.ACT_SEASON_HERO){
-//            activityBase = StaticActivityDataMgr.getActivityByType0(activityType);
-//        }
         if (activityBase == null) {
             return null;
         }
