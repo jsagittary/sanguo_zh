@@ -73,7 +73,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     }
 
     @Override
-    public void releaseSkillEffect(FightContextHolder contextHolder, StaticHeroSkill staticHeroSkill, Object... params) {
+    public void releaseSkillEffect(FightContextHolder contextHolder, Object... params) {
         // TODO 计算技能伤害
 
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
@@ -83,21 +83,21 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     }
 
     @Override
-    public void releaseSkillBuff(FightContextHolder contextHolder, StaticHeroSkill staticHeroSkill, Object... params) {
-        if (CheckNull.isNull(staticHeroSkill)) {
+    public void releaseSkillBuff(FightContextHolder contextHolder, Object... params) {
+        if (CheckNull.isNull(s_skill)) {
             // 技能配置为空
             LogUtil.error("skill config is null, activeBuffImpl");
             return;
         }
 
         // 添加技能的buff
-        if (!CheckNull.isEmpty(staticHeroSkill.getBuff())) {
+        if (!CheckNull.isEmpty(s_skill.getBuff())) {
             LinkedList<IFightBuff> removeBuffList = new LinkedList<>();
             StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
 
             // 释放buff
-            for (List<Integer> buffConfig : staticHeroSkill.getBuff()) {
+            for (List<Integer> buffConfig : s_skill.getBuff()) {
                 // 概率释放
                 if (!RandomHelper.isHitRangeIn10000(buffConfig.get(2)))
                     continue;
@@ -108,7 +108,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 if (CheckNull.isNull(staticBuff))
                     continue;
 
-                Force actingForce = FightUtil.actingForce(contextHolder.getContext().getAttacker(), contextHolder.getContext().getDefender(), buffObjective, true);
+                Force actingForce = FightUtil.actingForce(contextHolder.getAttacker(), contextHolder.getDefender(), buffObjective, true);
                 Map<Integer, LinkedList<IFightBuff>> buffMap = FightUtil.actingForceBuff(actingForce, buffObjective);
                 if (CheckNull.isNull(buffMap)) {
                     continue;
@@ -127,6 +127,12 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public long uniqueId() {
         return this.skillKeyId;
+    }
+
+    @Override
+    public void releaseSkill(FightContextHolder contextHolder, Object... params) {
+        super.releaseSkill(contextHolder, params);
+        this.curEnergy = this.curEnergy - this.s_skill.getReleaseNeedEnergy();
     }
 
     @Override

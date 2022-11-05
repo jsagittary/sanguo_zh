@@ -1374,55 +1374,55 @@ public final class Constant {
         int[] camps = {EMPIRE, ALLIED, UNION};
     }
 
-    /**
-     * 将领属性id定义
-     */
-    public interface AttrId {
-        int ATTACK = 1;// 攻击
-        int DEFEND = 2;// 防御
-        int LEAD = 3;// 兵力
-        int LINE = 4;// 排数
-        int ATK_MUT = 11;// 攻击附加万分比
-        int DEF_MUT = 12;// 防御附加万分比
-        int LEAD_MUT = 13;// 兵力附加万分比
-        int ATTACK_TOWN = 21;// 攻坚
-        int DEFEND_TOWN = 22;// 据守
-        int CRIT = 31;// 暴击伤害倍率
-        int CRIT_CHANCE = 32;// 暴击概率
-        int CRITDEF = 33;// 免暴值
-        int ATTACK_EXT = 35;// 穿甲
-        int DEFEND_EXT = 36;// 防护
-        int EVADE = 44;// 闪避
-        int MORE_INFANTRY_DAMAGE = 46;//对步兵伤害加成
-        int MORE_CAVALRY_DAMAGE = 47;//对骑兵伤害加成
-        int MORE_ARCHER_DAMAGE = 48;//对弓兵伤害加成
-        int FIGHT = 999;// 战斗力, 直接加战斗力
-        //----程序使用的特殊属性,用来优化代码执行,目前未加入到策划属性体系
-        int DMG_INC = 10001;//增伤
-        int DMG_DEC = 10002;//伤害减免
-        int SPEED = 11001;
-        int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
-        int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
-        int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
-        int MORE_INFANTRY_ATTACK = 101;//对步兵攻击提升
-        int MORE_INFANTRY_ATTACK_EXT = 135;//对步兵破甲提升
-        int MORE_CAVALRY_ATTACK = 201;//对骑兵攻击提升
-        int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
-        int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
-        int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
-
-    }
-
-    public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,
-            AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT, AttrId.DEFEND_EXT};
-
-    public static int[] BASE_ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD};
-
-    /**
-     * 扩展属性
-     */
-    public static int[] EXT_ATTRS = new int[]{AttrId.ATTACK_TOWN, AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT,
-            AttrId.DEFEND_EXT, AttrId.FIGHT, AttrId.LESS_INFANTRY_MUT, AttrId.LESS_CAVALRY_MUT, AttrId.LESS_ARCHER_MUT};
+//    /**
+//     * 将领属性id定义
+//     */
+//    public interface AttrId {
+//        int ATTACK = 1;// 攻击
+//        int DEFEND = 2;// 防御
+//        int LEAD = 3;// 兵力
+//        int LINE = 4;// 排数
+//        int SPEED = 5;// 速度
+//        int ATK_MUT = 11;// 攻击附加万分比
+//        int DEF_MUT = 12;// 防御附加万分比
+//        int LEAD_MUT = 13;// 兵力附加万分比
+//        int ATTACK_TOWN = 21;// 攻坚
+//        int DEFEND_TOWN = 22;// 据守
+//        int CRIT = 31;// 暴击伤害倍率
+//        int CRIT_CHANCE = 32;// 暴击概率
+//        int CRITDEF = 33;// 免暴值
+//        int ATTACK_EXT = 35;// 穿甲
+//        int DEFEND_EXT = 36;// 防护
+//        int EVADE = 44;// 闪避
+//        int MORE_INFANTRY_DAMAGE = 46;//对步兵伤害加成
+//        int MORE_CAVALRY_DAMAGE = 47;//对骑兵伤害加成
+//        int MORE_ARCHER_DAMAGE = 48;//对弓兵伤害加成
+//        int FIGHT = 999;// 战斗力, 直接加战斗力
+//        //----程序使用的特殊属性,用来优化代码执行,目前未加入到策划属性体系
+//        int DMG_INC = 10001;//增伤
+//        int DMG_DEC = 10002;//伤害减免
+//        int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
+//        int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
+//        int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
+//        int MORE_INFANTRY_ATTACK = 101;//对步兵攻击提升
+//        int MORE_INFANTRY_ATTACK_EXT = 135;//对步兵破甲提升
+//        int MORE_CAVALRY_ATTACK = 201;//对骑兵攻击提升
+//        int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
+//        int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
+//        int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
+//
+//    }
+//
+//    public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,
+//            AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT, AttrId.DEFEND_EXT};
+//
+//    public static int[] BASE_ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD};
+//
+//    /**
+//     * 扩展属性
+//     */
+//    public static int[] EXT_ATTRS = new int[]{AttrId.ATTACK_TOWN, AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT,
+//            AttrId.DEFEND_EXT, AttrId.FIGHT, AttrId.LESS_INFANTRY_MUT, AttrId.LESS_CAVALRY_MUT, AttrId.LESS_ARCHER_MUT};
 
     /**
      * 显示战力id定义

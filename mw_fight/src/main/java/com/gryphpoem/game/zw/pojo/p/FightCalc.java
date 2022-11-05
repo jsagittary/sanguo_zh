@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
@@ -78,10 +79,12 @@ public class FightCalc {
      */
     public static final int attributeValue(int attrId, Force force, int heroId) {
         switch (attrId) {
-            case 1:
+            case FightCommonConstant.AttrId.ATTACK:
                 return calAttrValue(force, heroId, force.calcAttack(heroId), FightConstant.EffectLogicId.ATTACK_INCREASED, FightConstant.EffectLogicId.REDUCED_ATTACK);
-            case 2:
+            case FightCommonConstant.AttrId.DEFEND:
                 return calAttrValue(force, heroId, force.calcDefend(heroId), FightConstant.EffectLogicId.DEFENSE_INCREASED, FightConstant.EffectLogicId.REDUCED_DEFENSE);
+            case FightCommonConstant.AttrId.SPEED:
+                return calAttrValue(force, heroId, force.calSpeed(heroId), FightConstant.EffectLogicId.SPEED_INCREASE, FightConstant.EffectLogicId.SPEED_REDUCTION);
             default:
                 return 0;
         }

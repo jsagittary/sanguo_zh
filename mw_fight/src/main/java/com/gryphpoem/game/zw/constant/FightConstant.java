@@ -10,6 +10,10 @@ import org.springframework.util.ObjectUtils;
  */
 public interface FightConstant {
     /**
+     * 百分比除数
+     */
+    public static final double HUNDRED = 100.0;
+    /**
      * 万分比除数
      */
     public static final double TEN_THOUSAND = 10000.0;
@@ -25,6 +29,32 @@ public interface FightConstant {
      * 攻击防守全体
      */
     static final int[] ALL_SIZE = new int[]{1, 2};
+
+    /**
+     * 战斗结果：平局或其他
+     */
+    public static final int FIGHT_RESULT_DRAW = 0;
+    /**
+     * 战斗结果：胜利
+     */
+    public static final int FIGHT_RESULT_SUCCESS = 1;
+    /**
+     * 战斗结果：失败
+     */
+    public static final int FIGHT_RESULT_FAIL = 2;
+
+    /**
+     * 将领属性：攻击
+     */
+    public static final int ATTR_ATTACK = 1;
+    /**
+     * 将领属性：防御
+     */
+    public static final int ATTR_DEFEND = 2;
+    /**
+     * 将领属性：单排兵力
+     */
+    public static final int ATTR_LEAD = 3;
 
     /**
      * 攻击方与防守方

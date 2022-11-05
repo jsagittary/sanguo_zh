@@ -108,7 +108,7 @@ public class BattleLogic {
 
         IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
         fightBuff.setForce(actingForce);
-        fightBuff.setBuffGiver(contextHolder.getContext().getAttacker());
+        fightBuff.setBuffGiver(contextHolder.getAttacker());
         fightBuff.setForceId(heroId);
 
         fightBuff.releaseBuff(buffs, contextHolder, buffConfig, params);
@@ -120,5 +120,16 @@ public class BattleLogic {
             removeBuffList.clear();
         }
         return fightBuff;
+    }
+
+
+    /**
+     * 普攻, 随机敌方一个武将攻击
+     *
+     * @param atk
+     * @param def
+     */
+    public void ordinaryAttack(Force atk, Force def) {
+        
     }
 }

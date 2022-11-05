@@ -129,12 +129,12 @@ public class FightUtil {
         Force buffAttacker;
         Force buffDefender;
         Force executorForce;
-        if (contextHolder.getContext().getAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
-            buffAttacker = contextHolder.getContext().getAttacker();
-            buffDefender = contextHolder.getContext().getDefender();
+        if (contextHolder.getAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+            buffAttacker = contextHolder.getAttacker();
+            buffDefender = contextHolder.getDefender();
         } else {
-            buffAttacker = contextHolder.getContext().getDefender();
-            buffDefender = contextHolder.getContext().getAttacker();
+            buffAttacker = contextHolder.getDefender();
+            buffDefender = contextHolder.getAttacker();
         }
 
         if (FightConstant.BuffObjective.BUFF_LOADER.equals(buffObjective)) {
@@ -212,11 +212,11 @@ public class FightUtil {
     }
 
     public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
-        if (!contextHolder.getContext().getAttacker().isBuffListEmpty()) {
-            releaseBuffEffect(contextHolder.getContext().getAttacker(), contextHolder, timing, params);
+        if (!contextHolder.getAttacker().isBuffListEmpty()) {
+            releaseBuffEffect(contextHolder.getAttacker(), contextHolder, timing, params);
         }
-        if (!contextHolder.getContext().getDefender().isBuffListEmpty()) {
-            releaseBuffEffect(contextHolder.getContext().getDefender(), contextHolder, timing, params);
+        if (!contextHolder.getDefender().isBuffListEmpty()) {
+            releaseBuffEffect(contextHolder.getDefender(), contextHolder, timing, params);
         }
     }
 

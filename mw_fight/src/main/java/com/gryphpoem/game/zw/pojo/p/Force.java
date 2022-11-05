@@ -229,7 +229,7 @@ public class Force {
      * @return 是否存活
      */
     public boolean alive() {
-        return hp > 0;
+        return hp > 0 && this.morale > 0;
     }
 
     /**
@@ -419,34 +419,34 @@ public class Force {
         return 0;
     }
 
-    public int calcCrit(int heroId) {
+    public int calcCritical(int heroId) {
         if (this.id == heroId) {
-            return attrData.crit;
+            return attrData.critical;
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().crit).findFirst().orElse(null);
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().critical).findFirst().orElse(null);
         }
 
         return 0;
     }
 
-    public int calCritChance(int heroId) {
+    public int calCriticalChance(int heroId) {
         if (this.id == heroId) {
-            return attrData.critChance;
+            return attrData.criticalChance;
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().critChance).findFirst().orElse(null);
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().criticalChance).findFirst().orElse(null);
         }
 
         return 0;
     }
 
-    public int calcCritDef(int heroId) {
+    public int calcCriticalDef(int heroId) {
         if (this.id == heroId) {
-            return attrData.critDef;
+            return attrData.criticalDef;
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().critDef).findFirst().orElse(null);
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().criticalDef).findFirst().orElse(null);
         }
 
         return 0;

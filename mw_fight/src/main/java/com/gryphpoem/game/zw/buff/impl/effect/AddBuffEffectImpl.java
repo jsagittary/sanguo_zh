@@ -66,13 +66,14 @@ public class AddBuffEffectImpl extends AbsFightEffect {
             LogUtil.error("add buff, config: ", effectConfig, ", staticBuff not found");
             return;
         }
+        if (!RandomHelper.isHitRangeIn10000(effectConfig_.get(4))) {
+            LogUtil.debug("添加buff随机值不够, 无法添加buff, buffConfig: ", fightBuff.getBuffConfig());
+            return;
+        }
 
         BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
         List<IFightBuff> removedList = new ArrayList<>();
         for (Integer heroId : executor.effectExecutor) {
-            if (!RandomHelper.isHitRangeIn10000(effectConfig_.get(4))) {
-                continue;
-            }
             // 释放buff
             battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, executor, heroId, contextHolder, null);
         }

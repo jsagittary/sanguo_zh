@@ -28,7 +28,7 @@ public class DesignatedRoundEffectWork implements IFightBuffWork {
         List<Integer> roundsNum = conditionConfig.subList(1, conditionConfig.size() - 1);
         if (CheckNull.isEmpty(roundsNum))
             return false;
-        Integer configRounds = roundsNum.stream().filter(r -> r.intValue() == contextHolder.getContext().getRoundNum()).findFirst().orElse(null);
+        Integer configRounds = roundsNum.stream().filter(r -> r.intValue() == contextHolder.getRoundNum()).findFirst().orElse(null);
         if (CheckNull.isNull(configRounds))
             return false;
         return true;

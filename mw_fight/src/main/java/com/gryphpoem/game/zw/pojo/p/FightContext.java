@@ -1,8 +1,9 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.game.zw.pb.CommonPb;
 import lombok.Data;
 
-import java.util.HashMap;
+import java.util.List;
 
 /**
  * Description:
@@ -12,20 +13,33 @@ import java.util.HashMap;
 @Data
 public class FightContext {
     /**
-     * <buff唯一id, map<效果id, 效果值>>
+     * 进攻战斗方
      */
-    private HashMap<Long, HashMap<Integer, Object>> effectValueMap;
+    private Fighter atkFighter;
+    /**
+     * 防守战斗方
+     */
+    private Fighter defFighter;
+    /**
+     * 进攻方玩家id
+     */
+    private long atkRoleId;
+    /**
+     * 进攻势力
+     */
     private Force attacker;
+    /**
+     * 防守势力
+     */
     private Force defender;
     /**
      * 回合数
      */
     private int roundNum;
-
-    public void clear() {
-        this.effectValueMap.clear();
-        this.attacker = null;
-        this.defender = null;
-        this.roundNum = 0;
-    }
+    private long fightId;
+    private boolean recordFlag = true;
+    // TODO 战斗PB信息
+    private CommonPb.Record.Builder recordData;// 总战报
+    // 战斗实体
+    private List<FightEntity> fightEntityList;
 }
