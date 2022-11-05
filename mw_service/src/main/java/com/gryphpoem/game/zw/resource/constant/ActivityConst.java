@@ -253,6 +253,7 @@ public class ActivityConst {
             ACT_CONSUME_GOLD_RANK,
             ACT_TUTOR_RANK,
             ACT_BRAVEST_ARMY,
+            FAMOUS_GENERAL_TURNPLATE,
             ACT_CHRISTMAS, ACT_REPAIR_CASTLE,
             ACT_DIAOCHAN, ACT_SEASON_HERO,
             CROSS_ACT_RECHARGE_RANK};
