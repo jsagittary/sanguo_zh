@@ -208,10 +208,15 @@ public class Hero {
                     default:
                         throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, heroId:", heroId);
                 }
-                for (int i = 1; i <= sHero.getEvolveGroup().size(); i++) {
-                    // 暂时把武将的天赋组个数作为天赋页页数
-                    this.talent.put(i, new TalentData(0, i, maxPart));
+                if (sHero != null) {
+                    for (int i = 1; i <= sHero.getEvolveGroup().size(); i++) {
+                        // 暂时把武将的天赋组个数作为天赋页页数
+                        this.talent.put(i, new TalentData(0, i, maxPart));
+                    }
+                } else {
+                    this.talent.put(1, new TalentData(0, 1, maxPart));
                 }
+
             }
         }
         initMedalKeys();
