@@ -208,7 +208,7 @@ public class Hero {
                     default:
                         throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, heroId:", heroId);
                 }
-                if (sHero != null) {
+                if (sHero != null &&  sHero.getEvolveGroup().size() > 0) {
                     for (int i = 1; i <= sHero.getEvolveGroup().size(); i++) {
                         // 暂时把武将的天赋组个数作为天赋页页数
                         this.talent.put(i, new TalentData(0, i, maxPart));
