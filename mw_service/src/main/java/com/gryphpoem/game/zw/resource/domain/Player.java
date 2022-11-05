@@ -918,7 +918,6 @@ public class Player {
         this.characterData = characterData;
     }
 
-
     /**
      * 性格奖励记录 <br>
      * <奖励配置id(对应sim_character_reward的id), 是否已获取(1-是; 0-否)>
@@ -931,6 +930,60 @@ public class Player {
 
     public void setCharacterRewardRecord(Map<Integer, Integer> characterRewardRecord) {
         this.characterRewardRecord = characterRewardRecord;
+    }
+
+    /**
+     * 侦察兵<br>
+     * key: 侦察兵标号; value: 侦察兵状态(0-空闲; 1-任务中)
+     */
+    private Map<Integer, Integer> scoutMap = new HashMap<>();
+
+    public Map<Integer, Integer> getScoutMap() {
+        return scoutMap;
+    }
+
+    public void setScoutMap(Map<Integer, Integer> scoutMap) {
+        this.scoutMap = scoutMap;
+    }
+
+    /**
+     * 已探索的迷雾格子, 记录对应的格子id
+     */
+    private List<Integer> unlockMapGridData = new ArrayList<>();
+
+    public List<Integer> getUnlockMapGridData() {
+        return unlockMapGridData;
+    }
+
+    public void setUnlockMapGridData(List<Integer> unlockMapGridData) {
+        this.unlockMapGridData = unlockMapGridData;
+    }
+
+    /**
+     * 建筑位置信息 <br>
+     * key: 建筑id; value: 地基id
+     */
+    private Map<Integer, Integer> buildingLocationData = new HashMap<>();
+
+    public Map<Integer, Integer> getBuildingLocationData() {
+        return buildingLocationData;
+    }
+
+    public void setBuildingLocationData(Map<Integer, Integer> buildingLocationData) {
+        this.buildingLocationData = buildingLocationData;
+    }
+
+    /**
+     * 已开垦的地基, 记录对应的地基id
+     */
+    private List<Integer> foundationData = new ArrayList<>();
+
+    public List<Integer> getFoundationData() {
+        return foundationData;
+    }
+
+    public void setFoundationData(List<Integer> foundationData) {
+        this.foundationData = foundationData;
     }
 
     /**
