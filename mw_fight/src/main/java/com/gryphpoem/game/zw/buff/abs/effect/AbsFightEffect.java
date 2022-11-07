@@ -25,7 +25,7 @@ import java.util.*;
 public abstract class AbsFightEffect implements IFightEffect {
 
     /**
-     * 计算效果执行人与被执行人
+     * 计算效果执行人
      *
      * @param fightBuff
      * @param contextHolder
@@ -40,8 +40,32 @@ public abstract class AbsFightEffect implements IFightEffect {
             return null;
         }
 
-        FightUtil.fillActingHeroList(fightBuff, executorForce, executorForce.effectExecutor, buffObjective);
+        FightUtil.fillActingHeroList(fightBuff, executorForce, executorForce.effectExecutor, contextHolder, buffObjective);
         if (CheckNull.isEmpty(executorForce.effectExecutor)) {
+            LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(),
+                    ", conditionConfig: ", effectConfig, ", effectExecutor list is empty");
+        }
+        return executorForce;
+    }
+
+    /**
+     * 计算效果被执行人
+     *
+     * @param fightBuff
+     * @param contextHolder
+     * @param effectConfig
+     * @param buffObjective
+     * @return
+     */
+    protected Force beExecutorForce(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, FightConstant.BuffObjective buffObjective) {
+        Force executorForce = FightUtil.getActingForce(fightBuff, contextHolder, buffObjective);
+        if (CheckNull.isNull(executorForce)) {
+            LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", executor is null");
+            return null;
+        }
+
+        FightUtil.fillActingHeroList(fightBuff, executorForce, executorForce.beEffectExecutor, contextHolder, buffObjective);
+        if (CheckNull.isEmpty(executorForce.beEffectExecutor)) {
             LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(),
                     ", conditionConfig: ", effectConfig, ", effectExecutor list is empty");
         }
@@ -147,14 +171,14 @@ public abstract class AbsFightEffect implements IFightEffect {
             LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
             return;
         }
-        Force executor = executorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
+        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
         if (CheckNull.isNull(executor)) {
             return;
         }
-        if (!CheckNull.isEmpty(executor.effectExecutor)) {
+        if (!CheckNull.isEmpty(executor.beEffectExecutor)) {
             if (Objects.nonNull(rule)) {
                 int nextIndex;
-                for (Integer heroId : executor.effectExecutor) {
+                for (Integer heroId : executor.beEffectExecutor) {
                     FightBuffEffect fbe = executor.getFightEffectMap(heroId);
                     FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe);
                     Map<Integer, List<FightEffectData>> dataMap = fbe.getEffectMap().get(rule.getEffectLogicId());
@@ -181,14 +205,14 @@ public abstract class AbsFightEffect implements IFightEffect {
             LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
             return;
         }
-        Force executor = executorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
+        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
         if (CheckNull.isNull(executor)) {
             LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig_, ", executor is null");
             return;
         }
 
-        if (!CheckNull.isEmpty(executor.effectExecutor)) {
-            for (Integer heroId : executor.effectExecutor) {
+        if (!CheckNull.isEmpty(executor.beEffectExecutor)) {
+            for (Integer heroId : executor.beEffectExecutor) {
                 FightBuffEffect fbe = executor.getFightEffectMap(heroId);
                 Map<Integer, List<FightEffectData>> effectIdMap = fbe.getEffectMap().get(rule.getEffectLogicId());
                 if (CheckNull.isEmpty(effectIdMap)) continue;
@@ -209,10 +233,6 @@ public abstract class AbsFightEffect implements IFightEffect {
                 }
             }
         }
-    }
-
-    @Override
-    public void randomRoundValue(FightBuffEffect fightBuffEffect) {
     }
 
     /**
@@ -237,5 +257,13 @@ public abstract class AbsFightEffect implements IFightEffect {
      */
     protected abstract double calValue(Force force, int heroId, int effectLogicId, Object... params);
 
+    /**
+     * 创建战斗效果实体
+     *
+     * @param fightBuff
+     * @param effectConfig
+     * @param fbe
+     * @return
+     */
     protected abstract FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe);
 }

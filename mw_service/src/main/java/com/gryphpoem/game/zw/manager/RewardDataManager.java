@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.manager;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -1024,7 +1025,7 @@ public class RewardDataManager {
             int attack = sEquip.getAttack();
             if (attack > 0) {
                 Map<Integer, Integer> attr = equip.getAttr();
-                attr.put(Constant.AttrId.ATTACK, attack);
+                attr.put(FightCommonConstant.AttrId.ATTACK, attack);
                 equip.setAttr(attr);
             }
 
@@ -1035,7 +1036,7 @@ public class RewardDataManager {
                 int defense = RandomUtils.nextInt(defenseLow, defenseHigh + 1);
                 if (defense > 0) {
                     Map<Integer, Integer> extAttr = equip.getExtAttr();
-                    extAttr.put(Constant.AttrId.DEFEND, defense);
+                    extAttr.put(FightCommonConstant.AttrId.DEFEND, defense);
                 }
             }
             keyList.add(equip.getKeyId());
@@ -2425,7 +2426,7 @@ public class RewardDataManager {
             } else {// 按权重随机
                 if (staticEquipQualityExtra != null && staticEquipQualityExtra.getExtraNum() > 0) {
                     for (int j = 0; j < staticEquipQualityExtra.getExtraNum(); j++) {
-                        attrLv.add(new Turple<>(Constant.ATTRS[RandomUtils.nextInt(0, Constant.ATTRS.length)],
+                        attrLv.add(new Turple<>(FightCommonConstant.ATTRS[RandomUtils.nextInt(0, FightCommonConstant.ATTRS.length)],
                                 staticEquipQualityExtra.getExtraLv()));
                     }
                 }

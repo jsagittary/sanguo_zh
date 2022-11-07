@@ -32,7 +32,7 @@ public class AttackEffectWork extends AbsFightEffectWork {
         if (CheckNull.isNull(buffObjective)) return false;
 
         Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
-        if (contextHolder.getContext().getAttacker().actionId == 0) {
+        if (contextHolder.getAttacker().actionId == 0) {
             LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(), ", attacker.actionId = 0");
             return false;
         }
@@ -41,7 +41,7 @@ public class AttackEffectWork extends AbsFightEffectWork {
         }
 
         List<Integer> forceList = new ArrayList<>(1);
-        forceList.add(contextHolder.getContext().getAttacker().actionId);
+        forceList.add(contextHolder.getAttacker().actionId);
         return canRelease(triggerForce, forceList, buffObjective);
     }
 

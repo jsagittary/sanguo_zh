@@ -30,6 +30,20 @@ public class FightContextHolder {
         LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
     }
 
+    public FightContextHolder(Fighter atk, Fighter def, int battleType) {
+        LOCAL = new InnerContextLocal<FightContext>() {
+
+            @Override
+            FightContext initialValue() {
+                return new FightContext();
+            }
+        };
+        LOCAL.get().setAtkFighter(atk);
+        LOCAL.get().setDefFighter(def);
+        LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
+        LOCAL.get().setBattleType(battleType);
+    }
+
     public void setRecordData(CommonPb.Record.Builder recordData) {
         LOCAL.get().setRecordData(recordData);
     }
@@ -57,6 +71,11 @@ public class FightContextHolder {
     public void setDefender(Force defender) {
         FightContext context = LOCAL.get();
         context.setDefender(defender);
+    }
+
+    public void resetForce(Force atk, Force def) {
+        setAttacker(atk);
+        setDefender(def);
     }
 
     public int getRoundNum() {
@@ -137,6 +156,10 @@ public class FightContextHolder {
 
     public BattleLogic getBattleLogic() {
         return LOCAL.get().getBattleLogic();
+    }
+
+    public int getBattleType() {
+        return LOCAL.get().getBattleType();
     }
 
     abstract class InnerContextLocal<T> {

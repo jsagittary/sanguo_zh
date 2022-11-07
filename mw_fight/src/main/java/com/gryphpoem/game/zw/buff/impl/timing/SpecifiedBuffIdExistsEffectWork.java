@@ -64,7 +64,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {
-            return canRelease0(contextHolder.getContext().getAttacker(), conditionConfig) || canRelease0(contextHolder.getContext().getDefender(), conditionConfig);
+            return canRelease0(contextHolder.getAttacker(), conditionConfig) || canRelease0(contextHolder.getDefender(), conditionConfig);
         }
 
         return canRelease;

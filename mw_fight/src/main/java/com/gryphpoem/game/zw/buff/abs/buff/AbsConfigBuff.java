@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.buff.abs.buff;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
@@ -221,6 +222,9 @@ public abstract class AbsConfigBuff implements IFightBuff {
      * @param params
      */
     protected void buffEffectiveness(FightContextHolder contextHolder, Object... params) {
+        // 触发buff
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_DISAPPEARS, this);
+        
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);

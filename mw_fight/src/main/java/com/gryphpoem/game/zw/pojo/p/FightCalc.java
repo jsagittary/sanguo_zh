@@ -170,10 +170,37 @@ public class FightCalc {
                 tenThousandthRatio_ - tenThousandthRatio) / FightConstant.TEN_THOUSAND)) + fixValue_ - fixValue;
     }
 
-    public static int calSkillAttack(Force force, Force target, int battleType) {
+    /**
+     * 计算技能伤害
+     *
+     * @param force
+     * @param target
+     * @param effectConfig
+     * @param targetId
+     * @param battleType
+     * @return
+     */
+    public static int calSkillAttack(Force force, Force target, List<Integer> effectConfig, int targetId, int battleType) {
         // 基础伤害
         double baseHurt = baseHurt(force, target);
-        
+        // （基础伤害*伤害系数【效果3万分比】*血量衰减+固伤【效果3固定值】）
+        baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        // 技能修正
+        double skillCorrection = skillCorrection(force, target, targetId);
+        // 终伤修正
+        double finalDamageCorrection = finalDamageCorrection(force, target, target.beActionId.get(0));
+        // 兵种克制修正
+        double armsRestraintCorrection = armsRestraintCorrection(force, target, target.beActionId.get(0));
+        // 技能暴击伤害修正
+        double skillAttackCriticalDamageCorrection = skillAttackCriticalDamageCorrection(force);
+
+        // 浮动修正=[0.9,1.1]
+        double floatCorrection = RandomUtils.nextFloat(0.9f, 1.1f);
+        // 克制=1+克制关系系数
+        double finalRestrain = getFinalRestrain(force, target, battleType);
+
+        return (int) (baseHurt * skillCorrection * finalDamageCorrection * armsRestraintCorrection * skillAttackCriticalDamageCorrection *
+                floatCorrection * finalRestrain);
     }
 
     /**
@@ -194,7 +221,7 @@ public class FightCalc {
         double finalDamageCorrection = finalDamageCorrection(force, target, target.beActionId.get(0));
         // 兵种克制修正
         double armsRestraintCorrection = armsRestraintCorrection(force, target, target.beActionId.get(0));
-        // 暴击伤害修正
+        // 普攻暴击伤害修正
         double attackCriticalDamageCorrection = attackCriticalDamageCorrection(force);
 
         // 浮动修正=[0.9,1.1]
@@ -308,7 +335,7 @@ public class FightCalc {
     }
 
     /**
-     * 伤害计算公式参与部分 暴击伤害修正
+     * 伤害计算公式参与部分 普攻暴击伤害修正
      *
      * @param force
      * @return
@@ -316,16 +343,87 @@ public class FightCalc {
     private static double attackCriticalDamageCorrection(Force force) {
         // 普攻暴击率=初始暴击率+暴击率提升万分比         【效果102】
         IFightEffect fightEffect = DataResource.ac.getBean(FightManager.class).getSkillEffect(FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE);
-        int criticalChanceCorrection = force.calCriticalChance(force.actionId) + ((Turple<Integer, Integer>)
-                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE)).getB();
+        Turple<Integer, Integer> effect102 = (Turple<Integer, Integer>)
+                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE);
+        int effect102Val = 0;
+        if (Objects.nonNull(effect102)) {
+            effect102Val = effect102.getB();
+        }
+
+        int criticalChanceCorrection = force.calCriticalChance(force.actionId) + effect102Val;
         // 普攻暴击伤害修正=原始暴击伤害+暴击伤害修正万分比         【效果103】
-        double attackCriticalDamageCorrection = 2d + (force.calCriticalChance(force.actionId) + ((Turple<Integer, Integer>)
-                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.CRITICAL_DAMAGE_INCREASED)).getB() / FightConstant.TEN_THOUSAND);
+        Turple<Integer, Integer> effect103 = (Turple<Integer, Integer>)
+                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.CRITICAL_DAMAGE_INCREASED);
+        int effect103Val = 0;
+        if (Objects.nonNull(effect103)) {
+            effect103Val = effect103.getB();
+        }
+
+        double attackCriticalDamageCorrection = 2d + (force.calCriticalChance(force.actionId) + (effect103Val / FightConstant.TEN_THOUSAND));
         if (!RandomHelper.isHitRangeIn10000(criticalChanceCorrection)) {
             attackCriticalDamageCorrection = 1d;
         }
 
         return attackCriticalDamageCorrection;
+    }
+
+    /**
+     * 伤害计算公式参与部分 技能暴击伤害修正
+     *
+     * @param force
+     * @return
+     */
+    private static double skillAttackCriticalDamageCorrection(Force force) {
+        IFightEffect fightEffect = DataResource.ac.getBean(FightManager.class).getSkillEffect(FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE);
+        Turple<Integer, Integer> effect102 = (Turple<Integer, Integer>)
+                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE);
+        int effect102Val = 0;
+        if (Objects.nonNull(effect102)) effect102Val = effect102.getB();
+
+        Turple<Integer, Integer> effect104 = (Turple<Integer, Integer>)
+                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_HIT_RATE_OF_SKILL);
+        int effect104Val = 0;
+        if (Objects.nonNull(effect104)) effect104Val = effect104.getB();
+
+        // 技能暴击率=初始暴击率+暴击率提升万分比【效果102】+技能额外暴击率提升万分比【效果104】
+        int criticalChanceCorrection = force.calCriticalChance(force.actionId) + effect102Val + effect104Val;
+
+        // 原始暴击伤害+暴击伤害修正万分比【效果103】+技能额外暴击伤害提升万分比【效果105】
+        Turple<Integer, Integer> effect103 = (Turple<Integer, Integer>)
+                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.CRITICAL_DAMAGE_INCREASED);
+        int effect103Val = 0;
+        if (Objects.nonNull(effect103)) effect103Val = effect103.getB();
+        Turple<Integer, Integer> effect105 = (Turple<Integer, Integer>)
+                fightEffect.effectCalculateValue(force.getFightEffectMap(force.actionId), FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL);
+        int effect105Val = 0;
+        if (Objects.nonNull(effect105)) effect105Val = effect105.getB();
+
+        double attackCriticalDamageCorrection = 2d + ((effect103Val + effect105Val) / FightConstant.TEN_THOUSAND);
+        if (!RandomHelper.isHitRangeIn10000(criticalChanceCorrection)) {
+            attackCriticalDamageCorrection = 1d;
+        }
+
+        return attackCriticalDamageCorrection;
+    }
+
+    /**
+     * 技能修正
+     *
+     * @param force
+     * @param target
+     * @param targetHeroId
+     * @return
+     */
+    private static double skillCorrection(Force force, Force target, int targetHeroId) {
+        FightManager fightManager = DataResource.ac.getBean(FightManager.class);
+        IFightEffect fightEffect = fightManager.getSkillEffect(FightConstant.EffectLogicId.SKILL_DAMAGE_INCREASED);
+        FightBuffEffect atkBe = force.getFightEffectMap(force.actionId);
+        FightBuffEffect defBe = target.getFightEffectMap(targetHeroId);
+
+        return 1 + ((int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.INCREASE_COMMON_ATTACK_DAMAGE) -
+                (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.COMMON_ATTACK_DAMAGE_REDUCED) + (int) fightEffect.effectCalculateValue(
+                defBe, FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE) - (int) fightEffect.effectCalculateValue(defBe,
+                FightConstant.EffectLogicId.BE_FINAL_DAMAGE_REDUCED) / FightConstant.TEN_THOUSAND);
     }
 
     /**

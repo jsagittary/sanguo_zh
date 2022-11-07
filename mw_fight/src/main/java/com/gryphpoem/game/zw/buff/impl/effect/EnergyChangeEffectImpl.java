@@ -66,12 +66,12 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
             LogUtil.error("staticBuff: ", fightBuff.getBuffConfig(), ", effectConfig: ", effectConfig_, ", not found buffObjective");
             return;
         }
-        Force force = executorForce(fightBuff, contextHolder, effectConfig, buffObjective);
+        Force force = beExecutorForce(fightBuff, contextHolder, effectConfig, buffObjective);
         if (CheckNull.isNull(force)) {
             return;
         }
-        if (!CheckNull.isEmpty(force.effectExecutor)) {
-            for (Integer heroId : force.effectExecutor) {
+        if (!CheckNull.isEmpty(force.beEffectExecutor)) {
+            for (Integer heroId : force.beEffectExecutor) {
                 List<SimpleHeroSkill> skillList = force.getSkillList(heroId.intValue());
                 if (CheckNull.isEmpty(skillList)) continue;
                 List<SimpleHeroSkill> activeSkillList = skillList.stream().filter(skill -> !skill.isOnStageSkill()).collect(Collectors.toList());

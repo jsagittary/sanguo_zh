@@ -75,9 +75,13 @@ public class Force {
      */
     public List<Integer> buffTriggerId = new ArrayList<>();
     /**
-     * 效果被执行者
+     * 效果执行者
      */
     public List<Integer> effectExecutor = new ArrayList<>();
+    /**
+     * 效果被执行者
+     */
+    public List<Integer> beEffectExecutor = new ArrayList<>();
     /**
      * 战斗buff集合 主将的buff列表
      */

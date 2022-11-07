@@ -54,11 +54,4 @@ public interface IFightEffect<T> {
      * @return
      */
     Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params);
-
-    /**
-     * 随机数值
-     *
-     * @param fightBuffEffect
-     */
-    void randomRoundValue(FightBuffEffect fightBuffEffect);
 }

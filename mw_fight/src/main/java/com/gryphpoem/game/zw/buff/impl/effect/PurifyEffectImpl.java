@@ -56,12 +56,12 @@ public class PurifyEffectImpl extends AbsFightEffect {
             LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
             return;
         }
-        Force executor = executorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executor) || CheckNull.isEmpty(executor.effectExecutor)) {
+        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
+        if (CheckNull.isNull(executor) || CheckNull.isEmpty(executor.beEffectExecutor)) {
             return;
         }
 
-        for (Integer heroId : executor.effectExecutor) {
+        for (Integer heroId : executor.beEffectExecutor) {
             List<IFightBuff> buffList = executor.buffList(heroId.intValue());
             if (CheckNull.isEmpty(buffList))
                 continue;

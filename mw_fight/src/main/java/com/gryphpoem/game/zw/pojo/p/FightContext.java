@@ -43,4 +43,5 @@ public class FightContext {
     // 战斗实体
     private List<FightEntity> fightEntityList;
     private BattleLogic battleLogic;
+    private int battleType;
 }

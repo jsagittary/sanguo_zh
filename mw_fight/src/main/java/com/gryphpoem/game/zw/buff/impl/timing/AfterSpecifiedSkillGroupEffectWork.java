@@ -35,7 +35,7 @@ public class AfterSpecifiedSkillGroupEffectWork extends AbsFightEffectWork {
             if (CheckNull.isNull(buffObjective)) return false;
             Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
             if (CheckNull.isEmpty(triggerForce.buffTriggerId)) return false;
-            return triggerForce.buffTriggerId.get(0) == contextHolder.getContext().getAttacker().actionId;
+            return triggerForce.buffTriggerId.get(0) == contextHolder.getAttacker().actionId;
         } else if (conditionConfig.get(1) == 0) {
             return true;
         }

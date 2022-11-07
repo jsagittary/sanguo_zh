@@ -27,7 +27,7 @@ public abstract class AbsFightEffectWork implements IFightBuffWork {
      */
     protected Force triggerForce(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, FightConstant.BuffObjective buffObjective) {
         Force triggerForce = FightUtil.getActingForce(fightBuff, contextHolder, buffObjective);
-        FightUtil.fillActingHeroList(fightBuff, triggerForce, triggerForce.buffTriggerId, buffObjective);
+        FightUtil.fillActingHeroList(fightBuff, triggerForce, triggerForce.buffTriggerId, contextHolder, buffObjective);
         if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
             LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(),
                     ", conditionConfig: ", conditionConfig, ", triggerList is empty");

@@ -56,8 +56,8 @@ public class AddBuffEffectImpl extends AbsFightEffect {
             LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
             return;
         }
-        Force executor = executorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executor) || CheckNull.isEmpty(executor.effectExecutor)) {
+        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
+        if (CheckNull.isNull(executor) || CheckNull.isEmpty(executor.beEffectExecutor)) {
             return;
         }
 
@@ -71,9 +71,11 @@ public class AddBuffEffectImpl extends AbsFightEffect {
             return;
         }
 
+        // buff的施与者是当前buff的施与者
+        contextHolder.setAttacker(fightBuff.getBuffGiver());
         BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
         List<IFightBuff> removedList = new ArrayList<>();
-        for (Integer heroId : executor.effectExecutor) {
+        for (Integer heroId : executor.beEffectExecutor) {
             // 释放buff
             battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, executor, heroId, contextHolder, null);
         }

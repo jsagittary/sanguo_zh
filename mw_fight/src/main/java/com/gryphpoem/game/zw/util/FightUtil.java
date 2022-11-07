@@ -70,11 +70,19 @@ public class FightUtil {
      * @param triggerForce
      * @param buffObjective
      */
-    public static void fillActingHeroList(IFightBuff fightBuff, Force triggerForce, List<Integer> heroList, FightConstant.BuffObjective buffObjective) {
+    public static void fillActingHeroList(IFightBuff fightBuff, Force triggerForce, List<Integer> heroList, FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective) {
         if (!CheckNull.isEmpty(heroList))
             heroList.clear();
 
         switch (buffObjective) {
+            case RELEASE_SKILL:
+                if (CheckNull.isNull(fightBuff)) {
+                    // 执行主体效果
+                    heroList.add(contextHolder.getAttacker().actionId);
+                    break;
+                }
+                heroList.add(fightBuff.getBuffGiverId());
+                break;
             case BUFF_LOADER:
                 if (!CheckNull.isEmpty(triggerForce.buffList)) {
                     IFightBuff buff = triggerForce.buffList.stream().filter(t -> t.uniqueId() == fightBuff.uniqueId()).findFirst().orElse(null);
@@ -137,10 +145,20 @@ public class FightUtil {
             buffDefender = contextHolder.getAttacker();
         }
 
-        if (FightConstant.BuffObjective.BUFF_LOADER.equals(buffObjective)) {
-            executorForce = fightBuff.getForce();
-        } else {
-            executorForce = FightUtil.actingForce(buffAttacker, buffDefender, buffObjective, false);
+        switch (buffObjective) {
+            case RELEASE_SKILL:
+                if (CheckNull.isNull(fightBuff)) {
+                    executorForce = contextHolder.getAttacker();
+                    break;
+                }
+                executorForce = fightBuff.getBuffGiver();
+                break;
+            case BUFF_LOADER:
+                executorForce = fightBuff.getForce();
+                break;
+            default:
+                executorForce = FightUtil.actingForce(buffAttacker, buffDefender, buffObjective, false);
+                break;
         }
 
         return executorForce;

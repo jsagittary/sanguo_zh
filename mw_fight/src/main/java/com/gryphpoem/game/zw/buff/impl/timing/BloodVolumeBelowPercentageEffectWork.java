@@ -33,9 +33,9 @@ public class BloodVolumeBelowPercentageEffectWork extends AbsFightEffectWork {
                 return true;
             }
         } else if (conditionConfig.get(0) == 0) {
-            if ((contextHolder.getContext().getAttacker().hp / contextHolder.getContext().getAttacker().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
+            if ((contextHolder.getAttacker().hp / contextHolder.getAttacker().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
                 return true;
-            if ((contextHolder.getContext().getDefender().hp / contextHolder.getContext().getDefender().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
+            if ((contextHolder.getDefender().hp / contextHolder.getDefender().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
                 return true;
         }
 

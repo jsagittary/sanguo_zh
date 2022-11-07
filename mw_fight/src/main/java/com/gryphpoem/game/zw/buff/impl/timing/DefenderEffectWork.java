@@ -32,12 +32,12 @@ public class DefenderEffectWork extends AbsFightEffectWork {
 
         Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
 
-        if (CheckNull.isEmpty(contextHolder.getContext().getDefender().beActionId))
+        if (CheckNull.isEmpty(contextHolder.getDefender().beActionId))
             return false;
         // 无触发者
         if (CheckNull.isEmpty(triggerForce.buffTriggerId))
             return false;
 
-        return canRelease(triggerForce, contextHolder.getContext().getDefender().beActionId, buffObjective);
+        return canRelease(triggerForce, contextHolder.getDefender().beActionId, buffObjective);
     }
 }

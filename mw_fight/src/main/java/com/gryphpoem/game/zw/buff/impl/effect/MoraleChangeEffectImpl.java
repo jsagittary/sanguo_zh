@@ -51,12 +51,12 @@ public class MoraleChangeEffectImpl extends AbsFightEffect {
             LogUtil.error("staticBuff: ", fightBuff.getBuffConfig(), ", effectConfig: ", effectConfig_, ", not found buffObjective");
             return;
         }
-        Force force = executorForce(fightBuff, contextHolder, effectConfig, buffObjective);
+        Force force = beExecutorForce(fightBuff, contextHolder, effectConfig, buffObjective);
         if (CheckNull.isNull(force)) {
             return;
         }
-        if (!CheckNull.isEmpty(force.effectExecutor)) {
-            for (Integer heroId : force.effectExecutor) {
+        if (!CheckNull.isEmpty(force.beEffectExecutor)) {
+            for (Integer heroId : force.beEffectExecutor) {
                 double originValue = (force.maxRoundMorale * effectConfig_.get(4) / FightConstant.TEN_THOUSAND) + effectConfig_.get(5);
                 // 公式计算
                 switch (rule.getEffectLogicId()) {
@@ -72,7 +72,7 @@ public class MoraleChangeEffectImpl extends AbsFightEffect {
                         if (force.morale < 0)
                             force.morale = 0;
                         // TODO PB
-                        
+
                         break;
                 }
             }

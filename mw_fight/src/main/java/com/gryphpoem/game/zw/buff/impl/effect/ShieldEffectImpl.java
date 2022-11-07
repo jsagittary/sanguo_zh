@@ -35,8 +35,8 @@ public class ShieldEffectImpl extends AbsFightEffect {
             return null;
         }
         List<IFightBuff> sameIdBuffList_ = sameIdBuffList;
-        Force executorForce = executorForce(sameIdBuffList_.get(0), contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executorForce) || CheckNull.isEmpty(executorForce.effectExecutor)) {
+        Force executorForce = beExecutorForce(sameIdBuffList_.get(0), contextHolder, effectConfig_, buffObjective);
+        if (CheckNull.isNull(executorForce) || CheckNull.isEmpty(executorForce.beEffectExecutor)) {
             return null;
         }
 
@@ -44,7 +44,7 @@ public class ShieldEffectImpl extends AbsFightEffect {
         int curShieldValue = 0;
         Map<Integer, List<FightEffectData>> effectMap;
         Map<IFightBuff, Integer> effectValue = new HashMap<>(sameIdBuffList_.size());
-        for (Integer heroId : executorForce.effectExecutor) {
+        for (Integer heroId : executorForce.beEffectExecutor) {
             curShieldValue += calEffectValue(executorForce, heroId, effectConfig_);
             FightBuffEffect buffEffect = executorForce.getFightEffectMap(heroId.intValue());
             if (CheckNull.isNull(buffEffect) || (effectMap = buffEffect.getEffectMap().get(FightConstant.EffectLogicId.SHIELD)) == null)

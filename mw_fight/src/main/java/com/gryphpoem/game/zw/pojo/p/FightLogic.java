@@ -30,7 +30,7 @@ public class FightLogic {
     public FightLogic(Fighter attacker, Fighter defender, boolean recordFlag, int battleType) {
         this.battleType = battleType;
         attacker.isAttacker = true;
-        this.contextHolder = new FightContextHolder(attacker, defender);
+        this.contextHolder = new FightContextHolder(attacker, defender, battleType);
         this.contextHolder.setRecordFlag(recordFlag);
         if (recordFlag) {
             contextHolder.setRecordData(CommonPb.Record.newBuilder().setKeyId(0));
@@ -246,13 +246,12 @@ public class FightLogic {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
                 atk.actionId = fe.getHeroId();
-                contextHolder.setAttacker(atk);
-                contextHolder.setDefender(def);
-
+                contextHolder.resetForce(atk, def);
                 // 释放技能
                 contextHolder.getBattleLogic().releaseSkill(atk, fe, contextHolder);
                 // 普攻
-                contextHolder.getBattleLogic().ordinaryAttack(atk, def, heroList, this.battleType);
+                contextHolder.resetForce(atk, def);
+                contextHolder.getBattleLogic().ordinaryAttack(atk, def, heroList, this.battleType, contextHolder);
             }
 
             // 修正士气
