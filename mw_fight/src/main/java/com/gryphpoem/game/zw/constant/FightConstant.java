@@ -395,6 +395,22 @@ public interface FightConstant {
          */
         int ENERGY_RECOVERY_VALUE_DECREASES = 66;
         /**
+         * 士气恢复值提升
+         */
+        int MORALE_RECOVERY_VALUE_INCREASED = 67;
+        /**
+         * 士气恢复值降低
+         */
+        int MORALE_RECOVERY_VALUE_REDUCED = 68;
+        /**
+         * 士气扣除值提升
+         */
+        int MORALE_DEDUCTION_VALUE_INCREASED = 69;
+        /**
+         * 士气扣除值降低
+         */
+        int REDUCED_MORALE_DEDUCTION = 70;
+        /**
          * 普攻伤害提升
          */
         int INCREASE_COMMON_ATTACK_DAMAGE = 71;
@@ -442,6 +458,23 @@ public interface FightConstant {
          * 受最终伤害降低
          */
         int BE_FINAL_DAMAGE_REDUCED = 82;
+        /**
+         * 受技能伤害提升
+         */
+        int BE_SKILL_DAMAGE_INCREASED = 83;
+        /**
+         * 受技能伤害降低
+         */
+        int BE_SKILL_DAMAGE_REDUCED_DECREASED = 84;
+        /**
+         * 受最终伤害提升
+         */
+        int BE_INCREASE_FINAL_DAMAGE_PROMOTION = 85;
+        /**
+         * 受最终伤害降低
+         */
+        int FINAL_DAMAGE_REDUCED_DECREASED = 86;
+
         /**
          * 效果内加buff
          */

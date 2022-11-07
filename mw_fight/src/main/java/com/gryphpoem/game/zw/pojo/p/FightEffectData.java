@@ -29,6 +29,12 @@ public class FightEffectData {
      */
     private int index;
 
+    public FightEffectData(long buffKeyId, int buffId) {
+        this.effectKeyId = FightUtil.uniqueId();
+        this.buffKeyId = buffKeyId;
+        this.buffId = buffId;
+    }
+
     public FightEffectData(long buffKeyId, int buffId, int value) {
         this.effectKeyId = FightUtil.uniqueId();
         this.buffKeyId = buffKeyId;

@@ -22,7 +22,7 @@ public class StaticEffectRule {
      */
     private int sameBuffRule;
     /**
-     * 相同buff来源规则
+     * 不同buff来源规则
      */
     private int diffBuffRule;
 }

@@ -43,6 +43,8 @@ public class AttrData {
     public int moreCavalryAttackExt;//对骑兵破甲提升
     public int moreArcherAttack;//对弓兵攻击提升
     public int moreArcherAttackExt;//对弓兵破甲提升
+    public int lowerLimitCharging;// 技能充能下限
+    public int upperChargingLimit;// 技能充能上限
 
     public AttrData(CommonPb.SerAttrData attrData) {
         this.attack = attrData.getAttack();
@@ -206,6 +208,10 @@ public class AttrData {
                 break;
             case FightCommonConstant.AttrId.SPEED:
                 this.speed += value;
+            case FightCommonConstant.AttrId.LOWER_LIMIT_OF_CHARGING:
+                this.lowerLimitCharging += value;
+            case FightCommonConstant.AttrId.UPPER_CHARGING_LIMIT:
+                this.upperChargingLimit += value;
             default:
                 break;
         }

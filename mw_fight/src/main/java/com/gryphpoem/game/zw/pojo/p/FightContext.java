@@ -42,4 +42,5 @@ public class FightContext {
     private CommonPb.Record.Builder recordData;// 总战报
     // 战斗实体
     private List<FightEntity> fightEntityList;
+    private BattleLogic battleLogic;
 }

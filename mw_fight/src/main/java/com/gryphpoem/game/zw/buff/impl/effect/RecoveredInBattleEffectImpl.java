@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
@@ -18,34 +19,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Description: 伤害变化效果
+ * Description:
  * Author: zhangpeng
- * createTime: 2022-11-03 19:55
+ * createTime: 2022-11-07 15:04
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.EFFECT)
-public class DamageChangeEffectImpl extends AbsFightEffect {
+public class RecoveredInBattleEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{
-                FightConstant.EffectLogicId.DAMAGE_INCREASED_FIGHTING,
-                FightConstant.EffectLogicId.DAMAGE_REDUCED_ARM_RESTRAINED,
-                FightConstant.EffectLogicId.INCREASE_COMMON_ATTACK_DAMAGE,
-                FightConstant.EffectLogicId.COMMON_ATTACK_DAMAGE_REDUCED,
-                FightConstant.EffectLogicId.SKILL_DAMAGE_INCREASED,
-                FightConstant.EffectLogicId.SKILL_DAMAGE_REDUCED,
-                FightConstant.EffectLogicId.INCREASE_FINAL_DAMAGE,
-                FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED,
-                FightConstant.EffectLogicId.Increased_damage_general_attack,
-                FightConstant.EffectLogicId.BE_COMMON_ATTACK_DAMAGE_REDUCED,
-                FightConstant.EffectLogicId.BE_INCREASED_SKILL_DAMAGE,
-                FightConstant.EffectLogicId.BE_SKILL_DAMAGE_REDUCED,
-                FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE,
-                FightConstant.EffectLogicId.BE_FINAL_DAMAGE_REDUCED,
-                FightConstant.EffectLogicId.BE_SKILL_DAMAGE_INCREASED,
-                FightConstant.EffectLogicId.BE_SKILL_DAMAGE_REDUCED_DECREASED,
-                FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE_PROMOTION,
-                FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED_DECREASED
-        };
+        return new int[]{FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_INCREASED, FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_DECREASES,
+                FightConstant.EffectLogicId.MORALE_RECOVERY_VALUE_INCREASED, FightConstant.EffectLogicId.MORALE_RECOVERY_VALUE_REDUCED,
+                FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED, FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION};
     }
 
     @Override
@@ -55,7 +39,24 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
 
     @Override
     protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return (int) params[0] < (int) params[1];
+        int tenThousandthRatio = (int) params[0], fixValue = (int) params[1];
+        Object config = params[2];
+        int tenThousandthRatio_ = 0;
+        int fixValue_ = 0;
+        if (config instanceof List) {
+            List<Integer> config_ = (List<Integer>) config;
+            tenThousandthRatio_ = config_.get(0);
+            fixValue_ = config_.get(1);
+        }
+        if (config instanceof Turple) {
+            Turple<Integer, Integer> config_ = (Turple<Integer, Integer>) config;
+            tenThousandthRatio_ = config_.getA();
+            fixValue_ = config_.getB();
+        }
+
+        double originValue = (double) params[3];
+        return originValue * (1 + (tenThousandthRatio / FightConstant.TEN_THOUSAND)) + fixValue >
+                originValue * (1 + (tenThousandthRatio_ / FightConstant.TEN_THOUSAND)) + fixValue_;
     }
 
     @Override
@@ -65,11 +66,12 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
 
     @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.get(5));
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.subList(4, 6));
     }
 
     @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
+        double originValue = (double) params[0];
         if (CheckNull.isEmpty(fightBuffEffect.getEffectMap()))
             return null;
         Map<Integer, List<FightEffectData>> effectDataMap = fightBuffEffect.getEffectMap().get(effectLogicId);
@@ -77,30 +79,33 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
             return null;
         }
 
-        Map<Integer, Map<Integer, Integer>> effectValue = new HashMap<>();
+        Map<Integer, Map<Integer, Turple<Integer, Integer>>> effectValue = new HashMap<>();
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
-        // 合并相同效果id, 相同buff来源的效果
+        // 合并相同buff来源的效果
         for (Map.Entry<Integer, List<FightEffectData>> entry : effectDataMap.entrySet()) {
             StaticEffectRule rule = staticFightManager.getStaticEffectRule(entry.getKey());
             if (CheckNull.isNull(rule)) continue;
             if (CheckNull.isEmpty(entry.getValue())) continue;
-            Map<Integer, Integer> buffIdMap = effectValue.computeIfAbsent(entry.getKey(), m -> new HashMap<>());
+            Map<Integer, Turple<Integer, Integer>> buffIdMap = effectValue.computeIfAbsent(entry.getKey(), m -> new HashMap<>());
             entry.getValue().forEach(data -> {
-                int value = buffIdMap.computeIfAbsent(data.getBuffId(), l -> 0);
-                if (value == 0) {
-                    value = data.getValue();
+                Turple<Integer, Integer> value = buffIdMap.computeIfAbsent(data.getBuffId(), l -> new Turple<>(0, 0));
+                if (value.getA() == 0 && value.getB() == 0) {
+                    value.setA(data.getData().get(0));
+                    value.setB(data.getData().get(1));
                     return;
                 }
                 switch (rule.getSameBuffRule()) {
                     case 1:
                         if (compareValue(fightBuffEffect.getForce(), fightBuffEffect.getHeroId(),
-                                effectLogicId, value, data.getValue())) {
-                            buffIdMap.put(data.getBuffId(), data.getValue());
+                                effectLogicId, value.getA(), value.getB(), data.getData(), originValue)) {
+                            value.setA(data.getData().get(0));
+                            value.setB(data.getData().get(1));
                         }
                         break;
                     case 0:
                     case 2:
-                        buffIdMap.merge(data.getBuffId(), data.getValue(), Integer::sum);
+                        value.setA(value.getA() + data.getData().get(0));
+                        value.setB(value.getB() + data.getData().get(1));
                         break;
                     default:
                         break;
@@ -110,16 +115,16 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
         if (CheckNull.isEmpty(effectValue))
             return null;
 
-        // 合并相同效果id, 不同buff来源的效果
-        Map<Integer, Integer> resultMap = new HashMap<>(effectValue.size());
-        for (Map.Entry<Integer, Map<Integer, Integer>> entry : effectValue.entrySet()) {
+        // 合并不同buff来源的效果
+        Map<Integer, Turple<Integer, Integer>> resultMap = new HashMap<>(effectValue.size());
+        for (Map.Entry<Integer, Map<Integer, Turple<Integer, Integer>>> entry : effectValue.entrySet()) {
             StaticEffectRule rule = staticFightManager.getStaticEffectRule(entry.getKey());
             if (CheckNull.isNull(rule))
                 continue;
             if (CheckNull.isEmpty(entry.getValue()))
                 continue;
-            Integer tuple = null;
-            for (Integer t : entry.getValue().values()) {
+            Turple<Integer, Integer> tuple = null;
+            for (Turple<Integer, Integer> t : entry.getValue().values()) {
                 if (CheckNull.isNull(t))
                     continue;
                 if (tuple == null) {
@@ -130,13 +135,14 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
                 switch (rule.getDiffBuffRule()) {
                     case 1:
                         if (compareValue(fightBuffEffect.getForce(), fightBuffEffect.getHeroId(),
-                                effectLogicId, tuple, t)) {
-                            resultMap.put(entry.getKey(), t);
+                                effectLogicId, tuple.getA(), tuple.getB(), t, originValue)) {
+                            tuple = t;
                         }
                         break;
                     case 0:
                     case 2:
-                        resultMap.merge(entry.getKey(), t, Integer::sum);
+                        tuple.setA(tuple.getA() + t.getA());
+                        tuple.setB(tuple.getB() + t.getB());
                         break;
                 }
             }
@@ -146,6 +152,12 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
         }
 
         // 合并不同效果id的效果值
-        return resultMap.values().stream().mapToInt(i -> i.intValue()).sum();
+        Turple<Integer, Integer> data = new Turple<>(0, 0);
+        resultMap.values().forEach(t -> {
+            data.setA(data.getA() + t.getA());
+            data.setB(data.getB() + t.getB());
+        });
+
+        return data;
     }
 }

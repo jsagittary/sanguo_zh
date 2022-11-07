@@ -3,10 +3,13 @@ package com.gryphpoem.game.zw.pojo.p;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
+import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -122,6 +125,43 @@ public class BattleLogic {
         return fightBuff;
     }
 
+    /**
+     * 释放技能
+     *
+     * @param atk
+     * @param fe
+     * @param contextHolder
+     */
+    public void releaseSkill(Force atk, FightEntity fe, FightContextHolder contextHolder) {
+        // 能量恢复, 在释放技能前
+        int lowerEnergy = atk.calLowerEnergyCharging(atk.actionId);
+        int upperEnergy = atk.calUpperEnergyCharging(atk.actionId);
+        int upper = Math.max(lowerEnergy, upperEnergy);
+        int lower = Math.min(lowerEnergy, upperEnergy);
+        int randomValue = lower + RandomHelper.randomInSize(upper - lower + 1);
+        int recoveryValue = FightCalc.skillEnergyRecovery(atk, atk.actionId, randomValue);
+
+        List<SimpleHeroSkill> skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> Objects.nonNull(skill) && !skill.isOnStageSkill()).collect(Collectors.toList());
+        if (!CheckNull.isEmpty(skillList)) {
+            skillList.forEach(skill -> skill.setCurEnergy(skill.getCurEnergy() + recoveryValue));
+        }
+        if (atk.canReleaseSkill(fe.getHeroId())) {
+            // 释放技能
+            skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> skill.getCurEnergy() >= skill.getS_skill().getReleaseNeedEnergy()).collect(Collectors.toList());
+            if (!CheckNull.isEmpty(skillList)) {
+                skillList.forEach(skill -> skill.releaseSkill(contextHolder));
+            }
+        }
+    }
+
+    public void skillAttack(FightContextHolder contextHolder, int battleType) {
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
+        // TODO 扣血
+        
+
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
+    }
+
 
     /**
      * 普攻, 随机敌方一个武将攻击
@@ -129,7 +169,56 @@ public class BattleLogic {
      * @param atk
      * @param def
      */
-    public void ordinaryAttack(Force atk, Force def) {
-        
+    public void ordinaryAttack(Force atk, Force def, List<Integer> targetList, int battleType) {
+        def.beActionId.clear();
+        targetList.add(def.id);
+        if (!CheckNull.isEmpty(def.assistantHeroList)) {
+            def.assistantHeroList.forEach(ass -> targetList.add(ass.getHeroId()));
+        }
+        def.beActionId.add(targetList.get(RandomHelper.randomInSize(targetList.size())));
+        // 计算普攻伤害
+        hurt(atk, def, def.beActionId.get(0), FightCalc.calAttack(atk, def, battleType));
+    }
+
+    /**
+     * 回合士气扣除
+     *
+     * @param force
+     * @param target
+     */
+    public void roundMoraleDeduction(Force force, Force target) {
+        force.morale -= oneSideMoraleDeduction(force);
+        if (force.morale < 0)
+            force.morale = 0;
+        target.morale -= oneSideMoraleDeduction(target);
+        if (target.morale < 0)
+            target.morale = 0;
+        // TODO pb
+
+    }
+
+    /**
+     * 一方士气回合变化
+     *
+     * @param force
+     * @return
+     */
+    private double oneSideMoraleDeduction(Force force) {
+        double originValue = force.maxRoundMorale * 0.5d / FightConstant.HUNDRED;
+        return FightCalc.moraleCorrection(force, force.id, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
+                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, originValue);
+    }
+
+
+    /**
+     * 伤害计算通用接口
+     *
+     * @param attacker
+     * @param defender
+     * @param targetId 被打的武将id
+     * @param damage
+     */
+    public void hurt(Force attacker, Force defender, int targetId, int damage) {
+
     }
 }

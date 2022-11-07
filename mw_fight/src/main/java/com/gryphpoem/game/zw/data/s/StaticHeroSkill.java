@@ -29,8 +29,4 @@ public class StaticHeroSkill {
      * 技能登场时能量
      */
     private int debutEnergy;
-    /**
-     * 每回合充能
-     */
-    private List<Integer> chargeEveryRound;
 }

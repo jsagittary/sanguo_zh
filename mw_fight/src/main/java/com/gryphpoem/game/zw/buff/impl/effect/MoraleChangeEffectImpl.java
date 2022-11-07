@@ -7,22 +7,20 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
-import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Description: 能量变更
+ * Description:
  * Author: zhangpeng
- * createTime: 2022-11-03 10:27
+ * createTime: 2022-11-07 15:42
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.EFFECT)
-public class EnergyChangeEffectImpl extends AbsFightEffect {
+public class MoraleChangeEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{FightConstant.EffectLogicId.ENERGY_RECOVERY, FightConstant.EffectLogicId.ENERGY_DEDUCTION};
+        return new int[]{FightConstant.EffectLogicId.MORALE_RECOVERY, FightConstant.EffectLogicId.MORALE_DEDUCTION};
     }
 
     @Override
@@ -37,12 +35,7 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
 
     @Override
     protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0d;
-    }
-
-    @Override
-    public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
-        return null;
+        return 0;
     }
 
     @Override
@@ -50,14 +43,6 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
         return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.subList(4, 6));
     }
 
-    /**
-     * 效果生效，技能能量直接加上去
-     *
-     * @param fightBuff
-     * @param contextHolder
-     * @param effectConfig
-     * @param params
-     */
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
@@ -72,26 +57,22 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
         }
         if (!CheckNull.isEmpty(force.effectExecutor)) {
             for (Integer heroId : force.effectExecutor) {
-                List<SimpleHeroSkill> skillList = force.getSkillList(heroId.intValue());
-                if (CheckNull.isEmpty(skillList)) continue;
-                List<SimpleHeroSkill> activeSkillList = skillList.stream().filter(skill -> !skill.isOnStageSkill()).collect(Collectors.toList());
-                if (CheckNull.isEmpty(activeSkillList)) continue;
+                double originValue = (force.maxRoundMorale * effectConfig_.get(4) / FightConstant.TEN_THOUSAND) + effectConfig_.get(5);
                 // 公式计算
                 switch (rule.getEffectLogicId()) {
-                    case FightConstant.EffectLogicId.ENERGY_RECOVERY:
-                        activeSkillList.forEach(skill -> {
-                            double originValue = ((skill.getS_skill().getEnergyUpperLimit()) * effectConfig_.get(4) / FightConstant.TEN_THOUSAND) + effectConfig_.get(5);
-                            skill.setCurEnergy(skill.getCurEnergy() + FightCalc.skillEnergyRecovery(force, heroId, originValue));
-                            // TODO pb修改变更
+                    case FightConstant.EffectLogicId.MORALE_RECOVERY:
+                        force.morale += FightCalc.moraleCorrection(force, heroId, FightConstant.EffectLogicId.MORALE_RECOVERY_VALUE_INCREASED,
+                                FightConstant.EffectLogicId.MORALE_RECOVERY_VALUE_REDUCED, originValue);
+                        // TODO pb
 
-                        });
                         break;
-                    case FightConstant.EffectLogicId.ENERGY_DEDUCTION:
-                        activeSkillList.forEach(skill -> {
-                            skill.setCurEnergy(skill.getCurEnergy() - FightCalc.skillEnergyDeduction(skill.getS_skill(), effectConfig_));
-                            // TODO pb修改变更
-
-                        });
+                    case FightConstant.EffectLogicId.MORALE_DEDUCTION:
+                        force.morale -= FightCalc.moraleCorrection(force, heroId, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
+                                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, originValue);
+                        if (force.morale < 0)
+                            force.morale = 0;
+                        // TODO PB
+                        
                         break;
                 }
             }

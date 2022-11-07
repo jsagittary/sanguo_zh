@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.effect;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
@@ -31,7 +32,7 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
     @Override
     protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return (int) params[0] < (int) params[1];
+        return false;
     }
 
     @Override
@@ -41,11 +42,16 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
     @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.get(5));
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId());
     }
 
     @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
         return null;
+    }
+
+    @Override
+    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+        super.effectiveness(fightBuff, contextHolder, effectConfig, rule, params);
     }
 }

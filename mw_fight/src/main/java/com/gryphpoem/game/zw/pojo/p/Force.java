@@ -1,11 +1,18 @@
 package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
+import com.gryphpoem.game.zw.buff.IFightEffect;
+import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author TanDonghai
@@ -39,10 +46,22 @@ public class Force {
     public int effect; // 强化克制比
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
-    // 技能信息
+    /**
+     * 每回合充能
+     */
+    private List<Integer> chargeEveryRound;
+    /**
+     * 主将技能列表
+     */
     public List<SimpleHeroSkill> skillList = new ArrayList<>();
-    // 武将士气
+    /**
+     * 武将当前士气
+     */
     public int morale;
+    /**
+     * 本轮士气值上限
+     */
+    public int maxRoundMorale;
     /**
      * 发起动作的武将id
      */
@@ -66,7 +85,7 @@ public class Force {
     /**
      * 副将列表
      */
-    public ArrayList<FightAssistantHero> assistantHeroList = new ArrayList<>();
+    public ArrayList<FightAssistantHero> assistantHeroList;
     /**
      * 战斗中的buff与效果
      */
@@ -507,12 +526,23 @@ public class Force {
         return 0;
     }
 
-    public int calEnergyChargingSpeed(int heroId) {
+    public int calLowerEnergyCharging(int heroId) {
         if (this.id == heroId) {
-            return attrData.energyChargingSpeed;
+            return attrData.lowerLimitCharging;
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().energyChargingSpeed).findFirst().orElse(null);
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().lowerLimitCharging).findFirst().orElse(null);
+        }
+
+        return 0;
+    }
+
+    public int calUpperEnergyCharging(int heroId) {
+        if (this.id == heroId) {
+            return attrData.upperChargingLimit;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getAttrData().upperChargingLimit).findFirst().orElse(null);
         }
 
         return 0;
@@ -551,12 +581,25 @@ public class Force {
         this.isIronBas = isIronBas;
     }
 
-    public Map<Integer, PlaneInfo> getPlaneInfos() {
-        return planeInfos;
-    }
-
     public AttrData getAttrData() {
         return attrData;
+    }
+
+    public boolean canReleaseSkill(int heroId) {
+        // 检查武将是否有沉默效果
+        FightManager fightManager = DataResource.ac.getBean(FightManager.class);
+        IFightEffect fightEffect = fightManager.getSkillEffect(FightConstant.EffectLogicId.SILENCE);
+        if (CheckNull.isNull(fightEffect)) return true;
+        return !(boolean) fightEffect.effectCalculateValue(getFightEffectMap(heroId), FightConstant.EffectLogicId.SILENCE);
+    }
+
+    public int armyType(int heroId) {
+        if (this.id == heroId)
+            return this.armType;
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getArmType()).findFirst().orElse(-1);
+        }
+        return -1;
     }
 
 //    public String getTreasureWare() {

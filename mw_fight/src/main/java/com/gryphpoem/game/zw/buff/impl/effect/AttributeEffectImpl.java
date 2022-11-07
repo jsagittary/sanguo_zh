@@ -39,9 +39,7 @@ public class AttributeEffectImpl extends AbsFightEffect {
                 FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE,
                 FightConstant.EffectLogicId.CRITICAL_DAMAGE_INCREASED,
                 FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_HIT_RATE_OF_SKILL,
-                FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL,
-                FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_INCREASED,
-                FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_DECREASES};
+                FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL,};
     }
 
     @Override
@@ -93,10 +91,6 @@ public class AttributeEffectImpl extends AbsFightEffect {
                 return force.calSpeed(heroId) * (1 + (tenThousandthRatio / FightConstant.TEN_THOUSAND)) + fixValue;
             case FightConstant.EffectLogicId.SPEED_REDUCTION:
                 return force.calSpeed(heroId) * (1 - (tenThousandthRatio / FightConstant.TEN_THOUSAND)) - fixValue;
-            case FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_INCREASED:
-                return force.calEnergyChargingSpeed(heroId) * (1 + (tenThousandthRatio / FightConstant.TEN_THOUSAND)) + fixValue;
-            case FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_DECREASES:
-                return force.calEnergyChargingSpeed(heroId) * (1 - (tenThousandthRatio / FightConstant.TEN_THOUSAND)) - fixValue;
             default:
                 return 0d;
         }

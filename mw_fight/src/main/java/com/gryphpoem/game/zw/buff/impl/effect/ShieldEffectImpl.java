@@ -67,7 +67,7 @@ public class ShieldEffectImpl extends AbsFightEffect {
     }
 
     private int calEffectValue(Force force, int heroId, List<Integer> effectConfig) {
-        int attributeValue = FightCalc.attributeValue(effectConfig.get(3), force, heroId);
+        double attributeValue = FightCalc.attributeValue(effectConfig.get(3), force, heroId);
         return (int) (attributeValue * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5));
     }
 

@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.cross.constants.FightCommonConstant;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -26,6 +27,7 @@ public class FightContextHolder {
         };
         LOCAL.get().setAtkFighter(atk);
         LOCAL.get().setDefFighter(def);
+        LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
     }
 
     public void setRecordData(CommonPb.Record.Builder recordData) {
@@ -114,7 +116,7 @@ public class FightContextHolder {
         } else {
             fightEntityList.forEach(fe -> {
                 Force tmp = fe.getOwnId() == force.ownerId ? force : target;
-                fe.setSpeed(FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, tmp, fe.getHeroId()));
+                fe.setSpeed((int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, tmp, fe.getHeroId()));
             });
         }
 
@@ -124,13 +126,17 @@ public class FightContextHolder {
 
     private void fillFightEntity(Force force, List<FightEntity> fightEntityList) {
         fightEntityList.add(new FightEntity(force.ownerId, force.id,
-                FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, force.id)));
+                (int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, force.id)));
         if (!CheckNull.isEmpty(force.assistantHeroList)) {
             for (FightAssistantHero ass : force.assistantHeroList) {
                 if (CheckNull.isNull(ass)) continue;
-                fightEntityList.add(new FightEntity(force.ownerId, ass.getHeroId(), FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, ass.getHeroId())));
+                fightEntityList.add(new FightEntity(force.ownerId, ass.getHeroId(), (int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, ass.getHeroId())));
             }
         }
+    }
+
+    public BattleLogic getBattleLogic() {
+        return LOCAL.get().getBattleLogic();
     }
 
     abstract class InnerContextLocal<T> {

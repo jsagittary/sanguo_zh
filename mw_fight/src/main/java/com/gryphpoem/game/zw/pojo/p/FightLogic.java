@@ -2,7 +2,6 @@ package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
@@ -11,10 +10,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author TanDonghai
+ * @author zhangpeng
  * @ClassName FightLogic.java
- * @Description 战斗逻辑处理类
- * @date 创建时间：2017年3月31日 下午5:08:15
+ * @Description
+ * @date 创建时间：2022年11月5日 下午18:43:00
  */
 public class FightLogic {
     public FightContextHolder contextHolder;
@@ -111,7 +110,6 @@ public class FightLogic {
         logForm();
         while (winState == 0) {
             round();
-            checkAllNpcIsDied();
             checkDie();
         }
         if (Objects.nonNull(contextHolder.getRecordData())) {
@@ -202,6 +200,8 @@ public class FightLogic {
     private void calFighterMorale(Force force, Force target) {
         force.morale = force.hp * 2;
         target.morale = force.hp * 2;
+        force.maxRoundMorale = force.morale;
+        target.maxRoundMorale = target.morale;
     }
 
     /**
@@ -233,7 +233,7 @@ public class FightLogic {
      * @param target
      */
     private void fight(Force force, Force target) {
-        while (!force.alive() || !target.alive()) {
+        while (force.alive() && target.alive()) {
             // 比较武将速度, 排列出场顺序
             List<FightEntity> fightEntityList = contextHolder.getSortedFightEntity(force, target);
             if (CheckNull.isEmpty(fightEntityList)) {
@@ -248,155 +248,16 @@ public class FightLogic {
                 atk.actionId = fe.getHeroId();
                 contextHolder.setAttacker(atk);
                 contextHolder.setDefender(def);
+
                 // 释放技能
-                List<SimpleHeroSkill> skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> Objects.nonNull(skill) && !skill.isOnStageSkill() &&
-                        skill.getCurEnergy() >= skill.getS_skill().getReleaseNeedEnergy()).collect(Collectors.toList());
-                if (!CheckNull.isEmpty(skillList)) {
-                    skillList.forEach(skill -> skill.releaseSkill(contextHolder));
-                }
-
+                contextHolder.getBattleLogic().releaseSkill(atk, fe, contextHolder);
                 // 普攻
-                def.beActionId.clear();
-                heroList.add(def.id);
-                if (!CheckNull.isEmpty(def.assistantHeroList)) {
-                    def.assistantHeroList.forEach(ass -> heroList.add(ass.getHeroId()));
-                }
-                def.beActionId.add(heroList.get(RandomHelper.randomInSize(heroList.size())));
-
+                contextHolder.getBattleLogic().ordinaryAttack(atk, def, heroList, this.battleType);
             }
+
+            // 修正士气
+            contextHolder.getBattleLogic().roundMoraleDeduction(force, target);
         }
-    }
-
-    /**
-     * 创建Action对象
-     *
-     * @param force
-     * @param target
-     * @return
-     */
-    private CommonPb.Action.Builder createAction(Force force, Force target, boolean isAtk) {
-        actionDataA = CommonPb.Action.newBuilder();
-        actionDataA.setTarget(target.id);
-        actionDataA.setTargetRoleId(target.ownerId);
-        actionDataB = CommonPb.Action.newBuilder();
-        actionDataB.setTarget(force.id);
-        actionDataB.setTargetRoleId(force.ownerId);
-        return isAtk ? actionDataA : actionDataB;
-    }
-
-
-//    /**
-//     * 单次攻击行动  【战斗2--用于区分程序走向】
-//     *
-//     * @param force     攻击方
-//     * @param target    防守方
-//     * @param isAttcker 本次攻击方是否是本场战斗的进攻方
-//     */
-//    private void action(Force force, Force target, boolean isAttcker) {
-//        if (contextHolder.isRecordFlag()) {
-//            if (isAttcker) {
-//                actionDataA = CommonPb.Action.newBuilder();
-//                actionDataA.setTarget(target.id);
-//                actionDataA.setTargetRoleId(target.ownerId);
-//            } else {
-//                actionDataB = CommonPb.Action.newBuilder();
-//                actionDataB.setTarget(target.id);
-//                actionDataB.setTargetRoleId(target.ownerId);
-//            }
-//        }
-//        if (!force.hasFight) {
-//            force.hasFight = true;
-//        }
-//        if (!target.hasFight) {
-//            target.hasFight = true;
-//        }
-//        attack(force, target, isAttcker);
-//    }
-
-//    /**
-//     * 单次攻击计算  【战斗3--用于区分程序走向】
-//     *
-//     * @param force      攻击方
-//     * @param target     防御方
-//     * @param isAttacker 本次攻击计算的攻击方是否为战斗的进攻方
-//     */
-//    private void attack(Force force, Force target, boolean isAttacker) {
-//        CommonPb.Action.Builder actionData;
-//        if (isAttacker) {
-//            actionData = actionDataA;
-//        } else {
-//            actionData = actionDataB;
-//        }
-//
-//        if (isDodge(force, target, actionData, isAttacker)) // 闪避
-//            return;
-//
-//        float crit = isCrit(force, target, actionData);
-//        int hurt = FightCalc.calcHurt2(force, target, crit, battleType);
-//        // 预扣血，并返回真实伤害，真实扣血逻辑在回合结束是执行
-//        hurt = hurt(target, force, hurt, crit);
-//        force.killed += hurt;// 记录攻击方击杀数
-//        force.fighter.hurt += hurt;// 记录总击杀数
-//        target.fighter.lost += hurt;// 记录总伤兵数
-//
-//        if (recordFlag) {
-//            actionData.setHurt(hurt);
-//            actionData.setCount(target.getSurplusCount());
-//            actionData.setDeadLine(target.getDeadLine());
-//        }
-//    }
-
-
-    public static boolean checkPvp(Force force, Force targetForce) {
-        if (Objects.isNull(force) || Objects.isNull(targetForce)) {
-            return false;
-        }
-
-        return force.roleType == Constant.Role.PLAYER && targetForce.roleType == Constant.Role.PLAYER;
-    }
-//
-//    /**
-//     * //天赋优化 战斗增益
-//     *
-//     * @param force  攻击方
-//     * @param target 防守方
-//     * @param hurt
-//     */
-//    public static int seasonTalentBuff(Force force, Force target, int hurt, int battleType) {
-//        if (battleType == Integer.MIN_VALUE) {
-//            //以免重复计算赛季天赋效果
-//            return hurt;
-//        }
-//
-//        //天赋优化 战斗增益
-//        double hurt_ = hurt;
-//        if (FightLogic.checkPvp(force, target)) {
-//            double debugHurt;
-//            Player forcePlayer = DataResource.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
-//            Player targetPlayer = DataResource.getBean(PlayerDataManager.class).getPlayer(target.ownerId);
-//            if (!CheckNull.isNull(forcePlayer)) {
-//                //伤害加成
-//                debugHurt = hurt;
-//                hurt_ *= (1 + (DataResource.getBean(SeasonTalentService.class).
-//                        getSeasonTalentEffectValue(forcePlayer, SeasonConst.TALENT_EFFECT_607) / Constant.TEN_THROUSAND));
-//                LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
-//                        "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "赛季天赋-攻其不备: ", hurt_ - debugHurt, ", 伤害结果:", hurt_);
-//            }
-//            if (!CheckNull.isNull(targetPlayer)) {
-//                //伤害减免
-//                debugHurt = hurt_;
-//                hurt_ *= (1 - (DataResource.getBean(SeasonTalentService.class).
-//                        getSeasonTalentEffectValue(targetPlayer, SeasonConst.TALENT_EFFECT_611) / Constant.TEN_THROUSAND));
-//                LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
-//                        "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType), "赛季天赋-随形卸力: ", hurt_ - debugHurt, ", 伤害结果:", hurt_);
-//            }
-//        }
-//
-//        return (int) hurt_;
-//    }
-
-    public static boolean isCityBattle(int battleType) {
-        return battleType == WorldConstant.BATTLE_TYPE_CITY;
     }
 
     /**
@@ -424,8 +285,6 @@ public class FightLogic {
         boolean defenderAlive = false;
         for (Force force : contextHolder.getAtkFighter().forces) {
             if (force != null) {
-                if (force.morale <= 0)
-                    continue;
                 if (force.alive()) {
                     attackerAlive = true;
                 }
@@ -434,8 +293,6 @@ public class FightLogic {
 
         for (Force force : contextHolder.getDefFighter().forces) {
             if (force != null) {
-                if (force.morale <= 0)
-                    continue;
                 if (force.alive()) {
                     defenderAlive = true;
                 }
@@ -470,15 +327,4 @@ public class FightLogic {
         return winState;
     }
 
-
-    /**
-     * 伤害计算通用接口
-     *
-     * @param attacker
-     * @param defender
-     * @param damage
-     */
-    public void hurt(Force attacker, Force defender, int damage) {
-
-    }
 }
