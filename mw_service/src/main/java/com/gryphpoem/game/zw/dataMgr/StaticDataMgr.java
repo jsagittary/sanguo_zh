@@ -61,6 +61,7 @@ public class StaticDataMgr extends AbsStaticIniService {
     private static List<StaticSimCity> staticSimCityList; // 性格奖励
     private static List<StaticHomeCityCell> staticHomeCityCellList; // 主城地图格
     private static List<StaticHomeCityFoundation> staticHomeCityFoundationList; // 主城地基
+    private static Map<Integer, List<Integer>> cellFoundationMap; // 格子对应可解锁的地基
 
 
     @Override
@@ -89,6 +90,19 @@ public class StaticDataMgr extends AbsStaticIniService {
         staticSimCityList = staticIniDao.selectStaticSimCityList();
         staticHomeCityCellList = staticIniDao.selectStaticHomeCityCellList();
         staticHomeCityFoundationList = staticIniDao.selectStaticHomeCityFoundationList();
+        for (StaticHomeCityCell staticCell : staticHomeCityCellList) {
+            Integer cellId = staticCell.getId();
+            List<Integer> foundationIdList = cellFoundationMap.get(cellId);
+            if (CheckNull.isEmpty(foundationIdList)) {
+                foundationIdList = new ArrayList<>();
+            }
+            for (StaticHomeCityFoundation staticFoundation : staticHomeCityFoundationList) {
+                if (staticFoundation.getCellList().contains(cellId) && !foundationIdList.contains(staticFoundation.getId())) {
+                    foundationIdList.add(staticFoundation.getId());
+                }
+            }
+            cellFoundationMap.put(cellId, foundationIdList);
+        }
     }
 
     @Override
@@ -96,11 +110,15 @@ public class StaticDataMgr extends AbsStaticIniService {
 
     }
 
-    public static StaticHomeCityCell getStaticHomeCityCellById(Integer id) {
+    public static List<Integer> getFoundationIdListByCellId(int cellId) {
+        return cellFoundationMap.get(cellId);
+    }
+
+    public static StaticHomeCityCell getStaticHomeCityCellById(int id) {
         return staticHomeCityCellList.stream().filter(tmp -> Objects.equals(id, tmp.getId())).findFirst().orElse(null);
     }
 
-    public static StaticHomeCityFoundation getStaticHomeCityFoundationById(Integer id) {
+    public static StaticHomeCityFoundation getStaticHomeCityFoundationById(int id) {
         return staticHomeCityFoundationList.stream().filter(tmp -> Objects.equals(id, tmp.getId())).findFirst().orElse(null);
     }
 

@@ -96,6 +96,8 @@ import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
 import com.gryphpoem.game.zw.resource.domain.p.Chemical;
 import com.gryphpoem.game.zw.resource.domain.p.Cia;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.ExploreQue;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.ReclaimQue;
 import com.gryphpoem.game.zw.resource.pojo.simulator.CityEvent;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
@@ -947,16 +949,16 @@ public class Player {
     }
 
     /**
-     * 已探索的迷雾格子, 记录对应的格子id
+     * 已探索的迷雾格子, key: 格子id; value: 是否已开垦, 1-是, 0-否
      */
-    private List<Integer> unlockMapGridData = new ArrayList<>();
+    private Map<Integer, Integer> mapCellData = new ConcurrentHashMap<>();
 
-    public List<Integer> getUnlockMapGridData() {
-        return unlockMapGridData;
+    public Map<Integer, Integer> getMapCellData() {
+        return mapCellData;
     }
 
-    public void setUnlockMapGridData(List<Integer> unlockMapGridData) {
-        this.unlockMapGridData = unlockMapGridData;
+    public void setMapCellData(Map<Integer, Integer> mapCellData) {
+        this.mapCellData = mapCellData;
     }
 
     /**
@@ -987,17 +989,53 @@ public class Player {
     }
 
     /**
-     * 农民数量
+     * 农民数量, [总数, 空闲数]
      */
-    private Integer farmerCount;
+    private List<Integer> farmerCount = new ArrayList<>(2);
 
-    public Integer getFarmerCount() {
+    public List<Integer> getFarmerCount() {
         return farmerCount;
     }
 
-    public void setFarmerCount(Integer farmerCount) {
+    public void setFarmerCount(List<Integer> farmerCount) {
         this.farmerCount = farmerCount;
     }
+
+    public Integer getFarmerTotalCount() {
+        return farmerCount.get(0);
+    }
+
+    public void addFarmerTotalCount(int count) {
+        this.farmerCount.set(0, getFarmerTotalCount() + count);
+    }
+
+    public void subFarmerTotalCount(int count) {
+        int newTotalCount = Math.max(getFarmerTotalCount() - count, 0);
+        this.farmerCount.set(0, newTotalCount);
+    }
+
+    public Integer getIdleFarmerCount() {
+        return farmerCount.get(1);
+    }
+
+    public void addIdleFarmerCount(int count) {
+        this.farmerCount.set(1, getIdleFarmerCount() + count);
+    }
+
+    public void subIdleFarmerCount(int count) {
+        int newIdleCount = Math.max(getIdleFarmerCount() - count, 0);
+        this.farmerCount.set(1, newIdleCount);
+    }
+
+    /**
+     * 探索队列
+     */
+    public Map<Integer, ExploreQue> exploreQue = new ConcurrentHashMap<>();
+
+    /**
+     * 开垦队列
+     */
+    public Map<Integer, ReclaimQue> reclaimQue = new ConcurrentHashMap<>();
 
     /**
      * 是否第一次打造宝具

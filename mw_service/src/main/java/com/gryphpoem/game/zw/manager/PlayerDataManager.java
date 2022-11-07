@@ -1257,6 +1257,8 @@ public class PlayerDataManager implements PlayerDM {
         builder.setLevel(player.lord.getLevel());
         builder.setExp(player.lord.getExp());
         builder.addAllCharacter(PbHelper.createTwoIntListByMap(player.getCharacterData()));
+        builder.addAllScoutData(PbHelper.createTwoIntListByMap(player.getScoutMap()));
+        builder.addAllFarmerCnt(player.getFarmerCount());
         if (player.ctx != null) {
             Base.Builder msg = PbHelper.createSynBase(SyncRoleInfoRs.EXT_FIELD_NUMBER, SyncRoleInfoRs.ext,
                     builder.build());
