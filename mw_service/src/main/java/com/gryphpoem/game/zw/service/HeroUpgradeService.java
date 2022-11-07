@@ -305,7 +305,10 @@ public class HeroUpgradeService implements GmCmdService {
         if (type == HeroConstant.TALENT_HERO_TYPE_1) {
             // 校验校验武将等级
             if (hero.getLevel() < Constant.HERO_LEVEL_OF_OPEN_TALENT) {
-                throw new MwException(GameError.INSUFFICIENT_CONDITIONS_FOR_HERO_TALENT.getCode(), "激活天赋时, 武将等级不够, roleId:", player.roleId, ", heroId:", heroId);
+                throw new MwException(GameError.INSUFFICIENT_CONDITIONS_FOR_HERO_TALENT.getCode(), String.format("激活天赋时, 武将等级不够, roleId:%s, heroId:%s", roleId, heroId));
+            }
+            if (sHero.getActivate() != 1) {
+                throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("武将不可激活天赋, 因为未配置可觉醒, roleId:%s, heroId:%s", roleId, heroId));
             }
             // 激活当前页签, 需要确认之前的天赋页签是否全部学习完毕
             if (pageIndex > 1) {
@@ -321,16 +324,14 @@ public class HeroUpgradeService implements GmCmdService {
 
             // 若为非激活状态且数据为空, 则初始化数据
             if (CheckNull.isNull(talentDataMap) || !talentDataMap.isActivate()) {
-                int maxPart;
-                switch (hero.getQuality()) {
-                    case HeroConstant.QUALITY_PURPLE_HERO:
-                        maxPart = HeroConstant.TALENT_PART_MAX_OF_PURPLE_HERO;
-                        break;
-                    case HeroConstant.QUALITY_ORANGE_HERO:
-                        maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
-                        break;
-                    default:
-                        throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, roleId:", player.roleId, ", heroId:", heroId);
+                // 初始化武将天赋
+                Integer maxPart = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(pageIndex - 1)).stream()
+                        .map(StaticHeroEvolve::getPart)
+                        .distinct()
+                        .max(Integer::compareTo)
+                        .orElse(null);
+                if (maxPart == null) {
+                    throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, heroId: ", heroId);
                 }
                 talentDataMap = new TalentData(1, pageIndex, maxPart);
                 hero.getTalent().put(pageIndex, talentDataMap);
