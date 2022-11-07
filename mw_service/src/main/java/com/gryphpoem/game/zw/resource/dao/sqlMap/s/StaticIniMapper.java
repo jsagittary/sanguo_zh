@@ -379,4 +379,19 @@ public interface StaticIniMapper {
             @Result(column = "open", property = "open", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticSimCity> selectStaticSimCityList();
+
+    @Select("select * from s_homecity_cell")
+    @Results({
+            @Result(column = "route", property = "route", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "bindCell", property = "bindCellList", typeHandler = ListIntTypeHandler.class)
+    })
+    List<StaticHomeCityCell> selectStaticHomeCityCellList();
+
+    @Select("select * from s_homecity_foundation")
+    @Results({
+            @Result(column = "cell", property = "cellList", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "buildType", property = "buildType", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "buffConfig", property = "buffConfig", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticHomeCityFoundation> selectStaticHomeCityFoundationList();
 }

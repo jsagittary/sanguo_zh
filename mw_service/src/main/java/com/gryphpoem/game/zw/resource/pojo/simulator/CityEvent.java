@@ -1,4 +1,4 @@
-package com.gryphpoem.game.zw.resource.domain.p;
+package com.gryphpoem.game.zw.resource.pojo.simulator;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb;

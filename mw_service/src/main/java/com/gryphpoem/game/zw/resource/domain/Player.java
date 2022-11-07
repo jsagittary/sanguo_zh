@@ -96,7 +96,7 @@ import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
 import com.gryphpoem.game.zw.resource.domain.p.Chemical;
 import com.gryphpoem.game.zw.resource.domain.p.Cia;
-import com.gryphpoem.game.zw.resource.domain.p.CityEvent;
+import com.gryphpoem.game.zw.resource.pojo.simulator.CityEvent;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
 import com.gryphpoem.game.zw.resource.domain.p.CombatInfo;
@@ -114,7 +114,7 @@ import com.gryphpoem.game.zw.resource.domain.p.EquipTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Factory;
 import com.gryphpoem.game.zw.resource.domain.p.Gains;
 import com.gryphpoem.game.zw.resource.domain.p.History;
-import com.gryphpoem.game.zw.resource.domain.p.LifeSimulatorInfo;
+import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.MailData;
 import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
@@ -984,6 +984,19 @@ public class Player {
 
     public void setFoundationData(List<Integer> foundationData) {
         this.foundationData = foundationData;
+    }
+
+    /**
+     * 农民数量
+     */
+    private Integer farmerCount;
+
+    public Integer getFarmerCount() {
+        return farmerCount;
+    }
+
+    public void setFarmerCount(Integer farmerCount) {
+        this.farmerCount = farmerCount;
     }
 
     /**

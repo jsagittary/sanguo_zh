@@ -3,12 +3,14 @@ package com.gryphpoem.game.zw.dataMgr;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.LifeSimulatorInfo;
+import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFireworks;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishing;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelic;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicFraction;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicShop;
@@ -57,6 +59,8 @@ public class StaticDataMgr extends AbsStaticIniService {
     private static List<StaticCharacter> staticCharacterList; // 性格
     private static List<StaticCharacterReward> staticCharacterRewardList; // 性格奖励
     private static List<StaticSimCity> staticSimCityList; // 性格奖励
+    private static List<StaticHomeCityCell> staticHomeCityCellList; // 主城地图格
+    private static List<StaticHomeCityFoundation> staticHomeCityFoundationList; // 主城地基
 
 
     @Override
@@ -83,11 +87,21 @@ public class StaticDataMgr extends AbsStaticIniService {
         staticCharacterList = staticIniDao.selectStaticCharacterList();
         staticCharacterRewardList = staticIniDao.selectStaticCharacterRewardList();
         staticSimCityList = staticIniDao.selectStaticSimCityList();
+        staticHomeCityCellList = staticIniDao.selectStaticHomeCityCellList();
+        staticHomeCityFoundationList = staticIniDao.selectStaticHomeCityFoundationList();
     }
 
     @Override
     public void check() {
 
+    }
+
+    public static StaticHomeCityCell getStaticHomeCityCellById(Integer id) {
+        return staticHomeCityCellList.stream().filter(tmp -> Objects.equals(id, tmp.getId())).findFirst().orElse(null);
+    }
+
+    public static StaticHomeCityFoundation getStaticHomeCityFoundationById(Integer id) {
+        return staticHomeCityFoundationList.stream().filter(tmp -> Objects.equals(id, tmp.getId())).findFirst().orElse(null);
     }
 
     public static StaticSimulatorChoose getStaticSimulatorChoose(int id) {
