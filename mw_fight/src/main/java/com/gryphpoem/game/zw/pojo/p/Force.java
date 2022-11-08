@@ -47,10 +47,6 @@ public class Force {
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
     /**
-     * 每回合充能
-     */
-    private List<Integer> chargeEveryRound;
-    /**
      * 主将技能列表
      */
     public List<SimpleHeroSkill> skillList = new ArrayList<>();
@@ -62,26 +58,6 @@ public class Force {
      * 本轮士气值上限
      */
     public int maxRoundMorale;
-    /**
-     * 发起动作的武将id
-     */
-    public int actionId;
-    /**
-     * 被攻击的武将idList
-     */
-    public List<Integer> beActionId = new ArrayList<>();
-    /**
-     * 触发buff的武将idList
-     */
-    public List<Integer> buffTriggerId = new ArrayList<>();
-    /**
-     * 效果执行者
-     */
-    public List<Integer> effectExecutor = new ArrayList<>();
-    /**
-     * 效果被执行者
-     */
-    public List<Integer> beEffectExecutor = new ArrayList<>();
     /**
      * 战斗buff集合 主将的buff列表
      */
@@ -359,48 +335,6 @@ public class Force {
     }
 
     /**
-     * 入场技能只释放首位战机
-     *
-     * @return
-     */
-    public boolean planeHasSkill() {
-        boolean hasShill = false;
-        if (!CheckNull.isEmpty(planeInfos)) {
-            PlaneInfo info = planeInfos.get(1);
-            if (!CheckNull.isNull(info) && info.hasSkill()) {
-                hasShill = true;
-            }
-        }
-        return hasShill;
-    }
-
-    /**
-     * 获取当前行技能
-     *
-     * @return
-     */
-//    public FightSkill getCurrentSkill() {
-//        FightSkill skill = null;
-//        int planePos = PlaneConstant.LINE_PLANE_SKILL.getOrDefault(curLine + 1, -1);
-//        if (planePos > -1 && this.fightSkill.containsKey(planePos)) {
-//            List<FightSkill> skills = this.fightSkill.get(planePos);
-//            if (!CheckNull.isEmpty(skills)) {
-//                skill = skills.stream().filter(s -> s.notRollSkill() || s.notReleaseSkill() || s
-//                                .notEndSkillEffect()) // 还未Roll技能, 或者技能还未释放, 或者技能还未释放完
-//                        .sorted(Comparator.comparing(FightSkill::getOrder)).findFirst().orElse(null);
-//            }
-//        }
-//        return skill;
-//    }
-//    public FightSkill getCurrentSkill0() {
-//        //1.BUFF判断(禁锢,沉默,眩晕...)
-//        return fightSkills.stream()
-//                .filter(SkillTriggerUtils::doTriggerCond)
-//                .min(Comparator.comparing(FightSkill::getOrder))
-//                .orElse(null);
-//    }
-
-    /**
      * 获取战机攻击力
      *
      * @param battleType
@@ -606,30 +540,41 @@ public class Force {
         return -1;
     }
 
-//    public String getTreasureWare() {
-//        if (ownerId <= 0)
-//            return "";
-//        Player player = DataResource.getBean(PlayerDataManager.class).getPlayer(ownerId);
-//        if (CheckNull.isNull(player))
-//            return "";
-//        Hero hero = player.heros.get(id);
-//        if (CheckNull.isNull(hero) || CheckNull.isNull(hero.getTreasureWare()))
-//            return "";
-//        TreasureWare treasureWare = player.treasureWares.get(hero.getTreasureWare());
-//        if (CheckNull.isNull(treasureWare))
-//            return "";
-//        return treasureWare.getEquipId() + "--" + (CheckNull.isNull(treasureWare.getSpecialId()) ? -1 : treasureWare.getSpecialId());
-//    }
-
     @Override
     public String toString() {
-        return "Force{" + "id=" + id + ", hp=" + hp + ", maxHp=" + maxHp + ", armType=" + armType + ", lead=" + lead
-                + ", curLine=" + curLine + ", maxLine=" + maxLine + ", count=" + count + ", killed=" + killed
-                + ", lost=" + lost + ", totalLost=" + totalLost + ", attrData=" + attrData + ", fighter=" + fighter
-                + ", addExp=" + addExp + ", ownerId=" + ownerId + ", nick='" + nick + '\'' + ", hasFight=" + hasFight
-                + ", camp=" + camp + ", roleType=" + roleType + ", skillId=" + skillId + ", useSkill=" + useSkill
-                + ", intensifyLv=" + intensifyLv + ", effect=" + effect + ", isBcs=" + isBcs + ", isIronBas="
-                + isIronBas + ", planeInfos=" + planeInfos + ", treasureWare= " + 1 + '}';
+        return "Force{" +
+                "id=" + id +
+                ", hp=" + hp +
+                ", maxHp=" + maxHp +
+                ", armType=" + armType +
+                ", lead=" + lead +
+                ", curLine=" + curLine +
+                ", maxLine=" + maxLine +
+                ", count=" + count +
+                ", killed=" + killed +
+                ", lost=" + lost +
+                ", totalLost=" + totalLost +
+                ", attrData=" + attrData +
+                ", fighter=" + fighter +
+                ", addExp=" + addExp +
+                ", ownerId=" + ownerId +
+                ", nick='" + nick + '\'' +
+                ", hasFight=" + hasFight +
+                ", camp=" + camp +
+                ", roleType=" + roleType +
+                ", skillId=" + skillId +
+                ", useSkill=" + useSkill +
+                ", intensifyLv=" + intensifyLv +
+                ", effect=" + effect +
+                ", isBcs=" + isBcs +
+                ", isIronBas=" + isIronBas +
+                ", skillList=" + skillList +
+                ", morale=" + morale +
+                ", maxRoundMorale=" + maxRoundMorale +
+                ", buffList=" + buffList +
+                ", assistantHeroList=" + assistantHeroList +
+                ", fightBuffEffect=" + fightBuffEffect +
+                '}';
     }
 
     public String toBattleString() {

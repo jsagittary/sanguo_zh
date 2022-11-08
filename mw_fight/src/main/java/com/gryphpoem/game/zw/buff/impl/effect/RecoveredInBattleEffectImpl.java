@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Description:
+ * Description: 恢复型的战斗属性(士气, 能量)
  * Author: zhangpeng
  * createTime: 2022-11-07 15:04
  */

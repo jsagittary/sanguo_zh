@@ -1,12 +1,15 @@
 package com.gryphpoem.game.zw.skill.iml;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
+import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
+import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
+import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.BattleLogic;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
@@ -74,8 +77,34 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
 
     @Override
     public void releaseSkillEffect(FightContextHolder contextHolder, Object... params) {
-        // TODO 计算技能伤害
+        if (CheckNull.isEmpty(s_skill.getSkillEffect())) {
+            LogUtil.error("s_skill: ", s_skill, ", 技能主体效果为空");
+            return;
+        }
 
+        FightManager fightManager = DataResource.ac.getBean(FightManager.class);
+        for (List<Integer> list : s_skill.getSkillEffect()) {
+            if (CheckNull.isEmpty(list)) continue;
+            FightConstant.BuffObjective atkObj = FightConstant.BuffObjective.convertTo(list.get(0));
+            FightConstant.BuffObjective defObj = FightConstant.BuffObjective.convertTo(list.get(1));
+            if (CheckNull.isNull(atkObj) || CheckNull.isNull(defObj)) continue;
+            FightUtil.actionRoundSet(contextHolder, atkObj, true);
+            FightUtil.actionRoundSet(contextHolder, defObj, false);
+            if (CheckNull.isEmpty(contextHolder.getAtkHeroList()) || CheckNull.isEmpty(contextHolder.getDefHeroList()))
+                continue;
+
+            for (Integer atkHero : contextHolder.getAtkHeroList()) {
+                contextHolder.setCurAtkHeroId(atkHero.intValue());
+                for (Integer defHero : contextHolder.getDefHeroList()) {
+                    contextHolder.setCurDefHeroId(defHero.intValue());
+                    IFightEffect fightEffect = fightManager.getSkillEffect(list.get(2));
+                    if (CheckNull.isNull(fightEffect)) continue;
+                    StaticEffectRule rule = StaticFightManager.getStaticEffectRule(list.get(2));
+                    if (CheckNull.isNull(rule)) continue;
+                    fightEffect.effectiveness(null, contextHolder, list, rule);
+                }
+            }
+        }
     }
 
     @Override

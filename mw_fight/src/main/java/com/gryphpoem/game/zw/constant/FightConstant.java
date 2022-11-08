@@ -184,6 +184,13 @@ public interface FightConstant {
      * buff 作用目标
      */
     public enum BuffObjective {
+        /**
+         * 任何人
+         */
+        ANYONE(0, null),
+        /**
+         * 技能释放者
+         */
         RELEASE_SKILL(1, null),
         /**
          * buff挂载者

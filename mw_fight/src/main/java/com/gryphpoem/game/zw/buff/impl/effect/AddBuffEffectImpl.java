@@ -51,13 +51,8 @@ public class AddBuffEffectImpl extends AbsFightEffect {
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
-        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
-        if (CheckNull.isNull(buffObjective)) {
-            LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
-            return;
-        }
-        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executor) || CheckNull.isEmpty(executor.beEffectExecutor)) {
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
+        if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             return;
         }
 
@@ -72,12 +67,16 @@ public class AddBuffEffectImpl extends AbsFightEffect {
         }
 
         // buff的施与者是当前buff的施与者
-        contextHolder.setAttacker(fightBuff.getBuffGiver());
+        Force executor = actionDirection.getDef();
         BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
         List<IFightBuff> removedList = new ArrayList<>();
-        for (Integer heroId : executor.beEffectExecutor) {
+        for (Integer heroId : actionDirection.getDefHeroList()) {
             // 释放buff
-            battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, executor, heroId, contextHolder, null);
+            battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, executor, heroId, contextHolder, null, fightBuff.getBuffGiver());
         }
+    }
+
+    @Override
+    public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
     }
 }

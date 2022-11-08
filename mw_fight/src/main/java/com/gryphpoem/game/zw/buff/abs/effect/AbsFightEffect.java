@@ -8,10 +8,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
-import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
-import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.FightEffectData;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -25,51 +22,30 @@ import java.util.*;
 public abstract class AbsFightEffect implements IFightEffect {
 
     /**
-     * 计算效果执行人
-     *
-     * @param fightBuff
-     * @param contextHolder
-     * @param effectConfig
-     * @param buffObjective
-     * @return
-     */
-    protected Force executorForce(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, FightConstant.BuffObjective buffObjective) {
-        Force executorForce = FightUtil.getActingForce(fightBuff, contextHolder, buffObjective);
-        if (CheckNull.isNull(executorForce)) {
-            LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", executor is null");
-            return null;
-        }
-
-        FightUtil.fillActingHeroList(fightBuff, executorForce, executorForce.effectExecutor, contextHolder, buffObjective);
-        if (CheckNull.isEmpty(executorForce.effectExecutor)) {
-            LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(),
-                    ", conditionConfig: ", effectConfig, ", effectExecutor list is empty");
-        }
-        return executorForce;
-    }
-
-    /**
      * 计算效果被执行人
      *
      * @param fightBuff
      * @param contextHolder
      * @param effectConfig
-     * @param buffObjective
      * @return
      */
-    protected Force beExecutorForce(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, FightConstant.BuffObjective buffObjective) {
-        Force executorForce = FightUtil.getActingForce(fightBuff, contextHolder, buffObjective);
-        if (CheckNull.isNull(executorForce)) {
-            LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", executor is null");
+    protected ActionDirection actionDirection(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig) {
+        FightConstant.BuffObjective atkObj = FightConstant.BuffObjective.convertTo(effectConfig.get(0));
+        FightConstant.BuffObjective defObj = FightConstant.BuffObjective.convertTo(effectConfig.get(1));
+        if (CheckNull.isNull(atkObj) || CheckNull.isNull(defObj)) {
+            LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", 执行方或被执行方未找到");
             return null;
         }
 
-        FightUtil.fillActingHeroList(fightBuff, executorForce, executorForce.beEffectExecutor, contextHolder, buffObjective);
-        if (CheckNull.isEmpty(executorForce.beEffectExecutor)) {
-            LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(),
-                    ", conditionConfig: ", effectConfig, ", effectExecutor list is empty");
+        ActionDirection actionDirection = new ActionDirection();
+        FightUtil.buffEffectActionDirection(fightBuff, contextHolder, atkObj, actionDirection, true);
+        FightUtil.buffEffectActionDirection(fightBuff, contextHolder, defObj, actionDirection, false);
+        if (CheckNull.isEmpty(actionDirection.getDefHeroList())) {
+            LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", 被执行人为空");
+            return null;
         }
-        return executorForce;
+
+        return actionDirection;
     }
 
     @Override
@@ -166,20 +142,16 @@ public abstract class AbsFightEffect implements IFightEffect {
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
-        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
-        if (CheckNull.isNull(buffObjective)) {
-            LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
+        if (CheckNull.isNull(actionDirection)) {
             return;
         }
-        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executor)) {
-            return;
-        }
-        if (!CheckNull.isEmpty(executor.beEffectExecutor)) {
+        if (!CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             if (Objects.nonNull(rule)) {
                 int nextIndex;
-                for (Integer heroId : executor.beEffectExecutor) {
-                    FightBuffEffect fbe = executor.getFightEffectMap(heroId);
+                for (Integer heroId : actionDirection.getDefHeroList()) {
+                    Force def = actionDirection.getDef();
+                    FightBuffEffect fbe = def.getFightEffectMap(heroId);
                     FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe);
                     Map<Integer, List<FightEffectData>> dataMap = fbe.getEffectMap().get(rule.getEffectLogicId());
                     if (CheckNull.isEmpty(dataMap)) {
@@ -200,20 +172,15 @@ public abstract class AbsFightEffect implements IFightEffect {
     @Override
     public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
-        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
-        if (CheckNull.isNull(buffObjective)) {
-            LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
-            return;
-        }
-        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executor)) {
-            LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig_, ", executor is null");
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
+        if (CheckNull.isNull(actionDirection)) {
             return;
         }
 
-        if (!CheckNull.isEmpty(executor.beEffectExecutor)) {
-            for (Integer heroId : executor.beEffectExecutor) {
-                FightBuffEffect fbe = executor.getFightEffectMap(heroId);
+        if (!CheckNull.isEmpty(actionDirection.getDefHeroList())) {
+            for (Integer heroId : actionDirection.getDefHeroList()) {
+                Force def = actionDirection.getDef();
+                FightBuffEffect fbe = def.getFightEffectMap(heroId);
                 Map<Integer, List<FightEffectData>> effectIdMap = fbe.getEffectMap().get(rule.getEffectLogicId());
                 if (CheckNull.isEmpty(effectIdMap)) continue;
                 List<FightEffectData> effectList = effectIdMap.get(effectConfig_.get(2));

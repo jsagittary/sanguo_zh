@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
@@ -23,19 +24,21 @@ public class BloodVolumeBelowPercentageEffectWork extends AbsFightEffectWork {
     @Override
     public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
         // 0 代表任何人
-        Force triggerForce;
+        ActionDirection actionDirection;
         if (conditionConfig.get(0) > 0) {
             FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
             if (CheckNull.isNull(buffObjective)) return false;
 
-            triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
+            actionDirection = triggerForce(fightBuff, contextHolder, conditionConfig);
+            if (CheckNull.isNull(actionDirection)) return false;
+            Force triggerForce = actionDirection.getAtk();
             if ((triggerForce.hp / triggerForce.maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND)) {
                 return true;
             }
         } else if (conditionConfig.get(0) == 0) {
-            if ((contextHolder.getAttacker().hp / contextHolder.getAttacker().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
+            if ((contextHolder.getCurAttacker().hp / contextHolder.getCurAttacker().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
                 return true;
-            if ((contextHolder.getDefender().hp / contextHolder.getDefender().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
+            if ((contextHolder.getCurDefender().hp / contextHolder.getCurDefender().maxHp * 1.0d) < (conditionConfig.get(1) / FightConstant.TEN_THOUSAND))
                 return true;
         }
 

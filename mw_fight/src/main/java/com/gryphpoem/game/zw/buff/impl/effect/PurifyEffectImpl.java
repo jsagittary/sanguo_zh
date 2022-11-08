@@ -3,14 +3,10 @@ package com.gryphpoem.game.zw.buff.impl.effect;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
-import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
-import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.FightEffectData;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.Iterator;
@@ -51,17 +47,13 @@ public class PurifyEffectImpl extends AbsFightEffect {
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
-        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
-        if (CheckNull.isNull(buffObjective)) {
-            LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
-            return;
-        }
-        Force executor = beExecutorForce(fightBuff, contextHolder, effectConfig_, buffObjective);
-        if (CheckNull.isNull(executor) || CheckNull.isEmpty(executor.beEffectExecutor)) {
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
+        if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             return;
         }
 
-        for (Integer heroId : executor.beEffectExecutor) {
+        Force executor = actionDirection.getDef();
+        for (Integer heroId : actionDirection.getDefHeroList()) {
             List<IFightBuff> buffList = executor.buffList(heroId.intValue());
             if (CheckNull.isEmpty(buffList))
                 continue;
@@ -78,5 +70,9 @@ public class PurifyEffectImpl extends AbsFightEffect {
                 }
             }
         }
+    }
+
+    @Override
+    public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
     }
 }

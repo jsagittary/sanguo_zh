@@ -39,11 +39,7 @@ public class AttributeEffectImpl extends AbsFightEffect {
                 FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE,
                 FightConstant.EffectLogicId.CRITICAL_DAMAGE_INCREASED,
                 FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_HIT_RATE_OF_SKILL,
-                FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL,};
-    }
-
-    @Override
-    public void randomRoundValue(FightBuffEffect fightBuffEffect) {
+                FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL};
     }
 
     @Override

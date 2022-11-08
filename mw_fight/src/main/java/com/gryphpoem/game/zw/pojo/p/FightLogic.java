@@ -139,11 +139,10 @@ public class FightLogic {
      * @param target
      */
     private void releaseOnStageSkill(Force force, Force target) {
-        contextHolder.setAttacker(force);
-        contextHolder.setDefender(target);
-
+        contextHolder.getActionDirection().setAtk(force);
+        contextHolder.getActionDirection().setDef(target);
+        contextHolder.setCurAtkHeroId(force.id);
         // 主将释放登场技能
-        force.actionId = force.id;
         List<SimpleHeroSkill> skillList = force.skillList.stream().filter(
                 skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
@@ -157,7 +156,7 @@ public class FightLogic {
                 List<SimpleHeroSkill> skills = ass.getSkillList().stream().filter(
                         skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
                 if (CheckNull.isEmpty(skills)) return;
-                force.actionId = ass.getHeroId();
+                contextHolder.setCurAtkHeroId(ass.getHeroId());
                 skills.forEach(skill -> skill.releaseSkill(contextHolder));
             });
         }
@@ -245,13 +244,10 @@ public class FightLogic {
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
-                atk.actionId = fe.getHeroId();
-                contextHolder.resetForce(atk, def);
                 // 释放技能
-                contextHolder.getBattleLogic().releaseSkill(atk, fe, contextHolder);
+                contextHolder.getBattleLogic().releaseSkill(atk, fe, fe.getHeroId(), contextHolder);
                 // 普攻
-                contextHolder.resetForce(atk, def);
-                contextHolder.getBattleLogic().ordinaryAttack(atk, def, heroList, this.battleType, contextHolder);
+                contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, this.battleType, contextHolder);
             }
 
             // 修正士气

@@ -3,8 +3,8 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -30,13 +30,11 @@ public class SpecifiedBuffIdDisappearsEffectWork extends AbsFightEffectWork {
             return true;
         }
 
-        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
-        if (CheckNull.isNull(buffObjective)) return false;
-        Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
-        if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
+        ActionDirection actionDirection = triggerForce(fightBuff, contextHolder, conditionConfig);
+        if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getAtkHeroList())) {
             return false;
         }
 
-        return triggerForce.buffTriggerId.get(0) == lostBuff.getForceId();
+        return actionDirection.getAtkHeroList().get(0) == lostBuff.getForceId();
     }
 }

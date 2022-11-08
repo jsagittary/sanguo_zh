@@ -4,7 +4,6 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
@@ -53,28 +52,23 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
-        FightConstant.BuffObjective defBuffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
-        FightConstant.BuffObjective atkBuffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(0));
-        if (CheckNull.isNull(defBuffObjective) || CheckNull.isNull(atkBuffObjective)) {
-            LogUtil.error("effectConfig: ", effectConfig_, ", not found buffObjective");
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
+        if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getAtkHeroList()) || CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             return;
         }
 
-        Force atk = executorForce(fightBuff, contextHolder, effectConfig_, atkBuffObjective);
-        Force def = beExecutorForce(fightBuff, contextHolder, effectConfig_, defBuffObjective);
-        if (CheckNull.isNull(def) || CheckNull.isNull(atk)) {
-            return;
-        }
-
-        if (!CheckNull.isEmpty(def.beEffectExecutor) && !CheckNull.isEmpty(atk.effectExecutor)) {
+        if (!CheckNull.isEmpty(actionDirection.getAtkHeroList()) && !CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
-            contextHolder.resetForce(atk, def);
-            for (Integer atkHeroId : atk.effectExecutor) {
-                atk.actionId = atkHeroId;
-                for (Integer heroId : def.beEffectExecutor) {
-                    battleLogic.skillAttack(atk, def, contextHolder, heroId, effectConfig_, contextHolder.getBattleType());
+            for (Integer atkHeroId : actionDirection.getAtkHeroList()) {
+                actionDirection.setCurAtkHeroId(atkHeroId);
+                for (Integer heroId : actionDirection.getDefHeroList()) {
+                    battleLogic.skillAttack(actionDirection, contextHolder, effectConfig_, contextHolder.getBattleType());
                 }
             }
         }
+    }
+
+    @Override
+    public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
     }
 }

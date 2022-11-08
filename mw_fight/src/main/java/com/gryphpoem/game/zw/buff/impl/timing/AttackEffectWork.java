@@ -4,8 +4,8 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.ArrayList;
@@ -31,18 +31,19 @@ public class AttackEffectWork extends AbsFightEffectWork {
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
 
-        Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
-        if (contextHolder.getAttacker().actionId == 0) {
+        ActionDirection actionDirection = triggerForce(fightBuff, contextHolder, conditionConfig);
+        if (CheckNull.isNull(actionDirection)) return false;
+        if (contextHolder.getCurAtkHeroId() == 0) {
             LogUtil.error("buffId: ", fightBuff.getBuffConfig().getBuffId(), ", attacker.actionId = 0");
             return false;
         }
-        if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
+        if (CheckNull.isEmpty(actionDirection.getAtkHeroList())) {
             return false;
         }
 
         List<Integer> forceList = new ArrayList<>(1);
-        forceList.add(contextHolder.getAttacker().actionId);
-        return canRelease(triggerForce, forceList, buffObjective);
+        forceList.add(contextHolder.getCurAtkHeroId());
+        return canRelease(actionDirection, forceList, buffObjective);
     }
 
 }

@@ -25,14 +25,6 @@ public class FightContext {
      */
     private long atkRoleId;
     /**
-     * 进攻势力
-     */
-    private Force attacker;
-    /**
-     * 防守势力
-     */
-    private Force defender;
-    /**
      * 回合数
      */
     private int roundNum;
@@ -44,4 +36,8 @@ public class FightContext {
     private List<FightEntity> fightEntityList;
     private BattleLogic battleLogic;
     private int battleType;
+    /**
+     * 正常回合放技能或普攻时, 攻击方向
+     */
+    private ActionDirection actionDirection;
 }

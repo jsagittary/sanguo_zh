@@ -3,8 +3,8 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -29,15 +29,12 @@ public class DefenderEffectWork extends AbsFightEffectWork {
         if (conditionConfig.get(0) == 0) return true;
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
-
-        Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
-
-        if (CheckNull.isEmpty(contextHolder.getDefender().beActionId))
-            return false;
+        ActionDirection actionDirection = triggerForce(fightBuff, contextHolder, conditionConfig);
+        if (CheckNull.isNull(actionDirection)) return false;
         // 无触发者
-        if (CheckNull.isEmpty(triggerForce.buffTriggerId))
+        if (CheckNull.isEmpty(actionDirection.getAtkHeroList()))
             return false;
 
-        return canRelease(triggerForce, contextHolder.getDefender().beActionId, buffObjective);
+        return canRelease(actionDirection, contextHolder.getDefHeroList(), buffObjective);
     }
 }

@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.buff.impl.timing;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -26,20 +27,21 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
     @Override
     public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
         // 0 代表任何人
-        Force triggerForce;
+        ActionDirection actionDirection;
         boolean canRelease = false;
         if (conditionConfig.get(0) > 0) {
             FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
             if (CheckNull.isNull(buffObjective)) return false;
-            triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
-            if (CheckNull.isEmpty(triggerForce.buffTriggerId)) {
+            actionDirection = triggerForce(fightBuff, contextHolder, conditionConfig);
+            if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getAtkHeroList())) {
                 return false;
             }
 
+            Force triggerForce = actionDirection.getAtk();
             switch (buffObjective) {
                 case AT_LEAST_ONE_HERO_FROM_MY_SIDE:
                 case AT_LEAST_ONE_HERO_FROM_ENEMY_SIDE:
-                    for (Integer heroId : triggerForce.buffTriggerId) {
+                    for (Integer heroId : actionDirection.getAtkHeroList()) {
                         LinkedList<IFightBuff> buffList = triggerForce.buffList(heroId.intValue());
                         if (CheckNull.isEmpty(buffList))
                             continue;
@@ -51,7 +53,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                     }
                     break;
                 default:
-                    for (Integer heroId : triggerForce.buffTriggerId) {
+                    for (Integer heroId : actionDirection.getAtkHeroList()) {
                         LinkedList<IFightBuff> buffList = triggerForce.buffList(heroId.intValue());
                         if (CheckNull.isEmpty(buffList))
                             continue;
@@ -64,7 +66,7 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {
-            return canRelease0(contextHolder.getAttacker(), conditionConfig) || canRelease0(contextHolder.getDefender(), conditionConfig);
+            return canRelease0(contextHolder.getCurAttacker(), conditionConfig) || canRelease0(contextHolder.getCurDefender(), conditionConfig);
         }
 
         return canRelease;

@@ -167,7 +167,6 @@ public abstract class AbsConfigBuff implements IFightBuff {
     @Override
     public void setBuffGiver(Force force) {
         this.buffGiver = force;
-        this.buffGiverId = force.actionId;
     }
 
     @Override
@@ -224,7 +223,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
     protected void buffEffectiveness(FightContextHolder contextHolder, Object... params) {
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_DISAPPEARS, this);
-        
+
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);

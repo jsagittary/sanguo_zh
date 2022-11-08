@@ -1,0 +1,59 @@
+package com.gryphpoem.game.zw.pojo.p;
+
+import lombok.Data;
+
+import java.util.List;
+
+/**
+ * Description:
+ * Author: zhangpeng
+ * createTime: 2022-11-08 11:48
+ */
+@Data
+public class ActionDirection {
+    /**
+     * 攻击方
+     */
+    private Force atk;
+    /**
+     * 防守方
+     */
+    private Force def;
+    /**
+     * 当前攻击方武将id (技能的释放者或普攻者)
+     */
+    private int curAtkHeroId;
+    /**
+     * 当前防守方武将id
+     */
+    private int curDefHeroId;
+    /**
+     * 攻击方武将id列表
+     */
+    private List<Integer> atkHeroList;
+    /**
+     * 防守方武将id列表
+     */
+    private List<Integer> defHeroList;
+
+    public ActionDirection() {
+    }
+
+    public ActionDirection(Force atk, Force def, int curAtkHeroId, int curDefHeroId, List<Integer> atkHeroList, List<Integer> defHeroList) {
+        this.atk = atk;
+        this.def = def;
+        this.curAtkHeroId = curAtkHeroId;
+        this.curDefHeroId = curDefHeroId;
+        this.atkHeroList = atkHeroList;
+        this.defHeroList = defHeroList;
+    }
+
+    public void clearRound() {
+        this.atk = null;
+        this.def = null;
+        this.curAtkHeroId = 0;
+        this.curDefHeroId = 0;
+        this.atkHeroList.clear();
+        this.defHeroList.clear();
+    }
+}

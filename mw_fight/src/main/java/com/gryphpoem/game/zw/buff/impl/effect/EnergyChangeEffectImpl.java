@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.buff.impl.effect;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
@@ -61,17 +60,13 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
-        FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
-        if (CheckNull.isNull(buffObjective)) {
-            LogUtil.error("staticBuff: ", fightBuff.getBuffConfig(), ", effectConfig: ", effectConfig_, ", not found buffObjective");
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig);
+        if (CheckNull.isNull(actionDirection)) {
             return;
         }
-        Force force = beExecutorForce(fightBuff, contextHolder, effectConfig, buffObjective);
-        if (CheckNull.isNull(force)) {
-            return;
-        }
-        if (!CheckNull.isEmpty(force.beEffectExecutor)) {
-            for (Integer heroId : force.beEffectExecutor) {
+        if (!CheckNull.isEmpty(actionDirection.getDefHeroList())) {
+            Force force = actionDirection.getDef();
+            for (Integer heroId : actionDirection.getDefHeroList()) {
                 List<SimpleHeroSkill> skillList = force.getSkillList(heroId.intValue());
                 if (CheckNull.isEmpty(skillList)) continue;
                 List<SimpleHeroSkill> activeSkillList = skillList.stream().filter(skill -> !skill.isOnStageSkill()).collect(Collectors.toList());
@@ -96,5 +91,9 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
                 }
             }
         }
+    }
+
+    @Override
+    public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
     }
 }

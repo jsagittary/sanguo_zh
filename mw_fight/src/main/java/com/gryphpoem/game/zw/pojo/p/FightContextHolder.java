@@ -27,6 +27,7 @@ public class FightContextHolder {
         };
         LOCAL.get().setAtkFighter(atk);
         LOCAL.get().setDefFighter(def);
+        LOCAL.get().setActionDirection(new ActionDirection());
         LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
     }
 
@@ -40,8 +41,9 @@ public class FightContextHolder {
         };
         LOCAL.get().setAtkFighter(atk);
         LOCAL.get().setDefFighter(def);
-        LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
         LOCAL.get().setBattleType(battleType);
+        LOCAL.get().setActionDirection(new ActionDirection());
+        LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
     }
 
     public void setRecordData(CommonPb.Record.Builder recordData) {
@@ -53,29 +55,66 @@ public class FightContextHolder {
         return context.getRecordData();
     }
 
-    public Force getAttacker() {
-        FightContext context = LOCAL.get();
-        return context.getAttacker();
+    public ActionDirection getActionDirection() {
+        return LOCAL.get().getActionDirection();
     }
 
-    public void setAttacker(Force attacker) {
-        FightContext context = LOCAL.get();
-        context.setAttacker(attacker);
+    public List<Integer> getAtkHeroList() {
+        List<Integer> list = LOCAL.get().getActionDirection().getAtkHeroList();
+        if (CheckNull.isNull(list)) {
+            list = new ArrayList<>();
+            LOCAL.get().getActionDirection().setAtkHeroList(list);
+        }
+
+        return list;
     }
 
-    public Force getDefender() {
-        FightContext context = LOCAL.get();
-        return context.getDefender();
+    public List<Integer> getDefHeroList() {
+        List<Integer> list = LOCAL.get().getActionDirection().getDefHeroList();
+        if (CheckNull.isNull(list)) {
+            list = new ArrayList<>();
+            LOCAL.get().getActionDirection().setDefHeroList(list);
+        }
+
+        return list;
     }
 
-    public void setDefender(Force defender) {
-        FightContext context = LOCAL.get();
-        context.setDefender(defender);
+    public Force getCurAttacker() {
+        return LOCAL.get().getActionDirection().getAtk();
     }
 
-    public void resetForce(Force atk, Force def) {
-        setAttacker(atk);
-        setDefender(def);
+    public int getCurAtkHeroId() {
+        return LOCAL.get().getActionDirection().getCurAtkHeroId();
+    }
+
+    public int getCurDefHeroId() {
+        return LOCAL.get().getActionDirection().getCurDefHeroId();
+    }
+
+    public Force getCurDefender() {
+        return LOCAL.get().getActionDirection().getDef();
+    }
+
+    public void setCurAtkHeroId(int atkHeroId) {
+        LOCAL.get().getActionDirection().setCurAtkHeroId(atkHeroId);
+    }
+
+    public void setCurDefHeroId(int defHeroId) {
+        LOCAL.get().getActionDirection().setCurDefHeroId(defHeroId);
+    }
+
+    public void clearActionList() {
+        LOCAL.get().getActionDirection().setCurDefHeroId(0);
+        LOCAL.get().getActionDirection().setCurAtkHeroId(0);
+        LOCAL.get().getActionDirection().getAtkHeroList().clear();
+        LOCAL.get().getActionDirection().getDefHeroList().clear();
+    }
+
+    public void resetActionDirection(Force atk, Force def, int curAtkHeroId, int curDefHeroId) {
+        LOCAL.get().getActionDirection().setAtk(atk);
+        LOCAL.get().getActionDirection().setDef(def);
+        LOCAL.get().getActionDirection().setCurAtkHeroId(curAtkHeroId);
+        LOCAL.get().getActionDirection().setCurDefHeroId(curDefHeroId);
     }
 
     public int getRoundNum() {

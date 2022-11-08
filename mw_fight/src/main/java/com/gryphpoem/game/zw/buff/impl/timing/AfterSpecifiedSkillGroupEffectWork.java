@@ -5,8 +5,8 @@ import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -31,11 +31,9 @@ public class AfterSpecifiedSkillGroupEffectWork extends AbsFightEffectWork {
         }
 
         if (conditionConfig.get(1) > 0) {
-            FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
-            if (CheckNull.isNull(buffObjective)) return false;
-            Force triggerForce = triggerForce(fightBuff, contextHolder, conditionConfig, buffObjective);
-            if (CheckNull.isEmpty(triggerForce.buffTriggerId)) return false;
-            return triggerForce.buffTriggerId.get(0) == contextHolder.getAttacker().actionId;
+            ActionDirection actionDirection = triggerForce(fightBuff, contextHolder, conditionConfig);
+            if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getAtkHeroList())) return false;
+            return actionDirection.getAtkHeroList().get(0) == contextHolder.getCurAtkHeroId();
         } else if (conditionConfig.get(1) == 0) {
             return true;
         }

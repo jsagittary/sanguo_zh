@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.util;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -78,7 +79,7 @@ public class FightUtil {
             case RELEASE_SKILL:
                 if (CheckNull.isNull(fightBuff)) {
                     // 执行主体效果
-                    heroList.add(contextHolder.getAttacker().actionId);
+                    heroList.add(contextHolder.getCurAtkHeroId());
                     break;
                 }
                 heroList.add(fightBuff.getBuffGiverId());
@@ -126,57 +127,133 @@ public class FightUtil {
     }
 
     /**
-     * buff的施予方(释放技能方)为己方时, 计算敌我双方将领作用方
+     * buff效果释放时, 计算敌我双方将领作用方
      *
      * @param fightBuff
      * @param contextHolder
      * @param buffObjective
      * @return
      */
-    public static Force getActingForce(IFightBuff fightBuff, FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective) {
+    public static void buffEffectActionDirection(IFightBuff fightBuff, FightContextHolder contextHolder,
+                                                 FightConstant.BuffObjective buffObjective, ActionDirection direction, boolean performer) {
         Force buffAttacker;
         Force buffDefender;
-        Force executorForce;
-        if (contextHolder.getAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
-            buffAttacker = contextHolder.getAttacker();
-            buffDefender = contextHolder.getDefender();
+        if (contextHolder.getCurAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+            buffAttacker = contextHolder.getCurAttacker();
+            buffDefender = contextHolder.getCurDefender();
         } else {
-            buffAttacker = contextHolder.getDefender();
-            buffDefender = contextHolder.getAttacker();
+            buffAttacker = contextHolder.getCurDefender();
+            buffDefender = contextHolder.getCurAttacker();
         }
 
         switch (buffObjective) {
+            case ANYONE:
+                break;
             case RELEASE_SKILL:
-                if (CheckNull.isNull(fightBuff)) {
-                    executorForce = contextHolder.getAttacker();
-                    break;
+                if (performer) {
+                    direction.setAtk(fightBuff.getBuffGiver());
+                    direction.getAtkHeroList().add(fightBuff.getBuffGiverId());
+                } else {
+                    direction.setDef(fightBuff.getBuffGiver());
+                    direction.getDefHeroList().add(fightBuff.getBuffGiverId());
                 }
-                executorForce = fightBuff.getBuffGiver();
                 break;
             case BUFF_LOADER:
-                executorForce = fightBuff.getForce();
+                if (performer) {
+                    direction.setAtk(fightBuff.getForce());
+                    direction.getAtkHeroList().add(fightBuff.getForceId());
+                } else {
+                    direction.setDef(fightBuff.getForce());
+                    direction.getDefHeroList().add(fightBuff.getForceId());
+                }
                 break;
             default:
-                executorForce = FightUtil.actingForce(buffAttacker, buffDefender, buffObjective, false);
+                actingForce(buffAttacker, buffDefender, buffObjective, direction, performer);
                 break;
         }
-
-        return executorForce;
     }
 
     /**
-     * 获得buff被作用方
+     * 回合内的技能的执行者或被执行者
+     *
+     * @param contextHolder
+     * @param buffObjective
+     * @param performer     是否是执行者
+     */
+    public static void actionRoundSet(FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective, boolean performer) {
+        if (FightConstant.BuffObjective.RELEASE_SKILL.equals(buffObjective)) {
+            if (performer) {
+                contextHolder.setCurAtkHeroId(contextHolder.getCurAttacker().id);
+            } else {
+                contextHolder.setCurDefHeroId(contextHolder.getCurAttacker().id);
+            }
+            return;
+        }
+
+        // 回合内的动作不存在buff的挂载者作用目标类型
+        Force affectedForce = null;
+        Force attacker = contextHolder.getCurAttacker();
+        Force defender = contextHolder.getCurDefender();
+        Boolean atk = buffObjective.isAttackerSize(FightConstant.ForceSide.ATTACKER);
+        if (Objects.nonNull(attacker) && Objects.nonNull(atk) && atk) {
+            affectedForce = attacker;
+        } else {
+            Boolean def = buffObjective.isAttackerSize(FightConstant.ForceSide.DEFENDER);
+            if (Objects.nonNull(defender) && Objects.nonNull(def) && def) {
+                affectedForce = defender;
+            }
+        }
+
+        // 清除技能主体效果作用方与被作用方
+        contextHolder.clearActionList();
+        List<Integer> heroList;
+        if (performer) {
+            heroList = contextHolder.getAtkHeroList();
+        } else {
+            heroList = contextHolder.getDefHeroList();
+        }
+
+        switch (buffObjective) {
+            case MY_PRINCIPAL_HERO:
+            case ENEMY_PRINCIPAL_HERO:
+                heroList.add(affectedForce.id);
+                break;
+            case MY_DEPUTY_HERO:
+            case ENEMY_DEPUTY_HERO:
+                if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
+                    heroList.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                }
+                break;
+            case RANDOM_MY_HERO:
+            case RANDOM_ENEMY_HERO:
+                int randomSize = 1;
+                if (!CheckNull.isEmpty(affectedForce.assistantHeroList))
+                    randomSize += affectedForce.assistantHeroList.size();
+                List<Integer> randomHeroIdList = new ArrayList<>(randomSize);
+                randomHeroIdList.add(affectedForce.id);
+                affectedForce.assistantHeroList.stream().filter(h -> Objects.nonNull(h)).forEach(h -> randomHeroIdList.add(h.getHeroId()));
+                heroList.add(randomHeroIdList.get(RandomHelper.randomInSize(randomHeroIdList.size())));
+                break;
+            case ALL_MY_HERO:
+            case ALL_ENEMY_HERO:
+                heroList.add(affectedForce.id);
+                if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
+                    heroList.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                }
+                break;
+        }
+    }
+
+
+    /**
+     * 设置buff或效果的执行者或被执行者
      *
      * @param attacker
      * @param defender
      * @param buffObjective
      * @return
      */
-    public static Force actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective, boolean release) {
-        if (FightConstant.BuffObjective.RELEASE_SKILL.equals(buffObjective)) {
-            return attacker;
-        }
-
+    public static void actingForce(Force attacker, Force defender, FightConstant.BuffObjective buffObjective, ActionDirection direction, boolean performer) {
         Force affectedForce = null;
         Boolean atk = buffObjective.isAttackerSize(FightConstant.ForceSide.ATTACKER);
         if (Objects.nonNull(attacker) && Objects.nonNull(atk) && atk) {
@@ -188,53 +265,59 @@ public class FightUtil {
             }
         }
 
-        if (release) {
-            // 释放技能或buff 算出被作用方(被攻击方)是哪些武将
-            if (CheckNull.isNull(affectedForce.beActionId))
-                affectedForce.beActionId = new ArrayList<>();
-            if (!CheckNull.isEmpty(affectedForce.beActionId))
-                affectedForce.beActionId.clear();
-
-            switch (buffObjective) {
-                case MY_PRINCIPAL_HERO:
-                case ENEMY_PRINCIPAL_HERO:
-                    affectedForce.beActionId.add(affectedForce.id);
-                    break;
-                case MY_DEPUTY_HERO:
-                case ENEMY_DEPUTY_HERO:
-                    if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
-                        affectedForce.beActionId.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
-                    }
-                    break;
-                case RANDOM_MY_HERO:
-                case RANDOM_ENEMY_HERO:
-                    int randomSize = 1;
-                    if (!CheckNull.isEmpty(affectedForce.assistantHeroList))
-                        randomSize += affectedForce.assistantHeroList.size();
-                    List<Integer> randomHeroIdList = new ArrayList<>(randomSize);
-                    randomHeroIdList.add(affectedForce.id);
-                    affectedForce.assistantHeroList.stream().filter(h -> Objects.nonNull(h)).forEach(h -> randomHeroIdList.add(h.getHeroId()));
-                    affectedForce.beActionId.add(randomHeroIdList.get(RandomHelper.randomInSize(randomHeroIdList.size())));
-                    break;
-                case ALL_MY_HERO:
-                case ALL_ENEMY_HERO:
-                    affectedForce.beActionId.add(affectedForce.id);
-                    if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
-                        affectedForce.beActionId.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
-                    }
-                    break;
-            }
+        List<Integer> heroList;
+        if (performer) {
+            direction.setAtk(affectedForce);
+            heroList = direction.getAtkHeroList();
+        } else {
+            direction.setDef(affectedForce);
+            heroList = direction.getDefHeroList();
         }
 
-        return affectedForce;
+        switch (buffObjective) {
+            case MY_PRINCIPAL_HERO:
+            case ENEMY_PRINCIPAL_HERO:
+                heroList.add(affectedForce.id);
+                break;
+            case MY_DEPUTY_HERO:
+            case ENEMY_DEPUTY_HERO:
+                if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
+                    heroList.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                }
+                break;
+            case RANDOM_MY_HERO:
+            case RANDOM_ENEMY_HERO:
+                int randomSize = 1;
+                if (!CheckNull.isEmpty(affectedForce.assistantHeroList))
+                    randomSize += affectedForce.assistantHeroList.size();
+                List<Integer> randomHeroIdList = new ArrayList<>(randomSize);
+                randomHeroIdList.add(affectedForce.id);
+                affectedForce.assistantHeroList.stream().filter(h -> Objects.nonNull(h)).forEach(h -> randomHeroIdList.add(h.getHeroId()));
+                heroList.add(randomHeroIdList.get(RandomHelper.randomInSize(randomHeroIdList.size())));
+                break;
+            case ALL_MY_HERO:
+            case ALL_ENEMY_HERO:
+                heroList.add(affectedForce.id);
+                if (!CheckNull.isEmpty(affectedForce.assistantHeroList)) {
+                    heroList.addAll(affectedForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
+                }
+                break;
+        }
     }
 
+    /**
+     * 触发类型的buff
+     *
+     * @param contextHolder
+     * @param timing
+     * @param params
+     */
     public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
-        if (!contextHolder.getAttacker().isBuffListEmpty()) {
-            releaseBuffEffect(contextHolder.getAttacker(), contextHolder, timing, params);
+        if (!contextHolder.getCurAttacker().isBuffListEmpty()) {
+            releaseBuffEffect(contextHolder.getCurAttacker(), contextHolder, timing, params);
         }
-        if (!contextHolder.getDefender().isBuffListEmpty()) {
-            releaseBuffEffect(contextHolder.getDefender(), contextHolder, timing, params);
+        if (!contextHolder.getCurDefender().isBuffListEmpty()) {
+            releaseBuffEffect(contextHolder.getCurDefender(), contextHolder, timing, params);
         }
     }
 
