@@ -1,22 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import org.quartz.JobExecutionContext;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
-
-import com.hundredcent.game.ai.util.CheckNull;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
 import com.gryphpoem.game.zw.crosssimple.service.CrossOpenTimeService;
@@ -36,26 +20,39 @@ import com.gryphpoem.game.zw.model.fort.RoleForce;
 import com.gryphpoem.game.zw.model.player.CrossHero;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.CrossWarReport;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.pb.GamePb5.SyncCrossWarFinishRs;
+import com.gryphpoem.game.zw.pb.GamePb5.SyncCrossWarRptRs;
+import com.gryphpoem.game.zw.pb.GamePb5.SyncFortHeroRs;
+import com.gryphpoem.game.zw.pb.GamePb5.SyncSoloMsgRs;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossWarRank;
 import com.gryphpoem.game.zw.resource.pojo.PeriodTime;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.util.CrossFightHelper;
 import com.gryphpoem.game.zw.util.CrossWarFinlishClear;
 import com.gryphpoem.game.zw.util.PbMsgUtil;
+import com.hundredcent.game.ai.util.CheckNull;
+import org.quartz.JobExecutionContext;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName CrossWarService.java
  * @Description 跨服战处理
- * @author QiuKun
  * @date 2019年5月23日
  */
 @Component
@@ -85,7 +82,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 跨天处理
-     * 
+     *
      * @param context
      */
     private void crossDayProcess(JobExecutionContext context) {
@@ -116,7 +113,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 每隔1秒的战斗处理
-     * 
+     *
      * @param context
      */
     private void fightRunProcess(JobExecutionContext context) {
@@ -154,7 +151,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 获取单挑对手的 Fighter
-     * 
+     *
      * @return
      */
     @SuppressWarnings("unchecked")
@@ -208,7 +205,7 @@ public class CrossWarService implements ApplicationContextAware {
                 FightLogic fightLogic = fortress.isDefCamp(player.getCamp())
                         ? new FightLogic(opponentFighter, myFighter, true)
                         : new FightLogic(myFighter, opponentFighter, true);
-                fightLogic.fight();
+                fightLogic.start();
                 // 自己扣血
                 subRoleCnt(myRoleForce, myFighter);
                 // 敌方扣血
@@ -222,7 +219,7 @@ public class CrossWarService implements ApplicationContextAware {
                 }
                 // 重新计算兵力
                 fortress.reCalcCnt();
-                boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+                boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
                 // 战报的生产
                 int now = TimeHelper.getCurrentSecond();
                 CommonPb.CrossWarReport warRpt = fortress.isDefCamp(player.getCamp())
@@ -245,7 +242,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 广播战报
-     * 
+     *
      * @param rptList
      */
     public void broadcastWarRpt(List<CommonPb.CrossWarReport> rptList) {
@@ -259,7 +256,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 每个堡垒的战斗
-     * 
+     *
      * @param f
      */
     private CommonPb.CrossWarReport fortressProcess(Fortress f) {
@@ -282,7 +279,7 @@ public class CrossWarService implements ApplicationContextAware {
             return null;
         }
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
         // 进攻方扣兵
         subRoleCnt(atkRoleForce, attacker);
         // 防守方扣兵
@@ -297,7 +294,7 @@ public class CrossWarService implements ApplicationContextAware {
         }
         // 重新计算兵力
         f.reCalcCnt();
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         if (atkSuccess && f.getDefCnt() <= 0) {
             f.setCamp(atkRoleForce.getCamp()); // 替换阵营
             f.reCalcCnt(); // 阵营替换还需计算一次
@@ -324,7 +321,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 扣玩家血量
-     * 
+     *
      * @param roleForce
      * @param fighter
      */
@@ -353,7 +350,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 扣除npc血量
-     * 
+     *
      * @param defNpcForce
      * @param defender
      */
@@ -370,7 +367,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 获取胜利方的阵营
-     * 
+     *
      * @return 0说明没有获胜方
      */
     private int findWinCamp() {
@@ -397,7 +394,7 @@ public class CrossWarService implements ApplicationContextAware {
 
     /**
      * 结束时间处理
-     * 
+     *
      * @param context
      */
     private void finishTimeProcess(JobExecutionContext context) {

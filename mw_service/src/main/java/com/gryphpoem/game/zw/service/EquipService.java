@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
@@ -533,7 +534,7 @@ public class EquipService implements GmCmdService {
         if (staticEquipQualityExtra != null && staticEquipQualityExtra.getExtraNum() > 0) {
             List<Turple<Integer, Integer>> attrLv = equip.getAttrAndLv();
             for (int j = 0; j < staticEquipQualityExtra.getExtraNum(); j++) {
-                attrLv.add(new Turple<>(Constant.ATTRS[RandomUtils.nextInt(0, Constant.ATTRS.length)],
+                attrLv.add(new Turple<>(FightCommonConstant.ATTRS[RandomUtils.nextInt(0, FightCommonConstant.ATTRS.length)],
                         staticEquipQualityExtra.getExtraLv()));
             }
         }

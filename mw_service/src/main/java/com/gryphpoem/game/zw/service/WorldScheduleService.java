@@ -13,6 +13,10 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.GetScheduleBossRq;
 import com.gryphpoem.game.zw.pb.GamePb4.GetScheduleBossRs;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -22,10 +26,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticSchedule;
 import com.gryphpoem.game.zw.resource.domain.s.StaticScheduleGoal;
 import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.pojo.WorldTask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleGoal;
@@ -384,7 +384,7 @@ public class WorldScheduleService {
         Fighter defender = fightService.createFighter(boss.getNpc());
 
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);

@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -32,6 +33,7 @@ import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mail;
 import com.gryphpoem.game.zw.pb.GamePb1.DoSomeRq;
 import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRq;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -46,7 +48,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
@@ -2199,7 +2200,7 @@ public class GmService {
                                         p.getAllOnBattleHeros()
                                                 .stream()
                                                 .filter(Hero::isIdle)
-                                                .peek(hero -> hero.setCount(hero.getAttr()[Constant.AttrId.LEAD]))
+                                                .peek(hero -> hero.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]))
                                                 .findAny()
                                                 .ifPresent(hero -> {
                                                     GamePb2.AttackPosRq.Builder builder = GamePb2.AttackPosRq.newBuilder();

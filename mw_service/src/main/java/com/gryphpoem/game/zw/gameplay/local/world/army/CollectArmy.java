@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
@@ -17,6 +18,8 @@ import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.MailCollect;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -26,8 +29,6 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -96,7 +97,7 @@ public class CollectArmy extends BaseArmy {
         Fighter attacker = fightService.createFighter(atkplayer, army.getHero());
         Fighter defender = fightService.createFighter(defPlayer, guard.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
@@ -147,7 +148,7 @@ public class CollectArmy extends BaseArmy {
         // 战斗记录
         Lord atkLord = atkplayer.lord;
         Lord defLord = defPlayer.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         CommonPb.Record record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();

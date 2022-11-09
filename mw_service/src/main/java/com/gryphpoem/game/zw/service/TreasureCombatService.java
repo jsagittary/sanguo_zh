@@ -12,13 +12,13 @@ import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -139,7 +139,7 @@ public class TreasureCombatService implements GmCmdService {
             Fighter defender = fightService.createNpcFighter(sCombat.getForm());
 
             FightLogic fightLogic = new FightLogic(attacker, defender, true);
-            fightLogic.fight();
+            fightLogic.start();
             int winState = fightLogic.getWinState();
             if (winState == 1) {
                 combatInfo.put(combatId, 1);

@@ -3,13 +3,13 @@ package com.gryphpoem.game.zw.resource.pojo.world;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
+import com.gryphpoem.game.zw.pojo.p.AttrData;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.BerlinWarConstant;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBerlinWar;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
-import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -344,6 +344,7 @@ public class BerlinCityInfo {
 
     /**
      * 获取阵营的势力值
+     *
      * @param camp 指定阵营
      * @return 势力值
      */
@@ -533,7 +534,8 @@ public class BerlinCityInfo {
 
     /**
      * 清除并初始化柏林相关城池数据
-     * @param sameCamp 是否相同阵营
+     *
+     * @param sameCamp   是否相同阵营
      * @param sBerlinWar 柏林城池配置
      */
     void clearAndInit(boolean sameCamp, StaticBerlinWar sBerlinWar) {

@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -12,6 +13,9 @@ import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
@@ -24,9 +28,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticLightningWar;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.LightningWarBoss;
@@ -209,8 +210,6 @@ public class LightningWarService {
      *
      * @param now
      * @param lightningWar
-     * @param player
-     * @param lightningWarBoss
      */
     private void createLightningWarBattle(int now, StaticLightningWar lightningWar, LightningWarBoss boss) {
         Battle battle = new Battle();
@@ -342,13 +341,13 @@ public class LightningWarService {
         int totalHp = defender.getTotal();// 总血量
         int lostTotal = defender.getLost();// 总损失兵力
 
-        fightLogic.fight();// 战斗
+        fightLogic.start();// 战斗
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 兵力恢复

@@ -7,7 +7,6 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.LinkedList;
@@ -30,7 +29,7 @@ public class ConditionBuffImpl extends AbsConditionBuff {
     }
 
     @Override
-    public void releaseEffect(Force actingForce, FightContextHolder contextHolder, int timing, Object... params) {
+    public void releaseEffect(FightContextHolder contextHolder, int timing, Object... params) {
         if (CheckNull.isNull(this.staticBuff)) {
             LogUtil.error(String.format("staticBuff config is null", -1));
             return;

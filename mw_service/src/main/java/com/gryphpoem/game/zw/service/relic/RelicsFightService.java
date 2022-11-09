@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.relic;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
@@ -9,15 +10,15 @@ import com.gryphpoem.game.zw.manager.GlobalDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
 import com.gryphpoem.game.zw.resource.pojo.relic.RelicCons;
@@ -186,7 +187,7 @@ public class RelicsFightService {
             Fighter defender = fightService.createRelicFighter(defendPlayer, defArmy.getKeyId(), defArmy.getHero(), rlc.holdTime(defendPlayer.roleId, defArmy.getKeyId()));
             FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_HIS_REMAIN);
             fightLogic.packForm();
-            fightLogic.fight();
+            fightLogic.start();
             fightLogic.fightId = fightId;
             LogUtil.debug(String.format("his cityId :%d, fightId :%d, result :%s, attack roleId :%d, atk army keyId :%d, defend roleId :%d, army keyId :%d",
                     rlc.getCfgId(), fightId, fightLogic.getWinState(), attackPlayer.roleId, atkArmy.getKeyId(), defendPlayer.roleId, defArmy.getKeyId()));
@@ -213,7 +214,7 @@ public class RelicsFightService {
             CommonPb.Report.Builder report = createFightReport(fightLogic, attackPlayer, defendPlayer, recoverMap, nowSec, changeMap);
             // 通知客户端玩家兵力/战功等资源变化
             warService.sendRoleResChange(changeMap);
-            boolean attackSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+            boolean attackSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
             //发送战斗邮件
             if (attackSuccess) {
                 attackFightSuccess(fightLogic, rlc, report, attackPlayer, atkArmy, defendPlayer, nowSec);
@@ -271,7 +272,7 @@ public class RelicsFightService {
         // 战斗记录
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         CommonPb.Record record = fightLogic.generateRecord();
-        rpt.setResult(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
+        rpt.setResult(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
         Lord atkLord = attackPlayer.lord;
         Lord defLord = defendPlayer.lord;
         Fighter attacker = fightLogic.getAttacker();

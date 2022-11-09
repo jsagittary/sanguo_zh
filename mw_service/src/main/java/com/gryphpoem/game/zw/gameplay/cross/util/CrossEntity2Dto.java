@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.gameplay.cross.util;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.cross.gameplay.common.Game2CrossRequest;
 import com.gryphpoem.cross.gameplay.player.common.*;
 import com.gryphpoem.game.zw.core.common.DataResource;
@@ -71,7 +72,7 @@ public class CrossEntity2Dto {
     public static int getPlayerForce(StaticCrossGamePlayPlan gamePlayPlan, int serverId, int camp, long lordId) {
         int groupId = gamePlayPlan.getGroup();
         StaticCrossGroup staticCrossGroup = StaticNewCrossDataMgr.getStaticCrossGroup(groupId);
-        if (Objects.isNull(staticCrossGroup)){
+        if (Objects.isNull(staticCrossGroup)) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
                     String.format("serverId: %d, camp: %d, lordId: %d", serverId, camp, lordId));
         }
@@ -231,7 +232,7 @@ public class CrossEntity2Dto {
                 wallNpc = ks.getValue();
                 StaticWallHeroLv staticSuperEquipLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                         wallNpc.getLevel());
-                int maxArmy = staticSuperEquipLv.getAttr().get(Constant.AttrId.LEAD);
+                int maxArmy = staticSuperEquipLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (wallNpc.getCount() < maxArmy) {
                     continue;
                 }
@@ -294,7 +295,8 @@ public class CrossEntity2Dto {
             CrossWorldMap cMap = DataResource.getBean(CrossWorldMapService.class).checkCrossWorldMap(player, CrossWorldMapConstant.CROSS_MAP_ID);
             Map<Integer, Integer> cityBuff = cMap.getCityBuff(player);
             addRatio4 = !CheckNull.isEmpty(cityBuff) ? cityBuff.getOrDefault(StaticWarFire.BUFF_TYPE_5, 0) : 0;
-        } catch (MwException e) {}
+        } catch (MwException e) {
+        }
         crossMarchRatio.setAddRatio4(addRatio4);
 
         //皮肤加成

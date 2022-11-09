@@ -2,8 +2,8 @@ package com.gryphpoem.game.zw.resource.pojo.global;
 
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 
@@ -43,7 +43,7 @@ public class ScheduleBoss {
 
     /**
      * 序列化
-     * 
+     *
      * @return
      */
     public CommonPb.ScheduleBoss ser() {
@@ -60,7 +60,7 @@ public class ScheduleBoss {
 
     /**
      * 反序列化
-     * 
+     *
      * @param boss
      */
     public ScheduleBoss(CommonPb.ScheduleBoss boss) {
@@ -99,7 +99,7 @@ public class ScheduleBoss {
 
     /**
      * 获取boss剩余血量
-     * 
+     *
      * @return
      */
     public int getRemainHp() {

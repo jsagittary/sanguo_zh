@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -12,6 +13,10 @@ import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -21,10 +26,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionTrigger;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
@@ -464,7 +465,7 @@ public class MarchService {
         Fighter attacker = fightService.createFighter(player, army.getHero());
         Fighter defender = fightService.createBanditFighter(banditId);
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
@@ -504,7 +505,7 @@ public class MarchService {
         CommonPb.Record record = fightLogic.generateRecord();
 
         Lord lord = player.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));
@@ -1304,7 +1305,7 @@ public class MarchService {
         Fighter attacker = fightService.createFighter(player, army.getHero());
         Fighter defender = fightService.createBanditFighter(banditId);
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
@@ -1333,7 +1334,7 @@ public class MarchService {
         CommonPb.Record record = fightLogic.generateRecord();
         Lord lord = player.lord;
         // 是否战胜目标
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
@@ -1623,13 +1624,13 @@ public class MarchService {
         Fighter attacker = fightService.createFighterByBattleRole(battleRoles);
         Fighter defender = fightService.createFighter(airShip.getNpc());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         // 需要返回的玩家
         Set<Long> retreatPlayers;
@@ -1839,9 +1840,9 @@ public class MarchService {
                                  int airShipPos, Fighter attacker, Player firstAttackPlayer, List<CommonPb.RptHero> atkHero, Object... param) {
         String win;
         if (atkSuccess) {
-            win = String.valueOf(ArmyConstant.FIGHT_RESULT_SUCCESS);
+            win = String.valueOf(FightConstant.FIGHT_RESULT_SUCCESS);
         } else {
-            win = String.valueOf(ArmyConstant.FIGHT_RESULT_FAIL);
+            win = String.valueOf(FightConstant.FIGHT_RESULT_FAIL);
         }
         battleRoles.stream().map(rb -> rb.getRoleId()).distinct().map(rId -> playerDataManager.getPlayer(rId))
                 .filter(p -> p != null)

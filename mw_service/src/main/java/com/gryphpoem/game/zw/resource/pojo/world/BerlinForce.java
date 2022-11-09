@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.resource.pojo.world;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.pojo.p.AttrData;
+import com.gryphpoem.game.zw.pojo.p.Force;
 
 /**
  * @author: ZhouJie
@@ -18,7 +18,7 @@ public class BerlinForce extends Force {
     private int immediatelyTime;    // 立即出击时间
 
     public BerlinForce(AttrData attrData, int type, int count, int lead, int heroId, int atkOrDef, int addMode,
-            long addTime, int camp, long roleId, int intensifyLv, int effect, int immediatelyTime) {
+                       long addTime, int camp, long roleId, int intensifyLv, int effect, int immediatelyTime) {
         super(attrData, type, count, lead, heroId, roleId);
         super.camp = camp;
         super.intensifyLv = intensifyLv;
@@ -65,7 +65,8 @@ public class BerlinForce extends Force {
         this.immediatelyTime = immediatelyTime;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "BerlinForce{" + "id=" + id + ", hp=" + hp + ", maxHp=" + maxHp + ", atkOrDef=" + atkOrDef + ", armType="
                 + armType + ", lead=" + lead + ", addMode=" + addMode + ", curLine=" + curLine + ", addTime=" + addTime
                 + ", maxLine=" + maxLine + ", count=" + count + ", killed=" + killed + ", lost=" + lost + ", totalLost="

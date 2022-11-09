@@ -27,18 +27,16 @@ public class FightUtil {
     /**
      * 获取buff作用方, 以及被作用方的buff列表
      *
-     * @param affectedForce
-     * @param buffObjective
+     * @param actionDirection
      * @return
      */
-    public static Map<Integer, LinkedList<IFightBuff>> actingForceBuff(Force affectedForce, FightConstant.BuffObjective buffObjective) {
-        if (CheckNull.isNull(buffObjective))
-            return null;
-        if (CheckNull.isNull(affectedForce) || CheckNull.isEmpty(affectedForce.beActionId))
+    public static Map<Integer, LinkedList<IFightBuff>> actingForceBuff(ActionDirection actionDirection) {
+        if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getDefHeroList()))
             return null;
 
-        Map<Integer, LinkedList<IFightBuff>> actingForce = new HashMap<>(affectedForce.beActionId.size());
-        for (Integer heroId : affectedForce.beActionId) {
+        Force affectedForce = actionDirection.getDef();
+        Map<Integer, LinkedList<IFightBuff>> actingForce = new HashMap<>(actionDirection.getDefHeroList().size());
+        for (Integer heroId : actionDirection.getDefHeroList()) {
             if (heroId == affectedForce.id) {
                 actingForce.put(affectedForce.id, affectedForce.buffList);
                 continue;
@@ -129,7 +127,7 @@ public class FightUtil {
     /**
      * buff效果释放时, 计算敌我双方将领作用方
      *
-     * @param fightBuff
+     * @param fightBuff     buff的释放
      * @param contextHolder
      * @param buffObjective
      * @return
@@ -174,23 +172,23 @@ public class FightUtil {
     }
 
     /**
-     * 回合内的技能的执行者或被执行者
+     * 回合内的buff释放时的执行者或被执行者
      *
      * @param contextHolder
      * @param buffObjective
      * @param performer     是否是执行者
      */
-    public static void actionRoundSet(FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective, boolean performer) {
+    public static void releaseBuffSet(FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective, ActionDirection direction, boolean performer) {
         if (FightConstant.BuffObjective.RELEASE_SKILL.equals(buffObjective)) {
             if (performer) {
-                contextHolder.setCurAtkHeroId(contextHolder.getCurAttacker().id);
+                direction.setCurAtkHeroId(contextHolder.getCurAttacker().id);
             } else {
-                contextHolder.setCurDefHeroId(contextHolder.getCurAttacker().id);
+                direction.setCurDefHeroId(contextHolder.getCurAttacker().id);
             }
             return;
         }
 
-        // 回合内的动作不存在buff的挂载者作用目标类型
+        // buff释放时不存在buff挂载者类型
         Force affectedForce = null;
         Force attacker = contextHolder.getCurAttacker();
         Force defender = contextHolder.getCurDefender();
@@ -205,12 +203,13 @@ public class FightUtil {
         }
 
         // 清除技能主体效果作用方与被作用方
-        contextHolder.clearActionList();
         List<Integer> heroList;
         if (performer) {
-            heroList = contextHolder.getAtkHeroList();
+            direction.setAtk(affectedForce);
+            heroList = direction.getAtkHeroList();
         } else {
-            heroList = contextHolder.getDefHeroList();
+            direction.setDef(affectedForce);
+            heroList = direction.getDefHeroList();
         }
 
         switch (buffObjective) {

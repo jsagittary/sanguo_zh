@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
@@ -10,13 +11,13 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -216,7 +217,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
         CommonPb.ChallengeHero.Builder builder = CommonPb.ChallengeHero.newBuilder();
         builder.setHeroId(hero.getHeroId());
         builder.setLevel(hero.getLevel());
-        builder.setCount(hero.getAttr()[Constant.AttrId.LEAD]);
+        builder.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
         builder.setPos(hero.getPos());
         builder.setGradeKeyId(hero.getGradeKeyId());
         builder.setDecorated(hero.getDecorated());
@@ -277,7 +278,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIdList);
         Fighter defender = fightService.createCombatPlayerFighter(challengingPlayer, challengingPlayer.getAllOnBattleHeros().stream().map(Hero::getHeroId).collect(Collectors.toList()));
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         challengePlayer.incChallengeForPlayerNum();
 

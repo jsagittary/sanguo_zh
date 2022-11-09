@@ -38,16 +38,15 @@ public class BattleLogic {
      * @param buffs          buff挂载者的buff列表
      * @param staticBuff     当前buff的配置
      * @param removeBuffList 即将移除buff的列表
-     * @param actingForce    buff挂载者
-     * @param heroId         buff挂载者武将id
      * @param contextHolder  战斗上下文
      * @return
      */
     public IFightBuff releaseBuff(LinkedList<IFightBuff> buffs, StaticBuff staticBuff,
-                                  List<IFightBuff> removeBuffList, Force actingForce, int heroId,
-                                  FightContextHolder contextHolder, List<Integer> buffConfig, Force buffGiver, Object... params) {
+                                  List<IFightBuff> removeBuffList, ActionDirection actionDirection,
+                                  FightContextHolder contextHolder, List<Integer> buffConfig, Object... params) {
         boolean removed;
         boolean addBuff = true;
+        Force actingForce = actionDirection.getDef();
         if (!CheckNull.isEmpty(buffs)) {
             for (IFightBuff fightBuff : buffs) {
                 if (CheckNull.isNull(fightBuff)) continue;
@@ -83,7 +82,7 @@ public class BattleLogic {
                             if (!CheckNull.isEmpty(staticBuff.getEffects())) {
                                 removed = false;
                                 IFightBuff removedBuff;
-                                FightBuffEffect fightBuffEffect = actingForce.getFightEffectMap(heroId);
+                                FightBuffEffect fightBuffEffect = actingForce.getFightEffectMap(actionDirection.getCurDefHeroId());
                                 for (List<Integer> effectConfig : staticBuff.getEffects()) {
                                     if (CheckNull.isEmpty(effectConfig))
                                         continue;
@@ -111,8 +110,8 @@ public class BattleLogic {
 
         IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
         fightBuff.setForce(actingForce);
-        fightBuff.setBuffGiver(contextHolder.getAttacker());
-        fightBuff.setForceId(heroId);
+        fightBuff.setBuffGiver(actionDirection.getAtk());
+        fightBuff.setForceId(actionDirection.getCurAtkHeroId());
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_EXISTS);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BUFF_GROUP_EXISTS);
@@ -136,7 +135,8 @@ public class BattleLogic {
      * @param fe
      * @param contextHolder
      */
-    public void releaseSkill(Force atk, FightEntity fe, int atkHeroId, FightContextHolder contextHolder) {
+    public void releaseSkill(Force atk, Force def, FightEntity fe, int atkHeroId, FightContextHolder contextHolder) {
+        contextHolder.resetActionDirection(atk, def, atkHeroId, 0);
         // 能量恢复, 在释放技能前
         int lowerEnergy = atk.calLowerEnergyCharging(atkHeroId);
         int upperEnergy = atk.calUpperEnergyCharging(atkHeroId);
@@ -169,7 +169,7 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
         // TODO 扣血
         hurt(actionDirection, contextHolder,
-                FightCalc.calSkillAttack(actionDirection.getAtk(), actionDirection.getDef(), effectConfig, actionDirection.getCurDefHeroId(), battleType));
+                FightCalc.calSkillAttack(actionDirection, effectConfig, actionDirection.getCurDefHeroId(), battleType));
 
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
     }
@@ -194,7 +194,7 @@ public class BattleLogic {
         }
 
         // 计算普攻伤害
-        hurt(contextHolder.getActionDirection(), contextHolder, FightCalc.calAttack(atk, def, battleType));
+        hurt(contextHolder.getActionDirection(), contextHolder, FightCalc.calAttack(contextHolder.getActionDirection(), battleType));
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_ATTACKED);
     }
@@ -210,7 +210,7 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_ATTACKED);
         // 计算普攻伤害
-        hurt(actionDirection, contextHolder, FightCalc.calAttack(actionDirection.getAtk(), actionDirection.getDef(), battleType));
+        hurt(actionDirection, contextHolder, FightCalc.calAttack(actionDirection, battleType));
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_ATTACKED);
     }

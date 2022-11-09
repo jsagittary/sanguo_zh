@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.session;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.cross.constants.PlayerUploadTypeDefine;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
@@ -18,6 +19,9 @@ import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.AttrData;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.quartz.jobs.SeasonTalentJob;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -29,9 +33,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalent;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalentPlan;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.season.GlobalSeasonData;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
@@ -630,38 +631,38 @@ public class SeasonTalentService {
         }
 
         switch (list.get(0)) {
-            case Constant.AttrId.ATK_MUT:
+            case FightCommonConstant.AttrId.ATK_MUT:
                 if (attrData.attack == 0) {
                     return;
                 }
 
-                attrData.addValue(Constant.AttrId.ATTACK, (int) (attrData.attack * (1 + (list.get(2) / Constant.TEN_THROUSAND))));
+                attrData.addValue(FightCommonConstant.AttrId.ATTACK, (int) (attrData.attack * (1 + (list.get(2) / Constant.TEN_THROUSAND))));
                 break;
-            case Constant.AttrId.ATTACK:
+            case FightCommonConstant.AttrId.ATTACK:
                 if (attrData.attack == 0) {
                     return;
                 }
                 switch (list.get(1)) {
                     case SeasonConst.PERCENTAGE:
-                        attrData.addValue(Constant.AttrId.ATTACK, (int) (attrData.attack * (1 + (list.get(2) / Constant.TEN_THROUSAND))));
+                        attrData.addValue(FightCommonConstant.AttrId.ATTACK, (int) (attrData.attack * (1 + (list.get(2) / Constant.TEN_THROUSAND))));
                         break;
                     case SeasonConst.FIXED_VALUE:
-                        attrData.addValue(Constant.AttrId.ATTACK, list.get(2));
+                        attrData.addValue(FightCommonConstant.AttrId.ATTACK, list.get(2));
                         break;
                     default:
                         break;
                 }
                 break;
-            case Constant.AttrId.DEFEND:
+            case FightCommonConstant.AttrId.DEFEND:
                 if (attrData.defend == 0) {
                     return;
                 }
                 switch (list.get(1)) {
                     case SeasonConst.PERCENTAGE:
-                        attrData.addValue(Constant.AttrId.DEFEND, (int) (attrData.defend * (1 + (list.get(2) / Constant.TEN_THROUSAND))));
+                        attrData.addValue(FightCommonConstant.AttrId.DEFEND, (int) (attrData.defend * (1 + (list.get(2) / Constant.TEN_THROUSAND))));
                         break;
                     case SeasonConst.FIXED_VALUE:
-                        attrData.addValue(Constant.AttrId.DEFEND, list.get(2));
+                        attrData.addValue(FightCommonConstant.AttrId.DEFEND, list.get(2));
                         break;
                     default:
                         break;
@@ -686,9 +687,9 @@ public class SeasonTalentService {
 
         CommonPb.TwoInt twoInt = null;
 //        switch (list.get(0)) {
-//            case Constant.AttrId.ATTACK:
-//            case Constant.AttrId.DEFEND:
-//            case Constant.AttrId.LEAD:
+//            case FightCommonConstant.AttrId.ATTACK:
+//            case FightCommonConstant.AttrId.DEFEND:
+//            case FightCommonConstant.AttrId.LEAD:
 
         switch (list.get(1)) {
             case SeasonConst.PERCENTAGE:

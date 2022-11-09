@@ -11,9 +11,9 @@ import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.s.StaticFightManager;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.BattleLogic;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.skill.abs.AbstractHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -85,25 +85,11 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> list : s_skill.getSkillEffect()) {
             if (CheckNull.isEmpty(list)) continue;
-            FightConstant.BuffObjective atkObj = FightConstant.BuffObjective.convertTo(list.get(0));
-            FightConstant.BuffObjective defObj = FightConstant.BuffObjective.convertTo(list.get(1));
-            if (CheckNull.isNull(atkObj) || CheckNull.isNull(defObj)) continue;
-            FightUtil.actionRoundSet(contextHolder, atkObj, true);
-            FightUtil.actionRoundSet(contextHolder, defObj, false);
-            if (CheckNull.isEmpty(contextHolder.getAtkHeroList()) || CheckNull.isEmpty(contextHolder.getDefHeroList()))
-                continue;
-
-            for (Integer atkHero : contextHolder.getAtkHeroList()) {
-                contextHolder.setCurAtkHeroId(atkHero.intValue());
-                for (Integer defHero : contextHolder.getDefHeroList()) {
-                    contextHolder.setCurDefHeroId(defHero.intValue());
-                    IFightEffect fightEffect = fightManager.getSkillEffect(list.get(2));
-                    if (CheckNull.isNull(fightEffect)) continue;
-                    StaticEffectRule rule = StaticFightManager.getStaticEffectRule(list.get(2));
-                    if (CheckNull.isNull(rule)) continue;
-                    fightEffect.effectiveness(null, contextHolder, list, rule);
-                }
-            }
+            IFightEffect fightEffect = fightManager.getSkillEffect(list.get(2));
+            if (CheckNull.isNull(fightEffect)) continue;
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(list.get(2));
+            if (CheckNull.isNull(rule)) continue;
+            fightEffect.effectiveness(null, contextHolder, list, rule);
         }
     }
 
@@ -117,9 +103,13 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
 
         // 添加技能的buff
         if (!CheckNull.isEmpty(s_skill.getBuff())) {
+            ActionDirection actionDirection = new ActionDirection();
+            // 设置当前释放技能武将
+            actionDirection.setAtk(contextHolder.getCurAttacker());
+            actionDirection.setCurAtkHeroId(contextHolder.getCurAtkHeroId());
             LinkedList<IFightBuff> removeBuffList = new LinkedList<>();
-            StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
+            StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
 
             // 释放buff
             for (List<Integer> buffConfig : s_skill.getBuff()) {
@@ -133,17 +123,18 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 if (CheckNull.isNull(staticBuff))
                     continue;
 
-                Force actingForce = FightUtil.actingForce(contextHolder.getAttacker(), contextHolder.getDefender(), buffObjective, true);
-                Map<Integer, LinkedList<IFightBuff>> buffMap = FightUtil.actingForceBuff(actingForce, buffObjective);
+                actionDirection.clearDef();
+                FightUtil.releaseBuffSet(contextHolder, buffObjective, actionDirection, false);
+                Map<Integer, LinkedList<IFightBuff>> buffMap = FightUtil.actingForceBuff(actionDirection);
                 if (CheckNull.isNull(buffMap)) {
                     continue;
                 }
 
                 for (Map.Entry<Integer, LinkedList<IFightBuff>> buffsEntry : buffMap.entrySet()) {
                     LinkedList<IFightBuff> buffs = buffsEntry.getValue();
+                    actionDirection.setCurDefHeroId(buffsEntry.getKey());
                     // 释放buff
-                    battleLogic.releaseBuff(buffs, staticBuff, removeBuffList,
-                            actingForce, buffsEntry.getKey(), contextHolder, buffConfig);
+                    battleLogic.releaseBuff(buffs, staticBuff, removeBuffList, actionDirection, contextHolder, buffConfig);
                 }
             }
         }

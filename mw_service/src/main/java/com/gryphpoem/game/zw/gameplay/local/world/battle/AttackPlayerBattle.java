@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.gameplay.local.world.battle;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -17,6 +18,8 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
@@ -24,8 +27,6 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
@@ -79,14 +80,14 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         Fighter defender = fightService.createCampBattleDefencer(battle, null);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();// 战斗逻辑处理方法
+        fightLogic.start();// 战斗逻辑处理方法
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 结果处理
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 损兵处理

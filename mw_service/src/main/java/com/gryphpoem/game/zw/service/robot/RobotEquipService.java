@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.robot;
 
 import com.google.common.collect.Lists;
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
@@ -526,7 +527,7 @@ public class RobotEquipService {
         StaticEquipQualityExtra extra = StaticPropDataMgr.getQualityMap().get(se.getWashQuality());
         for (int i = 0; i < extra.getExtraNum(); i++) {
             Integer attrId = RandomUtil.getRandomByWeight(EquipConstant.EQUIP_SKILL_PROBABILITY);
-            equip.getAttrAndLv().get(i).setA(null == attrId ? Constant.AttrId.ATTACK : attrId);
+            equip.getAttrAndLv().get(i).setA(null == attrId ? FightCommonConstant.AttrId.ATTACK : attrId);
         }
 
         // 获取最小等级

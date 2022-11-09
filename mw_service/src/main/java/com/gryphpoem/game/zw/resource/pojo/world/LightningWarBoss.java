@@ -1,7 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo.world;
 
 import com.gryphpoem.game.zw.pb.SerializePb;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 /**
@@ -69,6 +69,7 @@ public class LightningWarBoss {
 
     /**
      * Fighter对象是否初始化,血量是否为零
+     *
      * @return
      */
     public boolean isNotInitOrDead() {
@@ -77,6 +78,7 @@ public class LightningWarBoss {
 
     /**
      * 当前血量
+     *
      * @return
      */
     public int currentHp() {

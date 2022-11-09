@@ -4,7 +4,6 @@ import com.gryphpoem.game.zw.buff.abs.buff.AbsPassiveBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +23,7 @@ public class PassiveBuffImpl extends AbsPassiveBuff {
     }
 
     @Override
-    public void releaseEffect(Force actingForce, FightContextHolder contextHolder, int timing, Object... params) {
+    public void releaseEffect(FightContextHolder contextHolder, int timing, Object... params) {
         if (timing != -1)
             return;
 

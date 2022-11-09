@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
@@ -14,6 +15,8 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -22,8 +25,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.FightService;
@@ -100,7 +101,7 @@ public class AttackBanditArmy extends BaseArmy {
         Fighter attacker = fightService.createFighter(armyPlayer, army.getHero());
         Fighter defender = fightService.createBanditFighter(banditId);
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
@@ -151,7 +152,7 @@ public class AttackBanditArmy extends BaseArmy {
         CommonPb.Record record = fightLogic.generateRecord();
 
         Lord lord = armyPlayer.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));

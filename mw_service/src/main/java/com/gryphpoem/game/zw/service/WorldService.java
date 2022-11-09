@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -35,9 +37,11 @@ import com.gryphpoem.game.zw.pb.GamePb4.GetAreaCentreCityRs;
 import com.gryphpoem.game.zw.pb.GamePb4.GetBattleByIdRq;
 import com.gryphpoem.game.zw.pb.GamePb4.GetBattleByIdRs;
 import com.gryphpoem.game.zw.pb.GamePb4.GetNightRaidInfoRs;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
-import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -52,9 +56,6 @@ import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
@@ -2177,7 +2178,7 @@ public class WorldService {
                     wallNpc = ks.getValue();
                     StaticWallHeroLv staticSuperEquipLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                             wallNpc.getLevel());
-                    int maxArmy = staticSuperEquipLv.getAttr().get(AttrId.LEAD);
+                    int maxArmy = staticSuperEquipLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                     if (wallNpc.getCount() < maxArmy) {
                         continue;
                     }
@@ -3719,7 +3720,7 @@ public class WorldService {
         Fighter attacker = fightService.createFighter(atkplayer, army.getHero());
         Fighter defender = fightService.createFighter(defPlayer, guard.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
@@ -3765,7 +3766,7 @@ public class WorldService {
         // 战斗记录
         Lord atkLord = atkplayer.lord;
         Lord defLord = defPlayer.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         CommonPb.Record record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();

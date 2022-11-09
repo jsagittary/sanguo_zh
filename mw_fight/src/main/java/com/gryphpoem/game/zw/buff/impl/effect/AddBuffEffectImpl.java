@@ -72,7 +72,7 @@ public class AddBuffEffectImpl extends AbsFightEffect {
         List<IFightBuff> removedList = new ArrayList<>();
         for (Integer heroId : actionDirection.getDefHeroList()) {
             // 释放buff
-            battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, executor, heroId, contextHolder, null, fightBuff.getBuffGiver());
+            battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, actionDirection, contextHolder, null, fightBuff.getBuffGiver());
         }
     }
 

@@ -18,7 +18,8 @@ public class FightAssistantHero {
     /**
      * 兵种类型
      */
-    public int armType;
+    private int armType;
+    private int intensifyLv; // 兵种强化等级
     private AttrData attrData;
     private List<SimpleHeroSkill> skillList;
     private LinkedList<IFightBuff> buffList = new LinkedList<>();

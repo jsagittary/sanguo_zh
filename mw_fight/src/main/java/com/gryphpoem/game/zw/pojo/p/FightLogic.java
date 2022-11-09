@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class FightLogic {
     public FightContextHolder contextHolder;
 
+    public long fightId;
     // 战斗类型
     private int battleType;
 
@@ -240,18 +242,43 @@ public class FightLogic {
                 break;
             }
 
+            // 结算buff
+            settlementBuff(force);
+            settlementBuff(target);
+
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
                 // 释放技能
-                contextHolder.getBattleLogic().releaseSkill(atk, fe, fe.getHeroId(), contextHolder);
+                contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
                 // 普攻
                 contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, this.battleType, contextHolder);
             }
 
             // 修正士气
             contextHolder.getBattleLogic().roundMoraleDeduction(force, target);
+        }
+    }
+
+    /**
+     * 计算buff
+     *
+     * @param force
+     */
+    private void settlementBuff(Force force) {
+        if (!CheckNull.isEmpty(force.buffList)) {
+            Iterator<IFightBuff> it = force.buffList.iterator();
+            while (it.hasNext()) {
+                IFightBuff fightBuff = it.next();
+                if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
+                    fightBuff.buffLoseEffectiveness(contextHolder);
+                    it.remove();
+                    continue;
+                }
+                fightBuff.deductBuffRounds();
+                fightBuff.releaseEffect(contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
+            }
         }
     }
 
@@ -322,4 +349,33 @@ public class FightLogic {
         return winState;
     }
 
+    public CommonPb.Record generateRecord() {
+        return null;
+    }
+
+    public CommonPb.Record.Builder getRecordBuild() {
+        return null;
+    }
+
+    public int getBattleType() {
+        return battleType;
+    }
+
+    public Fighter getAttacker() {
+        return contextHolder.getAtkFighter();
+    }
+
+    public Fighter getDefender() {
+        return contextHolder.getDefFighter();
+    }
+
+    public int getAttrChangeState() {
+        return 0;
+    }
+
+    public void setCareDodge(boolean careDodge) {
+    }
+
+    public void setCareCrit(boolean careCrit) {
+    }
 }

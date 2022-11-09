@@ -119,12 +119,11 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
     /**
      * buff的效果添加
      *
-     * @param actingForce   攻击者
      * @param contextHolder
      * @param params
      * @return
      */
-    void releaseEffect(Force actingForce, FightContextHolder contextHolder, int timing, Object... params);
+    void releaseEffect(FightContextHolder contextHolder, int timing, Object... params);
 
     /**
      * buff失效, 效果还原

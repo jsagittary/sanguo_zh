@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.cross.gameplay.battle.c2g.dto.HeroFightSummary;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
@@ -19,8 +21,8 @@ import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.SyncRoleMoveRs;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.constant.*;
-import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -31,7 +33,6 @@ import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
-import com.gryphpoem.game.zw.resource.pojo.fight.*;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
@@ -223,13 +224,13 @@ public class WarService {
         LogUtil.debug("defender=" + defender + ",attacker=" + attacker);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 兵力恢复
@@ -456,9 +457,9 @@ public class WarService {
         Fighter defender = fightService.createCampBattleDefencer(battle, null);// 防守方
         FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();// 战斗逻辑处理方法
+        fightLogic.start();// 战斗逻辑处理方法
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         // ----------------------------- 兵力处理 -----------------------------
         // 兵力恢复
@@ -677,7 +678,7 @@ public class WarService {
         LogUtil.debug("atkCity=" + atkCity + ",attacker=" + attacker);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();// 战斗逻辑处理方法
+        fightLogic.start();// 战斗逻辑处理方法
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
@@ -690,7 +691,7 @@ public class WarService {
             medalDataManager.militaryMeritIsProminent(attacker, defender, exploitAwardMap);
         }
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         // 兵力恢复
         Map<Long, List<Award>> recoverArmyAwardMap = new HashMap<>();
@@ -1728,7 +1729,7 @@ public class WarService {
                 wallNpc = ks.getValue();
                 StaticWallHeroLv staticSuperEquipLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                         wallNpc.getLevel());
-                int maxArmy = staticSuperEquipLv.getAttr().get(AttrId.LEAD);
+                int maxArmy = staticSuperEquipLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (wallNpc.getCount() < maxArmy) {
                     continue;
                 }
@@ -2755,13 +2756,13 @@ public class WarService {
         Fighter attacker = fightService.createCombatPlayerFighter(mPlayer, heroIds);
         Fighter defender = fightService.createCombatPlayerFighter(tPlayer, tPlayer.getAllOnBattleHeros().stream().map(Hero::getHeroId).collect(Collectors.toList()));
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
         GamePb4.CompareNotesRs.Builder builder = GamePb4.CompareNotesRs.newBuilder();
         // 战斗记录
         CommonPb.Record record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
-        rpt.setResult(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
+        rpt.setResult(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
         rpt.setRecord(record);
         // 双方的玩家信息
         rpt.setAttack(PbHelper.createRptMan(mPlayer.lord.getPos(), mPlayer.lord.getNick(), mPlayer.lord.getVip(),

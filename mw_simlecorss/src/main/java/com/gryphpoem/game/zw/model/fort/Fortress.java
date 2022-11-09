@@ -1,24 +1,24 @@
 package com.gryphpoem.game.zw.model.fort;
 
+import com.gryphpoem.game.zw.dataMgr.StaticCrossDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.SerializePb.DbFortress;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCrossFort;
+import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gryphpoem.game.zw.dataMgr.StaticCrossDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.SerializePb.DbFortress;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCrossFort;
-import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-
 /**
+ * @author QiuKun
  * @ClassName Fortress.java
  * @Description 堡垒信息
- * @author QiuKun
  * @date 2019年5月14日
  */
 public class Fortress {
@@ -26,15 +26,25 @@ public class Fortress {
     private int id;
     // 堡垒的类型
     private int type;
-    /** 攻击方兵力 */
+    /**
+     * 攻击方兵力
+     */
     private int atkCnt;
-    /** 防守方兵力 */
+    /**
+     * 防守方兵力
+     */
     private int defCnt;
-    /** 所属阵的营 */
+    /**
+     * 所属阵的营
+     */
     private int camp;
-    /** npc队列,npc都属于防守方的 */
+    /**
+     * npc队列,npc都属于防守方的
+     */
     private final NpcFortForce<NpcForce> npcQueue = new NpcFortForce<>();
-    /** 玩家队列 */
+    /**
+     * 玩家队列
+     */
     private final LinkedList<RoleForce> roleQueue = new LinkedList<>();
 
     public static Fortress createFortressByCfg(StaticCrossFort cfg) {
@@ -78,7 +88,7 @@ public class Fortress {
 
     /**
      * 是否是相邻
-     * 
+     *
      * @param fortId
      * @return
      */
@@ -89,7 +99,7 @@ public class Fortress {
 
     /**
      * 是否可以发起单挑
-     * 
+     *
      * @param camp
      * @return true 可以发起单挑
      */
@@ -112,7 +122,7 @@ public class Fortress {
     public void reCalcCnt() {
         int tmpAtkCnt = 0;
         int tmpDefCnt = 0;
-        for (Iterator<NpcForce> it = npcQueue.iterator(); it.hasNext();) {
+        for (Iterator<NpcForce> it = npcQueue.iterator(); it.hasNext(); ) {
             NpcForce f = it.next();
             if (f.getHp() <= 0) {
                 it.remove();
@@ -121,7 +131,7 @@ public class Fortress {
             tmpDefCnt += f.getHp();
         }
 
-        for (Iterator<RoleForce> it = roleQueue.iterator(); it.hasNext();) {
+        for (Iterator<RoleForce> it = roleQueue.iterator(); it.hasNext(); ) {
             RoleForce f = it.next();
             if (!f.isLive()) {
                 it.remove();
@@ -139,7 +149,7 @@ public class Fortress {
 
     /**
      * 只能用于加入
-     * 
+     *
      * @param force
      */
     public void joinRoleForce(RoleForce force) {
@@ -152,7 +162,7 @@ public class Fortress {
 
     /**
      * 查找RoleForce
-     * 
+     *
      * @param lordId
      * @param heroId
      * @return
@@ -165,13 +175,13 @@ public class Fortress {
 
     /**
      * 只能用于移除
-     * 
+     *
      * @param lordId
      * @param heroId
      * @return
      */
     public RoleForce removeRoleForce(long lordId, int heroId) {
-        for (Iterator<RoleForce> it = roleQueue.iterator(); it.hasNext();) {
+        for (Iterator<RoleForce> it = roleQueue.iterator(); it.hasNext(); ) {
             RoleForce f = it.next();
             if (f.getCrossHero().getLordId() == lordId && f.getCrossHero().getHeroId() == heroId) {
                 it.remove();
@@ -273,7 +283,7 @@ public class Fortress {
 
     /**
      * 交换阵营
-     * 
+     *
      * @param camp
      */
     public void changeCamp(int camp) {

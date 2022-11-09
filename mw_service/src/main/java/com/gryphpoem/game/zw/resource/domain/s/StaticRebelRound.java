@@ -1,9 +1,9 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
-import java.util.List;
-
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.resource.constant.Constant;
+
+import java.util.List;
 
 /**
  * @author QiuKun
@@ -103,7 +103,7 @@ public class StaticRebelRound {
 
     /**
      * 获取兵力
-      *
+     *
      * @return
      */
     public int getArmCnt() {
@@ -111,7 +111,7 @@ public class StaticRebelRound {
         for (int id : from) {
             StaticNpc sNpc = StaticNpcDataMgr.getNpcMap().get(id);
             if (sNpc != null) {
-                Integer arm = sNpc.getAttr().get(Constant.AttrId.LEAD);
+                Integer arm = sNpc.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (arm != null) {
                     cnt += arm.intValue();
                 }

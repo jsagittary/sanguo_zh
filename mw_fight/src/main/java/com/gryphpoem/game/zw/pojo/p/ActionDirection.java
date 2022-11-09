@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.push.util.CheckNull;
 import lombok.Data;
 
 import java.util.List;
@@ -53,7 +54,16 @@ public class ActionDirection {
         this.def = null;
         this.curAtkHeroId = 0;
         this.curDefHeroId = 0;
-        this.atkHeroList.clear();
-        this.defHeroList.clear();
+        if (!CheckNull.isEmpty(this.atkHeroList))
+            this.atkHeroList.clear();
+        if (!CheckNull.isEmpty(this.defHeroList))
+            this.defHeroList.clear();
+    }
+
+    public void clearDef() {
+        this.def = null;
+        this.curDefHeroId = 0;
+        if (!CheckNull.isEmpty(this.defHeroList))
+            this.defHeroList.clear();
     }
 }

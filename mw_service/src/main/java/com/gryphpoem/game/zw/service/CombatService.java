@@ -11,6 +11,8 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncHeroEquipRs;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.constant.Constant.CombatType;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -24,8 +26,6 @@ import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -301,7 +301,7 @@ public class CombatService {
             fightLogic.setCareCrit(false);
             fightLogic.setCareDodge(false);
         }
-        fightLogic.fight();
+        fightLogic.start();
 
         if (combat == null) {
             combat = new Combat(combatId, 0);
@@ -810,7 +810,7 @@ public class CombatService {
             fightLogic.setCareCrit(false);
             fightLogic.setCareDodge(false);
         }
-        fightLogic.fight();
+        fightLogic.start();
 
         DoCombatRs.Builder builder = DoCombatRs.newBuilder();
         builder.setResult(fightLogic.getWinState());
@@ -928,7 +928,7 @@ public class CombatService {
         Fighter defender = fightService.createNpcFighter(staticCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
 
-        fightLogic.fight();
+        fightLogic.start();
 
         DoCombatRs.Builder builder = DoCombatRs.newBuilder();
         builder.setResult(fightLogic.getWinState());
@@ -1547,7 +1547,7 @@ public class CombatService {
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
         Fighter defender = fightService.createNpcFighter(sCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
         if (fightLogic.getWinState() == 1) { // 胜利
             // 更新战火试炼进度
             activityDataManager.updActivity(player, ActivityConst.ACT_WAR_ROAD, 1, 0, true);
@@ -1803,7 +1803,7 @@ public class CombatService {
             Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
             Fighter defender = fightService.createNpcFighter(sPitchCombat.getForm());
             FightLogic fightLogic = new FightLogic(attacker, defender, true);
-            fightLogic.fight();
+            fightLogic.start();
             if (fightLogic.getWinState() == 1) { // 胜利
                 boolean isFirst = combatId > pitchCombat.getHighestCombatId(); // 首次奖励
                 pitchCombat.updateCombatId(combatId); // 进度更新

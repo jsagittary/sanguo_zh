@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
@@ -8,6 +9,7 @@ import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
@@ -19,8 +21,6 @@ import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.*;
-import com.gryphpoem.game.zw.resource.pojo.fight.skill.FightSkillAction;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
@@ -30,7 +30,6 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -1024,16 +1023,16 @@ public class FightService {
         AttrData attrData = new AttrData(attr);
         int crossCityNpcChgAttrCnt = globalDataManager.getGameGlobal().getCrossCityNpcChgAttrCnt();
         // npc 新属性 = 原属性 * （1 + 调整次数*调整系数（万分比））
-        if (crossCityNpcChgAttrCnt > 0 && attr.containsKey(Constant.AttrId.ATTACK)) {
-            int attack = Optional.ofNullable(attr.get(Constant.AttrId.ATTACK)).orElse(0);
+        if (crossCityNpcChgAttrCnt > 0 && attr.containsKey(FightCommonConstant.AttrId.ATTACK)) {
+            int attack = Optional.ofNullable(attr.get(FightCommonConstant.AttrId.ATTACK)).orElse(0);
             int add = (int) (attack * crossCityNpcChgAttrCnt * (WorldConstant.WORLD_WAR_CITY_EFFECT / Constant.TEN_THROUSAND));
-            attrData.addValue(Constant.AttrId.ATTACK, add);
+            attrData.addValue(FightCommonConstant.AttrId.ATTACK, add);
             LogUtil.common("调整世界争霸city npc 攻击属性 npcId: ", npcId, " cur_attack: ", attack, " add_attack: ", add);
         }
-        if (crossCityNpcChgAttrCnt > 0 && attr.containsKey(Constant.AttrId.ATTACK_EXT)) {
-            int attackExt = Optional.ofNullable(attr.get(Constant.AttrId.ATTACK_EXT)).orElse(0);
+        if (crossCityNpcChgAttrCnt > 0 && attr.containsKey(FightCommonConstant.AttrId.ATTACK_EXT)) {
+            int attackExt = Optional.ofNullable(attr.get(FightCommonConstant.AttrId.ATTACK_EXT)).orElse(0);
             int add = (int) (attackExt * crossCityNpcChgAttrCnt * (WorldConstant.WORLD_WAR_CITY_EFFECT / Constant.TEN_THROUSAND));
-            attrData.addValue(Constant.AttrId.ATTACK_EXT, add);
+            attrData.addValue(FightCommonConstant.AttrId.ATTACK_EXT, add);
             LogUtil.common("调整世界争霸city npc 穿甲属性 npcId: ", npcId, " cur_attackExt: ", attackExt, " add_attackExt: ", add);
         }
         return new Force(attrData, npc.getArmType(), count, attrData.lead, npcId, attrData.lead, npc.getLine());
@@ -1223,32 +1222,32 @@ public class FightService {
                         LogUtil.error("战机专业技能配置错误, roleId:", player.roleId, ", planeType", planeType, ", fightSkill:",
                                 sMentorSkill.getSkill());
                     } else {
-                        StaticFightSkill sFightSkill = StaticFightDataMgr
-                                .getFightSkillMapById(sMentorSkill.getSkill().getOrDefault(quality, 0));
-                        int battlePos = warPlane.getBattlePos(); // 战机在将领上的上阵位置
-                        List<FightSkill> skills = force.fightSkill.get(battlePos);
-                        if (CheckNull.isNull(skills)) {
-                            skills = new ArrayList<>();
-                            force.fightSkill.put(battlePos, skills);
-                        }
-                        if (!CheckNull.isNull(sFightSkill)) {
-                            PlaneFightSkill fightSkill = new PlaneFightSkill(sFightSkill);
-                            fightSkill.setPlaneId(planeId); // 记录战机id
-                            if (!CheckNull.isEmpty(sFightSkill.getAttackTime())) {
-                                List<Integer> randomByWeight = RandomUtil.getRandomByWeight(sFightSkill.getAttackTime(),
-                                        1, false);
-                                if (!CheckNull.isEmpty(randomByWeight)) { // 计算最大释放次数
-                                    int maxReleaseCnt = randomByWeight.get(0);
-                                    fightSkill.param.put(PlaneConstant.SkillParam.MAX_RELEASE_CNT, maxReleaseCnt);
-                                }
-                            }
-                            skills.add(fightSkill);
-                        }
+//                        StaticFightSkill sFightSkill = StaticFightDataMgr
+//                                .getFightSkillMapById(sMentorSkill.getSkill().getOrDefault(quality, 0));
+//                        int battlePos = warPlane.getBattlePos(); // 战机在将领上的上阵位置
+//                        List<FightSkill> skills = force.fightSkill.get(battlePos);
+//                        if (CheckNull.isNull(skills)) {
+//                            skills = new ArrayList<>();
+//                            force.fightSkill.put(battlePos, skills);
+//                        }
+//                        if (!CheckNull.isNull(sFightSkill)) {
+//                            PlaneFightSkill fightSkill = new PlaneFightSkill(sFightSkill);
+//                            fightSkill.setPlaneId(planeId); // 记录战机id
+//                            if (!CheckNull.isEmpty(sFightSkill.getAttackTime())) {
+//                                List<Integer> randomByWeight = RandomUtil.getRandomByWeight(sFightSkill.getAttackTime(),
+//                                        1, false);
+//                                if (!CheckNull.isEmpty(randomByWeight)) { // 计算最大释放次数
+//                                    int maxReleaseCnt = randomByWeight.get(0);
+//                                    fightSkill.param.put(PlaneConstant.SkillParam.MAX_RELEASE_CNT, maxReleaseCnt);
+//                                }
+//                            }
+//                            skills.add(fightSkill);
+//                        }
 
                     }
                 }
             }
-            force.planeInfos.put(warPlane.getBattlePos(), info);
+//            force.planeInfos.put(warPlane.getBattlePos(), info);
         }
     }
 
@@ -1333,19 +1332,19 @@ public class FightService {
     private void processFinalAttr(Map<Integer, Integer> attrMap, Map<Integer, Integer> attrMutMap) {
         for (Entry<Integer, Integer> kv : attrMutMap.entrySet()) {
             switch (kv.getKey()) {
-                case Constant.AttrId.ATK_MUT:
-                    Integer v = attrMap.get(Constant.AttrId.ATTACK);
+                case FightCommonConstant.AttrId.ATK_MUT:
+                    Integer v = attrMap.get(FightCommonConstant.AttrId.ATTACK);
                     if (v == null) {
                         continue;
                     }
-                    addAttrValue(attrMap, Constant.AttrId.ATTACK, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
+                    addAttrValue(attrMap, FightCommonConstant.AttrId.ATTACK, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
                     break;
-                case Constant.AttrId.DEF_MUT:
-                    v = attrMap.get(Constant.AttrId.DEFEND);
+                case FightCommonConstant.AttrId.DEF_MUT:
+                    v = attrMap.get(FightCommonConstant.AttrId.DEFEND);
                     if (v == null) {
                         continue;
                     }
-                    addAttrValue(attrMap, Constant.AttrId.DEFEND, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
+                    addAttrValue(attrMap, FightCommonConstant.AttrId.DEFEND, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
                     break;
                 default:
                     break;
@@ -1388,7 +1387,7 @@ public class FightService {
                     // 当前洗炼属性
                     Turple<Integer, Integer> al = attrLvs.get(j);
                     StaticEquipExtra equipExtra = StaticPropDataMgr.getEuqipExtraByIdAndLv(al.getA(), al.getB(), staticEquip.getEquipPart());
-                    if (equipExtra != null && Arrays.binarySearch(Constant.BASE_ATTRS, al.getA()) < 0) {
+                    if (equipExtra != null && Arrays.binarySearch(FightCommonConstant.BASE_ATTRS, al.getA()) < 0) {
                         addAttrValue(attrMap, al.getA(), equipExtra.getAttrValue());
                     }
                 }
@@ -1408,10 +1407,10 @@ public class FightService {
             if (effect != null) {
                 switch (effect.getEffectType()) {
                     case EffectConstant.ATK_MUT:
-                        addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, effect.getEffectVal());
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, effect.getEffectVal());
                         break;
                     case EffectConstant.DEF_MUT:
-                        addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, effect.getEffectVal());
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, effect.getEffectVal());
                         break;
 
                     default:

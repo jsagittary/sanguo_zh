@@ -3,9 +3,10 @@ package com.gryphpoem.game.zw.resource.pojo.world;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCounterAttack;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 
@@ -82,6 +83,7 @@ public class CounterAttack extends CycleData {
 
     /**
      * 根据进攻次数获取当前进攻
+     *
      * @return
      */
     public List<CityHero> getAtkFormList() {
@@ -90,6 +92,7 @@ public class CounterAttack extends CycleData {
 
     /**
      * 根据次数获取NPC阵型
+     *
      * @param cnt
      */
     public void initAtkForm(int cnt) {
@@ -201,6 +204,7 @@ public class CounterAttack extends CycleData {
 
     /**
      * 根据阵营获取被选中的玩家
+     *
      * @param camp
      * @return
      */
@@ -222,6 +226,7 @@ public class CounterAttack extends CycleData {
 
     /**
      * 获取所有被选中的玩家
+     *
      * @return
      */
     public Set<Long> getCampHitRoleId() {
@@ -230,6 +235,7 @@ public class CounterAttack extends CycleData {
 
     /**
      * 序列化
+     *
      * @return
      */
     public SerializePb.SerCounterAttack ser() {
@@ -249,7 +255,7 @@ public class CounterAttack extends CycleData {
         builder.setCurrentBoss(currentBoss);
         builder.setCurrentAtkCnt(currentAtkCnt);
         if (!CheckNull.isNull(getFighter())) {
-            for (com.gryphpoem.game.zw.resource.pojo.fight.Force force : getFighter().getForces()) {
+            for (Force force : getFighter().getForces()) {
                 builder.addForce(
                         CommonPb.Force.newBuilder().setNpcId(force.id).setHp(force.hp).setCurLine(force.curLine));
             }
@@ -272,6 +278,7 @@ public class CounterAttack extends CycleData {
 
     /**
      * 反序列化
+     *
      * @param ser
      */
     public void dser(SerializePb.SerCounterAttack ser) {

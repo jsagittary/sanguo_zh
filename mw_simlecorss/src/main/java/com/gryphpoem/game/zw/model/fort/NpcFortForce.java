@@ -1,13 +1,13 @@
 package com.gryphpoem.game.zw.model.fort;
 
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
+
 import java.util.LinkedList;
 
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
-
 /**
+ * @author QiuKun
  * @ClassName NpcFortForce.java
  * @Description
- * @author QiuKun
  * @date 2019年5月27日
  */
 public class NpcFortForce<E extends NpcForce> extends LinkedList<E> implements FortForce {

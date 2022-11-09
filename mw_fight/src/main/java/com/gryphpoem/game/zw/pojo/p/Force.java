@@ -194,14 +194,14 @@ public class Force {
     public void releaseBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
         if (!CheckNull.isEmpty(this.buffList)) {
             buffList.forEach(fightBuff -> {
-                fightBuff.releaseEffect(this, contextHolder, timing, params);
+                fightBuff.releaseEffect(contextHolder, timing, params);
             });
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
             for (FightAssistantHero assistantHero : this.assistantHeroList) {
                 if (!CheckNull.isEmpty(assistantHero.getBuffList())) {
                     assistantHero.getBuffList().forEach(fightBuff -> {
-                        fightBuff.releaseEffect(this, contextHolder, timing, params);
+                        fightBuff.releaseEffect(contextHolder, timing, params);
                     });
                 }
             }
@@ -220,6 +220,28 @@ public class Force {
         if (CheckNull.isEmpty(this.assistantHeroList)) return null;
         return this.assistantHeroList.stream().filter(ass ->
                 ass.getHeroId() == heroId).map(ass -> ass.getSkillList()).findFirst().orElse(null);
+    }
+
+    public int armyTypeLv(int heroId) {
+        if (this.id == heroId)
+            return this.intensifyLv;
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass ->
+                    ass.getHeroId() == heroId).map(ass -> ass.getIntensifyLv()).findFirst().orElse(0);
+        }
+
+        return 0;
+    }
+
+    public AttrData attrData(int heroId) {
+        if (this.id == heroId)
+            return this.attrData;
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            return this.assistantHeroList.stream().filter(ass ->
+                    ass.getHeroId() == heroId).map(ass -> ass.getAttrData()).findFirst().orElse(null);
+        }
+
+        return null;
     }
 
     /**
@@ -298,24 +320,6 @@ public class Force {
     }
 
     /**
-     * 在真实扣兵计算前，计算损兵后剩余总兵力
-     *
-     * @return
-     */
-    public int getSurplusCount() {
-        return hp - lost;
-    }
-
-    /**
-     * 是否还有可用的技能
-     *
-     * @return true表示有用技能
-     */
-    public boolean hasSkill() {
-        return this.skillId > 0 && !this.useSkill;
-    }
-
-    /**
      * 使用jineng
      */
     public void useSkill() {
@@ -332,26 +336,6 @@ public class Force {
             return curLine + 1;
         }
         return curLine;
-    }
-
-    /**
-     * 获取战机攻击力
-     *
-     * @param battleType
-     * @return
-     */
-    public double getPlaneAtk(int battleType) {
-        return 0d;
-    }
-
-    /**
-     * 获取战机防御力
-     *
-     * @param battleType
-     * @return
-     */
-    public double getPlaneDef(int battleType) {
-        return 0d;
     }
 
     public int calcAttack(int heroId) {

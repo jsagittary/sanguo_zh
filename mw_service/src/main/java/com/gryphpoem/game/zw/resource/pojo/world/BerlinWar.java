@@ -10,14 +10,14 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.IntLong;
 import com.gryphpoem.game.zw.pb.CommonPb.Report;
 import com.gryphpoem.game.zw.pb.SerializePb;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.p.BerlinRecord;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBerlinJob;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBerlinWar;
 import com.gryphpoem.game.zw.resource.pojo.ActRank;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
 

@@ -7,6 +7,8 @@ import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
 import com.gryphpoem.game.zw.pb.SerializePb.*;
+import com.gryphpoem.game.zw.pojo.p.AttrData;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.ChatConst;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GlobalConstant;
@@ -16,9 +18,6 @@ import com.gryphpoem.game.zw.resource.domain.p.RedPacket;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.pojo.chat.ChatDialog;
 import com.gryphpoem.game.zw.resource.pojo.daily.HonorDaily;
-import com.gryphpoem.game.zw.resource.pojo.fight.AttrData;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
 import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
@@ -516,7 +515,7 @@ public class GameGlobal {
             ser.addAllWorldTask(worldTask.getWorldTaskMap().values());
         }
         if (worldTask.getDefender() != null) {
-            for (Force force : worldTask.getDefender().getForces()) {
+            for (com.gryphpoem.game.zw.pojo.p.Force force : worldTask.getDefender().getForces()) {
                 ser.addForce(CommonPb.Force.newBuilder().setNpcId(force.id).setHp(force.hp).setCurLine(force.curLine));
             }
         }
@@ -872,14 +871,14 @@ public class GameGlobal {
         }
         Fighter fighter = new Fighter();
         for (CommonPb.Force pb : npcIdList) {
-            Force force = createBossNpcForce(pb.getNpcId(), pb.getHp());
+            com.gryphpoem.game.zw.pojo.p.Force force = createBossNpcForce(pb.getNpcId(), pb.getHp());
             force.roleType = Constant.Role.CITY;
             fighter.addForce(force);
             LogUtil.debug("反序列化BOSS_NPC :", force);
         }
         fighter.roleType = Constant.Role.BANDIT;
         int allHp = 0; // boss的真实血量
-        for (Force f : fighter.forces) {
+        for (com.gryphpoem.game.zw.pojo.p.Force f : fighter.forces) {
             allHp += f.hp;
         }
         fighter.lost = fighter.total - allHp;// 总损兵
@@ -893,10 +892,10 @@ public class GameGlobal {
      * @param curHp 当前血量
      * @return
      */
-    private Force createBossNpcForce(int npcId, int curHp) {
+    private com.gryphpoem.game.zw.pojo.p.Force createBossNpcForce(int npcId, int curHp) {
         StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
         AttrData attrData = new AttrData(npc.getAttr());
-        Force force = new Force(attrData, npc.getArmType(), npc.getLine(), npcId);
+        com.gryphpoem.game.zw.pojo.p.Force force = new com.gryphpoem.game.zw.pojo.p.Force(attrData, npc.getArmType(), npc.getLine(), npcId);
         force.hp = curHp;
         force.totalLost = force.maxHp - force.hp; // 总损兵
         int tmpTotalLost = force.totalLost;

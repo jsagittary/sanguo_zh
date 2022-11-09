@@ -19,6 +19,8 @@ import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.DbActivity;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7Act;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7ActStatus;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.ActivityAuctionParam;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
@@ -59,8 +61,6 @@ import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.daily.DailyReport;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -2415,7 +2415,7 @@ public class PbHelper {
         builder.setCityId(boss.getId());
         builder.setPos(boss.getPos());
         if (!CheckNull.isNull(boss.getFighter())) {
-            for (com.gryphpoem.game.zw.resource.pojo.fight.Force force : boss.getFighter().getForces()) {
+            for (com.gryphpoem.game.zw.pojo.p.Force force : boss.getFighter().getForces()) {
                 builder.addForce(
                         CommonPb.Force.newBuilder().setNpcId(force.id).setHp(force.hp).setCurLine(force.curLine));
             }

@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -13,6 +14,9 @@ import com.gryphpoem.game.zw.pb.GamePb4.AttackSuperMineRq;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackSuperMineRs;
 import com.gryphpoem.game.zw.pb.GamePb4.GetSuperMineRq;
 import com.gryphpoem.game.zw.pb.GamePb4.GetSuperMineRs;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -22,9 +26,6 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
@@ -910,13 +911,13 @@ public class SuperMineService {
                 Fighter attacker = fightService.createFighter(player, army.getHero());
                 Fighter defender = fightService.createFighterByArmy(allArmy);
                 FightLogic fightLogic = new FightLogic(attacker, defender, true);
-                fightLogic.fight();
+                fightLogic.start();
 
                 //貂蝉任务-杀敌阵亡数量
                 ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
                 ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
-                boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS; // 是否胜利
+                boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS; // 是否胜利
 
                 Map<Long, ChangeInfo> changeMap = new HashMap<>(); // 记录需要推送的值
                 // 损兵处理

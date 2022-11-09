@@ -6,6 +6,7 @@ import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TechDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -14,7 +15,6 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.HeroService;
@@ -25,11 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * @author TanDonghai
  * @ClassName FightSettleLogic.java
  * @Description 战斗结算相关逻辑处理
- * @author TanDonghai
  * @date 创建时间：2017年5月22日 下午5:20:13
- *
  */
 @Component
 public class FightSettleLogic {
@@ -138,10 +137,10 @@ public class FightSettleLogic {
      * 副本将领经验奖励结算逻辑
      *
      * @param player
-     * @param forces 进攻方将领
+     * @param forces       进攻方将领
      * @param staticCombat 副本配置信息
-     * @param wipe 是否是扫荡
-     * @param win 是否胜利
+     * @param wipe         是否是扫荡
+     * @param win          是否胜利
      */
     public List<RptHero> combatFightHeroExpReward(Player player, List<Force> forces, StaticCombat staticCombat,
                                                   boolean wipe, boolean win) {

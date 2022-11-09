@@ -62,6 +62,7 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
             for (Integer atkHeroId : actionDirection.getAtkHeroList()) {
                 actionDirection.setCurAtkHeroId(atkHeroId);
                 for (Integer heroId : actionDirection.getDefHeroList()) {
+                    actionDirection.setCurDefHeroId(heroId);
                     battleLogic.skillAttack(actionDirection, contextHolder, effectConfig_, contextHolder.getBattleType());
                 }
             }

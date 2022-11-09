@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -14,13 +15,13 @@ import com.gryphpoem.game.zw.pb.GamePb4.AttackAirshipRq;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackAirshipRs;
 import com.gryphpoem.game.zw.pb.GamePb4.GetAirshipListRq;
 import com.gryphpoem.game.zw.pb.GamePb4.GetAirshipListRs;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.AbsDailyClear;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -532,7 +533,7 @@ public class AirshipService {
             for (Integer npcId : form) {
                 StaticNpc staticNpc = StaticNpcDataMgr.getNpcMap().get(npcId);
                 if (staticNpc != null) {
-                    int hp = staticNpc.getAttr().getOrDefault(Constant.AttrId.LEAD, 1);
+                    int hp = staticNpc.getAttr().getOrDefault(FightCommonConstant.AttrId.LEAD, 1);
                     NpcForce npcForce = new NpcForce(staticNpc.getNpcId(), hp, 0);
                     aswd.getNpc().add(npcForce);
                 }
