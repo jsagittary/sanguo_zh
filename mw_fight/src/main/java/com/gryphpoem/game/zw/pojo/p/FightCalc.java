@@ -185,7 +185,7 @@ public class FightCalc {
      */
     public static int calSkillAttack(ActionDirection actionDirection, List<Integer> effectConfig, int battleType) {
         LogUtil.fight("******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
-                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行技能伤害攻击结算*******");
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始技能伤害攻击计算*******");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
         // （基础伤害*伤害系数【效果3万分比】*血量衰减+固伤【效果3固定值】）
@@ -209,10 +209,24 @@ public class FightCalc {
 
         double damage = (baseHurt * skillCorrection * finalDamageCorrection * armsRestraintCorrection * skillAttackCriticalDamageCorrection *
                 floatCorrection * finalRestrain);
-        damage = calDamageChange(actionDirection, damage);
-        LogUtil.fight("无敌或护盾效果作用后, 攻击方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 防守方: ",
-                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), ", 技能最终伤害值: ", damage);
-        return (int) damage;
+        double damage_ = calDamageChange(actionDirection, damage);
+
+        LogUtil.fight(
+                "进攻方: ", actionDirection.getAtk().ownerId,
+                "-", actionDirection.getCurAtkHeroId(),
+                ", 对防守方: ", actionDirection.getDef().ownerId,
+                "-", actionDirection.getCurDefHeroId(),
+                " ,战斗回合===》战斗类型: ", battleType,
+                ", 普攻伤害汇总结算, 基础伤害: ", baseHurt,
+                ", 技能修正: ", skillCorrection,
+                ", 重伤修正: ", finalDamageCorrection,
+                ", 兵种克制修正: ", armsRestraintCorrection,
+                ", 技能暴击伤害修正: ", skillAttackCriticalDamageCorrection,
+                "， 浮动修正: ", floatCorrection,
+                ", 克制: ", finalRestrain,
+                ", 无敌或护盾效果作用前, 技能最终伤害值:  ", damage,
+                ", 无敌或护盾效果作用后, 技能最终伤害值:  ", damage_);
+        return (int) damage_;
     }
 
     /**
@@ -223,7 +237,7 @@ public class FightCalc {
      */
     public static int calAttack(ActionDirection actionDirection, int battleType) {
         LogUtil.fight("*******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
-                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行普攻结算******");
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始进行普攻计算******");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
         // 血量衰减
@@ -247,10 +261,24 @@ public class FightCalc {
 
         double damage = (baseHurt * bloodValueAttenuation * generalAttackCorrection * finalDamageCorrection * armsRestraintCorrection *
                 attackCriticalDamageCorrection * floatCorrection * finalRestrain);
-        damage = calDamageChange(actionDirection, damage);
-        LogUtil.fight("无敌或护盾效果作用后, 攻击方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 防守方: ",
-                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), ", 普攻最终伤害值: ", damage);
-        return (int) damage;
+        double damage_ = calDamageChange(actionDirection, damage);
+        LogUtil.fight(
+                "进攻方: ", actionDirection.getAtk().ownerId,
+                "-", actionDirection.getCurAtkHeroId(),
+                ", 对防守方: ", actionDirection.getDef().ownerId,
+                "-", actionDirection.getCurDefHeroId(),
+                ", 战斗回合===》战斗类型: ", battleType,
+                ", 普攻伤害汇总结算, 基础伤害: ", baseHurt,
+                ", 血量衰减: ", bloodValueAttenuation,
+                ", 普攻修正: ", generalAttackCorrection,
+                ", 重伤修正: ", finalDamageCorrection,
+                ", 兵种克制修正: ", armsRestraintCorrection,
+                ", 普攻暴击伤害修正: ", attackCriticalDamageCorrection,
+                "， 浮动修正: ", floatCorrection,
+                ", 克制: ", finalRestrain,
+                ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
+                ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_);
+        return (int) damage_;
     }
 
     /**

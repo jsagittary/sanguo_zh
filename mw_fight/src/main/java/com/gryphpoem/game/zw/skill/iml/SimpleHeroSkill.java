@@ -78,7 +78,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public void releaseSkillEffect(FightContextHolder contextHolder, Object... params) {
         if (CheckNull.isEmpty(s_skill.getSkillEffect())) {
-            LogUtil.fight("进攻方: ", contextHolder.getCurAttacker(), "-", contextHolder.getCurAtkHeroId(), "s_skill: ", s_skill, ", 技能主体效果为空");
+            LogUtil.fight("进攻方: ", contextHolder.getCurAttacker().ownerId, "-", contextHolder.getCurAtkHeroId(), ", s_skill: ", s_skill, ", 技能主体效果为空");
             return;
         }
 
