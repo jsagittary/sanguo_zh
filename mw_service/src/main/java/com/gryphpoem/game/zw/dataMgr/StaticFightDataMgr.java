@@ -1,7 +1,7 @@
 package com.gryphpoem.game.zw.dataMgr;
 
 import com.gryphpoem.game.zw.manager.StaticFightManager;
-import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSkillAction;
 import com.gryphpoem.push.util.CheckNull;
 import org.springframework.stereotype.Component;

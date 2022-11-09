@@ -3,9 +3,10 @@ package com.gryphpoem.game.zw.buff.impl.effect;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -75,15 +76,25 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
                 switch (rule.getEffectLogicId()) {
                     case FightConstant.EffectLogicId.ENERGY_RECOVERY:
                         activeSkillList.forEach(skill -> {
+                            int beforeRecoveredEnergy = skill.getCurEnergy();
                             double originValue = ((skill.getS_skill().getEnergyUpperLimit()) * effectConfig_.get(4) / FightConstant.TEN_THOUSAND) + effectConfig_.get(5);
-                            skill.setCurEnergy(skill.getCurEnergy() + FightCalc.skillEnergyRecovery(force, heroId, originValue));
+                            int recoveredEnergy = FightCalc.skillEnergyRecovery(force, heroId, originValue);
+                            skill.setCurEnergy(skill.getCurEnergy() + recoveredEnergy);
+                            LogUtil.fight("执行能量恢复效果, 能量恢复方: ", actionDirection.getDef().ownerId,
+                                    ", 武将: ", heroId, ", 技能: ", skill.getS_skill().getSkillId(), ", 恢复的能量: ", recoveredEnergy,
+                                    ", 恢复前能量: ", beforeRecoveredEnergy, ", 恢复后能量: ", skill.getCurEnergy());
                             // TODO pb修改变更
 
                         });
                         break;
                     case FightConstant.EffectLogicId.ENERGY_DEDUCTION:
                         activeSkillList.forEach(skill -> {
-                            skill.setCurEnergy(skill.getCurEnergy() - FightCalc.skillEnergyDeduction(skill.getS_skill(), effectConfig_));
+                            int beforeReducedEnergy = skill.getCurEnergy();
+                            int reducedEnergy = FightCalc.skillEnergyDeduction(skill.getS_skill(), effectConfig_);
+                            skill.setCurEnergy(skill.getCurEnergy() - reducedEnergy);
+                            LogUtil.fight("执行能量减少效果, 能量减少方: ", actionDirection.getDef().ownerId,
+                                    ", 武将: ", heroId, ", 技能: ", skill.getS_skill().getSkillId(), ", 减少的能量: ", reducedEnergy,
+                                    ", 减少前前能量: ", beforeReducedEnergy, ", 减少后能量: ", skill.getCurEnergy());
                             // TODO pb修改变更
 
                         });

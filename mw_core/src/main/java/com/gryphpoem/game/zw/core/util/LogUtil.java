@@ -84,7 +84,7 @@ public class LogUtil {
      */
     public static void fight(Object... message) {
         if (canPrint(Level.DEBUG)) {
-            logThread.addCommand(() -> COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message)));
+            COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message));
         }
     }
 

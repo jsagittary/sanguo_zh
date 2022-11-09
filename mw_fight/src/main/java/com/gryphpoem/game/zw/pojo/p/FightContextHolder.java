@@ -201,6 +201,12 @@ public class FightContextHolder {
         return LOCAL.get().getBattleType();
     }
 
+    public Fighter getFighter(Force force) {
+        if (getAtkFighter().isMyForce(force.ownerId))
+            return getAtkFighter();
+        return getDefFighter();
+    }
+
     abstract class InnerContextLocal<T> {
 
         private T value;

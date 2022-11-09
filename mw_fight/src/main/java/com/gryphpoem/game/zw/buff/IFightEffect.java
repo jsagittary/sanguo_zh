@@ -2,7 +2,7 @@ package com.gryphpoem.game.zw.buff;
 
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 
 import java.util.List;
 

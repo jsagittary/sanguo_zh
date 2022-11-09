@@ -1,8 +1,5 @@
 package com.gryphpoem.game.zw.resource.dao.impl.s;
 
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
-import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.resource.dao.BaseDao;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 

@@ -3,11 +3,12 @@ package com.gryphpoem.game.zw.pojo.p;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -108,8 +109,10 @@ public class BattleLogic {
 
         IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
         fightBuff.setForce(actingForce);
+        fightBuff.setForceId(actionDirection.getCurDefHeroId());
         fightBuff.setBuffGiver(actionDirection.getAtk());
-        fightBuff.setForceId(actionDirection.getCurAtkHeroId());
+        fightBuff.setBuffGiverId(actionDirection.getCurAtkHeroId());
+        LogUtil.fight("执行方: ", actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ", actingForce.id, "加buff: ", fightBuff.getBuffConfig());
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_EXISTS);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BUFF_GROUP_EXISTS);
@@ -184,12 +187,13 @@ public class BattleLogic {
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_ATTACKED);
-        int targetId = targetList.get(RandomHelper.randomInSize(targetList.size()));
-        contextHolder.resetActionDirection(atk, def, atkHeroId, targetId);
+        targetList.clear();
         targetList.add(def.id);
         if (!CheckNull.isEmpty(def.assistantHeroList)) {
             def.assistantHeroList.forEach(ass -> targetList.add(ass.getHeroId()));
         }
+        int targetId = targetList.get(RandomHelper.randomInSize(targetList.size()));
+        contextHolder.resetActionDirection(atk, def, atkHeroId, targetId);
 
         // 计算普攻伤害
         hurt(contextHolder.getActionDirection(), contextHolder, FightCalc.calAttack(contextHolder.getActionDirection(), battleType));
@@ -255,15 +259,15 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING);
 
         // TODO 扣血
-
+        actionDirection.getAtk().killed += damage;
+        actionDirection.getDef().lost = damage;
+        actionDirection.getAtk().fighter.hurt += damage;
+        actionDirection.getDef().fighter.lost += damage;
+        actionDirection.getDef().subHp(actionDirection.getAtk());
 
         // 扣血后
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BLEEDING);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BLOOD_VOLUME_BELOW_PERCENTAGE);
-    }
-
-    private void resetForce(Force atk, Force def, int targetId) {
-
     }
 }

@@ -7,6 +7,8 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.LinkedList;
@@ -19,6 +21,13 @@ import java.util.List;
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.BUFF, type = FightConstant.BuffEffectiveType.CONDITION)
 public class ConditionBuffImpl extends AbsConditionBuff {
+
+    public ConditionBuffImpl(StaticBuff staticBuff) {
+        this.buffKeyId = FightUtil.uniqueId();
+        this.staticBuff = staticBuff;
+        this.buffEffectiveRounds = this.staticBuff.getContinuousRound();
+    }
+
     @Override
     public void releaseBuff(LinkedList actingBuffList, FightContextHolder contextHolder, List staticBuffConfig, Object... params) {
         super.releaseBuff(actingBuffList, contextHolder, staticBuffConfig, params);

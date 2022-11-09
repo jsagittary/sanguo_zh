@@ -4,9 +4,10 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -63,6 +64,9 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
                 actionDirection.setCurAtkHeroId(atkHeroId);
                 for (Integer heroId : actionDirection.getDefHeroList()) {
                     actionDirection.setCurDefHeroId(heroId);
+                    LogUtil.fight("执行技能伤害效果, 伤害攻击方: ", actionDirection.getAtk() == null ? 0 : actionDirection.getAtk().ownerId,
+                            ", 攻击武将: ", atkHeroId, ", 伤害被攻击方: ", actionDirection.getDef() == null ? 0 : actionDirection.getDef().ownerId,
+                            ", 被攻击武将: ", heroId);
                     battleLogic.skillAttack(actionDirection, contextHolder, effectConfig_, contextHolder.getBattleType());
                 }
             }

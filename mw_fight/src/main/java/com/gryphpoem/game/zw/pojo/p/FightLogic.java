@@ -24,7 +24,7 @@ public class FightLogic {
     private int battleType;
 
     // 进攻方胜负 1.胜 2.负
-    private int winState = 0;
+    private int winState = -1;
 
     public FightLogic() {
     }
@@ -110,7 +110,8 @@ public class FightLogic {
 
     public void start() {
         logForm();
-        while (winState == 0) {
+        battleStart();
+        while (winState == -1) {
             round();
             checkDie();
         }
@@ -119,6 +120,24 @@ public class FightLogic {
             int size = recordData.build().toByteArray().length;
             if (size >= 1024 * 1024 || recordData.getRoundCount() > 1000) {//大于1M的战报,或者回合数超过1000的战报
                 LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, recordData.getRoundCount()));
+            }
+        }
+    }
+
+    /**
+     * 战斗开始时, 初始化武将士气
+     */
+    private void battleStart() {
+        initMorale(contextHolder.getAtkFighter());
+        initMorale(contextHolder.getDefFighter());
+    }
+
+    private void initMorale(Fighter fighter) {
+        if (Objects.nonNull(fighter)) {
+            if (!CheckNull.isEmpty(fighter.getForces())) {
+                for (Force force : fighter.getForces()) {
+                    force.morale = force.hp * 2;
+                }
             }
         }
     }
@@ -203,6 +222,9 @@ public class FightLogic {
         target.morale = force.hp * 2;
         force.maxRoundMorale = force.morale;
         target.maxRoundMorale = target.morale;
+
+        LogUtil.fight("============= 回合开始, 进攻方: force: ", force.ownerId, ", 防守方: target: ",
+                target.ownerId, ", 恢复并记录最大士气, 进攻方: ", force.maxRoundMorale, ", 防守方: ", target.maxRoundMorale, " =============");
     }
 
     /**
@@ -221,6 +243,8 @@ public class FightLogic {
             roundStart(force, target);
             // 双方武将以及副将战斗
             fight(force, target);
+            // 清除战败武将施加的buff
+            clearDeadBuff(force, target);
         }
 
         if (contextHolder.isRecordFlag()) {
@@ -283,6 +307,53 @@ public class FightLogic {
     }
 
     /**
+     * 有一方战败, 清除战败方施加的buff
+     *
+     * @param force
+     * @param target
+     */
+    private void clearDeadBuff(Force force, Force target) {
+        if (!force.alive() && !target.alive()) return;
+        if (!force.alive()) {
+            clearForceBuff(force, target);
+        } else {
+            clearForceBuff(target, force);
+        }
+    }
+
+    /**
+     * 清除战败武将施加的buff
+     *
+     * @param force
+     * @param target
+     */
+    private void clearForceBuff(Force force, Force target) {
+        Iterator<IFightBuff> it = target.buffList.iterator();
+        while (it.hasNext()) {
+            IFightBuff fightBuff = it.next();
+            if (CheckNull.isNull(fightBuff)) continue;
+            if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
+                it.remove();
+
+            }
+        }
+
+        if (!CheckNull.isEmpty(target.assistantHeroList)) {
+            for (FightAssistantHero assistantHero : target.assistantHeroList) {
+                it = assistantHero.getBuffList().iterator();
+                while (it.hasNext()) {
+                    IFightBuff fightBuff = it.next();
+                    if (CheckNull.isNull(fightBuff)) continue;
+                    if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
+                        it.remove();
+                        fightBuff.buffLoseEffectiveness(contextHolder);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * 阵亡的将领去掉光环效果
      *
      * @param force
@@ -321,11 +392,15 @@ public class FightLogic {
             }
         }
 
-        if (attackerAlive && defenderAlive) {
+        if (!attackerAlive && !defenderAlive) {
             this.winState = FightConstant.FIGHT_RESULT_DRAW;
-        } else {
+            return;
+        }
+        
+        if (!attackerAlive || !defenderAlive) {
             this.winState = attackerAlive ? FightConstant.FIGHT_RESULT_SUCCESS : FightConstant.FIGHT_RESULT_FAIL;
         }
+
     }
 
     /**
@@ -350,7 +425,7 @@ public class FightLogic {
     }
 
     public CommonPb.Record generateRecord() {
-        return null;
+        return CommonPb.Record.newBuilder().build();
     }
 
     public CommonPb.Record.Builder getRecordBuild() {

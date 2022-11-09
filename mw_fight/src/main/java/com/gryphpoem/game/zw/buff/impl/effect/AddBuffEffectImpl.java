@@ -9,8 +9,8 @@ import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.ArrayList;
@@ -72,6 +72,7 @@ public class AddBuffEffectImpl extends AbsFightEffect {
         List<IFightBuff> removedList = new ArrayList<>();
         for (Integer heroId : actionDirection.getDefHeroList()) {
             // 释放buff
+            LogUtil.fight("释放添加buff效果, 效果逻辑id: ", rule.getEffectLogicId(), "， 被加buff方: ", actionDirection.getDef().ownerId, ", 被加buff武将: ", heroId);
             battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, actionDirection, contextHolder, null, fightBuff.getBuffGiver());
         }
     }

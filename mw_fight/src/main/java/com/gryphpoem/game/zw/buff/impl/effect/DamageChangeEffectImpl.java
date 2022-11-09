@@ -9,7 +9,7 @@ import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.HashMap;
@@ -70,10 +70,10 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
     @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
         if (CheckNull.isEmpty(fightBuffEffect.getEffectMap()))
-            return null;
+            return 0;
         Map<Integer, List<FightEffectData>> effectDataMap = fightBuffEffect.getEffectMap().get(effectLogicId);
         if (CheckNull.isEmpty(effectDataMap)) {
-            return null;
+            return 0;
         }
 
         Map<Integer, Map<Integer, Integer>> effectValue = new HashMap<>();

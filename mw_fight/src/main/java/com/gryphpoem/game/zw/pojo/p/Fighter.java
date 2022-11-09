@@ -47,6 +47,10 @@ public class Fighter {
         }
     }
 
+    public boolean isMyForce(long ownId) {
+        return this.forces.stream().filter(force -> force.ownerId == ownId).findFirst().orElse(null) != null;
+    }
+
     public void addRealForce(Force force) {
         if (null != force) {
             forces.add(force);

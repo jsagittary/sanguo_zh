@@ -3,10 +3,11 @@ package com.gryphpoem.game.zw.buff.impl.effect;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.Iterator;
@@ -66,7 +67,8 @@ public class PurifyEffectImpl extends AbsFightEffect {
                 if (staticBuff.getTypeGrouping().contains(2) || staticBuff.getTypeGrouping().contains(3)) {
                     it.remove();
                     // TODO 战报记录
-
+                    LogUtil.fight("执行净化效果, 净化被执行方: ", actionDirection.getDef().ownerId,
+                            ", 武将: ", heroId, ", 被消除的buff: ", buff.getBuffConfig());
                 }
             }
         }

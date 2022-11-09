@@ -4,6 +4,8 @@ import com.gryphpoem.game.zw.buff.abs.buff.AbsPassiveBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.util.FightUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +17,13 @@ import java.util.List;
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.BUFF, type = FightConstant.BuffEffectiveType.PASSIVE)
 public class PassiveBuffImpl extends AbsPassiveBuff {
+
+    public PassiveBuffImpl(StaticBuff staticBuff) {
+        this.buffKeyId = FightUtil.uniqueId();
+        this.staticBuff = staticBuff;
+        this.buffEffectiveRounds = this.staticBuff.getContinuousRound();
+    }
+
     @Override
     public void releaseBuff(LinkedList actingBuffList, FightContextHolder contextHolder, List staticBuffConfig, Object... params) {
         super.releaseBuff(actingBuffList, contextHolder, staticBuffConfig, params);

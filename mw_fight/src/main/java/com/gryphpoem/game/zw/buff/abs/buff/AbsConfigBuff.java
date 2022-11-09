@@ -8,8 +8,8 @@ import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -155,6 +155,11 @@ public abstract class AbsConfigBuff implements IFightBuff {
     }
 
     @Override
+    public void setBuffGiverId(int heroId) {
+        this.buffGiverId = heroId;
+    }
+
+    @Override
     public Force getForce() {
         return force;
     }
@@ -229,7 +234,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             if (CheckNull.isEmpty(effectList)) continue;
             StaticEffectRule rule = StaticFightManager.getStaticEffectRule(effectList.get(2));
             if (CheckNull.isNull(rule)) continue;
-            IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(2));
+            IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
             if (CheckNull.isNull(fightEffect))
                 continue;
             fightEffect.effectRestoration(this, contextHolder, effectList, rule, params);

@@ -136,12 +136,18 @@ public class FightUtil {
                                                  FightConstant.BuffObjective buffObjective, ActionDirection direction, boolean performer) {
         Force buffAttacker;
         Force buffDefender;
-        if (contextHolder.getCurAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+        if (CheckNull.isNull(fightBuff)) {
+            // buff为空, 则是在执行技能主体效果
             buffAttacker = contextHolder.getCurAttacker();
             buffDefender = contextHolder.getCurDefender();
         } else {
-            buffAttacker = contextHolder.getCurDefender();
-            buffDefender = contextHolder.getCurAttacker();
+            if (contextHolder.getCurAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+                buffAttacker = contextHolder.getCurAttacker();
+                buffDefender = contextHolder.getCurDefender();
+            } else {
+                buffAttacker = contextHolder.getCurDefender();
+                buffDefender = contextHolder.getCurAttacker();
+            }
         }
 
         switch (buffObjective) {
@@ -149,11 +155,18 @@ public class FightUtil {
                 break;
             case RELEASE_SKILL:
                 if (performer) {
-                    direction.setAtk(fightBuff.getBuffGiver());
-                    direction.getAtkHeroList().add(fightBuff.getBuffGiverId());
+                    direction.setAtk(buffAttacker);
+                    if (CheckNull.isNull(fightBuff))
+                        direction.getAtkHeroList().add(contextHolder.getActionDirection().getCurAtkHeroId());
+                    else
+                        direction.getAtkHeroList().add(fightBuff.getBuffGiverId());
                 } else {
-                    direction.setDef(fightBuff.getBuffGiver());
-                    direction.getDefHeroList().add(fightBuff.getBuffGiverId());
+                    direction.setDef(buffAttacker);
+                    if (CheckNull.isNull(fightBuff)) {
+                        direction.getDefHeroList().add(contextHolder.getActionDirection().getCurDefHeroId());
+                    } else {
+                        direction.getDefHeroList().add(fightBuff.getBuffGiverId());
+                    }
                 }
                 break;
             case BUFF_LOADER:

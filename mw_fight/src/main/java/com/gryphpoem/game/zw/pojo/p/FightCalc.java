@@ -8,9 +8,11 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.FightManager;
-import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
+import com.gryphpoem.push.util.CheckNull;
 import org.apache.commons.lang3.RandomUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -122,15 +124,15 @@ public class FightCalc {
     public static final double attributeValue(int attrId, Force force, int heroId) {
         switch (attrId) {
             case FightCommonConstant.AttrId.ATTACK:
-                return calAttrValue(force, heroId, force.calcAttack(heroId), FightConstant.EffectLogicId.ATTACK_INCREASED, FightConstant.EffectLogicId.REDUCED_ATTACK);
+                return calAttrValue(force, heroId, attrId, force.calcAttack(heroId), FightConstant.EffectLogicId.ATTACK_INCREASED, FightConstant.EffectLogicId.REDUCED_ATTACK);
             case FightCommonConstant.AttrId.DEFEND:
-                return calAttrValue(force, heroId, force.calcDefend(heroId), FightConstant.EffectLogicId.DEFENSE_INCREASED, FightConstant.EffectLogicId.REDUCED_DEFENSE);
+                return calAttrValue(force, heroId, attrId, force.calcDefend(heroId), FightConstant.EffectLogicId.DEFENSE_INCREASED, FightConstant.EffectLogicId.REDUCED_DEFENSE);
             case FightCommonConstant.AttrId.SPEED:
-                return calAttrValue(force, heroId, force.calSpeed(heroId), FightConstant.EffectLogicId.SPEED_INCREASE, FightConstant.EffectLogicId.SPEED_REDUCTION);
+                return calAttrValue(force, heroId, attrId, force.calSpeed(heroId), FightConstant.EffectLogicId.SPEED_INCREASE, FightConstant.EffectLogicId.SPEED_REDUCTION);
             case FightCommonConstant.AttrId.ATTACK_TOWN:
-                return calAttrValue(force, heroId, force.calcAtkTown(heroId), FightConstant.EffectLogicId.BROKEN_CITY_PROMOTION, FightConstant.EffectLogicId.BROKEN_CITY_REDUCED);
+                return calAttrValue(force, heroId, attrId, force.calcAtkTown(heroId), FightConstant.EffectLogicId.BROKEN_CITY_PROMOTION, FightConstant.EffectLogicId.BROKEN_CITY_REDUCED);
             case FightCommonConstant.AttrId.DEFEND_TOWN:
-                return calAttrValue(force, heroId, force.calcDefTown(heroId), FightConstant.EffectLogicId.UPWARD_GUARDING, FightConstant.EffectLogicId.GUARD_CITY_REDUCED);
+                return calAttrValue(force, heroId, attrId, force.calcDefTown(heroId), FightConstant.EffectLogicId.UPWARD_GUARDING, FightConstant.EffectLogicId.GUARD_CITY_REDUCED);
             default:
                 return 0d;
         }
@@ -145,7 +147,7 @@ public class FightCalc {
      * @param effectLogicId2
      * @return
      */
-    private static final double calAttrValue(Force force, int heroId, int attrValue, int effectLogicId1, int effectLogicId2) {
+    private static final double calAttrValue(Force force, int heroId, int attrId, int attrValue, int effectLogicId1, int effectLogicId2) {
         int tenThousandthRatio_ = 0, fixValue_ = 0, tenThousandthRatio = 0, fixValue = 0;
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         FightBuffEffect fightBuffEffect = force.getFightEffectMap(heroId);
@@ -166,8 +168,12 @@ public class FightCalc {
                 fixValue = var.getB();
             }
         }
-        return attrValue * (1 + ((
+        double attributeVal = attrValue * (1 + ((
                 tenThousandthRatio_ - tenThousandthRatio) / FightConstant.TEN_THOUSAND)) + fixValue_ - fixValue;
+        LogUtil.fight("战斗伤害计算-计算属性值, 属性id: ", attrId, ", 效果", effectLogicId1, " 万分比: ", tenThousandthRatio_,
+                ", 固定值: ", fixValue_, "; 效果", effectLogicId2, " 万分比: ", tenThousandthRatio, ", 固定值: ", fixValue,
+                ", 归属方: ", force.ownerId, ", 武将id: ", heroId, ", 原属性值: ", attrValue, ", 效果加成后: ", attributeVal);
+        return attributeVal;
     }
 
     /**
@@ -183,6 +189,7 @@ public class FightCalc {
         double baseHurt = baseHurt(actionDirection);
         // （基础伤害*伤害系数【效果3万分比】*血量衰减+固伤【效果3固定值】）
         baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ", effectConfig, ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 技能修正
         double skillCorrection = skillCorrection(actionDirection);
         // 终伤修正
@@ -194,11 +201,17 @@ public class FightCalc {
 
         // 浮动修正=[0.9,1.1]
         double floatCorrection = RandomUtils.nextFloat(0.9f, 1.1f);
+        LogUtil.fight("技能伤害参与计算部分-浮动修正, 修正值: ", floatCorrection);
         // 克制=1+克制关系系数
         double finalRestrain = getFinalRestrain(actionDirection, battleType);
+        LogUtil.fight("技能伤害参与计算部分-克制, 克制值: ", finalRestrain);
 
-        return (int) (baseHurt * skillCorrection * finalDamageCorrection * armsRestraintCorrection * skillAttackCriticalDamageCorrection *
+        double damage = (baseHurt * skillCorrection * finalDamageCorrection * armsRestraintCorrection * skillAttackCriticalDamageCorrection *
                 floatCorrection * finalRestrain);
+        damage = calDamageChange(actionDirection, damage);
+        LogUtil.fight("无敌或护盾效果作用后, 攻击方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), ", 技能最终伤害值: ", damage);
+        return (int) damage;
     }
 
     /**
@@ -212,6 +225,7 @@ public class FightCalc {
         double baseHurt = baseHurt(actionDirection);
         // 血量衰减
         double bloodValueAttenuation = bloodValueAttenuation(actionDirection.getAtk());
+        LogUtil.fight("普攻伤害参与计算部分-血量衰减, 修正值: ", bloodValueAttenuation);
         // 普攻修正
         double generalAttackCorrection = attackCorrection(actionDirection);
         // 终伤修正
@@ -223,11 +237,61 @@ public class FightCalc {
 
         // 浮动修正=[0.9,1.1]
         double floatCorrection = RandomUtils.nextFloat(0.9f, 1.1f);
+        LogUtil.fight("普攻伤害参与计算部分-浮动修正, 修正值: ", floatCorrection);
         // 克制=1+克制关系系数
         double finalRestrain = getFinalRestrain(actionDirection, battleType);
+        LogUtil.fight("普攻伤害参与计算部分-克制, 克制值: ", finalRestrain);
 
-        return (int) (baseHurt * bloodValueAttenuation * generalAttackCorrection * finalDamageCorrection * armsRestraintCorrection *
+        double damage = (baseHurt * bloodValueAttenuation * generalAttackCorrection * finalDamageCorrection * armsRestraintCorrection *
                 attackCriticalDamageCorrection * floatCorrection * finalRestrain);
+        damage = calDamageChange(actionDirection, damage);
+        LogUtil.fight("无敌或护盾效果作用后, 攻击方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), ", 普攻最终伤害值: ", damage);
+        return (int) damage;
+    }
+
+    /**
+     * 计算无敌, 护盾的效果值
+     *
+     * @param actionDirection
+     * @param damage
+     * @return
+     */
+    private static double calDamageChange(ActionDirection actionDirection, double damage) {
+        FightManager fightManager = DataResource.ac.getBean(FightManager.class);
+        IFightEffect fightEffect = fightManager.getSkillEffect(FightConstant.EffectLogicId.INVINCIBLE_DAMAGE);
+        if (Objects.nonNull(fightEffect)) {
+            boolean exist = (boolean) fightEffect.effectCalculateValue(actionDirection.getDef().getFightEffectMap(
+                    actionDirection.getCurDefHeroId()), FightConstant.EffectLogicId.INVINCIBLE_DAMAGE);
+            if (exist) {
+                LogUtil.fight("战斗伤害计算, 无敌效果作用, 伤害为0");
+                return 0d;
+            }
+        }
+
+        fightEffect = fightManager.getSkillEffect(FightConstant.EffectLogicId.SHIELD);
+        if (Objects.nonNull(fightEffect)) {
+            ArrayList<FightEffectData> shieldList = (ArrayList<FightEffectData>) fightEffect.effectCalculateValue(actionDirection.getDef().
+                    getFightEffectMap(actionDirection.getCurDefHeroId()), FightConstant.EffectLogicId.SHIELD);
+            if (!CheckNull.isEmpty(shieldList)) {
+                double beforeDamage = damage;
+                for (FightEffectData shield : shieldList) {
+                    if (CheckNull.isNull(shield)) continue;
+                    if (shield.getValue() <= 0) continue;
+                    if (shield.getValue() > damage) {
+                        shield.setValue((int) (shield.getValue() - damage));
+                        damage = 0;
+                    } else {
+                        damage -= shield.getValue();
+                        shield.setValue(0);
+                    }
+                }
+
+                LogUtil.fight("战斗伤害计算, 护盾效果返回作用, 护盾值抵消: ", beforeDamage - damage);
+            }
+        }
+
+        return damage;
     }
 
     /**
@@ -255,7 +319,10 @@ public class FightCalc {
         double hurt2 = (attackExt - defendExt) / 3;
 
         // 基础伤害=max ( RANDIEST ( 1 , 10 ) , 伤害类型1 ) + max ( RANDIEST ( 1 , 10 ) , 伤害类型2 )
-        return Math.max(RandomUtils.nextFloat(1f, 10f), hurt1) + Math.max(RandomUtils.nextFloat(1f, 10f), hurt2);
+        double baseHurt = Math.max(RandomUtils.nextFloat(1f, 10f), hurt1) + Math.max(RandomUtils.nextFloat(1f, 10f), hurt2);
+        LogUtil.fight("计算基础伤害公式部分, 攻击方攻击: ", atk, ", 攻击方攻坚: ", atkDown, ", 防守方防御: ", def, ", 防守方据守: ", defDown,
+                ", 伤害类型1: ", hurt1, ", 攻击方穿甲: ", attackExt, ", 防守方防护: ", defendExt, ", 伤害类型2: ", hurt2, ", 基础伤害: ", baseHurt);
+        return baseHurt;
     }
 
     /**
@@ -286,9 +353,15 @@ public class FightCalc {
         Force target = actionDirection.getDef();
         FightBuffEffect atkBe = force.getFightEffectMap(actionDirection.getCurAtkHeroId());
         FightBuffEffect defBe = target.getFightEffectMap(actionDirection.getCurDefHeroId());
-        return 1 + (((int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.INCREASE_COMMON_ATTACK_DAMAGE) -
-                (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.COMMON_ATTACK_DAMAGE_REDUCED) + (int) fightEffect.effectCalculateValue(
-                defBe, FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE) - (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_FINAL_DAMAGE_REDUCED)) / FightConstant.TEN_THOUSAND);
+
+        int effect71 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.INCREASE_COMMON_ATTACK_DAMAGE);
+        int effect72 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.COMMON_ATTACK_DAMAGE_REDUCED);
+        int effect81 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE);
+        int effect82 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_FINAL_DAMAGE_REDUCED);
+
+        double attackCorrection = 1 + ((effect71 - effect72 + effect81 - effect82) / FightConstant.TEN_THOUSAND);
+        LogUtil.fight("计算技能伤害修正部分, 效果71: ", effect71, ", 效果72: ", effect72, ", 效果81: ", effect81, ", 效果82: ", effect82, ", 技能伤害修正参数: ", attackCorrection);
+        return attackCorrection;
     }
 
     /**
@@ -300,12 +373,15 @@ public class FightCalc {
         IFightEffect fightEffect = DataResource.ac.getBean(FightManager.class).getSkillEffect(FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED);
         FightBuffEffect atkBe = actionDirection.getAtk().getFightEffectMap(actionDirection.getCurAtkHeroId());
         FightBuffEffect defBe = actionDirection.getDef().getFightEffectMap(actionDirection.getCurDefHeroId());
+        int effect75 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.INCREASE_FINAL_DAMAGE);
+        int effect76 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED);
+        int effect85 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE_PROMOTION);
+        int effect86 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED_DECREASED);
 
+        double finalDamageCorrection = 1 + ((effect75 - effect76 + effect85 - effect86) / FightConstant.TEN_THOUSAND);
+        LogUtil.fight("计算伤害终伤修正部分, 效果75: ", effect75, ", 效果76: ", effect76, ", 效果85: ", effect86, ", 效果82: ", effect86, "终伤修正参数: ", finalDamageCorrection);
         // 终伤修正 1+A终伤伤害结果提升万分比【效果75】-A终伤伤害结果降低万分比【效果76】+B受终伤伤害结果提升万分比【效果85】-B受终伤伤害结果降低万分比【效果86】
-        return 1 + ((int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.INCREASE_FINAL_DAMAGE) -
-                (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED) + (int) fightEffect.effectCalculateValue(
-                defBe, FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE_PROMOTION) - (int) fightEffect.effectCalculateValue(defBe,
-                FightConstant.EffectLogicId.FINAL_DAMAGE_REDUCED_DECREASED) / FightConstant.TEN_THOUSAND);
+        return finalDamageCorrection;
     }
 
     /**
@@ -324,9 +400,13 @@ public class FightCalc {
         boolean haveArmyRestraint = haveArmyRestraint(actionDirection.getAtk().armyType(actionDirection.getCurAtkHeroId()),
                 actionDirection.getDef().armyType(actionDirection.getCurDefHeroId()));
         if (haveArmyRestraint) {
-            armsRestraintCorrection += ((int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.DAMAGE_INCREASED_FIGHTING) -
-                    (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.DAMAGE_REDUCED_ARM_RESTRAINED) / FightConstant.TEN_THOUSAND);
+            int effect45 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.DAMAGE_INCREASED_FIGHTING);
+            int effect46 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.DAMAGE_REDUCED_ARM_RESTRAINED);
+            armsRestraintCorrection += ((effect45 - effect46) / FightConstant.TEN_THOUSAND);
+            LogUtil.fight("计算伤害公式-兵种克制部分, effect45: ", effect45, ", effect46: ", effect46, ", 兵种克制系数: ", armsRestraintCorrection);
         }
+
+        LogUtil.fight("计算伤害公式-兵种克制部分, 兵种克制系数: ", armsRestraintCorrection);
         return armsRestraintCorrection;
     }
 
@@ -403,6 +483,9 @@ public class FightCalc {
             attackCriticalDamageCorrection = 1d;
         }
 
+        LogUtil.fight("计算技能伤害部分-技能暴击, 技能暴击几率效果102值: ", effect102Val, ", 技能暴击几率效果104值: ", effect104Val,
+                ", 技能暴击几率结算: ", criticalChanceCorrection, ", 技能伤害倍率效果103值: ", effect103Val, ", 技能伤害倍率效果105值: ", effect105Val,
+                ", 技能伤害倍率最终值: ", attackCriticalDamageCorrection);
         return attackCriticalDamageCorrection;
     }
 
@@ -417,11 +500,14 @@ public class FightCalc {
         IFightEffect fightEffect = fightManager.getSkillEffect(FightConstant.EffectLogicId.SKILL_DAMAGE_INCREASED);
         FightBuffEffect atkBe = actionDirection.getAtk().getFightEffectMap(actionDirection.getCurAtkHeroId());
         FightBuffEffect defBe = actionDirection.getDef().getFightEffectMap(actionDirection.getCurDefHeroId());
+        int effect73 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.SKILL_DAMAGE_INCREASED);
+        int effect74 = (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.SKILL_DAMAGE_REDUCED);
+        int effect83 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_SKILL_DAMAGE_INCREASED);
+        int effect84 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_SKILL_DAMAGE_REDUCED_DECREASED);
 
-        return 1 + ((int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.INCREASE_COMMON_ATTACK_DAMAGE) -
-                (int) fightEffect.effectCalculateValue(atkBe, FightConstant.EffectLogicId.COMMON_ATTACK_DAMAGE_REDUCED) + (int) fightEffect.effectCalculateValue(
-                defBe, FightConstant.EffectLogicId.BE_INCREASE_FINAL_DAMAGE) - (int) fightEffect.effectCalculateValue(defBe,
-                FightConstant.EffectLogicId.BE_FINAL_DAMAGE_REDUCED) / FightConstant.TEN_THOUSAND);
+        double skillCorrection = 1 + ((effect73 - effect74 + effect83 - effect84) / FightConstant.TEN_THOUSAND);
+        LogUtil.fight("计算技能伤害修正部分, 效果73: ", effect73, ", 效果74: ", effect74, ", 效果83: ", effect83, ", 效果84: ", effect84, ", 技能伤害修正参数: ", skillCorrection);
+        return skillCorrection;
     }
 
     /**
@@ -471,7 +557,7 @@ public class FightCalc {
             restrain = restrain - (0.09 + (defHeroLv * 0.01f));
             LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
                             "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType),
-                    "赛季天赋-以短攻长-加成比例: ", restrain, " - ", (0.09 + (defHeroLv * 0.01f)),
+                    "兵种克制伤害加成比例: ", restrain, " - ", (0.09 + (defHeroLv * 0.01f)),
                     "兵种克制减伤加成比例: ", lessHurtFromArmyRestraint);
             restrain -= lessHurtFromArmyRestraint;
         }

@@ -129,7 +129,6 @@ public class AttributeEffectImpl extends AbsFightEffect {
             case FightConstant.EffectLogicId.PROTECTION_LIFTING:
             case FightConstant.EffectLogicId.ARMOR_PIERCING_ENHANCEMENT:
             case FightConstant.EffectLogicId.UPWARD_GUARDING:
-            case FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_INCREASED:
                 return calValue(force, heroId, effectLogicId, tenThousandthRatio_, fixValue_) >
                         calValue(force, heroId, effectLogicId, tenThousandthRatio, fixValue);
             case FightConstant.EffectLogicId.REDUCED_ATTACK:
@@ -139,7 +138,6 @@ public class AttributeEffectImpl extends AbsFightEffect {
             case FightConstant.EffectLogicId.ARMOR_PIERCING_REDUCTION:
             case FightConstant.EffectLogicId.REDUCED_PROTECTION:
             case FightConstant.EffectLogicId.SPEED_REDUCTION:
-            case FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_DECREASES:
                 return calValue(force, heroId, effectLogicId, tenThousandthRatio_, fixValue_) <
                         calValue(force, heroId, effectLogicId, tenThousandthRatio, fixValue);
             case FightConstant.EffectLogicId.INCREASE_CRITICAL_HIT_RATE:

@@ -209,7 +209,11 @@ public class Force {
     }
 
     public FightBuffEffect getFightEffectMap(int heroId) {
-        if (heroId == this.id) return this.fightBuffEffect;
+        if (heroId == this.id) {
+            if (this.fightBuffEffect == null)
+                this.fightBuffEffect = new FightBuffEffect(this, id);
+            return this.fightBuffEffect;
+        }
         if (CheckNull.isEmpty(this.assistantHeroList)) return null;
         return this.assistantHeroList.stream().filter(ass ->
                 ass.getHeroId() == heroId).map(ass -> ass.getFightBuffEffect()).findFirst().orElse(null);
@@ -297,8 +301,8 @@ public class Force {
     public boolean subHp(Force force) {
         boolean deadLine = false;
 
-        LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, <<<<<<战斗最终伤害>>>>>>: %d",
-                force == null ? 0 : force.ownerId, this.ownerId, count, lost));
+        LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, 当前兵排: %d, 最大兵排: %d, <<<<<<战斗最终伤害>>>>>>: %d",
+                force == null ? 0 : force.ownerId, this.ownerId, count, curLine + 1, maxLine, lost));
 
         if (count <= lost) {
             curLine++;
@@ -557,7 +561,6 @@ public class Force {
                 ", maxRoundMorale=" + maxRoundMorale +
                 ", buffList=" + buffList +
                 ", assistantHeroList=" + assistantHeroList +
-                ", fightBuffEffect=" + fightBuffEffect +
                 '}';
     }
 

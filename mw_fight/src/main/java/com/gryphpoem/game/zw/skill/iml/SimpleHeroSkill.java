@@ -11,9 +11,9 @@ import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.BattleLogic;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
-import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.skill.abs.AbstractHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -85,11 +85,13 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> list : s_skill.getSkillEffect()) {
             if (CheckNull.isEmpty(list)) continue;
-            IFightEffect fightEffect = fightManager.getSkillEffect(list.get(2));
-            if (CheckNull.isNull(fightEffect)) continue;
             StaticEffectRule rule = StaticFightManager.getStaticEffectRule(list.get(2));
             if (CheckNull.isNull(rule)) continue;
+            IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
+            if (CheckNull.isNull(fightEffect)) continue;
             fightEffect.effectiveness(null, contextHolder, list, rule);
+            LogUtil.fight("进攻方: ", contextHolder.getCurAttacker().ownerId, "-", contextHolder.getCurAtkHeroId(), isOnStageSkill ? " 释放开场技能: " : "释放主动技能: ",
+                    s_skill.getSkillId(), ", 技能主体效果: ", list);
         }
     }
 

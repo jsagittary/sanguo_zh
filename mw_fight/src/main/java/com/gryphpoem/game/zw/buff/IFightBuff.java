@@ -2,7 +2,7 @@ package com.gryphpoem.game.zw.buff;
 
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,6 +47,13 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
      * @return
      */
     int getBuffGiverId();
+
+    /**
+     * 设置技能释放者武将id
+     *
+     * @param heroId
+     */
+    void setBuffGiverId(int heroId);
 
     /**
      * 设置被作用方

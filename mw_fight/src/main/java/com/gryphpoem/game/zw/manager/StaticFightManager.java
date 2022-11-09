@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.manager;
 
-import com.gryphpoem.game.zw.pojo.s.StaticBuff;
-import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
-import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 
 import java.util.HashMap;
 import java.util.Map;
