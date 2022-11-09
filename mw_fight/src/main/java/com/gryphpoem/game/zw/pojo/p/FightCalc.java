@@ -184,8 +184,8 @@ public class FightCalc {
      * @return
      */
     public static int calSkillAttack(ActionDirection actionDirection, List<Integer> effectConfig, int battleType) {
-        LogUtil.fight("进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
-                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行技能伤害攻击");
+        LogUtil.fight("******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行技能伤害攻击结算*******");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
         // （基础伤害*伤害系数【效果3万分比】*血量衰减+固伤【效果3固定值】）
@@ -222,8 +222,8 @@ public class FightCalc {
      * @param battleType
      */
     public static int calAttack(ActionDirection actionDirection, int battleType) {
-        LogUtil.fight("进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
-                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行普攻");
+        LogUtil.fight("*******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行普攻结算******");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
         // 血量衰减
@@ -363,7 +363,7 @@ public class FightCalc {
         int effect82 = (int) fightEffect.effectCalculateValue(defBe, FightConstant.EffectLogicId.BE_FINAL_DAMAGE_REDUCED);
 
         double attackCorrection = 1 + ((effect71 - effect72 + effect81 - effect82) / FightConstant.TEN_THOUSAND);
-        LogUtil.fight("计算技能伤害修正部分, 效果71: ", effect71, ", 效果72: ", effect72, ", 效果81: ", effect81, ", 效果82: ", effect82, ", 技能伤害修正参数: ", attackCorrection);
+        LogUtil.fight("计算普攻伤害修正部分, 效果71: ", effect71, ", 效果72: ", effect72, ", 效果81: ", effect81, ", 效果82: ", effect82, ", 技能伤害修正参数: ", attackCorrection);
         return attackCorrection;
     }
 
