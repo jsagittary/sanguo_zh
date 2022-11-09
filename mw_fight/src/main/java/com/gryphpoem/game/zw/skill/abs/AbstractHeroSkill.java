@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.skill.abs;
 
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.skill.IHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 

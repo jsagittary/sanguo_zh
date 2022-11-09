@@ -1,4 +1,4 @@
-package com.gryphpoem.game.zw.data.s;
+package com.gryphpoem.game.zw.pojo.s;
 
 import lombok.Data;
 import lombok.ToString;

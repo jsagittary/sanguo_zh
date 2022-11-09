@@ -6,11 +6,11 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.data.s.StaticEffectRule;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
-import com.gryphpoem.game.zw.manager.s.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.*;
+import com.gryphpoem.game.zw.pojo.s.StaticBuff;
+import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class AddBuffEffectImpl extends AbsFightEffect {
             return;
         }
 
-        StaticBuff staticBuff = DataResource.ac.getBean(StaticFightManager.class).getStaticBuff(effectConfig_.get(3));
+        StaticBuff staticBuff = StaticFightManager.getStaticBuff(effectConfig_.get(3));
         if (CheckNull.isNull(staticBuff)) {
             LogUtil.error("add buff, config: ", effectConfig, ", staticBuff not found");
             return;

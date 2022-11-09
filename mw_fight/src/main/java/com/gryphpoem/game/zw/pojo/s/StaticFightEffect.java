@@ -1,4 +1,4 @@
-package com.gryphpoem.game.zw.data.s;
+package com.gryphpoem.game.zw.pojo.s;
 
 /**
  * Description:

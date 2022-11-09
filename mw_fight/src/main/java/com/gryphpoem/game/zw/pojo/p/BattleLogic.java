@@ -4,10 +4,10 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.FightManager;
-import com.gryphpoem.game.zw.manager.s.StaticFightManager;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
+import com.gryphpoem.game.zw.pojo.s.StaticBuff;
+import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 public class BattleLogic {
     @Autowired
     private FightManager fightManager;
-    @Autowired
-    private StaticFightManager staticFightManager;
 
     /**
      * 释放buff通用逻辑
@@ -86,7 +84,7 @@ public class BattleLogic {
                                 for (List<Integer> effectConfig : staticBuff.getEffects()) {
                                     if (CheckNull.isEmpty(effectConfig))
                                         continue;
-                                    StaticEffectRule rule = staticFightManager.getStaticEffectRule(effectConfig.get(2));
+                                    StaticEffectRule rule = StaticFightManager.getStaticEffectRule(effectConfig.get(2));
                                     if (CheckNull.isNull(rule))
                                         continue;
                                     IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());

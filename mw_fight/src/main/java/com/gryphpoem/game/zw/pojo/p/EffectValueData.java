@@ -1,4 +1,4 @@
-package com.gryphpoem.game.zw.data.p;
+package com.gryphpoem.game.zw.pojo.p;
 
 import lombok.Data;
 

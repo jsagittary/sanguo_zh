@@ -623,7 +623,8 @@ public class CalculateUtil {
                 DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, FightCommonConstant.AttrId.DEFEND), hero.getLevel()));
         tempMap.put(HeroConstant.ATTR_LEAD, CalculateUtil.calcHeroAttrById(staticHero, FightCommonConstant.AttrId.LEAD,
                 DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, FightCommonConstant.AttrId.LEAD), hero.getLevel()));
-
+        tempMap.put(AttrId.LOWER_LIMIT_OF_CHARGING, staticHero.getChargeEnergy(AttrId.LOWER_LIMIT_OF_CHARGING));
+        tempMap.put(AttrId.UPPER_CHARGING_LIMIT, staticHero.getChargeEnergy(AttrId.UPPER_CHARGING_LIMIT));
 
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "base tempMap=" + tempMap);
 

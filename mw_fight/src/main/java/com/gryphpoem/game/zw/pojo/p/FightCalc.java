@@ -7,8 +7,8 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
-import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.manager.FightManager;
+import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.util.List;

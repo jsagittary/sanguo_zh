@@ -4,9 +4,9 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.timing.AbsFightEffectWork;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;

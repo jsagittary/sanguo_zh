@@ -19,7 +19,7 @@ public class PassiveBuffImpl extends AbsPassiveBuff {
     public void releaseBuff(LinkedList actingBuffList, FightContextHolder contextHolder, List staticBuffConfig, Object... params) {
         super.releaseBuff(actingBuffList, contextHolder, staticBuffConfig, params);
         // 释放buff时, 立马释放效果
-        releaseEffect(this.force, contextHolder, -1, params);
+        releaseEffect(contextHolder, -1, params);
     }
 
     @Override

@@ -3,15 +3,14 @@ package com.gryphpoem.game.zw.buff.impl.effect;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
-import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Turple;
-import com.gryphpoem.game.zw.data.s.StaticEffectRule;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
-import com.gryphpoem.game.zw.manager.s.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.HashMap;
@@ -80,10 +79,9 @@ public class RecoveredInBattleEffectImpl extends AbsFightEffect {
         }
 
         Map<Integer, Map<Integer, Turple<Integer, Integer>>> effectValue = new HashMap<>();
-        StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         // 合并相同buff来源的效果
         for (Map.Entry<Integer, List<FightEffectData>> entry : effectDataMap.entrySet()) {
-            StaticEffectRule rule = staticFightManager.getStaticEffectRule(entry.getKey());
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(entry.getKey());
             if (CheckNull.isNull(rule)) continue;
             if (CheckNull.isEmpty(entry.getValue())) continue;
             Map<Integer, Turple<Integer, Integer>> buffIdMap = effectValue.computeIfAbsent(entry.getKey(), m -> new HashMap<>());
@@ -118,7 +116,7 @@ public class RecoveredInBattleEffectImpl extends AbsFightEffect {
         // 合并不同buff来源的效果
         Map<Integer, Turple<Integer, Integer>> resultMap = new HashMap<>(effectValue.size());
         for (Map.Entry<Integer, Map<Integer, Turple<Integer, Integer>>> entry : effectValue.entrySet()) {
-            StaticEffectRule rule = staticFightManager.getStaticEffectRule(entry.getKey());
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(entry.getKey());
             if (CheckNull.isNull(rule))
                 continue;
             if (CheckNull.isEmpty(entry.getValue()))

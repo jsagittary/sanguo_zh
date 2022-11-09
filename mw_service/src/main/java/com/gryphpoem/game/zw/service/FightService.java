@@ -10,6 +10,7 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pojo.p.*;
+import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
@@ -30,6 +31,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -1161,20 +1163,24 @@ public class FightService {
      * @param hero
      */
     private void loadHeroSkill(Force force, Hero hero) {
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
-            if (Objects.nonNull(heroSkill)) {
-                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
-                if (Objects.nonNull(ska)) {
-                    FightSkillAction fightSkillAction = new FightSkillAction(ska);
-                    Player player = DataResource.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
-                    //宝具增加的释放技能概率
-                    fightSkillAction.setAddProbability(DataResource.getBean(TreasureWareService.class).addSkillBuff(player, hero,
-                            TreasureWareConst.SpecialType.SEASON_HERO, TreasureWareConst.SpecialType.SeasonHero.SKILL_RELEASE_PROBABILITY,
-                            ska.getBaseSkill()));
-                    force.fightSkills.add(fightSkillAction);
-                }
-            }
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        if (CheckNull.isNull(staticHero))
+            return;
+        if (CheckNull.isEmpty(staticHero.getOnStageSkills()) && CheckNull.isEmpty(staticHero.getActiveSkills()))
+            return;
+        for (Integer skillGroupId : staticHero.getOnStageSkills()) {
+            StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, 1);
+            if (CheckNull.isNull(staticHeroSkill))
+                continue;
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, true);
+            force.getSkillList(hero.getHeroId()).add(simpleHeroSkill);
+        }
+        for (Integer skillGroupId : staticHero.getActiveSkills()) {
+            StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, 1);
+            if (CheckNull.isNull(staticHeroSkill))
+                continue;
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, false);
+            force.getSkillList(hero.getHeroId()).add(simpleHeroSkill);
         }
     }
 

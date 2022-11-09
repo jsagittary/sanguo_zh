@@ -4,12 +4,12 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.FightManager;
-import com.gryphpoem.game.zw.manager.s.StaticFightManager;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.s.StaticBuff;
+import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -200,11 +200,10 @@ public abstract class AbsConfigBuff implements IFightBuff {
      */
     protected void releaseBuffEffect(FightContextHolder contextHolder, Object... params) {
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
-        StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> effectList : staticBuff.getEffects()) {
             if (CheckNull.isEmpty(effectList)) continue;
-            StaticEffectRule rule = staticFightManager.getStaticEffectRule(effectList.get(2));
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(effectList.get(2));
             if (CheckNull.isNull(rule)) continue;
             IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
             if (CheckNull.isNull(fightEffect))
@@ -225,11 +224,10 @@ public abstract class AbsConfigBuff implements IFightBuff {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_DISAPPEARS, this);
 
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
-        StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> effectList : staticBuff.getEffects()) {
             if (CheckNull.isEmpty(effectList)) continue;
-            StaticEffectRule rule = staticFightManager.getStaticEffectRule(effectList.get(2));
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(effectList.get(2));
             if (CheckNull.isNull(rule)) continue;
             IFightEffect fightEffect = fightManager.getSkillEffect(effectList.get(2));
             if (CheckNull.isNull(fightEffect))

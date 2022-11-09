@@ -24,7 +24,7 @@ public class ConditionBuffImpl extends AbsConditionBuff {
         super.releaseBuff(actingBuffList, contextHolder, staticBuffConfig, params);
         if (CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
             // 若触发条件为空, 则直接触发
-            releaseEffect(this.force, contextHolder, -1, params);
+            releaseEffect(contextHolder, -1, params);
         }
     }
 

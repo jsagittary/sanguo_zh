@@ -6,14 +6,14 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
-import com.gryphpoem.game.zw.data.s.StaticBuff;
-import com.gryphpoem.game.zw.data.s.StaticEffectRule;
-import com.gryphpoem.game.zw.data.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.manager.FightManager;
-import com.gryphpoem.game.zw.manager.s.StaticFightManager;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.BattleLogic;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.pojo.s.StaticBuff;
+import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
+import com.gryphpoem.game.zw.pojo.s.StaticHeroSkill;
 import com.gryphpoem.game.zw.skill.abs.AbstractHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -109,7 +109,6 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             actionDirection.setCurAtkHeroId(contextHolder.getCurAtkHeroId());
             LinkedList<IFightBuff> removeBuffList = new LinkedList<>();
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
-            StaticFightManager staticFightManager = DataResource.ac.getBean(StaticFightManager.class);
 
             // 释放buff
             for (List<Integer> buffConfig : s_skill.getBuff()) {
@@ -119,7 +118,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                 FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(buffConfig.get(0));
                 if (CheckNull.isNull(buffObjective))
                     continue;
-                StaticBuff staticBuff = staticFightManager.getStaticBuff(buffConfig.get(1));
+                StaticBuff staticBuff = StaticFightManager.getStaticBuff(buffConfig.get(1));
                 if (CheckNull.isNull(staticBuff))
                     continue;
 

@@ -10,7 +10,6 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticFightDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
-import com.gryphpoem.game.zw.gameplay.local.constant.cross.NewCrossConstant;
 import com.gryphpoem.game.zw.manager.MedalDataManager;
 import com.gryphpoem.game.zw.manager.TechDataManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -24,7 +23,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSeasonSkill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalent;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSkillAction;
-import com.gryphpoem.game.zw.resource.pojo.chat.Chat;
 import com.gryphpoem.game.zw.resource.pojo.chat.RoleChat;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -76,7 +74,7 @@ public final class DtoParser {
         return appMap;
     }
 
-    public static CrossRoleChat getCrossRoleChat(long roomId, int chlId, RoleChat chat){
+    public static CrossRoleChat getCrossRoleChat(long roomId, int chlId, RoleChat chat) {
         CrossRoleChat crossRoleChat = new CrossRoleChat();
         crossRoleChat.setRoomId(roomId);
         crossRoleChat.setChlId(chlId);
@@ -101,13 +99,13 @@ public final class DtoParser {
         crossRoleChat.setBubbleId(dress.getCurrChatBubble());
 
         //额外参数
-        if (chat.getMyParam()!=null){
+        if (chat.getMyParam() != null) {
             crossRoleChat.setExtParam(Arrays.asList(chat.getMyParam()));
         }
         return crossRoleChat;
     }
 
-    public static CrossLord buildCrossFightLord(Player player){
+    public static CrossLord buildCrossFightLord(Player player) {
         CrossLord cld = new CrossLord();
         Lord lord = player.lord;
         cld.setLordId(lord.getLordId());

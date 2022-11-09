@@ -113,8 +113,8 @@ public class LoadService {
         StaticWarPlaneDataMgr.init();
         LogUtil.common("------------------加载数据：教官相关-----------------");
         StaticMentorDataMgr.init();
-        LogUtil.common("------------------加载数据：战斗相关-----------------");
-        StaticFightDataMgr.init();
+//        LogUtil.common("------------------加载数据：战斗相关-----------------");
+//        StaticFightDataMgr.init();
         LogUtil.common("------------------加载数据：签到模块-----------------");
         StaticSignInDataMgr.init();
         LogUtil.common("------------------加载数据：战令相关-----------------");

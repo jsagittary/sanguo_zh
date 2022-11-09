@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.buff;
 
-import com.gryphpoem.game.zw.data.s.StaticBuff;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.s.StaticBuff;
 
 import java.util.LinkedList;
 import java.util.List;

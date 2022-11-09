@@ -4,9 +4,9 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.data.s.StaticEffectRule;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
+import com.gryphpoem.game.zw.pojo.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
