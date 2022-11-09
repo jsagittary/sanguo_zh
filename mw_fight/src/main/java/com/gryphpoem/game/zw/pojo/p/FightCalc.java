@@ -588,8 +588,8 @@ public class FightCalc {
             restrain = restrain - (0.09 + (defHeroLv * 0.01f));
             LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
                             "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType),
-                    "兵种克制伤害加成比例: ", restrain, " - ", (0.09 + (defHeroLv * 0.01f)),
-                    "兵种克制减伤加成比例: ", lessHurtFromArmyRestraint);
+                    ", 兵种克制伤害加成比例: ", restrain, " - ", (0.09 + (defHeroLv * 0.01f)),
+                    ", 兵种克制减伤加成比例: ", lessHurtFromArmyRestraint);
             restrain -= lessHurtFromArmyRestraint;
         }
 

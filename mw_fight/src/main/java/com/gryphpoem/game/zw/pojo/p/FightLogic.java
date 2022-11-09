@@ -245,6 +245,8 @@ public class FightLogic {
             fight(force, target);
             // 清除战败武将施加的buff
             clearDeadBuff(force, target);
+            // 清除出手顺序列表
+            contextHolder.getFightEntity().clear();
         }
 
         if (contextHolder.isRecordFlag()) {
@@ -396,7 +398,7 @@ public class FightLogic {
             this.winState = FightConstant.FIGHT_RESULT_DRAW;
             return;
         }
-        
+
         if (!attackerAlive || !defenderAlive) {
             this.winState = attackerAlive ? FightConstant.FIGHT_RESULT_SUCCESS : FightConstant.FIGHT_RESULT_FAIL;
         }
