@@ -78,7 +78,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public void releaseSkillEffect(FightContextHolder contextHolder, Object... params) {
         if (CheckNull.isEmpty(s_skill.getSkillEffect())) {
-            LogUtil.error("s_skill: ", s_skill, ", 技能主体效果为空");
+            LogUtil.fight("s_skill: ", s_skill, ", 技能主体效果为空");
             return;
         }
 
