@@ -180,11 +180,12 @@ public class FightCalc {
      * 计算技能伤害
      *
      * @param effectConfig
-     * @param targetId
      * @param battleType
      * @return
      */
-    public static int calSkillAttack(ActionDirection actionDirection, List<Integer> effectConfig, int targetId, int battleType) {
+    public static int calSkillAttack(ActionDirection actionDirection, List<Integer> effectConfig, int battleType) {
+        LogUtil.fight("进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行技能伤害攻击");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
         // （基础伤害*伤害系数【效果3万分比】*血量衰减+固伤【效果3固定值】）
@@ -221,6 +222,8 @@ public class FightCalc {
      * @param battleType
      */
     public static int calAttack(ActionDirection actionDirection, int battleType) {
+        LogUtil.fight("进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 进行普攻");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
         // 血量衰减

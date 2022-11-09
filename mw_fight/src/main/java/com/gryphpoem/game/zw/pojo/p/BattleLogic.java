@@ -170,7 +170,7 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
         // TODO 扣血
         hurt(actionDirection, contextHolder,
-                FightCalc.calSkillAttack(actionDirection, effectConfig, actionDirection.getCurDefHeroId(), battleType));
+                FightCalc.calSkillAttack(actionDirection, effectConfig, battleType));
 
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE);
     }
