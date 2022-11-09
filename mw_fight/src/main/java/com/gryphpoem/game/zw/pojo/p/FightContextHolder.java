@@ -166,9 +166,11 @@ public class FightContextHolder {
      */
     public List<FightEntity> getSortedFightEntity(Force force, Force target) {
         List<FightEntity> fightEntityList = getFightEntity();
-        if (CheckNull.isEmpty(fightEntityList)) {
+        if (CheckNull.isNull(fightEntityList)) {
             fightEntityList = new ArrayList<>();
             setFightEntity(fightEntityList);
+        }
+        if (fightEntityList.size() <= 0) {
             fillFightEntity(force, fightEntityList);
             fillFightEntity(target, fightEntityList);
         } else {
