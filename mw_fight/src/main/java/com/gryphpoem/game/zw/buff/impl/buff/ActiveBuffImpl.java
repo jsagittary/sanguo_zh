@@ -36,6 +36,7 @@ public class ActiveBuffImpl extends AbsActiveBuff {
 
     @Override
     public void buffLoseEffectiveness(FightContextHolder contextHolder, Object... params) {
+        super.buffLoseEffectiveness(contextHolder, params);
         if (!effect) {
             // buff一次都未作用
             return;

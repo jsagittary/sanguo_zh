@@ -197,6 +197,11 @@ public abstract class AbsConfigBuff implements IFightBuff {
         actingBuffList.add(this);
     }
 
+    @Override
+    public void buffLoseEffectiveness(FightContextHolder contextHolder, Object... params) {
+        contextHolder.removeBuff(this);
+    }
+
     /**
      * 释放buff所有效果通用逻辑
      *

@@ -127,7 +127,6 @@ public class BattleLogic {
             // TODO 预留buff失效还原逻辑
             removeBuffList.forEach(buff -> {
                 buff.buffLoseEffectiveness(contextHolder, params);
-                contextHolder.removeBuff(buff);
             });
             // TODO 客户端表现PB 处理
             removeBuffList.clear();

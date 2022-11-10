@@ -42,6 +42,7 @@ public class PassiveBuffImpl extends AbsPassiveBuff {
 
     @Override
     public void buffLoseEffectiveness(FightContextHolder contextHolder, Object... params) {
+        super.buffLoseEffectiveness(contextHolder, params);
         buffEffectiveness(contextHolder);
     }
 }

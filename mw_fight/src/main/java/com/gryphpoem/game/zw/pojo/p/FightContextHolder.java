@@ -211,6 +211,12 @@ public class FightContextHolder {
         return getDefFighter();
     }
 
+    public HashMap<Integer, List<IFightBuff>> getBuffMap() {
+        if (CheckNull.isEmpty(LOCAL.get().getTriggerBuffMap()))
+            return null;
+        return LOCAL.get().getTriggerBuffMap();
+    }
+
     public void addBuff(IFightBuff fightBuff) {
         if (CheckNull.isNull(LOCAL.get().getTriggerBuffMap())) {
             LOCAL.get().setTriggerBuffMap(new HashMap<>());

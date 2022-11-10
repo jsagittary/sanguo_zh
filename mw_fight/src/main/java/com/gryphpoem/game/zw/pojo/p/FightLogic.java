@@ -300,7 +300,6 @@ public class FightLogic {
                 IFightBuff fightBuff = it.next();
                 if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
                     fightBuff.buffLoseEffectiveness(contextHolder);
-                    contextHolder.removeBuff(fightBuff);
                     it.remove();
                     continue;
                 }
@@ -330,7 +329,12 @@ public class FightLogic {
      * @param target
      */
     private void clearDeadBuff(Force force, Force target) {
-        if (!force.alive() && !target.alive()) return;
+        if (!force.alive() && !target.alive()) {
+            if (CheckNull.isEmpty(contextHolder.getBuffMap()))
+                return;
+            contextHolder.getBuffMap().clear();
+            return;
+        }
         if (!force.alive()) {
             clearForceBuff(force, target);
         } else {
@@ -350,8 +354,8 @@ public class FightLogic {
             IFightBuff fightBuff = it.next();
             if (CheckNull.isNull(fightBuff)) continue;
             if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
+                fightBuff.buffLoseEffectiveness(contextHolder);
                 it.remove();
-
             }
         }
 
@@ -363,7 +367,6 @@ public class FightLogic {
                     if (CheckNull.isNull(fightBuff)) continue;
                     if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
                         fightBuff.buffLoseEffectiveness(contextHolder);
-                        contextHolder.removeBuff(fightBuff);
                         it.remove();
                     }
                 }
