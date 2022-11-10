@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
+import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
@@ -269,6 +270,8 @@ public class FightLogic {
             // 结算buff
             settlementBuff(force);
             settlementBuff(target);
+            // 主动buff触发
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
 
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
@@ -302,7 +305,6 @@ public class FightLogic {
                     continue;
                 }
                 fightBuff.deductBuffRounds();
-                fightBuff.releaseEffect(contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
             }
         }
     }

@@ -320,6 +320,16 @@ public class FightUtil {
     }
 
     /**
+     * 触发类型buff
+     *
+     * @param contextHolder
+     * @param timing
+     */
+    public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing) {
+        EventBus.getDefault().post(new FightEvent.BuffTriggerEvent(contextHolder, timing, null));
+    }
+
+    /**
      * 触发类型的buff
      *
      * @param contextHolder

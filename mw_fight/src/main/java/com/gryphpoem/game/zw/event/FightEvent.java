@@ -21,5 +21,10 @@ public class FightEvent {
             this.timing = timing;
             this.params = params;
         }
+
+        public BuffTriggerEvent(FightContextHolder contextHolder, int timing) {
+            this.contextHolder = contextHolder;
+            this.timing = timing;
+        }
     }
 }
