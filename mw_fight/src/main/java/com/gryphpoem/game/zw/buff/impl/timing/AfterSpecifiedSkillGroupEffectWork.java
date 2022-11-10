@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
@@ -24,7 +25,15 @@ public class AfterSpecifiedSkillGroupEffectWork extends AbsFightEffectWork {
 
     @Override
     public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
-        StaticHeroSkill heroSkill = (StaticHeroSkill) params[0];
+        if (ObjectUtils.isEmpty(params)) return false;
+        StaticHeroSkill heroSkill;
+        if (params[0] instanceof Object[]) {
+            Object[] objArr = (Object[]) params[0];
+            heroSkill = (StaticHeroSkill) objArr[0];
+        } else {
+            heroSkill = (StaticHeroSkill) params[0];
+        }
+
         if (CheckNull.isNull(heroSkill) || heroSkill.getSkillGroupId() != conditionConfig.get(2)) {
             LogUtil.debug("conditionConfig: ", conditionConfig, ", heroSkillGroupId: ", CheckNull.isNull(heroSkill) ? -1 : heroSkill.getSkillGroupId());
             return false;

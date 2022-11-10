@@ -14,6 +14,7 @@ import com.gryphpoem.push.util.CheckNull;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -191,7 +192,8 @@ public class FightCalc {
         double baseHurt = baseHurt(actionDirection);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
         baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
-        LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ", effectConfig, ", 计算完固伤部分的基础伤害: ", baseHurt);
+        LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
+                Arrays.toString(effectConfig.toArray()), ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 技能修正
         double skillCorrection = skillCorrection(actionDirection);
         // 终伤修正

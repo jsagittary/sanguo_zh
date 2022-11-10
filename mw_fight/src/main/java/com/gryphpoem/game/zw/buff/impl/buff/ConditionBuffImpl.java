@@ -45,16 +45,10 @@ public class ConditionBuffImpl extends AbsConditionBuff {
         }
         if (!CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
             FightManager fightManager = DataResource.ac.getBean(FightManager.class);
-            List<Integer> conditionConfig = this.staticBuff.getBuffTriggerCondition().stream().filter(config ->
-                    !CheckNull.isEmpty(config) && config.get(0) == timing).findFirst().orElse(null);
-            if (CheckNull.isEmpty(conditionConfig)) {
-                return;
-            }
-
             boolean canRelease = true;
             for (List<Integer> config : this.staticBuff.getBuffTriggerCondition()) {
                 if (CheckNull.isEmpty(config) || config.size() < 2) continue;
-                if (!fightManager.buffCanRelease(this, contextHolder, config.get(1), config)) {
+                if (!fightManager.buffCanRelease(this, contextHolder, config.get(1), config, params)) {
                     canRelease = false;
                     break;
                 }

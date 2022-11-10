@@ -87,7 +87,7 @@ public interface FightConstant {
          */
         int ROUND_START = 0;
         /**
-         * 技能后
+         * 技能前
          */
         int SKILL_BEFORE = 11;
         /**

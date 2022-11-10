@@ -6,6 +6,7 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.push.util.CheckNull;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
@@ -22,7 +23,15 @@ public class SpecifiedBuffIdDisappearsEffectWork extends AbsFightEffectWork {
 
     @Override
     public boolean buffCanEffect(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> conditionConfig, Object... params) {
-        IFightBuff lostBuff = (IFightBuff) params[0];
+        if (ObjectUtils.isEmpty(params)) return false;
+        IFightBuff lostBuff;
+        if (params[0] instanceof Object[]) {
+            Object[] objArr = (Object[]) params[0];
+            lostBuff = (IFightBuff) objArr[0];
+        } else {
+            lostBuff = (IFightBuff) params[0];
+        }
+
         if (lostBuff.getBuffConfig().getBuffId() != conditionConfig.get(2)) {
             return false;
         }

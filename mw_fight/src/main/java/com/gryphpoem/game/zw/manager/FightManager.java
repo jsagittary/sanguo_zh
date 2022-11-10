@@ -4,8 +4,12 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightBuffWork;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.eventbus.EventBus;
+import com.gryphpoem.game.zw.core.eventbus.Subscribe;
+import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.util.ClassUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.event.FightEvent;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
@@ -44,6 +48,8 @@ public class FightManager {
 
     @PostConstruct
     public void load() {
+        EventBus.getDefault().register(this);
+
         Set<Class<?>> classes = ClassUtil.getClasses(IFightBuff.class.getPackage());
         if (CheckNull.isEmpty(classes)) return;
         for (Class clazz : classes) {
@@ -134,5 +140,15 @@ public class FightManager {
      */
     public IFightEffect getSkillEffect(int effectLogicId) {
         return effectMap.get(effectLogicId);
+    }
+
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void triggerBuffEffect(FightEvent.BuffTriggerEvent event) {
+        FightContextHolder contextHolder = event.contextHolder;
+        List<IFightBuff> fightBuffList = contextHolder.getSortedBuff(event.timing);
+        if (CheckNull.isEmpty(fightBuffList))
+            return;
+
+        fightBuffList.forEach(fightBuff -> fightBuff.releaseEffect(contextHolder, event.timing, event.params));
     }
 }

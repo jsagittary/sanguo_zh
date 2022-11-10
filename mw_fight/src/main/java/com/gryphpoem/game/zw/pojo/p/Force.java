@@ -184,30 +184,6 @@ public class Force {
         return true;
     }
 
-    /**
-     * 释放buff效果
-     *
-     * @param contextHolder
-     * @param timing
-     * @param params
-     */
-    public void releaseBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
-        if (!CheckNull.isEmpty(this.buffList)) {
-            buffList.forEach(fightBuff -> {
-                fightBuff.releaseEffect(contextHolder, timing, params);
-            });
-        }
-        if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            for (FightAssistantHero assistantHero : this.assistantHeroList) {
-                if (!CheckNull.isEmpty(assistantHero.getBuffList())) {
-                    assistantHero.getBuffList().forEach(fightBuff -> {
-                        fightBuff.releaseEffect(contextHolder, timing, params);
-                    });
-                }
-            }
-        }
-    }
-
     public FightBuffEffect getFightEffectMap(int heroId) {
         if (heroId == this.id) {
             if (this.fightBuffEffect == null)

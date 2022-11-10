@@ -297,6 +297,7 @@ public class FightLogic {
                 IFightBuff fightBuff = it.next();
                 if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
                     fightBuff.buffLoseEffectiveness(contextHolder);
+                    contextHolder.removeBuff(fightBuff);
                     it.remove();
                     continue;
                 }
@@ -359,8 +360,9 @@ public class FightLogic {
                     IFightBuff fightBuff = it.next();
                     if (CheckNull.isNull(fightBuff)) continue;
                     if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
-                        it.remove();
                         fightBuff.buffLoseEffectiveness(contextHolder);
+                        contextHolder.removeBuff(fightBuff);
+                        it.remove();
                     }
                 }
             }

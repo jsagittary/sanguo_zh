@@ -1,8 +1,10 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -40,4 +42,9 @@ public class FightContext {
      * 正常回合放技能或普攻时, 攻击方向
      */
     private ActionDirection actionDirection;
+
+    /**
+     * 所有触发类型的buff (主动buff-回合开始时触发)
+     */
+    private HashMap<Integer, List<IFightBuff>> triggerBuffMap;
 }

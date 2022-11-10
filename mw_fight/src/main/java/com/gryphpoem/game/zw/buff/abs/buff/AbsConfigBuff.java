@@ -226,7 +226,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
      */
     protected void buffEffectiveness(FightContextHolder contextHolder, Object... params) {
         // 触发buff
-        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_DISAPPEARS, this);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_DISAPPEARS, new Object[]{this});
 
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);

@@ -2,7 +2,9 @@ package com.gryphpoem.game.zw.util;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.event.FightEvent;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
@@ -324,22 +326,7 @@ public class FightUtil {
      * @param timing
      * @param params
      */
-    public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
-        if (!contextHolder.getCurAttacker().isBuffListEmpty()) {
-            releaseBuffEffect(contextHolder.getCurAttacker(), contextHolder, timing, params);
-        }
-        if (!contextHolder.getCurDefender().isBuffListEmpty()) {
-            releaseBuffEffect(contextHolder.getCurDefender(), contextHolder, timing, params);
-        }
-    }
-
-    /**
-     * 释放效果
-     *
-     * @param attacker
-     * @param contextHolder
-     */
-    public static void releaseBuffEffect(Force attacker, FightContextHolder contextHolder, int timing, Object... params) {
-        attacker.releaseBuffEffect(contextHolder, timing, params);
+    public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, Object[] params) {
+        EventBus.getDefault().post(new FightEvent.BuffTriggerEvent(contextHolder, timing, params));
     }
 }
