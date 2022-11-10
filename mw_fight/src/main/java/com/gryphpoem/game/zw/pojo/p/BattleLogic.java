@@ -260,15 +260,37 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING);
 
         // TODO 扣血
+        damage = actionDirection.getDef().hurt(damage);
         actionDirection.getAtk().killed += damage;
         actionDirection.getDef().lost = damage;
         actionDirection.getAtk().fighter.hurt += damage;
         actionDirection.getDef().fighter.lost += damage;
         actionDirection.getDef().subHp(actionDirection.getAtk());
+        deductMorale(actionDirection, damage);
 
         // 扣血后
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BLEEDING);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BLOOD_VOLUME_BELOW_PERCENTAGE);
+    }
+
+    /**
+     * 掉血时扣除士气值
+     *
+     * @param actionDirection
+     * @param damage
+     */
+    private void deductMorale(ActionDirection actionDirection, int damage) {
+        Force force = actionDirection.getDef();
+        int heroId = actionDirection.getCurDefHeroId();
+        int beforeReducedMorale = force.morale;
+        int reducedMorale = FightCalc.moraleCorrection(force, heroId, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
+                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, damage);
+        force.morale -= reducedMorale;
+        if (force.morale < 0)
+            force.morale = 0;
+        LogUtil.fight("扣血时, 执行士气扣除效果, 士气扣除方: ", force.ownerId,
+                ", 武将: ", heroId, ", 扣除的士气: ", reducedMorale,
+                ", 扣除前士气: ", beforeReducedMorale, ", 扣除后士气: ", force.morale);
     }
 }
