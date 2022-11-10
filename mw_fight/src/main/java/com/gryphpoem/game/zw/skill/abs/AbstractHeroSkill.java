@@ -101,4 +101,5 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SKILL_AFTER);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_CASTING_THE_SPECIFIED_SKILL_GROUP, s_skill);
     }
+
 }

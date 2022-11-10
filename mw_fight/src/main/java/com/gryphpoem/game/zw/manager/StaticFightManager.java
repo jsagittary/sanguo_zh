@@ -13,6 +13,11 @@ import java.util.Map;
  * createTime: 2022-11-09 14:11
  */
 public class StaticFightManager {
+    public static float K3; // 血量衰减参数
+    public static float K8; // 默认兵种克制
+    public static float K9; // 阶级克制比
+    public static float K10; // 阶级加成
+
     /**
      * buff配置
      */

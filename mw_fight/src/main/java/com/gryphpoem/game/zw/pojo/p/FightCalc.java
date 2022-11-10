@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.FightManager;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 import org.apache.commons.lang3.RandomUtils;
@@ -188,7 +189,7 @@ public class FightCalc {
                 actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始技能伤害攻击计算*******");
         // 基础伤害
         double baseHurt = baseHurt(actionDirection);
-        // （基础伤害*伤害系数【效果3万分比】*血量衰减+固伤【效果3固定值】）
+        // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
         baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ", effectConfig, ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 技能修正
@@ -365,8 +366,7 @@ public class FightCalc {
      */
     private static double bloodValueAttenuation(Force force) {
         // 血量衰减=K3*单排当前兵力/单排兵力上限+1-K3
-        float K3 = 0.65f;
-        return (K3 * force.count / force.lead + 1 - K3);
+        return (StaticFightManager.K3 * force.count / force.lead + 1 - StaticFightManager.K3);
     }
 
     /**
@@ -577,23 +577,23 @@ public class FightCalc {
          * 不可制	(兵种阶级-对方兵种阶级) * K9
          */
 
-        restrain = lvDiff * 0.01f;
+        restrain = lvDiff * StaticFightManager.K9;
         int forceArmyType = force.armyType(atkId);
         int targetArmyType = target.armyType(defId);
         if (haveArmyRestraint(forceArmyType, targetArmyType)) {
-            restrain = restrain + (0.05f + (atkHeroLv * 0.05f));
+            restrain = restrain + (StaticFightManager.K8 + (atkHeroLv * StaticFightManager.K10));
         } else if (haveArmyRestraint(targetArmyType, forceArmyType)) {
             // 兵种克制减伤属性加成
             double lessHurtFromArmyRestraint = getLessHurtFromArmyRestraint(forceArmyType, target, defId);
-            restrain = restrain - (0.09 + (defHeroLv * 0.01f));
+            restrain = restrain - (StaticFightManager.K8 + (defHeroLv * StaticFightManager.K10));
             LogUtil.fight("进攻方角色id: ", force.ownerId, ",防守方角色id: ", target.ownerId, ", " +
                             "战斗回合===》战斗类型: ", FightCalc.battleType2String(battleType),
-                    ", 兵种克制伤害加成比例: ", restrain, " - ", (0.09 + (defHeroLv * 0.01f)),
+                    ", 兵种克制伤害加成比例: ", restrain, " - ", (StaticFightManager.K8 + (defHeroLv * StaticFightManager.K10)),
                     ", 兵种克制减伤加成比例: ", lessHurtFromArmyRestraint);
             restrain -= lessHurtFromArmyRestraint;
         }
 
-        return restrain;
+        return 1 + restrain;
     }
 
     /**

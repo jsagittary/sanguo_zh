@@ -243,10 +243,8 @@ public class FightLogic {
             roundStart(force, target);
             // 双方武将以及副将战斗
             fight(force, target);
-            // 清除战败武将施加的buff
-            clearDeadBuff(force, target);
-            // 清除出手顺序列表
-            contextHolder.getFightEntity().clear();
+            // 当前回合结束处理
+            nextRoundBefore(force, target);
         }
 
         if (contextHolder.isRecordFlag()) {
@@ -306,6 +304,20 @@ public class FightLogic {
                 fightBuff.releaseEffect(contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
             }
         }
+    }
+
+    /**
+     * 下回合之前, 当前回合结束之后
+     *
+     * @param force
+     * @param target
+     */
+    private void nextRoundBefore(Force force, Force target) {
+        // 清除战败武将施加的buff
+        clearDeadBuff(force, target);
+        // 清除出手顺序列表
+        if (!CheckNull.isEmpty(contextHolder.getFightEntity()))
+            contextHolder.getFightEntity().clear();
     }
 
     /**

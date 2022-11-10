@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
@@ -628,6 +629,7 @@ public class WorldConstant {
         K1 = SystemTabLoader.getFloatSystemValue(SystemId.K1, 1);
         K2 = SystemTabLoader.getFloatSystemValue(SystemId.K2, 1);
         K3 = SystemTabLoader.getFloatSystemValue(SystemId.K3, 1);
+        StaticFightManager.K3 = K3;
         K4 = SystemTabLoader.getFloatSystemValue(SystemId.K4, 1);
         K5 = SystemTabLoader.getFloatSystemValue(SystemId.K5, 1);
         K6 = SystemTabLoader.getFloatSystemValue(SystemId.K6, 1);
@@ -635,6 +637,9 @@ public class WorldConstant {
         K8 = SystemTabLoader.getFloatSystemValue(SystemId.K8, 0.05f);
         K9 = SystemTabLoader.getFloatSystemValue(SystemId.K9, 0.01f);
         K10 = SystemTabLoader.getFloatSystemValue(SystemId.K10, 0.01f);
+        StaticFightManager.K8 = K8;
+        StaticFightManager.K9 = K9;
+        StaticFightManager.K10 = K10;
 
         MARCH_UPPER_LIMIT_TIME = SystemTabLoader.getListIntSystemValue(SystemId.MARCH_UPPER_LIMIT_TIME, "[300,600,0]");
         CITY_BATTLE_INCREASE_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.CITY_BATTLE_INCREASE_TIME, 300);

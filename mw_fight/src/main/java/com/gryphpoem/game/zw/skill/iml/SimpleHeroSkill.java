@@ -18,10 +18,7 @@ import com.gryphpoem.game.zw.skill.abs.AbstractHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Description: 通用技能实现
@@ -91,7 +88,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             if (CheckNull.isNull(fightEffect)) continue;
             fightEffect.effectiveness(null, contextHolder, list, rule);
             LogUtil.fight("进攻方: ", contextHolder.getCurAttacker().ownerId, "-", contextHolder.getCurAtkHeroId(), isOnStageSkill ? " 释放开场技能: " : "释放主动技能: ",
-                    s_skill.getSkillId(), ", 技能主体效果: ", list);
+                    s_skill.getSkillId(), ", 技能主体效果: ", CheckNull.isEmpty(list) ? "null" : Arrays.toString(list.toArray()));
         }
     }
 
