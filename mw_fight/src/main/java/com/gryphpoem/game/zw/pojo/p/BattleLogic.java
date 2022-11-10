@@ -112,7 +112,8 @@ public class BattleLogic {
         fightBuff.setForceId(actionDirection.getCurDefHeroId());
         fightBuff.setBuffGiver(actionDirection.getAtk());
         fightBuff.setBuffGiverId(actionDirection.getCurAtkHeroId());
-        LogUtil.fight("执行方: ", actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ", actingForce.id, "加buff: ", fightBuff.getBuffConfig());
+        LogUtil.fight("执行方: ", actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ",
+                actingForce.id, ", 加buff: ", fightBuff.getBuffConfig());
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_EXISTS);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BUFF_GROUP_EXISTS);

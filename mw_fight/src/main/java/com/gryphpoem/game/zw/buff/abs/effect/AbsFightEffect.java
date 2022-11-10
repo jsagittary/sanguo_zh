@@ -192,6 +192,8 @@ public abstract class AbsFightEffect implements IFightEffect {
                     }
                     if (data.getBuffKeyId() == fightBuff.uniqueId()) {
                         it.remove();
+                        LogUtil.fight("buff效果失效, 效果持有人: ", def.ownerId, "-", heroId,
+                                ", 损失的效果: ", Arrays.toString(effectConfig_.toArray()), ", 消失的效果参数: ", data);
                         // TODO 客户端pb添加
 
                     }

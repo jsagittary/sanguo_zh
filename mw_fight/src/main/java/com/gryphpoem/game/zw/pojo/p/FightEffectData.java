@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.util.FightUtil;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import java.util.Objects;
  * createTime: 2022-11-01 14:42
  */
 @Data
+@ToString
 public class FightEffectData {
     private long effectKeyId;
     private long buffKeyId;
