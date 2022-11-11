@@ -318,6 +318,10 @@ public class FightUtil {
         }
     }
 
+    public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, ActionDirection actionDirection) {
+        EventBus.getDefault().post(new FightEvent.BuffTriggerEvent(contextHolder, timing, actionDirection, null));
+    }
+
     /**
      * 触发类型buff
      *

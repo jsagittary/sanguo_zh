@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
@@ -13,6 +14,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -126,12 +128,18 @@ public abstract class AbsConfigBuff implements IFightBuff {
     }
 
     @Override
-    public boolean hasRemainBuffTimes(FightContextHolder contextHolder, Object... params) {
-        if (this.buffEffectiveRounds == -1) {
-            return this.staticBuff.getBuffEffectiveTimes() > 0 && this.buffEffectiveTimes < this.staticBuff.getBuffEffectiveTimes();
-        } else {
-            return this.buffEffectiveRounds > 0 && this.staticBuff.getBuffEffectiveTimes() > 0 && this.buffEffectiveTimes < this.staticBuff.getBuffEffectiveTimes();
+    public boolean hasRemainBuffRoundTimes(FightContextHolder contextHolder, Object... params) {
+        if (this.buffEffectiveRounds == -1)
+            return true;
+        return this.buffEffectiveRounds > 0;
+    }
+
+    @Override
+    public boolean hasRemainEffectiveTimes(FightContextHolder contextHolder, Object... params) {
+        if (this.getBuffConfig().getBuffEffectiveTimes() > 0) {
+            return this.buffEffectiveTimes < this.getBuffConfig().getBuffEffectiveTimes();
         }
+        return true;
     }
 
     @Override
@@ -243,6 +251,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             if (CheckNull.isNull(fightEffect))
                 continue;
             fightEffect.effectRestoration(this, contextHolder, effectList, rule, params);
+            LogUtil.fight("buff挂载者: ", this.force.ownerId, "-", this.forceId, ", buff消失, 消失的效果配置: ", Arrays.toString(effectList.toArray()));
         }
     }
 }

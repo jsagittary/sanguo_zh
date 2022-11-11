@@ -50,14 +50,14 @@ public class Force {
      * 主将技能列表
      */
     public List<SimpleHeroSkill> skillList = new ArrayList<>();
-    /**
-     * 武将当前士气
-     */
-    public int morale;
-    /**
-     * 本轮士气值上限
-     */
-    public int maxRoundMorale;
+//    /**
+//     * 武将当前士气
+//     */
+//    public int morale;
+//    /**
+//     * 本轮士气值上限
+//     */
+//    public int maxRoundMorale;
     /**
      * 战斗buff集合 主将的buff列表
      */
@@ -203,14 +203,7 @@ public class Force {
     }
 
     public int armyTypeLv(int heroId) {
-        if (this.id == heroId)
-            return this.intensifyLv;
-        if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            return this.assistantHeroList.stream().filter(ass ->
-                    ass.getHeroId() == heroId).map(ass -> ass.getIntensifyLv()).findFirst().orElse(0);
-        }
-
-        return 0;
+        return this.intensifyLv;
     }
 
     public AttrData attrData(int heroId) {
@@ -230,7 +223,7 @@ public class Force {
      * @return 是否存活
      */
     public boolean alive() {
-        return hp > 0 && this.morale > 0;
+        return hp > 0;
     }
 
     /**
@@ -490,12 +483,7 @@ public class Force {
     }
 
     public int armyType(int heroId) {
-        if (this.id == heroId)
-            return this.armType;
-        if (!CheckNull.isEmpty(this.assistantHeroList)) {
-            return this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).map(ass -> ass.getArmType()).findFirst().orElse(-1);
-        }
-        return -1;
+        return this.armType;
     }
 
     @Override
@@ -527,8 +515,8 @@ public class Force {
                 ", isBcs=" + isBcs +
                 ", isIronBas=" + isIronBas +
                 ", skillList=" + skillList +
-                ", morale=" + morale +
-                ", maxRoundMorale=" + maxRoundMorale +
+//                ", morale=" + morale +
+//                ", maxRoundMorale=" + maxRoundMorale +
                 ", buffList=" + buffList +
                 ", assistantHeroList=" + assistantHeroList +
                 '}';

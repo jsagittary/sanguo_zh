@@ -170,13 +170,13 @@ public class FightLogic {
      * @param target
      */
     private void calFighterMorale(Force force, Force target) {
-        force.morale = force.hp * 2;
-        target.morale = force.hp * 2;
-        force.maxRoundMorale = force.morale;
-        target.maxRoundMorale = target.morale;
-
-        LogUtil.fight("============= 回合开始, 进攻方: force: ", force.ownerId, ", 防守方: target: ",
-                target.ownerId, ", 恢复并记录最大士气, 进攻方: ", force.maxRoundMorale, ", 防守方: ", target.maxRoundMorale, " =============");
+//        force.morale = force.hp * 2;
+//        target.morale = force.hp * 2;
+//        force.maxRoundMorale = force.morale;
+//        target.maxRoundMorale = target.morale;
+//
+//        LogUtil.fight("============= 回合开始, 进攻方: force: ", force.ownerId, ", 防守方: target: ",
+//                target.ownerId, ", 恢复并记录最大士气, 进攻方: ", force.maxRoundMorale, ", 防守方: ", target.maxRoundMorale, " =============");
     }
 
     /**
@@ -223,8 +223,6 @@ public class FightLogic {
                 contextHolder.addRoundNum();
             }
 
-            // 指定回合触发
-            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
@@ -236,11 +234,17 @@ public class FightLogic {
                 contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
                 // 所有buff作用次数少一次
                 contextHolder.getBattleLogic().deductBuffRounds(buffList);
+                // 指定回合触发
+                contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
 
                 // 释放技能
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
+                // 清除没有作用次数的buff
+                contextHolder.getBattleLogic().clearBothForceBuffEffectTimes(force, target, contextHolder);
                 // 普攻
                 contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, this.battleType, contextHolder);
+                // 清除没有作用次数的buff
+                contextHolder.getBattleLogic().clearBothForceBuffEffectTimes(force, target, contextHolder);
             }
 
             // 修正士气
@@ -271,8 +275,8 @@ public class FightLogic {
         }
 
         if (!attackerAlive && !defenderAlive) {
-            this.winState = FightConstant.FIGHT_RESULT_DRAW;
-            LogUtil.fight("**********************战斗结束**********************, 双方战成平局");
+            this.winState = FightConstant.FIGHT_RESULT_SUCCESS;
+            LogUtil.fight("**********************战斗结束**********************, 双方战成平局, 进攻方胜");
             return;
         }
 
@@ -281,7 +285,6 @@ public class FightLogic {
             LogUtil.fight("**********************战斗结束**********************, 获胜方: ",
                     this.winState == FightConstant.FIGHT_RESULT_SUCCESS ? "进攻方胜" : "防守方胜");
         }
-
     }
 
     /**

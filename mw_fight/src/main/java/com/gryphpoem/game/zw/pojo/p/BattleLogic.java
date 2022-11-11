@@ -171,7 +171,7 @@ public class BattleLogic {
     public void skillAttack(ActionDirection actionDirection, FightContextHolder contextHolder, List<Integer> effectConfig, int battleType) {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_HIT);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_SKILL_DAMAGE);
-        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING, actionDirection);
 
         // TODO 扣血
         hurt(actionDirection, FightCalc.calSkillAttack(actionDirection, effectConfig, battleType));
@@ -247,12 +247,12 @@ public class BattleLogic {
      * @param target
      */
     public void roundMoraleDeduction(Force force, Force target) {
-        force.morale -= oneSideMoraleDeduction(force);
-        if (force.morale < 0)
-            force.morale = 0;
-        target.morale -= oneSideMoraleDeduction(target);
-        if (target.morale < 0)
-            target.morale = 0;
+//        force.morale -= oneSideMoraleDeduction(force);
+//        if (force.morale < 0)
+//            force.morale = 0;
+//        target.morale -= oneSideMoraleDeduction(target);
+//        if (target.morale < 0)
+//            target.morale = 0;
         // TODO pb
 
     }
@@ -264,9 +264,10 @@ public class BattleLogic {
      * @return
      */
     private double oneSideMoraleDeduction(Force force) {
-        double originValue = force.maxRoundMorale * 0.5d / FightConstant.HUNDRED;
-        return FightCalc.moraleCorrection(force, force.id, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
-                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, originValue);
+//        double originValue = force.maxRoundMorale * 0.5d / FightConstant.HUNDRED;
+//        return FightCalc.moraleCorrection(force, force.id, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
+//                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, originValue);
+        return 0d;
     }
 
 
@@ -293,17 +294,17 @@ public class BattleLogic {
      * @param damage
      */
     private void deductMorale(ActionDirection actionDirection, int damage) {
-        Force force = actionDirection.getDef();
-        int heroId = actionDirection.getCurDefHeroId();
-        int beforeReducedMorale = force.morale;
-        int reducedMorale = FightCalc.moraleCorrection(force, heroId, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
-                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, damage);
-        force.morale -= reducedMorale;
-        if (force.morale < 0)
-            force.morale = 0;
-        LogUtil.fight("扣血时, 执行士气扣除效果, 士气扣除方: ", force.ownerId,
-                ", 武将: ", heroId, ", 扣除的士气: ", reducedMorale,
-                ", 扣除前士气: ", beforeReducedMorale, ", 扣除后士气: ", force.morale);
+//        Force force = actionDirection.getDef();
+//        int heroId = actionDirection.getCurDefHeroId();
+//        int beforeReducedMorale = force.morale;
+//        int reducedMorale = FightCalc.moraleCorrection(force, heroId, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
+//                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, damage);
+//        force.morale -= reducedMorale;
+//        if (force.morale < 0)
+//            force.morale = 0;
+//        LogUtil.fight("扣血时, 执行士气扣除效果, 士气扣除方: ", force.ownerId,
+//                ", 武将: ", heroId, ", 扣除的士气: ", reducedMorale,
+//                ", 扣除前士气: ", beforeReducedMorale, ", 扣除后士气: ", force.morale);
     }
 
     /**
@@ -315,13 +316,13 @@ public class BattleLogic {
     }
 
     private void initMorale(Fighter fighter) {
-        if (Objects.nonNull(fighter)) {
-            if (!CheckNull.isEmpty(fighter.getForces())) {
-                for (Force force : fighter.getForces()) {
-                    force.morale = force.hp * 2;
-                }
-            }
-        }
+//        if (Objects.nonNull(fighter)) {
+//            if (!CheckNull.isEmpty(fighter.getForces())) {
+//                for (Force force : fighter.getForces()) {
+//                    force.morale = force.hp * 2;
+//                }
+//            }
+//        }
     }
 
     /**
@@ -338,7 +339,7 @@ public class BattleLogic {
                     it.remove();
                     continue;
                 }
-                if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
+                if (!fightBuff.hasRemainBuffRoundTimes(contextHolder)) {
                     fightBuff.buffLoseEffectiveness(contextHolder);
                     it.remove();
                     continue;
@@ -457,5 +458,49 @@ public class BattleLogic {
                 return;
             buff.releaseEffect(contextHolder, timing);
         });
+    }
+
+    /**
+     * 清除双方没有作用次数的buff
+     *
+     * @param force
+     * @param target
+     * @param contextHolder
+     */
+    public void clearBothForceBuffEffectTimes(Force force, Force target, FightContextHolder contextHolder) {
+        clearForceBuffEffectTimes(force, contextHolder);
+        clearForceBuffEffectTimes(target, contextHolder);
+    }
+
+    /**
+     * 清除没有作用次数的buff
+     *
+     * @param force
+     */
+    private void clearForceBuffEffectTimes(Force force, FightContextHolder contextHolder) {
+        clearNoBuffEffectTimes(force.buffList, contextHolder);
+        if (!CheckNull.isEmpty(force.assistantHeroList)) {
+            for (FightAssistantHero assistantHero : force.assistantHeroList) {
+                if (CheckNull.isNull(assistantHero)) continue;
+                clearNoBuffEffectTimes(assistantHero.getBuffList(), contextHolder);
+            }
+        }
+    }
+
+    /**
+     * 清除没有作用次数的buff
+     *
+     * @param buffList
+     */
+    private void clearNoBuffEffectTimes(LinkedList<IFightBuff> buffList, FightContextHolder contextHolder) {
+        if (CheckNull.isEmpty(buffList)) return;
+        Iterator<IFightBuff> it = buffList.iterator();
+        while (it.hasNext()) {
+            IFightBuff fightBuff = it.next();
+            if (CheckNull.isNull(fightBuff)) continue;
+            if (fightBuff.hasRemainEffectiveTimes(contextHolder)) continue;
+            fightBuff.buffLoseEffectiveness(contextHolder);
+            it.remove();
+        }
     }
 }

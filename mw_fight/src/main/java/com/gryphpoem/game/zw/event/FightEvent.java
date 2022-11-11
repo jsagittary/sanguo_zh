@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.event;
 
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 
 /**
@@ -15,6 +16,14 @@ public class FightEvent {
         public FightContextHolder contextHolder;
         public int timing;
         public Object[] params;
+        public ActionDirection actionDirection;
+
+        public BuffTriggerEvent(FightContextHolder contextHolder, int timing, ActionDirection actionDirection, Object[] params) {
+            this.contextHolder = contextHolder;
+            this.timing = timing;
+            this.params = params;
+            this.actionDirection = actionDirection;
+        }
 
         public BuffTriggerEvent(FightContextHolder contextHolder, int timing, Object[] params) {
             this.contextHolder = contextHolder;

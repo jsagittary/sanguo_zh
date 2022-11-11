@@ -169,7 +169,7 @@ public class ShieldEffectImpl extends AbsFightEffect {
         // 合并不同效果id的效果值
         ArrayList<FightEffectData> dataList = new ArrayList<>();
         resultMap.values().forEach(dataList::addAll);
-        Collections.sort(dataList, Comparator.comparing(FightEffectData::getIndex));
+        Collections.sort(dataList, Comparator.comparing(FightEffectData::getEffectKeyId));
         return dataList;
     }
 }

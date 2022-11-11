@@ -146,20 +146,12 @@ public abstract class AbsFightEffect implements IFightEffect {
         }
         if (!CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             if (Objects.nonNull(rule)) {
-                int nextIndex;
                 for (Integer heroId : actionDirection.getDefHeroList()) {
                     Force def = actionDirection.getDef();
                     FightBuffEffect fbe = def.getFightEffectMap(heroId);
                     FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe);
-                    Map<Integer, List<FightEffectData>> dataMap = fbe.getEffectMap().get(rule.getEffectLogicId());
-                    if (CheckNull.isEmpty(dataMap)) {
-                        nextIndex = 0;
-                    } else {
-                        nextIndex = dataMap.entrySet().stream().mapToInt(m -> m.getValue().size()).sum();
-                    }
                     fbe.getEffectMap().computeIfAbsent(rule.getEffectLogicId(), m -> new HashMap<>()).
                             computeIfAbsent(effectConfig_.get(2), l -> new ArrayList<>()).add(data);
-                    data.setIndex(nextIndex);
                     // TODO 客户端pb添加
 
                 }
@@ -196,6 +188,12 @@ public abstract class AbsFightEffect implements IFightEffect {
                                 ", 损失的效果: ", Arrays.toString(effectConfig_.toArray()), ", 消失的效果参数: ", data);
                         // TODO 客户端pb添加
 
+                    }
+                }
+                if (CheckNull.isEmpty(effectList)) {
+                    effectIdMap.remove(effectConfig_.get(2));
+                    if (CheckNull.isEmpty(effectIdMap)) {
+                        fbe.getEffectMap().remove(rule.getEffectLogicId());
                     }
                 }
             }

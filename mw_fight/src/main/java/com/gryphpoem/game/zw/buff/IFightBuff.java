@@ -111,7 +111,16 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
      * @param params
      * @return
      */
-    boolean hasRemainBuffTimes(FightContextHolder contextHolder, Object... params);
+    boolean hasRemainBuffRoundTimes(FightContextHolder contextHolder, Object... params);
+
+    /**
+     * 剩余生效次数
+     *
+     * @param contextHolder
+     * @param params
+     * @return
+     */
+    boolean hasRemainEffectiveTimes(FightContextHolder contextHolder, Object... params);
 
     /**
      * 释放技能, buff添加
