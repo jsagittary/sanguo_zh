@@ -12,7 +12,6 @@ import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +23,7 @@ public class FightUtil {
     /**
      * BUFF 与 EFFECT 唯一id
      */
-    private static final AtomicLong idGenerator = new AtomicLong();
+    private static long idGenerator = 0;
 
     /**
      * 获取buff作用方, 以及被作用方的buff列表
@@ -61,7 +60,7 @@ public class FightUtil {
      * @return
      */
     public static long uniqueId() {
-        return idGenerator.incrementAndGet();
+        return idGenerator++;
     }
 
     /**

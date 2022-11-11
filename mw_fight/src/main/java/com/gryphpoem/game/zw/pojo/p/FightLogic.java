@@ -31,6 +31,7 @@ public class FightLogic {
     }
 
     public FightLogic(Fighter attacker, Fighter defender, boolean recordFlag, int battleType) {
+        this.fightId = FightUtil.uniqueId();
         this.battleType = battleType;
         attacker.isAttacker = true;
         this.contextHolder = new FightContextHolder(attacker, defender, battleType);
@@ -446,7 +447,7 @@ public class FightLogic {
     }
 
     public CommonPb.Record generateRecord() {
-        return CommonPb.Record.newBuilder().build();
+        return CommonPb.Record.newBuilder().setKeyId(0).build();
     }
 
     public CommonPb.Record.Builder getRecordBuild() {
