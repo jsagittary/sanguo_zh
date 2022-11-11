@@ -2,9 +2,7 @@ package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.buff.IFightBuff;
-import com.gryphpoem.game.zw.buff.impl.buff.ActiveBuffImpl;
 import com.gryphpoem.game.zw.buff.impl.buff.ConditionBuffImpl;
-import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.push.util.CheckNull;
@@ -221,15 +219,10 @@ public class FightContextHolder {
         if (CheckNull.isNull(LOCAL.get().getTriggerBuffMap())) {
             LOCAL.get().setTriggerBuffMap(new HashMap<>());
         }
-        if (!(fightBuff instanceof ConditionBuffImpl) && !(fightBuff instanceof ActiveBuffImpl)) {
+        if (!(fightBuff instanceof ConditionBuffImpl)) {
             return;
         }
 
-        if (fightBuff instanceof ActiveBuffImpl) {
-            LOCAL.get().getTriggerBuffMap().computeIfAbsent(FightConstant.BuffEffectTiming.ROUND_START,
-                    l -> new LinkedList<>()).add(fightBuff);
-            return;
-        }
         if (fightBuff instanceof ConditionBuffImpl) {
             List<Integer> condition;
             if (CheckNull.isNull(fightBuff.getBuffConfig()) || CheckNull.isEmpty(fightBuff.getBuffConfig().
@@ -244,20 +237,13 @@ public class FightContextHolder {
         if (CheckNull.isNull(LOCAL.get().getTriggerBuffMap())) {
             return;
         }
-        if (!(fightBuff instanceof ConditionBuffImpl) && !(fightBuff instanceof ActiveBuffImpl)) {
+        if (!(fightBuff instanceof ConditionBuffImpl)) {
             return;
         }
 
-        List<IFightBuff> fightBuffList;
-        if (fightBuff instanceof ActiveBuffImpl) {
-            fightBuffList = LOCAL.get().getTriggerBuffMap().get(FightConstant.BuffEffectTiming.ROUND_START);
-            if (!CheckNull.isEmpty(fightBuffList)) {
-                fightBuffList.remove(fightBuff);
-            }
-            return;
-        }
         if (fightBuff instanceof ConditionBuffImpl) {
             List<Integer> condition;
+            List<IFightBuff> fightBuffList;
             if (CheckNull.isNull(fightBuff.getBuffConfig()) || CheckNull.isEmpty(fightBuff.getBuffConfig().
                     getBuffTriggerCondition()) || CheckNull.isEmpty(condition = fightBuff.getBuffConfig().getBuffTriggerCondition().get(0)))
                 return;

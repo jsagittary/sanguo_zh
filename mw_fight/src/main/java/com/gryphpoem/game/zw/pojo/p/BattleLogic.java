@@ -327,21 +327,34 @@ public class BattleLogic {
     /**
      * 计算buff
      *
-     * @param force
+     * @param buffList
      */
-    public void settlementBuff(Force force, FightContextHolder contextHolder) {
-        if (!CheckNull.isEmpty(force.buffList)) {
-            Iterator<IFightBuff> it = force.buffList.iterator();
+    public void settlementBuff(LinkedList<IFightBuff> buffList, FightContextHolder contextHolder) {
+        if (!CheckNull.isEmpty(buffList)) {
+            Iterator<IFightBuff> it = buffList.iterator();
             while (it.hasNext()) {
                 IFightBuff fightBuff = it.next();
+                if (CheckNull.isNull(fightBuff)) {
+                    it.remove();
+                    continue;
+                }
                 if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
                     fightBuff.buffLoseEffectiveness(contextHolder);
                     it.remove();
                     continue;
                 }
-                fightBuff.deductBuffRounds();
             }
         }
+    }
+
+    /**
+     * 扣除buff回合次数
+     *
+     * @param buffList
+     */
+    public void deductBuffRounds(LinkedList<IFightBuff> buffList) {
+        if (CheckNull.isEmpty(buffList)) return;
+        buffList.forEach(fightBuff -> fightBuff.deductBuffRounds());
     }
 
     /**
@@ -428,5 +441,21 @@ public class BattleLogic {
         // 阵亡的将领去掉光环效果
         target.fighter.subAuraSkill(target);
         force.fighter.subAuraSkill(force);
+    }
+
+    /**
+     * 释放主动buff
+     *
+     * @param buffList
+     * @param contextHolder
+     */
+    public void releaseSingleBuff(LinkedList<IFightBuff> buffList, FightContextHolder contextHolder, int timing) {
+        if (CheckNull.isEmpty(buffList)) return;
+        buffList.forEach(buff -> {
+            if (CheckNull.isNull(buff) || (timing != FightConstant.BuffEffectTiming.ROUND_START && timing !=
+                    FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND))
+                return;
+            buff.releaseEffect(contextHolder, timing);
+        });
     }
 }

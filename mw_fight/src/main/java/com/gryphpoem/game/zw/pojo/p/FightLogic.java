@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -7,10 +8,7 @@ import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -224,16 +222,21 @@ public class FightLogic {
             if (fightNum++ > 0) {
                 contextHolder.addRoundNum();
             }
-            // 结算buff
-            contextHolder.getBattleLogic().settlementBuff(force, contextHolder);
-            contextHolder.getBattleLogic().settlementBuff(target, contextHolder);
-            // 主动buff触发
-            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
 
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
+                LinkedList<IFightBuff> buffList = atk.buffList(fe.getHeroId());
+                // 结算行动方buff, 清除次数为0的buff
+                contextHolder.getBattleLogic().settlementBuff(buffList, contextHolder);
+                // 释放主动buff
+                contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
+                // 所有buff作用次数少一次
+                contextHolder.getBattleLogic().deductBuffRounds(buffList);
+                // 触发指定回合开始buff
+                contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
+
                 // 释放技能
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
                 // 普攻
