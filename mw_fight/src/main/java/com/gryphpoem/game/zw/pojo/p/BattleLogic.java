@@ -358,6 +358,8 @@ public class BattleLogic {
         // 清除出手顺序列表
         if (!CheckNull.isEmpty(contextHolder.getFightEntity()))
             contextHolder.getFightEntity().clear();
+        // 清除回合数
+        contextHolder.clearRoundNum();
     }
 
     /**

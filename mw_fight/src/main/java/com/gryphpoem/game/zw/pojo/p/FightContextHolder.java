@@ -275,6 +275,14 @@ public class FightContextHolder {
         return buffMap.get(timing);
     }
 
+    public void addRoundNum() {
+        LOCAL.get().setRoundNum(getRoundNum() + 1);
+    }
+
+    public void clearRoundNum() {
+        LOCAL.get().setRoundNum(0);
+    }
+
     abstract class InnerContextLocal<T> {
 
         private T value;

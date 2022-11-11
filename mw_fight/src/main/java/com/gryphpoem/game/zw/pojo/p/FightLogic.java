@@ -99,6 +99,7 @@ public class FightLogic {
      * 回合伊始
      */
     private void roundStart(Force force, Force target) {
+        contextHolder.addRoundNum();
         calFighterMorale(force, target);
         // 释放登场技能
         // 顺序为: 功方主将, 攻防副将, 守方主将, 守方副将
@@ -211,6 +212,7 @@ public class FightLogic {
      * @param target
      */
     private void fight(Force force, Force target) {
+        int fightNum = 0;
         while (force.alive() && target.alive()) {
             // 比较武将速度, 排列出场顺序
             List<FightEntity> fightEntityList = contextHolder.getSortedFightEntity(force, target);
@@ -219,6 +221,9 @@ public class FightLogic {
                 break;
             }
 
+            if (fightNum++ > 0) {
+                contextHolder.addRoundNum();
+            }
             // 结算buff
             contextHolder.getBattleLogic().settlementBuff(force, contextHolder);
             contextHolder.getBattleLogic().settlementBuff(target, contextHolder);
