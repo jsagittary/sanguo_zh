@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.pojo.p;
 
-import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -8,7 +7,10 @@ import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -52,8 +54,8 @@ public class FightLogic {
 
     // 记录勋章光环
     private void packAura() {
-        packAura(contextHolder.getAtkFighter());
-        packAura(contextHolder.getDefFighter());
+        FightUtil.packAura(contextHolder.getAtkFighter(), contextHolder);
+        FightUtil.packAura(contextHolder.getDefFighter(), contextHolder);
     }
 
     public FightLogic(Fighter attacker, Fighter defender, boolean recordFlag) {
@@ -67,52 +69,19 @@ public class FightLogic {
     public void packForm() {
         CommonPb.Record.Builder recordData = contextHolder.getRecordData();
         for (Force force : contextHolder.getAtkFighter().forces) {
-            CommonPb.Form formA = createFormPb(force);
+            CommonPb.Form formA = FightUtil.createFormPb(force);
             recordData.addFormA(formA);
         }
 
         for (Force force : contextHolder.getDefFighter().forces) {
-            CommonPb.Form formB = createFormPb(force);
+            CommonPb.Form formB = FightUtil.createFormPb(force);
             recordData.addFormB(formB);
         }
     }
 
-
-    private CommonPb.Form createFormPb(Force force) {
-        CommonPb.Form.Builder formPb = CommonPb.Form.newBuilder();
-        formPb.setId(force.id);
-        formPb.setCount(force.hp);
-        formPb.setLine(force.maxLine);
-        formPb.setCamp(force.getCamp());
-        formPb.setHeroType(force.roleType);
-        formPb.setCurLine(force.curLine);
-        formPb.setIntensifyLv(force.getIntensifyLv() == 0 ? 1 : force.getIntensifyLv());
-        return formPb.build();
-    }
-
-    private void packAura(Fighter fighter) {
-        CommonPb.Record.Builder recordData = contextHolder.getRecordData();
-        for (Map.Entry<Long, List<AuraInfo>> entry : fighter.auraInfos.entrySet()) {
-            Long roleId = entry.getKey();
-            for (AuraInfo auraInfo : entry.getValue()) {
-                CommonPb.Aura auraPb = createAuraPb(roleId, auraInfo);
-                recordData.addAura(auraPb);
-            }
-        }
-    }
-
-    private CommonPb.Aura createAuraPb(long roleId, AuraInfo auraInfo) {
-        CommonPb.Aura.Builder auraPb = CommonPb.Aura.newBuilder();
-        auraPb.setRoleId(roleId);
-        auraPb.setHeroId(auraInfo.getHeroId());
-        auraPb.setId(auraInfo.getMedalAuraId());
-        auraPb.setNick(auraInfo.getNick());
-        return auraPb.build();
-    }
-
     public void start() {
         logForm();
-        battleStart();
+        contextHolder.getBattleLogic().battleStart(contextHolder);
         while (winState == -1) {
             round();
             checkDie();
@@ -122,24 +91,6 @@ public class FightLogic {
             int size = recordData.build().toByteArray().length;
             if (size >= 1024 * 1024 || recordData.getRoundCount() > 1000) {//大于1M的战报,或者回合数超过1000的战报
                 LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, recordData.getRoundCount()));
-            }
-        }
-    }
-
-    /**
-     * 战斗开始时, 初始化武将士气
-     */
-    private void battleStart() {
-        initMorale(contextHolder.getAtkFighter());
-        initMorale(contextHolder.getDefFighter());
-    }
-
-    private void initMorale(Fighter fighter) {
-        if (Objects.nonNull(fighter)) {
-            if (!CheckNull.isEmpty(fighter.getForces())) {
-                for (Force force : fighter.getForces()) {
-                    force.morale = force.hp * 2;
-                }
             }
         }
     }
@@ -246,7 +197,7 @@ public class FightLogic {
             // 双方武将以及副将战斗
             fight(force, target);
             // 当前回合结束处理
-            nextRoundBefore(force, target);
+            contextHolder.getBattleLogic().nextRoundBefore(force, target, contextHolder);
         }
 
         if (contextHolder.isRecordFlag()) {
@@ -269,8 +220,8 @@ public class FightLogic {
             }
 
             // 结算buff
-            settlementBuff(force);
-            settlementBuff(target);
+            contextHolder.getBattleLogic().settlementBuff(force, contextHolder);
+            contextHolder.getBattleLogic().settlementBuff(target, contextHolder);
             // 主动buff触发
             FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
 
@@ -288,109 +239,6 @@ public class FightLogic {
             contextHolder.getBattleLogic().roundMoraleDeduction(force, target);
         }
     }
-
-    /**
-     * 计算buff
-     *
-     * @param force
-     */
-    private void settlementBuff(Force force) {
-        if (!CheckNull.isEmpty(force.buffList)) {
-            Iterator<IFightBuff> it = force.buffList.iterator();
-            while (it.hasNext()) {
-                IFightBuff fightBuff = it.next();
-                if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
-                    fightBuff.buffLoseEffectiveness(contextHolder);
-                    it.remove();
-                    continue;
-                }
-                fightBuff.deductBuffRounds();
-            }
-        }
-    }
-
-    /**
-     * 下回合之前, 当前回合结束之后
-     *
-     * @param force
-     * @param target
-     */
-    private void nextRoundBefore(Force force, Force target) {
-        // 清除战败武将施加的buff
-        clearDeadBuff(force, target);
-        // 清除出手顺序列表
-        if (!CheckNull.isEmpty(contextHolder.getFightEntity()))
-            contextHolder.getFightEntity().clear();
-    }
-
-    /**
-     * 有一方战败, 清除战败方施加的buff
-     *
-     * @param force
-     * @param target
-     */
-    private void clearDeadBuff(Force force, Force target) {
-        if (!force.alive() && !target.alive()) {
-            if (CheckNull.isEmpty(contextHolder.getBuffMap()))
-                return;
-            contextHolder.getBuffMap().clear();
-            return;
-        }
-        if (!force.alive()) {
-            clearForceBuff(force, target);
-        } else {
-            clearForceBuff(target, force);
-        }
-    }
-
-    /**
-     * 清除战败武将施加的buff
-     *
-     * @param force
-     * @param target
-     */
-    private void clearForceBuff(Force force, Force target) {
-        Iterator<IFightBuff> it = target.buffList.iterator();
-        while (it.hasNext()) {
-            IFightBuff fightBuff = it.next();
-            if (CheckNull.isNull(fightBuff)) continue;
-            if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
-                fightBuff.buffLoseEffectiveness(contextHolder);
-                it.remove();
-            }
-        }
-
-        if (!CheckNull.isEmpty(target.assistantHeroList)) {
-            for (FightAssistantHero assistantHero : target.assistantHeroList) {
-                it = assistantHero.getBuffList().iterator();
-                while (it.hasNext()) {
-                    IFightBuff fightBuff = it.next();
-                    if (CheckNull.isNull(fightBuff)) continue;
-                    if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
-                        fightBuff.buffLoseEffectiveness(contextHolder);
-                        it.remove();
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * 阵亡的将领去掉光环效果
-     *
-     * @param force
-     * @param target
-     */
-    private void subAuraSkill(Force force, Force target) {
-        // 双方都存活
-        if (force.alive() && target.alive()) {
-            return;
-        }
-        // 阵亡的将领去掉光环效果
-        target.fighter.subAuraSkill(target);
-        force.fighter.subAuraSkill(force);
-    }
-
 
     /**
      * 检查战斗双方是否有已经死亡的，并更新战斗状态
@@ -416,11 +264,14 @@ public class FightLogic {
 
         if (!attackerAlive && !defenderAlive) {
             this.winState = FightConstant.FIGHT_RESULT_DRAW;
+            LogUtil.fight("**********************战斗结束**********************, 双方战成平局");
             return;
         }
 
         if (!attackerAlive || !defenderAlive) {
             this.winState = attackerAlive ? FightConstant.FIGHT_RESULT_SUCCESS : FightConstant.FIGHT_RESULT_FAIL;
+            LogUtil.fight("**********************战斗结束**********************, 获胜方: ",
+                    this.winState == FightConstant.FIGHT_RESULT_SUCCESS ? "进攻方胜" : "防守方胜");
         }
 
     }

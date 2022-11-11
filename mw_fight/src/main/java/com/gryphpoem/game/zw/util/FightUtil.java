@@ -5,10 +5,8 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.event.FightEvent;
-import com.gryphpoem.game.zw.pojo.p.ActionDirection;
-import com.gryphpoem.game.zw.pojo.p.FightAssistantHero;
-import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
@@ -337,5 +335,37 @@ public class FightUtil {
      */
     public static void releaseAllBuffEffect(FightContextHolder contextHolder, int timing, Object[] params) {
         EventBus.getDefault().post(new FightEvent.BuffTriggerEvent(contextHolder, timing, params));
+    }
+
+    public static CommonPb.Form createFormPb(Force force) {
+        CommonPb.Form.Builder formPb = CommonPb.Form.newBuilder();
+        formPb.setId(force.id);
+        formPb.setCount(force.hp);
+        formPb.setLine(force.maxLine);
+        formPb.setCamp(force.getCamp());
+        formPb.setHeroType(force.roleType);
+        formPb.setCurLine(force.curLine);
+        formPb.setIntensifyLv(force.getIntensifyLv() == 0 ? 1 : force.getIntensifyLv());
+        return formPb.build();
+    }
+
+    public static void packAura(Fighter fighter, FightContextHolder contextHolder) {
+        CommonPb.Record.Builder recordData = contextHolder.getRecordData();
+        for (Map.Entry<Long, List<AuraInfo>> entry : fighter.auraInfos.entrySet()) {
+            Long roleId = entry.getKey();
+            for (AuraInfo auraInfo : entry.getValue()) {
+                CommonPb.Aura auraPb = createAuraPb(roleId, auraInfo);
+                recordData.addAura(auraPb);
+            }
+        }
+    }
+
+    public static CommonPb.Aura createAuraPb(long roleId, AuraInfo auraInfo) {
+        CommonPb.Aura.Builder auraPb = CommonPb.Aura.newBuilder();
+        auraPb.setRoleId(roleId);
+        auraPb.setHeroId(auraInfo.getHeroId());
+        auraPb.setId(auraInfo.getMedalAuraId());
+        auraPb.setNick(auraInfo.getNick());
+        return auraPb.build();
     }
 }

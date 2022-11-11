@@ -15,10 +15,7 @@ import com.gryphpoem.push.util.CheckNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -307,5 +304,127 @@ public class BattleLogic {
         LogUtil.fight("扣血时, 执行士气扣除效果, 士气扣除方: ", force.ownerId,
                 ", 武将: ", heroId, ", 扣除的士气: ", reducedMorale,
                 ", 扣除前士气: ", beforeReducedMorale, ", 扣除后士气: ", force.morale);
+    }
+
+    /**
+     * 战斗开始时, 初始化武将士气
+     */
+    public void battleStart(FightContextHolder contextHolder) {
+        initMorale(contextHolder.getAtkFighter());
+        initMorale(contextHolder.getDefFighter());
+    }
+
+    private void initMorale(Fighter fighter) {
+        if (Objects.nonNull(fighter)) {
+            if (!CheckNull.isEmpty(fighter.getForces())) {
+                for (Force force : fighter.getForces()) {
+                    force.morale = force.hp * 2;
+                }
+            }
+        }
+    }
+
+    /**
+     * 计算buff
+     *
+     * @param force
+     */
+    public void settlementBuff(Force force, FightContextHolder contextHolder) {
+        if (!CheckNull.isEmpty(force.buffList)) {
+            Iterator<IFightBuff> it = force.buffList.iterator();
+            while (it.hasNext()) {
+                IFightBuff fightBuff = it.next();
+                if (!fightBuff.hasRemainBuffTimes(contextHolder)) {
+                    fightBuff.buffLoseEffectiveness(contextHolder);
+                    it.remove();
+                    continue;
+                }
+                fightBuff.deductBuffRounds();
+            }
+        }
+    }
+
+    /**
+     * 下回合之前, 当前回合结束之后
+     *
+     * @param force
+     * @param target
+     */
+    public void nextRoundBefore(Force force, Force target, FightContextHolder contextHolder) {
+        // 清除战败武将施加的buff
+        clearDeadBuff(force, target, contextHolder);
+        // 战败武将去掉光环
+        subAuraSkill(force, target);
+        // 清除出手顺序列表
+        if (!CheckNull.isEmpty(contextHolder.getFightEntity()))
+            contextHolder.getFightEntity().clear();
+    }
+
+    /**
+     * 有一方战败, 清除战败方施加的buff
+     *
+     * @param force
+     * @param target
+     */
+    private void clearDeadBuff(Force force, Force target, FightContextHolder contextHolder) {
+        if (!force.alive() && !target.alive()) {
+            if (CheckNull.isEmpty(contextHolder.getBuffMap()))
+                return;
+            contextHolder.getBuffMap().clear();
+            return;
+        }
+        if (!force.alive()) {
+            clearForceBuff(force, target, contextHolder);
+        } else {
+            clearForceBuff(target, force, contextHolder);
+        }
+    }
+
+    /**
+     * 清除战败武将施加的buff
+     *
+     * @param force
+     * @param target
+     */
+    private void clearForceBuff(Force force, Force target, FightContextHolder contextHolder) {
+        Iterator<IFightBuff> it = target.buffList.iterator();
+        while (it.hasNext()) {
+            IFightBuff fightBuff = it.next();
+            if (CheckNull.isNull(fightBuff)) continue;
+            if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
+                fightBuff.buffLoseEffectiveness(contextHolder);
+                it.remove();
+            }
+        }
+
+        if (!CheckNull.isEmpty(target.assistantHeroList)) {
+            for (FightAssistantHero assistantHero : target.assistantHeroList) {
+                it = assistantHero.getBuffList().iterator();
+                while (it.hasNext()) {
+                    IFightBuff fightBuff = it.next();
+                    if (CheckNull.isNull(fightBuff)) continue;
+                    if (fightBuff.getBuffGiver().ownerId == force.ownerId) {
+                        fightBuff.buffLoseEffectiveness(contextHolder);
+                        it.remove();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 阵亡的将领去掉光环效果
+     *
+     * @param force
+     * @param target
+     */
+    private void subAuraSkill(Force force, Force target) {
+        // 双方都存活
+        if (force.alive() && target.alive()) {
+            return;
+        }
+        // 阵亡的将领去掉光环效果
+        target.fighter.subAuraSkill(target);
+        force.fighter.subAuraSkill(force);
     }
 }
