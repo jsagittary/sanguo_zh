@@ -344,6 +344,10 @@ public interface FightConstant {
          */
         int PURIFY = 33;
         /**
+         * 驱散buff
+         */
+        int DISPEL = 34;
+        /**
          * 兵种克制时伤害提升
          */
         int DAMAGE_INCREASED_FIGHTING = 45;

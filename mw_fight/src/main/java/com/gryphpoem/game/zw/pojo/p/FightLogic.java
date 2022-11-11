@@ -223,6 +223,8 @@ public class FightLogic {
                 contextHolder.addRoundNum();
             }
 
+            // 指定回合触发
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
@@ -234,8 +236,6 @@ public class FightLogic {
                 contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.ROUND_START);
                 // 所有buff作用次数少一次
                 contextHolder.getBattleLogic().deductBuffRounds(buffList);
-                // 触发指定回合开始buff
-                contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
 
                 // 释放技能
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);

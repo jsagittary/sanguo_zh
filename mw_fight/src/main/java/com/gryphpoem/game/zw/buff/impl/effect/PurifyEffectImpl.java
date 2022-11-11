@@ -22,7 +22,7 @@ import java.util.List;
 public class PurifyEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{FightConstant.EffectLogicId.PURIFY};
+        return new int[]{FightConstant.EffectLogicId.PURIFY, FightConstant.EffectLogicId.DISPEL};
     }
 
     @Override
@@ -64,11 +64,25 @@ public class PurifyEffectImpl extends AbsFightEffect {
                 StaticBuff staticBuff;
                 if (CheckNull.isNull(buff) || CheckNull.isNull(staticBuff = buff.getBuffConfig()))
                     continue;
-                if (staticBuff.getTypeGrouping().contains(2) || staticBuff.getTypeGrouping().contains(3)) {
-                    it.remove();
-                    // TODO 战报记录
-                    LogUtil.fight("执行净化效果, 净化被执行方: ", actionDirection.getDef().ownerId,
-                            ", 武将: ", heroId, ", 被消除的buff: ", buff.getBuffConfig());
+                switch (rule.getEffectLogicId()) {
+                    case FightConstant.EffectLogicId.PURIFY:
+                        if (staticBuff.getTypeGrouping().contains(2) || staticBuff.getTypeGrouping().contains(3)) {
+                            fightBuff.buffLoseEffectiveness(contextHolder);
+                            it.remove();
+                            // TODO 战报记录
+                            LogUtil.fight("执行净化效果, 净化被执行方: ", actionDirection.getDef().ownerId,
+                                    ", 武将: ", heroId, ", 被消除的buff: ", buff.getBuffConfig());
+                        }
+                        break;
+                    case FightConstant.EffectLogicId.DISPEL:
+                        if (staticBuff.getTypeGrouping().contains(1)) {
+                            fightBuff.buffLoseEffectiveness(contextHolder);
+                            it.remove();
+                            // TODO 战报记录
+                            LogUtil.fight("执行驱散效果, 驱散被执行方: ", actionDirection.getDef().ownerId,
+                                    ", 武将: ", heroId, ", 被驱散的buff: ", buff.getBuffConfig());
+                        }
+                        break;
                 }
             }
         }
