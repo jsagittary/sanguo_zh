@@ -193,9 +193,9 @@ public class FightUtil {
     public static void releaseBuffSet(FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective, ActionDirection direction, boolean performer) {
         if (FightConstant.BuffObjective.RELEASE_SKILL.equals(buffObjective)) {
             if (performer) {
-                direction.setCurAtkHeroId(contextHolder.getCurAttacker().id);
+                direction.getAtkHeroList().add(contextHolder.getCurAttacker().id);
             } else {
-                direction.setCurDefHeroId(contextHolder.getCurAttacker().id);
+                direction.getDefHeroList().add(contextHolder.getCurAttacker().id);
             }
             return;
         }
