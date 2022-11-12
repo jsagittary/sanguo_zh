@@ -247,7 +247,7 @@ public class FightContextHolder {
             if (CheckNull.isNull(fightBuff.getBuffConfig()) || CheckNull.isEmpty(fightBuff.getBuffConfig().
                     getBuffTriggerCondition()) || CheckNull.isEmpty(condition = fightBuff.getBuffConfig().getBuffTriggerCondition().get(0)))
                 return;
-            fightBuffList = LOCAL.get().getTriggerBuffMap().get(condition.get(0));
+            fightBuffList = LOCAL.get().getTriggerBuffMap().get(condition.get(1));
             if (!CheckNull.isEmpty(fightBuffList)) {
                 fightBuffList.remove(fightBuff);
             }

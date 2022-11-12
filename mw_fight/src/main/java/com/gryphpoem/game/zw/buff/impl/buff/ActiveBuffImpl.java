@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.buff.impl.buff;
 
 import com.gryphpoem.game.zw.buff.abs.buff.AbsActiveBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
@@ -25,7 +26,11 @@ public class ActiveBuffImpl extends AbsActiveBuff {
     public void releaseEffect(FightContextHolder contextHolder, int timing, Object... params) {
         if (timing != FightConstant.BuffEffectTiming.ROUND_START)
             return;
-
+        if (!hasRemainEffectiveTimes(contextHolder)) {
+            LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
+            return;
+        }
+        
         releaseBuffEffect(contextHolder);
         // buff作用次数扣除
         this.effect = true;

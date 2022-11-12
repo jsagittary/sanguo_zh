@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.push.util.CheckNull;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -28,5 +29,15 @@ public class FightBuffEffect {
         this.force = force;
         this.heroId = heroId;
         this.effectMap = new HashMap<>();
+    }
+
+    public List<FightEffectData> getDataList(int effectLogicId, int effectId) {
+        if (CheckNull.isEmpty(effectMap)) return null;
+        List<FightEffectData> dataList;
+        Map<Integer, List<FightEffectData>> dataMap;
+        if (CheckNull.isEmpty(dataMap = effectMap.get(effectLogicId)) ||
+                CheckNull.isNull(dataList = dataMap.get(effectId)))
+            return null;
+        return dataList;
     }
 }

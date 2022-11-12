@@ -26,10 +26,6 @@ public class FightEffectData {
      * 效果固定值
      */
     private int value;
-    /**
-     * 效果施加顺序
-     */
-    private int index;
 
     public FightEffectData(long buffKeyId, int buffId) {
         this.effectKeyId = FightUtil.uniqueId();

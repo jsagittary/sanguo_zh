@@ -59,7 +59,7 @@ public class DoubleHitEffectImpl extends AbsFightEffect {
                 actionDirection.setCurDefHeroId(heroId);
                 LogUtil.fight("执行连击效果, 攻击方: ", actionDirection.getAtk().ownerId,
                         ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
-                battleLogic.ordinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());
+                battleLogic.buffOrdinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());
             }
         }
     }

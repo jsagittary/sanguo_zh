@@ -43,6 +43,10 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             LogUtil.error(String.format("staticBuff config is null", -1));
             return;
         }
+        if (!hasRemainEffectiveTimes(contextHolder)) {
+            LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
+            return;
+        }
         if (!CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
             FightManager fightManager = DataResource.ac.getBean(FightManager.class);
             boolean canRelease = true;

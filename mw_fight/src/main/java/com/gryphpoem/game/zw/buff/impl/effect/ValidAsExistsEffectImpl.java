@@ -4,13 +4,14 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
-import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
-import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
-import com.gryphpoem.game.zw.pojo.p.FightEffectData;
-import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description: 无敌, 沉默效果
@@ -47,5 +48,31 @@ public class ValidAsExistsEffectImpl extends AbsFightEffect {
     @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
         return !CheckNull.isEmpty(fightBuffEffect.getEffectMap().get(effectLogicId));
+    }
+
+    @Override
+    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+        List<Integer> effectConfig_ = effectConfig;
+        ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
+        if (CheckNull.isNull(actionDirection)) {
+            return;
+        }
+        if (!CheckNull.isEmpty(actionDirection.getDefHeroList())) {
+            if (Objects.nonNull(rule)) {
+                for (Integer heroId : actionDirection.getDefHeroList()) {
+                    Force def = actionDirection.getDef();
+                    FightBuffEffect fbe = def.getFightEffectMap(heroId);
+                    List<FightEffectData> dataList = fbe.getDataList(rule.getEffectLogicId(), rule.getEffectId());
+                    if (!CheckNull.isEmpty(dataList))
+                        continue;
+                    
+                    FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe);
+                    fbe.getEffectMap().computeIfAbsent(rule.getEffectLogicId(), m -> new HashMap<>()).
+                            computeIfAbsent(effectConfig_.get(2), l -> new ArrayList<>()).add(data);
+                    // TODO 客户端pb添加
+
+                }
+            }
+        }
     }
 }

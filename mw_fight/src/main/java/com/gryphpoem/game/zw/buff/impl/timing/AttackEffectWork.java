@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.push.util.CheckNull;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,19 @@ public class AttackEffectWork extends AbsFightEffectWork {
         if (CheckNull.isEmpty(conditionConfig)) return true;
         // 0 代表任何人
         if (conditionConfig.get(0) == 0) return true;
+
+        ActionDirection curActionDirection;
+        if (ObjectUtils.isEmpty(params)) {
+            curActionDirection = contextHolder.getActionDirection();
+        } else {
+            Object[] objArr = (Object[]) params[0];
+            if (ObjectUtils.isEmpty(objArr) || CheckNull.isNull(objArr[0]) ||
+                    (objArr[0] instanceof ActionDirection) == false) return false;
+            curActionDirection = (ActionDirection) objArr[0];
+            if (CheckNull.isNull(curActionDirection) || CheckNull.isEmpty(curActionDirection.getDefHeroList()))
+                return false;
+        }
+
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(conditionConfig.get(0));
         if (CheckNull.isNull(buffObjective)) return false;
 
@@ -42,7 +56,7 @@ public class AttackEffectWork extends AbsFightEffectWork {
         }
 
         List<Integer> forceList = new ArrayList<>(1);
-        forceList.add(contextHolder.getCurAtkHeroId());
+        forceList.add(curActionDirection.getCurAtkHeroId());
         return canRelease(actionDirection, forceList, buffObjective);
     }
 
