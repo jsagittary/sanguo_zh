@@ -86,9 +86,9 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             if (CheckNull.isNull(rule)) continue;
             IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
             if (CheckNull.isNull(fightEffect)) continue;
-            fightEffect.effectiveness(null, contextHolder, list, rule);
             LogUtil.fight("进攻方: ", contextHolder.getCurAttacker().ownerId, "-", contextHolder.getCurAtkHeroId(), isOnStageSkill ? " 释放开场技能: " : "释放主动技能: ",
                     s_skill.getSkillId(), ", 技能主体效果: ", CheckNull.isEmpty(list) ? "null" : Arrays.toString(list.toArray()));
+            fightEffect.effectiveness(null, contextHolder, list, rule);
         }
     }
 
