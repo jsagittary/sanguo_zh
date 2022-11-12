@@ -45,7 +45,7 @@ public class ConditionBuffImpl extends AbsConditionBuff {
         }
         if (!hasRemainEffectiveTimes(contextHolder)) {
             // 清除存在的效果
-            buffLoseEffectiveness(contextHolder);
+            buffEffectiveness(contextHolder);
             LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
             return;
         }
