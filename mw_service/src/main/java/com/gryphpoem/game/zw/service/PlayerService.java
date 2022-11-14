@@ -6,8 +6,8 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -112,12 +112,14 @@ import com.gryphpoem.game.zw.resource.domain.p.TechQue;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
 import com.gryphpoem.game.zw.resource.domain.s.StaticChatBubble;
 import com.gryphpoem.game.zw.resource.domain.s.StaticGuidAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPay;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
+import com.gryphpoem.game.zw.resource.pojo.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
@@ -471,7 +473,7 @@ public class PlayerService implements GmCmdService {
             if (playerDataManager.takeNick(nick)) {
                 // 领主初始属性配置
                 StaticIniLord ini = StaticIniDataMgr.getLordIniData();
-                // 初始模拟器的奖励及性格影响
+                // 创号初始模拟器的奖励及性格影响
                 boolean isEnd = false;
                 List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = req.getLifeSimulatorStepList();
                 List<List<Integer>> finalRewardList = new ArrayList<>();
@@ -480,7 +482,7 @@ public class PlayerService implements GmCmdService {
                 for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
                     int chooseId = lifeSimulatorStep.getChooseId();
                     if (chooseId > 0) {
-                        StaticSimulatorChoose sSimulatorChoose = StaticDataMgr.getStaticSimulatorChoose(chooseId);
+                        StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
                         // 性格值变化
                         List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
                         finalCharacterFixList.addAll(characterFix);
@@ -494,13 +496,13 @@ public class PlayerService implements GmCmdService {
                         List<List<Integer>> buff = sSimulatorChoose.getBuff();
                     }
                     int stepId = lifeSimulatorStep.getStepId();
-                    StaticSimulatorStep staticSimulatorStep = StaticDataMgr.getStaticSimulatorStep(stepId);
+                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
                     // 根据配置, 判断模拟器是否结束
                     if (!isEnd) {
-                        long nextId = staticSimulatorStep.getNextId();
+                        Long nextId = staticSimulatorStep.getNextId();
                         List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
                         boolean isExistForwardStep = staticChooseList.stream().anyMatch(temp -> temp.get(0) == (long) chooseId && temp.get(1) == 0L);
-                        if (nextId == 0L && isExistForwardStep) {
+                        if (nextId == null && isExistForwardStep) {
                             isEnd = true;
                         }
                     }
@@ -1043,8 +1045,27 @@ public class PlayerService implements GmCmdService {
                     });
             builder.setFishingGuide(player.getFishingData().getGuide());
             builder.setFirstMakeTw(player.getMakeTreasureWare().createPb(false));
+
             builder.setAncientBook(player.lord.getAncientBook());
             builder.addAllCharacter(PbHelper.createTwoIntListByMap(player.getCharacterData()));
+            builder.addAllScoutData(PbHelper.createTwoIntListByMap(player.getScoutData()));
+            player.getMapCellData().forEach((cellId, cellState) -> {
+                CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
+                mapCell.setCellId(cellId);
+                if (cellState.get(1) == null) {
+                    StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                    cellState.add(staticHomeCityCell.getHasBandit() == null ? 0 : staticHomeCityCell.getHasBandit());
+                }
+                mapCell.addAllState(cellState);
+                builder.addMapCellData(mapCell.build());
+            });
+            for (BuildingState buildingState : player.getBuildingData().values()) {
+                builder.addBuildingState(buildingState.creatPb());
+            }
+            builder.addAllFoundationData(player.getFoundationData());
+            builder.setResidentMaxCnt(player.getResidentMaxCnt());
+            builder.setResidentData(PbHelper.createTwoIntPb(player.getResidentTotalCnt(), player.getIdleResidentCnt()));
+            builder.setTestLong(Long.MAX_VALUE);
             return builder.build();
         }
         return null;

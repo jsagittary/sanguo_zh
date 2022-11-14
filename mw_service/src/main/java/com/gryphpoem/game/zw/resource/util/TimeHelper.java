@@ -564,6 +564,9 @@ public class TimeHelper {
 //        Date date1 = DateHelper.parseDate("2021-12-31 12:00:00");
 //        Date date2 = DateHelper.parseDate("2022-01-02 00:00:00");
 //        System.out.println("is same week :" + isSameWeek(date2, date1));
+        int day = getDay(getCurrentSecond());
+        Date delayDay = getSomeDayAfterOrBerfore(getDate(day), 2, 8, 0, 0);
+        System.out.println("delayDay = " + delayDay);
     }
 
 

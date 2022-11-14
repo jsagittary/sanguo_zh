@@ -146,6 +146,9 @@ import com.gryphpoem.game.zw.handler.client.battlepass.BuyBattlePassLvHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.GetBattlePassHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveBPAwardHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveTaskAwardHandler;
+import com.gryphpoem.game.zw.handler.client.buildHomeCity.ExploreHandler;
+import com.gryphpoem.game.zw.handler.client.buildHomeCity.ReclaimHandler;
+import com.gryphpoem.game.zw.handler.client.buildHomeCity.SwapBuildingLocationHandler;
 import com.gryphpoem.game.zw.handler.client.building.BuildingHanlder;
 import com.gryphpoem.game.zw.handler.client.building.CommandAddHandler;
 import com.gryphpoem.game.zw.handler.client.building.DesBuildingHanlder;
@@ -2405,6 +2408,11 @@ public class MessagePool implements IMessagePool {
 
         // 记录模拟器信息
         registerC(RecordLifeSimulatorRq.EXT_FIELD_NUMBER, RecordLifeSimulatorRs.EXT_FIELD_NUMBER, RecordSimulatorHandler.class);
+
+        // 主城建设
+        registerC(ExploreRq.EXT_FIELD_NUMBER, ExploreRs.EXT_FIELD_NUMBER, ExploreHandler.class);
+        registerC(ReclaimFoundationRq.EXT_FIELD_NUMBER, ReclaimFoundationRs.EXT_FIELD_NUMBER, ReclaimHandler.class);
+        registerC(SwapBuildingLocationRq.EXT_FIELD_NUMBER, SwapBuildingLocationRs.EXT_FIELD_NUMBER, SwapBuildingLocationHandler.class);
     }
 
     /**

@@ -234,4 +234,16 @@ public class StaticIniDao extends BaseDao {
     public List<StaticHomeCityFoundation> selectStaticHomeCityFoundationList() {
         return getMapper(StaticIniMapper.class).selectStaticHomeCityFoundationList();
     }
+
+    public List<StaticEconomicOrder> selectStaticEconomicOrderList() {
+        return getMapper(StaticIniMapper.class).selectStaticEconomicOrderList();
+    }
+
+    public List<StaticEconomicCrop> selectStaticEconomicCropList() {
+        return getMapper(StaticIniMapper.class).selectStaticEconomicCropList();
+    }
+
+    public List<StaticHappiness> selectStaticHappinessList() {
+        return getMapper(StaticIniMapper.class).selectStaticHappinessList();
+    }
 }

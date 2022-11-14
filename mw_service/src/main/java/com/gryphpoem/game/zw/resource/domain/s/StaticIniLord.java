@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import java.util.List;
 import java.util.Map;
 
 public class StaticIniLord {
@@ -19,6 +20,9 @@ public class StaticIniLord {
 	private int combat;// 初始副本关卡
 	private int newState;// 新手引导状态
 	private Map<Integer, Integer> props;// 玩家初始道具
+	private Map<Integer, Integer> buildingInfo;// 玩家初始建筑信息，例如: [建筑id, 地基id]
+	private List<Integer> residentCnt; // 初始农民配置, 例: [初始上限, 初始数量]
+	private int scoutCnt; // 初始侦察兵数量
 
 	public int getKeyId() {
 		return keyId;
@@ -146,5 +150,29 @@ public class StaticIniLord {
 
 	public void setProps(Map<Integer, Integer> props) {
 		this.props = props;
+	}
+
+	public Map<Integer, Integer> getBuildingInfo() {
+		return buildingInfo;
+	}
+
+	public void setBuildingInfo(Map<Integer, Integer> buildingInfo) {
+		this.buildingInfo = buildingInfo;
+	}
+
+	public List<Integer> getResidentCnt() {
+		return residentCnt;
+	}
+
+	public void setResidentCnt(List<Integer> residentCnt) {
+		this.residentCnt = residentCnt;
+	}
+
+	public int getScoutCnt() {
+		return scoutCnt;
+	}
+
+	public void setScoutCnt(int scoutCnt) {
+		this.scoutCnt = scoutCnt;
 	}
 }

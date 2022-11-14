@@ -28,6 +28,17 @@ public class ExploreQue {
         this.endTime = endTime;
     }
 
+    public ExploreQue(CommonPb.ExploreQue pb) {
+        this.keyId = pb.getKeyId();
+        this.scoutIndex = pb.getScoutIndex();
+        this.cellId = pb.getCellId();
+        this.period = pb.getPeriod();
+        this.endTime = pb.getEndTime();
+        if (pb.hasFreeTime()) {
+            this.freeTime = pb.getFreeTime();
+        }
+    }
+
     public int getKeyId() {
         return keyId;
     }
@@ -76,7 +87,7 @@ public class ExploreQue {
         this.freeTime = freeTime;
     }
 
-    public CommonPb.ExploreQue creatExplorePb() {
+    public CommonPb.ExploreQue creatExploreQuePb() {
         CommonPb.ExploreQue.Builder builder = CommonPb.ExploreQue.newBuilder();
         builder.setKeyId(this.getKeyId());
         builder.setScoutIndex(this.getScoutIndex());

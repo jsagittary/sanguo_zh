@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.resource.domain.p;
 
+import java.util.Map;
+
 public class Lord implements Cloneable {
     private long lordId; // 玩家id
     private String nick;// 主公名字
@@ -50,6 +52,10 @@ public class Lord implements Cloneable {
     private long treasureWareDust;//宝具微尘 用于升级宝具
     private long treasureWareEssence;//宝具精华 用于宝具突破
     private int ancientBook;//古籍，用于武将天赋
+    private Map<Integer, Integer> buildingInfo;// 玩家初始建筑信息，例如: [建筑id, 地基id]
+    private int farmerMax; // 农民上限
+    private int farmerCnt; // 农民数量
+    private int scoutCnt; // 初始侦察兵数量
 
     @Override
     public Object clone() {
@@ -442,6 +448,46 @@ public class Lord implements Cloneable {
 
     public void setAncientBook(int ancientBook) {
         this.ancientBook = ancientBook;
+    }
+
+    public long getMaxFight() {
+        return maxFight;
+    }
+
+    public void setMaxFight(long maxFight) {
+        this.maxFight = maxFight;
+    }
+
+    public Map<Integer, Integer> getBuildingInfo() {
+        return buildingInfo;
+    }
+
+    public void setBuildingInfo(Map<Integer, Integer> buildingInfo) {
+        this.buildingInfo = buildingInfo;
+    }
+
+    public int getFarmerMax() {
+        return farmerMax;
+    }
+
+    public void setFarmerMax(int farmerMax) {
+        this.farmerMax = farmerMax;
+    }
+
+    public int getFarmerCnt() {
+        return farmerCnt;
+    }
+
+    public void setFarmerCnt(int farmerCnt) {
+        this.farmerCnt = farmerCnt;
+    }
+
+    public int getScoutCnt() {
+        return scoutCnt;
+    }
+
+    public void setScoutCnt(int scoutCnt) {
+        this.scoutCnt = scoutCnt;
     }
 
     @Override

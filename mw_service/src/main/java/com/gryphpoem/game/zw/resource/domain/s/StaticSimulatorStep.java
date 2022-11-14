@@ -18,7 +18,7 @@ public class StaticSimulatorStep {
 
     private List<List<Long>> choose; // 本步展示的选择, [[选项id, 跳转步id, 选择此项的百分比]], 没有不填, 支持多个, 如是最后一步, 跳转步id填0
 
-    private Integer delay; // 仅限于周期城镇事件, 触发的下个步骤延迟时间。填1为次日8点触发, 填2则加一天, 依次类推
+    private List<Integer> delay; // [延时时间, 延时后的模拟器type]仅限于周期城镇事件, 触发的下个步骤延迟时间。填1为次日8点触发, 填2则加一天, 依次类推
 
     public Long getId() {
         return id;
@@ -52,11 +52,11 @@ public class StaticSimulatorStep {
         this.choose = choose;
     }
 
-    public Integer getDelay() {
+    public List<Integer> getDelay() {
         return delay;
     }
 
-    public void setDelay(Integer delay) {
+    public void setDelay(List<Integer> delay) {
         this.delay = delay;
     }
 

@@ -31,6 +31,18 @@ public class ReclaimQue {
         this.endTime = endTime;
     }
 
+    public ReclaimQue(CommonPb.ReclaimQue pb) {
+        this.keyId = pb.getKeyId();
+        this.index = pb.getIndex();
+        this.farmerCnt = pb.getFarmerCnt();
+        this.cellId = pb.getCellId();
+        this.period = pb.getPeriod();
+        this.endTime = pb.getEndTime();
+        if (pb.hasFreeTime()) {
+            this.freeTime = pb.getFreeTime();
+        }
+    }
+
     public int getKeyId() {
         return keyId;
     }
@@ -87,7 +99,7 @@ public class ReclaimQue {
         this.freeTime = freeTime;
     }
 
-    public CommonPb.ReclaimQue creatExplorePb() {
+    public CommonPb.ReclaimQue creatReclaimQuePb() {
         CommonPb.ReclaimQue.Builder builder = CommonPb.ReclaimQue.newBuilder();
         builder.setKeyId(this.getKeyId());
         builder.setFarmerCnt(this.getFarmerCnt());

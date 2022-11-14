@@ -10,6 +10,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.RoleOpt;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncFightChgRs;
@@ -26,6 +27,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
+import com.gryphpoem.game.zw.resource.pojo.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.Task;
@@ -366,6 +368,23 @@ public class PlayerDataManager implements PlayerDM {
         }
 
         Player player = new Player(lord, TimeHelper.getCurrentSecond());
+        // 初始化建筑建筑信息
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
+        buildingInfo.forEach((k, v) -> {
+            BuildingState buildingState = new BuildingState(k, v);
+            buildingData.put(k, buildingState);
+        });
+        // 初始化农民配置
+        player.setResidentMaxCnt(staticIniLord.getResidentCnt().get(0));
+        List<Integer> farmerCount = player.getResidentData();
+        farmerCount.add(staticIniLord.getResidentCnt().get(1));
+        farmerCount.add(staticIniLord.getResidentCnt().get(1));
+        // 初始化侦察兵配置
+        Map<Integer, Integer> scoutData = player.getScoutData();
+        for (int i = 0; i < staticIniLord.getScoutCnt(); i++) {
+            scoutData.put(i, 0);
+        }
         createAccount(account, player);
         newPlayerCache.put(player.roleId, player);
         return player;
@@ -1257,8 +1276,15 @@ public class PlayerDataManager implements PlayerDM {
         builder.setLevel(player.lord.getLevel());
         builder.setExp(player.lord.getExp());
         builder.addAllCharacter(PbHelper.createTwoIntListByMap(player.getCharacterData()));
-        builder.addAllScoutData(PbHelper.createTwoIntListByMap(player.getScoutMap()));
-        builder.addAllFarmerCnt(player.getFarmerCount());
+        builder.addAllScoutData(PbHelper.createTwoIntListByMap(player.getScoutData()));
+        builder.setFarmerCnt(PbHelper.createTwoIntPb(player.getResidentTotalCnt(), player.getIdleResidentCnt()));
+        player.getMapCellData().forEach((cellId, cellState) -> {
+            CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
+            mapCell.setCellId(cellId);
+            mapCell.addAllState(cellState);
+            builder.addMapCellData(mapCell.build());
+        });
+        builder.addAllFoundationData(player.getFoundationData());
         if (player.ctx != null) {
             Base.Builder msg = PbHelper.createSynBase(SyncRoleInfoRs.EXT_FIELD_NUMBER, SyncRoleInfoRs.ext,
                     builder.build());

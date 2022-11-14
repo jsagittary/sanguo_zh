@@ -22,6 +22,10 @@ public class StaticHomeCityCell {
 
     private Integer reclaimTime; // 开垦需要时长 单位秒
 
+    private List<Integer> neighborCellList; // 周围4个需要前置解锁的格子
+
+    private Integer hasBandit;
+
     public Integer getId() {
         return id;
     }
@@ -70,4 +74,19 @@ public class StaticHomeCityCell {
         this.reclaimTime = reclaimTime;
     }
 
+    public List<Integer> getNeighborCellList() {
+        return neighborCellList;
+    }
+
+    public void setNeighborCellList(List<Integer> neighborCellList) {
+        this.neighborCellList = neighborCellList;
+    }
+
+    public Integer getHasBandit() {
+        return hasBandit;
+    }
+
+    public void setHasBandit(Integer hasBandit) {
+        this.hasBandit = hasBandit;
+    }
 }

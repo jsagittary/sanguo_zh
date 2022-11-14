@@ -18,7 +18,7 @@ public class LifeSimulatorInfo {
 
     private Integer pauseTime; // 事件暂停的时间点(秒)
 
-    private Integer delay; // 到下一步的延时(天)
+    private Integer delay; // 多久之后可玩(天)
 
     private Integer bindType; // 1-绑定的建筑; 2-绑定的NPC
 
@@ -112,4 +112,16 @@ public class LifeSimulatorInfo {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "LifeSimulatorInfo{" +
+                "type=" + type +
+                ", stepId=" + stepId +
+                ", addDate=" + addDate +
+                ", pauseTime=" + pauseTime +
+                ", delay=" + delay +
+                ", bindType=" + bindType +
+                ", bindId=" + bindId +
+                '}';
+    }
 }

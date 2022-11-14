@@ -16,6 +16,10 @@
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler" />
 		<result column="equips" property="equips"
 			typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler" />
+		<result column="buildingInfo" property="buildingInfo"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler" />
+		<result column="residentCnt" property="residentCnt"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 	</resultMap>
 
 	<select id="selectLord" resultMap="lordMap">

@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
@@ -96,9 +97,6 @@ import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
 import com.gryphpoem.game.zw.resource.domain.p.Chemical;
 import com.gryphpoem.game.zw.resource.domain.p.Cia;
-import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.ExploreQue;
-import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.ReclaimQue;
-import com.gryphpoem.game.zw.resource.pojo.simulator.CityEvent;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
 import com.gryphpoem.game.zw.resource.domain.p.CombatInfo;
@@ -116,7 +114,6 @@ import com.gryphpoem.game.zw.resource.domain.p.EquipTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Factory;
 import com.gryphpoem.game.zw.resource.domain.p.Gains;
 import com.gryphpoem.game.zw.resource.domain.p.History;
-import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.MailData;
 import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
@@ -141,7 +138,9 @@ import com.gryphpoem.game.zw.resource.domain.p.Treasure;
 import com.gryphpoem.game.zw.resource.domain.p.TriggerGift;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
+import com.gryphpoem.game.zw.resource.pojo.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.EquipJewel;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
@@ -170,6 +169,8 @@ import com.gryphpoem.game.zw.resource.pojo.relic.PlayerRelic;
 import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
+import com.gryphpoem.game.zw.resource.pojo.simulator.CityEvent;
+import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.MakeTreasureWare;
@@ -938,41 +939,27 @@ public class Player {
      * 侦察兵<br>
      * key: 侦察兵标号; value: 侦察兵状态(0-空闲; 1-任务中)
      */
-    private Map<Integer, Integer> scoutMap = new HashMap<>();
+    private Map<Integer, Integer> scoutData = new HashMap<>();
 
-    public Map<Integer, Integer> getScoutMap() {
-        return scoutMap;
+    public Map<Integer, Integer> getScoutData() {
+        return scoutData;
     }
 
-    public void setScoutMap(Map<Integer, Integer> scoutMap) {
-        this.scoutMap = scoutMap;
+    public void setScoutData(Map<Integer, Integer> scoutData) {
+        this.scoutData = scoutData;
     }
 
     /**
      * 已探索的迷雾格子, key: 格子id; value: 是否已开垦, 1-是, 0-否
      */
-    private Map<Integer, Integer> mapCellData = new ConcurrentHashMap<>();
+    private Map<Integer, List<Integer>> mapCellData = new ConcurrentHashMap<>();
 
-    public Map<Integer, Integer> getMapCellData() {
+    public Map<Integer, List<Integer>> getMapCellData() {
         return mapCellData;
     }
 
-    public void setMapCellData(Map<Integer, Integer> mapCellData) {
+    public void setMapCellData(Map<Integer, List<Integer>> mapCellData) {
         this.mapCellData = mapCellData;
-    }
-
-    /**
-     * 建筑位置信息 <br>
-     * key: 建筑id; value: 地基id
-     */
-    private Map<Integer, Integer> buildingLocationData = new HashMap<>();
-
-    public Map<Integer, Integer> getBuildingLocationData() {
-        return buildingLocationData;
-    }
-
-    public void setBuildingLocationData(Map<Integer, Integer> buildingLocationData) {
-        this.buildingLocationData = buildingLocationData;
     }
 
     /**
@@ -984,58 +971,120 @@ public class Player {
         return foundationData;
     }
 
-    public void setFoundationData(List<Integer> foundationData) {
-        this.foundationData = foundationData;
+    /**
+     * 居民上限
+     */
+    private Integer residentMaxCnt;
+
+    public Integer getResidentMaxCnt() {
+        return residentMaxCnt;
+    }
+
+    public void setResidentMaxCnt(Integer residentMaxCnt) {
+        this.residentMaxCnt = residentMaxCnt;
     }
 
     /**
-     * 农民数量, [总数, 空闲数]
+     * 居民数量, [总数, 空闲数]
      */
-    private List<Integer> farmerCount = new ArrayList<>(2);
+    private List<Integer> residentData = new ArrayList<>(2);
 
-    public List<Integer> getFarmerCount() {
-        return farmerCount;
+    public List<Integer> getResidentData() {
+        return residentData;
     }
 
-    public void setFarmerCount(List<Integer> farmerCount) {
-        this.farmerCount = farmerCount;
+    public Integer getResidentTotalCnt() {
+        return residentData.get(0);
     }
 
-    public Integer getFarmerTotalCount() {
-        return farmerCount.get(0);
+    public void addResidentTotalCnt(int count) {
+        this.residentData.set(0, getResidentTotalCnt() + count);
     }
 
-    public void addFarmerTotalCount(int count) {
-        this.farmerCount.set(0, getFarmerTotalCount() + count);
+    public void subResidentTotalCnt(int count) {
+        int newTotalCount = Math.max(getResidentTotalCnt() - count, 0);
+        this.residentData.set(0, newTotalCount);
     }
 
-    public void subFarmerTotalCount(int count) {
-        int newTotalCount = Math.max(getFarmerTotalCount() - count, 0);
-        this.farmerCount.set(0, newTotalCount);
+    public Integer getIdleResidentCnt() {
+        return residentData.get(1);
     }
 
-    public Integer getIdleFarmerCount() {
-        return farmerCount.get(1);
+    public void addIdleResidentCnt(int count) {
+        this.residentData.set(1, getIdleResidentCnt() + count);
     }
 
-    public void addIdleFarmerCount(int count) {
-        this.farmerCount.set(1, getIdleFarmerCount() + count);
+    public void subIdleResidentCnt(int count) {
+        int newIdleCount = Math.max(getIdleResidentCnt() - count, 0);
+        this.residentData.set(1, newIdleCount);
     }
 
-    public void subIdleFarmerCount(int count) {
-        int newIdleCount = Math.max(getIdleFarmerCount() - count, 0);
-        this.farmerCount.set(1, newIdleCount);
+    // /**
+    //  * 探索队列
+    //  */
+    // private Map<Integer, ExploreQue> exploreQue = new ConcurrentHashMap<>();
+    //
+    // public Map<Integer, ExploreQue> getExploreQue() {
+    //     return exploreQue;
+    // }
+    //
+    // /**
+    //  * 开垦队列
+    //  */
+    // private Map<Integer, ReclaimQue> reclaimQue = new ConcurrentHashMap<>();
+    //
+    // public Map<Integer, ReclaimQue> getReclaimQue() {
+    //     return reclaimQue;
+    // }
+
+    /**
+     * 幸福度
+     */
+    private int happiness;
+
+    public int getHappiness() {
+        return happiness;
+    }
+
+    public void setHappiness(int happiness) {
+        this.happiness = happiness;
+    }
+
+    // 增加幸福度
+    public void addHappiness(int count) {
+        this.happiness += count;
+    }
+
+    // 减少幸福度
+    public void subHappiness(int count) {
+        this.happiness -= count;
     }
 
     /**
-     * 探索队列
+     * 建筑状态信息, key-建筑id
      */
-    public Map<Integer, ExploreQue> exploreQue = new ConcurrentHashMap<>();
+    private Map<Integer, BuildingState> buildingData = new HashMap<>();
+
+    public Map<Integer, BuildingState> getBuildingData() {
+        return buildingData;
+    }
+
+    public void setBuildingData(Map<Integer, BuildingState> buildingData) {
+        this.buildingData = buildingData;
+    }
 
     /**
-     * 开垦队列
+     * 已解锁的经济副作物, 作物id
      */
-    public Map<Integer, ReclaimQue> reclaimQue = new ConcurrentHashMap<>();
+    private List<Integer> unlockEconomicCrops = new ArrayList<>();
+
+    public List<Integer> getUnlockEconomicCrops() {
+        return unlockEconomicCrops;
+    }
+
+    public void setUnlockEconomicCrops(List<Integer> unlockEconomicCrops) {
+        this.unlockEconomicCrops = unlockEconomicCrops;
+    }
 
     /**
      * 是否第一次打造宝具
@@ -2348,6 +2397,54 @@ public class Player {
         if (CheckNull.nonEmpty(characterRewardRecord)) {
             ser.addAllCharacterRewardRecord(PbHelper.createTwoIntListByMap(characterRewardRecord));
         }
+        // 侦察兵状态
+        if (CheckNull.nonEmpty(scoutData)) {
+            ser.addAllScoutMap(PbHelper.createTwoIntListByMap(scoutData));
+        }
+        // 探索的地图格子
+        if (CheckNull.nonEmpty(mapCellData)) {
+            mapCellData.forEach((cellId, cellState) -> {
+                CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
+                mapCell.setCellId(cellId);
+                if (cellState.get(1) == null) {
+                    StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                    cellState.add(staticHomeCityCell.getHasBandit() == null ? 0 : staticHomeCityCell.getHasBandit());
+                }
+                mapCell.addAllState(cellState);
+                ser.addMapCellData(mapCell.build());
+            });
+        }
+        // 建筑状态信息
+        if (CheckNull.nonEmpty(buildingData)) {
+            for (BuildingState buildingState : buildingData.values()) {
+                ser.addBuildingState(buildingState.creatPb());
+            }
+        }
+        // 已开垦的地基
+        if (CheckNull.nonEmpty(foundationData)) {
+            ser.addAllFoundationData(foundationData);
+        }
+        // 居民信息
+        if (CheckNull.nonEmpty(residentData)) {
+            ser.setResidentData(PbHelper.createTwoIntPb(getResidentTotalCnt(), getIdleResidentCnt()));
+        }
+        // 居民上限
+        if (!CheckNull.isNull(residentMaxCnt)) {
+            ser.setResidentMaxCnt(residentMaxCnt);
+        }
+        // // 探索队列
+        // if (CheckNull.nonEmpty(exploreQue)) {
+        //     for (ExploreQue tmp : exploreQue.values()) {
+        //         ser.addExploreQue(tmp.creatExploreQuePb());
+        //     }
+        // }
+        // // 开垦队列
+        // if (CheckNull.nonEmpty(reclaimQue)) {
+        //     for (ReclaimQue tmp : reclaimQue.values()) {
+        //         ser.addReclaimQue(tmp.creatReclaimQuePb());
+        //     }
+        // }
+
         return ser.build().toByteArray();
     }
 
@@ -2980,6 +3077,37 @@ public class Player {
         Optional.ofNullable(ser.getCharacterDataList()).ifPresent(tmp -> tmp.forEach(o -> this.characterData.put(o.getV1(), o.getV2())));
         // 性格奖励记录
         Optional.ofNullable(ser.getCharacterRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.characterRewardRecord.put(o.getV1(), o.getV2())));
+        // 侦察兵数据
+        if (CheckNull.isEmpty(ser.getScoutMapList())) {
+            ser.getScoutMapList().forEach(o -> this.scoutData.put(o.getV1(), o.getV2()));
+        }
+        // 解锁的地图格子
+        if (CheckNull.isEmpty(ser.getMapCellDataList())) {
+            for (CommonPb.MapCell mapCell : ser.getMapCellDataList()) {
+                this.mapCellData.put(mapCell.getCellId(), mapCell.getStateList());
+            }
+        }
+        // 建筑状态信息
+        if (!CheckNull.isEmpty(ser.getBuildingStateList())) {
+            ser.getBuildingStateList().forEach(o -> this.buildingData.put(o.getBuildingId(), new BuildingState(o)));
+        }
+        // 解锁的地基数据
+        if (!CheckNull.isEmpty(ser.getFoundationDataList())) {
+            this.foundationData.addAll(ser.getFoundationDataList());
+        }
+        // 居民信息
+        if (ser.hasResidentData() && ser.getResidentData().hasV1() && ser.getResidentData().hasV2()) {
+            this.residentData.clear();
+            this.residentData.add(0, ser.getResidentData().getV1());
+            this.residentData.add(1, ser.getResidentData().getV2());
+        }
+        if (ser.hasResidentMaxCnt()) {
+            this.residentMaxCnt = ser.getResidentMaxCnt();
+        }
+        // // 探索对列
+        // Optional.ofNullable(ser.getExploreQueList()).ifPresent(tmp -> tmp.forEach(o -> this.exploreQue.put(o.getScoutIndex(), new ExploreQue(o))));
+        // // 开垦队列
+        // Optional.ofNullable(ser.getReclaimQueList()).ifPresent(tmp -> tmp.forEach(o -> this.reclaimQue.put(o.getIndex(), new ReclaimQue(o))));
     }
 
     private void dserTrophy(SerTrophy ser) {
@@ -3927,6 +4055,7 @@ public class Player {
         return playerRelic;
     }
 
+    // 获取客户端可执行的模拟器
     public List<CommonPb.LifeSimulatorRecord> createSimulatorRecordList() {
         List<CommonPb.LifeSimulatorRecord> data = new ArrayList<>();
 

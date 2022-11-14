@@ -356,7 +356,8 @@ public interface StaticIniMapper {
 
     @Select("select * from sim_beginnerguide")
     @Results({
-            @Result(column = "choose", property = "choose", typeHandler = ListListTypeHandler.class)
+            @Result(column = "choose", property = "choose", typeHandler = ListListTypeHandler.class),
+            @Result(column = "delay", property = "delay", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticSimulatorStep> selectStaticSimulatorStepList();
 
@@ -383,7 +384,8 @@ public interface StaticIniMapper {
     @Select("select * from s_homecity_cell")
     @Results({
             @Result(column = "route", property = "route", typeHandler = ListIntTypeHandler.class),
-            @Result(column = "bindCell", property = "bindCellList", typeHandler = ListIntTypeHandler.class)
+            @Result(column = "bindCell", property = "bindCellList", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "neighbor", property = "neighborCellList", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticHomeCityCell> selectStaticHomeCityCellList();
 
@@ -394,4 +396,32 @@ public interface StaticIniMapper {
             @Result(column = "buffConfig", property = "buffConfig", typeHandler = ListListTypeHandler.class)
     })
     List<StaticHomeCityFoundation> selectStaticHomeCityFoundationList();
+
+    @Select("select * from s_economic_order")
+    @Results({
+            @Result(column = "needLordLv", property = "needLordLv", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "place", property = "place", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "orderDemand1", property = "orderDemand1", typeHandler = ListListTypeHandler.class),
+            @Result(column = "orderDemand2", property = "orderDemand2", typeHandler = ListListTypeHandler.class),
+            @Result(column = "orderDemand3", property = "orderDemand3", typeHandler = ListListTypeHandler.class),
+            @Result(column = "reward1", property = "reward1", typeHandler = ListListTypeHandler.class),
+            @Result(column = "number1", property = "number1", typeHandler = ListListTypeHandler.class),
+            @Result(column = "reward2", property = "reward2", typeHandler = ListListTypeHandler.class),
+            @Result(column = "number2", property = "number2", typeHandler = ListListTypeHandler.class),
+            @Result(column = "specialReward", property = "specialReward", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticEconomicOrder> selectStaticEconomicOrderList();
+
+    @Select("select * from s_economic_crop")
+    @Results({
+            @Result(column = "needBuildingLv", property = "needBuildingLv", typeHandler = MapIntTypeHandler.class)
+    })
+    List<StaticEconomicCrop> selectStaticEconomicCropList();
+
+    @Select("select * from s_happiness")
+    @Results({
+            @Result(column = "range", property = "range", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "effective", property = "effective", typeHandler = ListListTypeHandler.class)
+    })
+    List<StaticHappiness> selectStaticHappinessList();
 }
