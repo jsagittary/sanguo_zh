@@ -4,7 +4,7 @@ import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.impl.buff.ConditionBuffImpl;
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
@@ -46,11 +46,11 @@ public class FightContextHolder {
         LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
     }
 
-    public void setRecordData(CommonPb.Record.Builder recordData) {
+    public void setRecordData(BattlePb.BattleRoundPb.Builder recordData) {
         LOCAL.get().setRecordData(recordData);
     }
 
-    public CommonPb.Record.Builder getRecordData() {
+    public BattlePb.BattleRoundPb.Builder getRecordData() {
         FightContext context = LOCAL.get();
         return context.getRecordData();
     }
@@ -131,6 +131,42 @@ public class FightContextHolder {
 
     public boolean isRecordFlag() {
         return LOCAL.get().isRecordFlag();
+    }
+
+    public BattlePb.SkillAction.Builder getInitSkillActionPb() {
+        if (LOCAL.get().getSkillAction() == null) {
+            LOCAL.get().setSkillAction(BattlePb.SkillAction.newBuilder());
+        } else {
+            LOCAL.get().getSkillAction().clear();
+        }
+
+        return LOCAL.get().getSkillAction();
+    }
+
+    public BattlePb.SkillAction.Builder getCurSkillActionPb() {
+        if (LOCAL.get().getSkillAction() == null) {
+            LOCAL.get().setSkillAction(BattlePb.SkillAction.newBuilder());
+        }
+
+        return LOCAL.get().getSkillAction();
+    }
+
+    public BattlePb.OrdinaryAttackAction.Builder getInitAttackActionPb() {
+        if (LOCAL.get().getAttackAction() == null) {
+            LOCAL.get().setAttackAction(BattlePb.OrdinaryAttackAction.newBuilder());
+        } else {
+            LOCAL.get().getAttackAction().clear();
+        }
+
+        return LOCAL.get().getAttackAction();
+    }
+
+    public BattlePb.OrdinaryAttackAction.Builder getCurAttackActionPb() {
+        if (LOCAL.get().getAttackAction() == null) {
+            LOCAL.get().setAttackAction(BattlePb.OrdinaryAttackAction.newBuilder());
+        }
+
+        return LOCAL.get().getAttackAction();
     }
 
     public long getAtkRoleId() {

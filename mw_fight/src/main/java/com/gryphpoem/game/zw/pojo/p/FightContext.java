@@ -1,7 +1,7 @@
 package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -33,7 +33,10 @@ public class FightContext {
     private long fightId;
     private boolean recordFlag = true;
     // TODO 战斗PB信息
-    private CommonPb.Record.Builder recordData;// 总战报
+    private BattlePb.BattleRoundPb.Builder recordData;          // 总战报
+    private BattlePb.SkillAction.Builder skillAction;           // 技能pb
+    private BattlePb.OrdinaryAttackAction.Builder attackAction; // 普攻pb
+
     // 战斗实体
     private List<FightEntity> fightEntityList;
     private BattleLogic battleLogic;

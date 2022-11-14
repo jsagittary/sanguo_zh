@@ -505,4 +505,5 @@ public class BattleLogic {
             it.remove();
         }
     }
+
 }

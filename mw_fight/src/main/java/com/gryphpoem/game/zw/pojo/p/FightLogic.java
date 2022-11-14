@@ -3,8 +3,10 @@ package com.gryphpoem.game.zw.pojo.p;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -37,7 +39,7 @@ public class FightLogic {
         this.contextHolder = new FightContextHolder(attacker, defender, battleType);
         this.contextHolder.setRecordFlag(recordFlag);
         if (recordFlag) {
-            contextHolder.setRecordData(CommonPb.Record.newBuilder().setKeyId(0));
+            contextHolder.setRecordData(BattlePb.BattleRoundPb.newBuilder().setKeyId(String.valueOf(fightId)));
         }
 
         // 记录勋章光环
@@ -65,16 +67,16 @@ public class FightLogic {
      * 记录双方阵型
      */
     public void packForm() {
-        CommonPb.Record.Builder recordData = contextHolder.getRecordData();
-        for (Force force : contextHolder.getAtkFighter().forces) {
-            CommonPb.Form formA = FightUtil.createFormPb(force);
-            recordData.addFormA(formA);
-        }
-
-        for (Force force : contextHolder.getDefFighter().forces) {
-            CommonPb.Form formB = FightUtil.createFormPb(force);
-            recordData.addFormB(formB);
-        }
+//        CommonPb.Record.Builder recordData = contextHolder.getRecordData();
+//        for (Force force : contextHolder.getAtkFighter().forces) {
+//            CommonPb.Form formA = FightUtil.createFormPb(force);
+//            recordData.addFormA(formA);
+//        }
+//
+//        for (Force force : contextHolder.getDefFighter().forces) {
+//            CommonPb.Form formB = FightUtil.createFormPb(force);
+//            recordData.addFormB(formB);
+//        }
     }
 
     public void start() {
@@ -85,10 +87,10 @@ public class FightLogic {
             checkDie();
         }
         if (Objects.nonNull(contextHolder.getRecordData())) {
-            CommonPb.Record.Builder recordData = contextHolder.getRecordData();
+            BattlePb.BattleRoundPb.Builder recordData = contextHolder.getRecordData();
             int size = recordData.build().toByteArray().length;
-            if (size >= 1024 * 1024 || recordData.getRoundCount() > 1000) {//大于1M的战报,或者回合数超过1000的战报
-                LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, recordData.getRoundCount()));
+            if (size >= 1024 * 1024 || contextHolder.getRoundNum() > 1000) {//大于1M的战报,或者回合数超过1000的战报
+                LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, contextHolder.getRoundNum()));
             }
         }
     }
@@ -97,7 +99,6 @@ public class FightLogic {
      * 回合伊始
      */
     private void roundStart(Force force, Force target) {
-        contextHolder.addRoundNum();
         calFighterMorale(force, target);
         // 释放登场技能
         // 顺序为: 功方主将, 攻防副将, 守方主将, 守方副将
@@ -185,12 +186,15 @@ public class FightLogic {
     private void round() {
         if (contextHolder.isRecordFlag()) {
             // TODO pb初始化
-
+            contextHolder.getInitSkillActionPb();
+            contextHolder.getInitAttackActionPb();
         }
         // 找出攻击方与防守方
         Force force = contextHolder.getAtkFighter().getAliveForce();
         Force target = contextHolder.getDefFighter().getAliveForce();
         if (force != null && target != null) {
+            // 添加开场pb
+            FightPbUtil.createBattlePreparationStagePb(force, target);
             // 回合开始时
             roundStart(force, target);
             // 双方武将以及副将战斗
@@ -210,7 +214,6 @@ public class FightLogic {
      * @param target
      */
     private void fight(Force force, Force target) {
-        int fightNum = 0;
         while (force.alive() && target.alive()) {
             // 比较武将速度, 排列出场顺序
             List<FightEntity> fightEntityList = contextHolder.getSortedFightEntity(force, target);
@@ -219,9 +222,7 @@ public class FightLogic {
                 break;
             }
 
-            if (fightNum++ > 0) {
-                contextHolder.addRoundNum();
-            }
+            contextHolder.addRoundNum();
 
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {

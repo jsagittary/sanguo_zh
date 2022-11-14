@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.event.FightEvent;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.push.util.CheckNull;
@@ -50,7 +51,6 @@ public class FightUtil {
 
         return actingForce;
     }
-
 
     /**
      * 自增唯一id
@@ -355,18 +355,18 @@ public class FightUtil {
     }
 
     public static void packAura(Fighter fighter, FightContextHolder contextHolder) {
-        CommonPb.Record.Builder recordData = contextHolder.getRecordData();
+        BattlePb.BattleRoundPb.Builder recordData = contextHolder.getRecordData();
         for (Map.Entry<Long, List<AuraInfo>> entry : fighter.auraInfos.entrySet()) {
             Long roleId = entry.getKey();
             for (AuraInfo auraInfo : entry.getValue()) {
-                CommonPb.Aura auraPb = createAuraPb(roleId, auraInfo);
+                BattlePb.Aura auraPb = createAuraPb(roleId, auraInfo);
                 recordData.addAura(auraPb);
             }
         }
     }
 
-    public static CommonPb.Aura createAuraPb(long roleId, AuraInfo auraInfo) {
-        CommonPb.Aura.Builder auraPb = CommonPb.Aura.newBuilder();
+    public static BattlePb.Aura createAuraPb(long roleId, AuraInfo auraInfo) {
+        BattlePb.Aura.Builder auraPb = BattlePb.Aura.newBuilder();
         auraPb.setRoleId(roleId);
         auraPb.setHeroId(auraInfo.getHeroId());
         auraPb.setId(auraInfo.getMedalAuraId());
