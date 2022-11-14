@@ -10,19 +10,19 @@ import java.util.List;
  */
 public class StaticSimCity {
 
-    private Integer type;
+    private int type;
 
     private List<List<Integer>> buildLv; // 此城镇事件计入刷新池的前置建筑等级需求[[buildId,buildLv]]
 
-    private Integer lordLv; // 此城镇事件计入刷新池的前置领主等级需求
+    private int lordLv; // 此城镇事件计入刷新池的前置领主等级需求
 
     private List<Integer> open; // [1,绑定建筑id/绑定NPCid]，1后面填建筑id，2后面填NPCid
 
-    public Integer getType() {
+    public int getType() {
         return type;
     }
 
-    public void setType(Integer type) {
+    public void setType(int type) {
         this.type = type;
     }
 
@@ -34,11 +34,11 @@ public class StaticSimCity {
         this.buildLv = buildLv;
     }
 
-    public Integer getLordLv() {
+    public int getLordLv() {
         return lordLv;
     }
 
-    public void setLordLv(Integer lordLv) {
+    public void setLordLv(int lordLv) {
         this.lordLv = lordLv;
     }
 

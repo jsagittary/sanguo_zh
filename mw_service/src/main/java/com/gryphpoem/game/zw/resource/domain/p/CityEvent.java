@@ -1,4 +1,4 @@
-package com.gryphpoem.game.zw.resource.domain.p;
+package com.gryphpoem.game.zw.resource.pojo.simulator;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
@@ -15,13 +15,13 @@ import java.util.List;
  */
 public class CityEvent {
 
-    private Integer startTime; // 周期开始时间
+    private int startTime; // 周期开始时间
 
-    private Integer endTime; // 周期结束时间
+    private int endTime; // 周期结束时间
 
-    private Integer totalCountCurPeriod; // 当前周期内累计事件数量
+    private int totalCountCurPeriod; // 当前周期内累计事件数量
 
-    private Integer periodCount; // 累计周期数
+    private int periodCount; // 累计周期数
 
     private List<LifeSimulatorInfo> lifeSimulatorInfoList = new ArrayList<>(); // 周期内的城镇事件(模拟器信息)
 
@@ -33,35 +33,35 @@ public class CityEvent {
         this.lifeSimulatorInfoList = new ArrayList<>();
     }
 
-    public Integer getStartTime() {
+    public int getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Integer startTime) {
+    public void setStartTime(int startTime) {
         this.startTime = startTime;
     }
 
-    public Integer getEndTime() {
+    public int getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Integer endTime) {
+    public void setEndTime(int endTime) {
         this.endTime = endTime;
     }
 
-    public Integer getTotalCountCurPeriod() {
+    public int getTotalCountCurPeriod() {
         return totalCountCurPeriod;
     }
 
-    public void setTotalCountCurPeriod(Integer totalCountCurPeriod) {
+    public void setTotalCountCurPeriod(int totalCountCurPeriod) {
         this.totalCountCurPeriod = totalCountCurPeriod;
     }
 
-    public Integer getPeriodCount() {
+    public int getPeriodCount() {
         return periodCount;
     }
 
-    public void setPeriodCount(Integer periodCount) {
+    public void setPeriodCount(int periodCount) {
         this.periodCount = periodCount;
     }
 

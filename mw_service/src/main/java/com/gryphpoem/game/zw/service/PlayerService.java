@@ -6,8 +6,8 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -471,7 +471,7 @@ public class PlayerService implements GmCmdService {
             if (playerDataManager.takeNick(nick)) {
                 // 领主初始属性配置
                 StaticIniLord ini = StaticIniDataMgr.getLordIniData();
-                // 初始模拟器的奖励及性格影响
+                // 创号初始模拟器的奖励及性格影响
                 boolean isEnd = false;
                 List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = req.getLifeSimulatorStepList();
                 List<List<Integer>> finalRewardList = new ArrayList<>();
@@ -480,7 +480,7 @@ public class PlayerService implements GmCmdService {
                 for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
                     int chooseId = lifeSimulatorStep.getChooseId();
                     if (chooseId > 0) {
-                        StaticSimulatorChoose sSimulatorChoose = StaticDataMgr.getStaticSimulatorChoose(chooseId);
+                        StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
                         // 性格值变化
                         List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
                         finalCharacterFixList.addAll(characterFix);
@@ -494,7 +494,7 @@ public class PlayerService implements GmCmdService {
                         List<List<Integer>> buff = sSimulatorChoose.getBuff();
                     }
                     int stepId = lifeSimulatorStep.getStepId();
-                    StaticSimulatorStep staticSimulatorStep = StaticDataMgr.getStaticSimulatorStep(stepId);
+                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
                     // 根据配置, 判断模拟器是否结束
                     if (!isEnd) {
                         long nextId = staticSimulatorStep.getNextId();

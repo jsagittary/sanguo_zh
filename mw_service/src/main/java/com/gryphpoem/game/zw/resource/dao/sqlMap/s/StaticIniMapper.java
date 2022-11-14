@@ -2,10 +2,65 @@ package com.gryphpoem.game.zw.resource.dao.sqlMap.s;
 
 import com.gryphpoem.game.zw.resource.dao.handle.ElementServerTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler;
+import com.gryphpoem.game.zw.resource.dao.handle.ListListLongTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler;
 import com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler;
-import com.gryphpoem.game.zw.resource.domain.s.*;
-import org.apache.ibatis.annotations.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActSkinEncore;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActTreasureWareJourney;
+import com.gryphpoem.game.zw.resource.domain.s.StaticActivityCrossPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticAnniversaryEgg;
+import com.gryphpoem.game.zw.resource.domain.s.StaticAnniversaryTurntable;
+import com.gryphpoem.game.zw.resource.domain.s.StaticAutumnTurnplate;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBattlePvp;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCreativeOffice;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCreativeOfficeAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGroup;
+import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
+import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFireworks;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishBait;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishBaitHerocombination;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishProficiency;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishResults;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishShop;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishattribute;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishing;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFishingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticGeneration;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyAttr;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyShow;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMusicFestivalBoxOffice;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMusicFestivalBoxOfficeParam;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRandomLibrary;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRelic;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRelicFraction;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRelicShop;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimCity;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSmallGame;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSummerCastle;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSummerCharge;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSummerTurnplate;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotem;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotemDrop;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotemLink;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTotemUp;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombatBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureWare;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureWareLevel;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureWareProfile;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureWareSpecial;
+import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuffCross;
+import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Map;
@@ -356,7 +411,8 @@ public interface StaticIniMapper {
 
     @Select("select * from sim_beginnerguide")
     @Results({
-            @Result(column = "choose", property = "choose", typeHandler = ListListTypeHandler.class)
+            @Result(column = "choose", property = "choose", typeHandler = ListListLongTypeHandler.class),
+            @Result(column = "delay", property = "delay", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticSimulatorStep> selectStaticSimulatorStepList();
 
@@ -368,8 +424,8 @@ public interface StaticIniMapper {
 
     @Select("select * from sim_character_reward")
     @Results({
-            @Result(column = "need", property = "need", typeHandler = ListIntTypeHandler.class),
-            @Result(column = "reward", property = "reward", typeHandler = ListListTypeHandler.class)
+            @Result(column = "need", property = "need", typeHandler = ListListTypeHandler.class),
+            @Result(column = "reward", property = "reward", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticCharacterReward> selectStaticCharacterRewardList();
 

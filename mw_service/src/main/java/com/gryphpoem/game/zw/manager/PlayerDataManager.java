@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -23,6 +24,8 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.Role;
 import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
@@ -366,6 +369,18 @@ public class PlayerDataManager implements PlayerDM {
         }
 
         Player player = new Player(lord, TimeHelper.getCurrentSecond());
+        // 初始化性格值
+        Map<Integer, Integer> characterData = player.getCharacterData();
+        List<StaticCharacter> staticCharacterList = StaticBuildCityDataMgr.getStaticCharacterList();
+        for (int i = 0; i < staticCharacterList.size(); i++) {
+            characterData.put(i + 1, 0);
+        }
+        // 初始化性格奖励记录
+        Map<Integer, Integer> characterRewardRecord = player.getCharacterRewardRecord();
+        List<StaticCharacterReward> staticCharacterRewardList = StaticBuildCityDataMgr.getStaticCharacterRewardList();
+        for (int i = 0; i < staticCharacterRewardList.size(); i++) {
+            characterRewardRecord.put(i + 1, 0);
+        }
         createAccount(account, player);
         newPlayerCache.put(player.roleId, player);
         return player;

@@ -1,8 +1,10 @@
 package com.gryphpoem.game.zw.service.simulator;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
+import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -13,19 +15,18 @@ import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.CityEvent;
-import com.gryphpoem.game.zw.resource.domain.p.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
+import com.gryphpoem.game.zw.resource.pojo.simulator.CityEvent;
+import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.PlayerService;
-import com.gryphpoem.game.zw.service.RefreshTimerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ import java.util.Map;
  * @Date: 2022/11/1 9:28
  */
 @Service
-public class LifeSimulatorService implements RefreshTimerService {
+public class LifeSimulatorService implements DelayInvokeEnvironment {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -68,11 +69,11 @@ public class LifeSimulatorService implements RefreshTimerService {
         boolean isEnd = false;
         List<List<Integer>> finalRewardList = new ArrayList<>();
         List<List<Integer>> finalCharacterFixList = new ArrayList<>();
-        int delay = 0;
+        List<Integer> delay = null;
         for (CommonPb.LifeSimulatorStep lifeSimulatorStep : simulatorStepList) {
             int chooseId = lifeSimulatorStep.getChooseId();
             if (chooseId > 0) {
-                StaticSimulatorChoose sSimulatorChoose = StaticDataMgr.getStaticSimulatorChoose(chooseId);
+                StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
                 // 性格值变化
                 List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
                 finalCharacterFixList.addAll(characterFix);
@@ -83,7 +84,7 @@ public class LifeSimulatorService implements RefreshTimerService {
                 List<List<Integer>> buff = sSimulatorChoose.getBuff();
             }
             int stepId = lifeSimulatorStep.getStepId();
-            StaticSimulatorStep staticSimulatorStep = StaticDataMgr.getStaticSimulatorStep(stepId);
+            StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
             // 根据配置, 如果没有下一步, 则模拟器结束
             long nextId = staticSimulatorStep.getNextId();
             List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
@@ -95,78 +96,71 @@ public class LifeSimulatorService implements RefreshTimerService {
                 nextId = playerChoose.get(1);
             }
             if (!isEnd) {
-                isEnd = nextId == 0;
+                isEnd = nextId == 0L;
             }
-            // 如果该步延时执行, 则更新对应模拟器信息
+            // 如果该步有延时执行, 新增模拟器器延时任务
             delay = staticSimulatorStep.getDelay();
-            if (delay > 0) {
-                LifeSimulatorInfo lifeSimulatorInfo;
-                if (triggerMode == 3) {
-                    lifeSimulatorInfo = player.getCityEvent().getLifeSimulatorInfoList().stream().filter(
-                            temp -> temp.getType() == type && temp.getBindType() == bindType && temp.getBindId() == bindId
-                    ).findFirst().orElse(null);
-                } else {
-                    lifeSimulatorInfo = player.getLifeSimulatorRecordMap().get(triggerMode).stream().filter(
-                            temp -> temp.getType() == type && temp.getBindType() == bindType && temp.getBindId() == bindId
-                    ).findFirst().orElse(null);
-                }
-                if (lifeSimulatorInfo != null) {
-                    lifeSimulatorInfo.setStepId(nextId);
-                    lifeSimulatorInfo.setPauseTime(TimeHelper.getCurrentSecond());
-                    lifeSimulatorInfo.setDelay(delay);
-                }
+            if (CheckNull.nonEmpty(delay)) {
+                LifeSimulatorInfo delaySimulator = new LifeSimulatorInfo();
+                delaySimulator.setType(delay.get(1));
+                delaySimulator.setPauseTime(TimeHelper.getCurrentDay());
+                delaySimulator.setDelay(delay.get(0));
+                DELAY_QUEUE.add(new LifeSimulatorDelayRun(delaySimulator, player));
             }
         }
 
-        GamePb1.RecordLifeSimulatorRs.Builder builder = GamePb1.RecordLifeSimulatorRs.newBuilder();
-        // 延时前结算一次奖励，延时后模拟器完全结束再结算一次奖励
-        if (isEnd || delay > 0) {
-            if (triggerMode == 3) {
-                if (CheckNull.isNull(player.getCityEvent())) {
-                    CityEvent cityEvent = new CityEvent();
-                    player.setCityEvent(cityEvent);
-                }
-                player.getCityEvent().getLifeSimulatorInfoList().removeIf(temp -> temp.getType() == type && temp.getBindType() == bindType && temp.getBindId() == bindId);
+        if (!isEnd) {
+            throw new MwException(GameError.SIMULATOR_IS_NOT_END, String.format("记录模拟器结果时, 模拟器未结束, roleId:%s, triggerMode:%s", roleId, type));
+        }
+
+        // 玩的是城镇事件的模拟器, 从城镇事件池子中移除
+        if (triggerMode == 3) {
+            if (CheckNull.isNull(player.getCityEvent())) {
+                CityEvent cityEvent = new CityEvent();
+                player.setCityEvent(cityEvent);
             }
-            // 更新性格值并发送对应奖励
-            if (CheckNull.nonEmpty(finalCharacterFixList)) {
-                if (CheckNull.isEmpty(player.getCharacterData())) {
-                    player.setCharacterData(new HashMap<>(6));
-                }
-                if (CheckNull.isEmpty(player.getCharacterRewardRecord())) {
-                    player.setCharacterRewardRecord(new HashMap<>(8));
-                }
-                for (List<Integer> characterChange : finalCharacterFixList) {
-                    Integer index = characterChange.get(0);
-                    Integer value = characterChange.get(1);
-                    Integer addOrSub = characterChange.get(0);
-                    updateCharacterData(player.getCharacterData(), index, value, addOrSub);
-                }
-                checkAndSendCharacterReward(player);
-                // 同步领主性格变化
-                playerDataManager.syncRoleInfo(player);
+            player.getCityEvent().getLifeSimulatorInfoList().removeIf(temp -> temp.getType() == type && temp.getBindType() == bindType && temp.getBindId() == bindId);
+        }
+        // 更新性格值并发送对应奖励
+        if (CheckNull.nonEmpty(finalCharacterFixList)) {
+            if (CheckNull.isEmpty(player.getCharacterData())) {
+                player.setCharacterData(new HashMap<>(6));
             }
-            // 更新对应奖励变化
-            if (CheckNull.nonEmpty(finalRewardList)) {
-                for (List<Integer> reward : finalRewardList) {
-                    Integer awardType = reward.get(0);
-                    Integer awardId = reward.get(1);
-                    Integer awardCount = reward.get(2);
-                    Integer addOrSub = reward.get(3);
-                    switch (addOrSub) {
-                        case 1:
-                            rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
-                            break;
-                        case 0:
-                            rewardDataManager.checkAndSubPlayerRes(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, true, "");
-                            break;
-                    }
+            if (CheckNull.isEmpty(player.getCharacterRewardRecord())) {
+                player.setCharacterRewardRecord(new HashMap<>(8));
+            }
+            for (List<Integer> characterChange : finalCharacterFixList) {
+                int index = characterChange.get(0);
+                int value = characterChange.get(1);
+                int addOrSub = characterChange.get(0);
+                updateCharacterData(player.getCharacterData(), index, value, addOrSub);
+            }
+            checkAndSendCharacterReward(player);
+            // 同步领主性格变化
+            playerDataManager.syncRoleInfo(player);
+        }
+        // 更新对应奖励变化
+        if (CheckNull.nonEmpty(finalRewardList)) {
+            for (List<Integer> reward : finalRewardList) {
+                int awardType = reward.get(0);
+                int awardId = reward.get(1);
+                int awardCount = reward.get(2);
+                int addOrSub = reward.get(3);
+                switch (addOrSub) {
+                    case 1:
+                        rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
+                        break;
+                    case 0:
+                        rewardDataManager.checkAndSubPlayerRes(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, true, "");
+                        break;
                 }
             }
         }
+        // TODO 处理buff增益
 
         // TODO 日志埋点
 
+        GamePb1.RecordLifeSimulatorRs.Builder builder = GamePb1.RecordLifeSimulatorRs.newBuilder();
         return builder.build();
     }
 
@@ -178,8 +172,8 @@ public class LifeSimulatorService implements RefreshTimerService {
      * @param addOrSub
      */
     public void updateCharacterData(Map<Integer, Integer> characterData, int index, int value, int addOrSub) {
-        Integer oldValue = characterData.get(index);
-        List<Integer> characterRange = StaticDataMgr.getCharacterRange(index);
+        int oldValue = characterData.get(index);
+        List<Integer> characterRange = StaticBuildCityDataMgr.getCharacterRange(index);
         int minCharacterValue = 0;
         int maxCharacterValue = 0;
         if (characterRange == null || characterRange.size() < 2) {
@@ -208,17 +202,17 @@ public class LifeSimulatorService implements RefreshTimerService {
         Map<Integer, Integer> characterData = player.getCharacterData();
         // 性格对应奖励领取记录
         Map<Integer, Integer> characterRewardRecord = player.getCharacterRewardRecord();
-        List<StaticCharacterReward> staticCharacterRewardList = StaticDataMgr.getStaticCharacterRewardList();
+        List<StaticCharacterReward> staticCharacterRewardList = StaticBuildCityDataMgr.getStaticCharacterRewardList();
         for (StaticCharacterReward staticCharacterReward : staticCharacterRewardList) {
-            Integer characterRewardId = staticCharacterReward.getId();
+            int characterRewardId = staticCharacterReward.getId();
             // 已获取奖励不再重复获取
             if (characterRewardRecord.get(characterRewardId) == 1) {
                 continue;
             }
             boolean checkRewardCondition = true;
             for (List<Integer> need : staticCharacterReward.getNeed()) {
-                Integer index = need.get(0);
-                Integer needValue = need.get(1);
+                int index = need.get(0);
+                int needValue = need.get(1);
                 if (characterData.get(index) < needValue) {
                     checkRewardCondition = false;
                     break;
@@ -253,9 +247,9 @@ public class LifeSimulatorService implements RefreshTimerService {
         List<LifeSimulatorInfo> lifeSimulatorInfoList = cityEvent.getLifeSimulatorInfoList();
         List<Integer> cityEventRefreshConfig = Constant.CITY_EVENT_REFRESH_CONFIG;
         // 获取当前周期开启时间, 当前周期结束时间, 周期次数
-        Integer latestEndTime = cityEvent.getEndTime();
-        Integer totalCountCurPeriod = cityEvent.getTotalCountCurPeriod();
-        Integer curPeriodCount = cityEvent.getPeriodCount();
+        int latestEndTime = cityEvent.getEndTime();
+        int totalCountCurPeriod = cityEvent.getTotalCountCurPeriod();
+        int curPeriodCount = cityEvent.getPeriodCount();
 
         int currentSecond = TimeHelper.getCurrentSecond();
         // 开启新一轮, 重新设置周期开始时间、结束时间, 更新周期次数
@@ -274,7 +268,7 @@ public class LifeSimulatorService implements RefreshTimerService {
         }
 
         // 随机城镇事件
-        List<StaticSimCity> staticSimCityList = StaticDataMgr.getCanRandomSimCityList(player);
+        List<StaticSimCity> staticSimCityList = StaticBuildCityDataMgr.getCanRandomSimCityList(player);
         if (staticSimCityList.size() > 0) {
             int random = RandomHelper.randomInSize(staticSimCityList.size());
             if (random > 1) {
@@ -286,17 +280,13 @@ public class LifeSimulatorService implements RefreshTimerService {
                 lifeSimulatorInfo.setDelay(0);
                 lifeSimulatorInfoList.add(lifeSimulatorInfo);
                 cityEvent.setTotalCountCurPeriod(totalCountCurPeriod + 1);
+                // 向客户端同步新增的模拟器
+                SyncNewSimulatorToPlayer(player, lifeSimulatorInfo, 3);
             }
         }
     }
 
-    /**
-     * 更新玩家模拟器信息(定时刷新)
-     *
-     * @param player
-     */
-    @Override
-    public void checkAndRefresh(Player player) {
+    /*public void checkAndRefresh(Player player) {
         List<LifeSimulatorInfo> lifeSimulatorInfoList = player.getCityEvent().getLifeSimulatorInfoList();
         int currentSecond = TimeHelper.getCurrentSecond();
         for (LifeSimulatorInfo lifeSimulatorInfo : lifeSimulatorInfoList) {
@@ -306,19 +296,29 @@ public class LifeSimulatorService implements RefreshTimerService {
                 lifeSimulatorInfo.setDelay(0);
             }
         }
-
-        syncSimulatorDelayStateRefresh(player);
-    }
+    }*/
 
     /**
-     * 向客户端同步玩家模拟器信息
+     * 模拟器延时结束后向客户端同步
      *
      * @param player
      */
-    private void syncSimulatorDelayStateRefresh(Player player) {
+    public void SyncNewSimulatorToPlayer(Player player, LifeSimulatorInfo lifeSimulatorInfo, int triggerMode) {
         GamePb1.SyncSimulatorDelayStateRefreshRs.Builder builder = GamePb1.SyncSimulatorDelayStateRefreshRs.newBuilder();
-        builder.addAllLifeSimulatorRecord(player.createSimulatorRecordList());
+        CommonPb.LifeSimulatorRecord.Builder lifeSimulatorRecordBuilder = CommonPb.LifeSimulatorRecord.newBuilder();
+        lifeSimulatorRecordBuilder.setTriggerMode(triggerMode);
+        lifeSimulatorInfo.setDelay(0);
+        CommonPb.LifeSimulatorInfo lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
+        lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfoPb);
+        builder.addLifeSimulatorRecord(lifeSimulatorRecordBuilder);
         BasePb.Base msg = PbHelper.createSynBase(GamePb1.SyncSimulatorDelayStateRefreshRs.EXT_FIELD_NUMBER, GamePb1.SyncSimulatorDelayStateRefreshRs.ext, builder.build()).build();
         playerService.syncMsgToPlayer(msg, player);
+    }
+
+    private DelayQueue<LifeSimulatorDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+
+    @Override
+    public DelayQueue getDelayQueue() {
+        return DELAY_QUEUE;
     }
 }

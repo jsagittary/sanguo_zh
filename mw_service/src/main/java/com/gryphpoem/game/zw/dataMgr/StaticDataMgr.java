@@ -1,26 +1,16 @@
 package com.gryphpoem.game.zw.dataMgr;
 
-import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.manager.BuildingDataManager;
-import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.LifeSimulatorInfo;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFireworks;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishing;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishingLv;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelic;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicFraction;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicShop;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimCity;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.util.ActParamTabLoader;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.ListUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,13 +42,6 @@ public class StaticDataMgr extends AbsStaticIniService {
     private static Map<Integer, StaticRelicShop> staticRelicShopMap;
     private static Map<Integer, StaticRelicFraction> staticRelicFractionMap;
 
-    private static List<StaticSimulatorChoose> staticSimulatorChooseList; // 人生模拟器选项配置
-    private static List<StaticSimulatorStep> staticSimulatorStepList; // 人生模拟器步骤配置
-    private static List<StaticCharacter> staticCharacterList; // 性格
-    private static List<StaticCharacterReward> staticCharacterRewardList; // 性格奖励
-    private static List<StaticSimCity> staticSimCityList; // 性格奖励
-
-
     @Override
     public void load() {
         staticRelicFractionMap = staticIniDao.selectStaticRelicFractionMap();
@@ -77,65 +60,11 @@ public class StaticDataMgr extends AbsStaticIniService {
         staticFishingMap = staticFishingList.stream().collect(Collectors.toMap(StaticFishing::getId, v -> v));
         staticFishingLvList = staticIniDao.selectStaticFishingLvList();
         staticFishingLvGroupMap = staticFishingLvList.stream().collect(Collectors.groupingBy(StaticFishingLv::getActivityId, Collectors.toMap(StaticFishingLv::getLv, v -> v)));
-
-        staticSimulatorChooseList = staticIniDao.selectStaticSimulatorChooseList();
-        staticSimulatorStepList = staticIniDao.selectStaticSimulatorStepList();
-        staticCharacterList = staticIniDao.selectStaticCharacterList();
-        staticCharacterRewardList = staticIniDao.selectStaticCharacterRewardList();
-        staticSimCityList = staticIniDao.selectStaticSimCityList();
     }
 
     @Override
     public void check() {
 
-    }
-
-    public static StaticSimulatorChoose getStaticSimulatorChoose(int id) {
-        return staticSimulatorChooseList.stream().filter(staticSimulatorChoose -> staticSimulatorChoose.getId() == id).findFirst().orElse(null);
-    }
-
-    public static StaticSimulatorStep getStaticSimulatorStep(long id) {
-        return staticSimulatorStepList.stream().filter(staticSimulatorStep -> staticSimulatorStep.getId() == id).findFirst().orElse(null);
-    }
-
-    public static List<Integer> getCharacterRange(int id) {
-        StaticCharacter staticCharacter = staticCharacterList.stream().filter(tmp -> tmp.getId() == id).findFirst().orElse(null);
-        if (staticCharacter != null && CheckNull.nonEmpty(staticCharacter.getRange())) {
-            return staticCharacter.getRange();
-        } else {
-            return null;
-        }
-    }
-
-    public static List<StaticCharacterReward> getStaticCharacterRewardList() {
-        return staticCharacterRewardList;
-    }
-
-    public static List<StaticSimCity> getStaticSimCityList() {
-        return staticSimCityList;
-    }
-
-    public static List<StaticSimCity> getCanRandomSimCityList(Player player) {
-        List<LifeSimulatorInfo> lifeSimulatorInfoList = player.getCityEvent().getLifeSimulatorInfoList();
-        List<StaticSimCity> canRandomSimCityList = new ArrayList<>();
-        for (StaticSimCity staticSimCity : staticSimCityList) {
-            int needLordLv = staticSimCity.getLordLv();
-            if (player.lord.getLevel() < needLordLv) {
-                continue;
-            }
-            List<List<Integer>> needBuildLvList = staticSimCity.getBuildLv();
-            boolean checkBuildLv = needBuildLvList.stream().anyMatch(tmp -> DataResource.ac.getBean(BuildingDataManager.class).checkBuildingLv(player, tmp));
-            if (checkBuildLv) {
-                continue;
-            }
-            List<Integer> open = staticSimCity.getOpen();
-            boolean checkBuildOrNpcHasBind = lifeSimulatorInfoList.stream().anyMatch(tmp -> tmp.getBindType() == open.get(0) && tmp.getBindId() == open.get(1));
-            if (checkBuildOrNpcHasBind) {
-                continue;
-            }
-            canRandomSimCityList.add(staticSimCity);
-        }
-        return canRandomSimCityList;
     }
 
     public static StaticRelicFraction getStaticRelicFraction(int curScheduleId) {

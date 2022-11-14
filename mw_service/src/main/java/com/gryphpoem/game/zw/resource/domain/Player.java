@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
@@ -96,7 +97,6 @@ import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
 import com.gryphpoem.game.zw.resource.domain.p.Chemical;
 import com.gryphpoem.game.zw.resource.domain.p.Cia;
-import com.gryphpoem.game.zw.resource.domain.p.CityEvent;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
 import com.gryphpoem.game.zw.resource.domain.p.CombatInfo;
@@ -114,7 +114,6 @@ import com.gryphpoem.game.zw.resource.domain.p.EquipTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Factory;
 import com.gryphpoem.game.zw.resource.domain.p.Gains;
 import com.gryphpoem.game.zw.resource.domain.p.History;
-import com.gryphpoem.game.zw.resource.domain.p.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.MailData;
 import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
@@ -139,6 +138,8 @@ import com.gryphpoem.game.zw.resource.domain.p.Treasure;
 import com.gryphpoem.game.zw.resource.domain.p.TriggerGift;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.EquipJewel;
@@ -168,6 +169,8 @@ import com.gryphpoem.game.zw.resource.pojo.relic.PlayerRelic;
 import com.gryphpoem.game.zw.resource.pojo.robot.RobotRecord;
 import com.gryphpoem.game.zw.resource.pojo.rpc.RpcPlayer;
 import com.gryphpoem.game.zw.resource.pojo.season.PlayerSeasonData;
+import com.gryphpoem.game.zw.resource.pojo.simulator.CityEvent;
+import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.pojo.tavern.DrawCardData;
 import com.gryphpoem.game.zw.resource.pojo.totem.TotemData;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.MakeTreasureWare;
@@ -917,7 +920,6 @@ public class Player {
     public void setCharacterData(Map<Integer, Integer> characterData) {
         this.characterData = characterData;
     }
-
 
     /**
      * 性格奖励记录 <br>
@@ -2873,9 +2875,25 @@ public class Player {
             this.cityEvent = this.cityEvent.dser(ser.getCityEvent());
         }
         // 性格值
-        Optional.ofNullable(ser.getCharacterDataList()).ifPresent(tmp -> tmp.forEach(o -> this.characterData.put(o.getV1(), o.getV2())));
+        if (CheckNull.isEmpty(ser.getCharacterDataList())) {
+            // 兼容旧帐号
+            List<StaticCharacter> staticCharacterList = StaticBuildCityDataMgr.getStaticCharacterList();
+            for (int i = 0; i < staticCharacterList.size(); i++) {
+                this.characterData.put(i + 1, 0);
+            }
+        } else {
+            ser.getCharacterDataList().forEach(o -> this.characterData.put(o.getV1(), o.getV2()));
+        }
         // 性格奖励记录
-        Optional.ofNullable(ser.getCharacterRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.characterRewardRecord.put(o.getV1(), o.getV2())));
+        if (CheckNull.isEmpty(ser.getCharacterRewardRecordList())) {
+            // 兼容旧帐号
+            List<StaticCharacterReward> staticCharacterRewardList = StaticBuildCityDataMgr.getStaticCharacterRewardList();
+            for (int i = 0; i < staticCharacterRewardList.size(); i++) {
+                this.characterRewardRecord.put(i + 1, 0);
+            }
+        } else {
+            ser.getCharacterRewardRecordList().forEach(o -> this.characterRewardRecord.put(o.getV1(), o.getV2()));
+        }
     }
 
     private void dserTrophy(SerTrophy ser) {
@@ -3823,6 +3841,7 @@ public class Player {
         return playerRelic;
     }
 
+    // 获取客户端可执行的模拟器
     public List<CommonPb.LifeSimulatorRecord> createSimulatorRecordList() {
         List<CommonPb.LifeSimulatorRecord> data = new ArrayList<>();
 

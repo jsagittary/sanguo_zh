@@ -33,6 +33,7 @@ import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.Gestapo;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.server.SaveGlobalActivityServer;
+import com.gryphpoem.game.zw.server.SendMsgServer;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.anniversary.ActivityFireWorkService;
 import com.gryphpoem.game.zw.service.activity.cross.CrossRechargeLocalActivityService;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -424,7 +426,8 @@ public class ActivityService {
                 if (isAllGainActivity(player, actBase, activity)) {
                     continue;
                 }
-                if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType)) { // 部分活动结束后还显示
+                if (open != ActivityConst.OPEN_STEP && !ActivityConst.isEndDisplayAct(activityType) &&
+                        activityType != ActivityConst.FAMOUS_GENERAL_TURNPLATE) { // 部分活动结束后还显示
                     continue;
                 }
                 int tips_ = AbsSimpleActivityService.getTipsInActList(player, activityType);
@@ -1485,6 +1488,11 @@ public class ActivityService {
             throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), "活动未开启, roleId:,", roleId, ", type:",
                     actExchange.getType());
         }
+        if (activityBase.getActivityType() == ActivityConst.FAMOUS_GENERAL_TURNPLATE &&
+                activityBase.getBaseOpen() == ActivityConst.OPEN_AWARD) {
+            throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), " 幸运/名将 转盘活动未开启,或未初始化 roleId:", roleId);
+        }
+
         List<List<Integer>> awardList = actExchange.getAwardList();
         // 检测背包是否已满
         rewardDataManager.checkBag(player, awardList);
@@ -2263,11 +2271,44 @@ public class ActivityService {
      * @param activityType
      */
     public void refreshTurnplateCnt(Player player, int activityType) {
-        ActTurnplat turnplat = (ActTurnplat) activityDataManager.getActivityInfo(player, activityType);
-        if (CheckNull.isNull(turnplat)) { // 活动结束
-            return;
+        ActTurnplat turnTable;
+        if (activityType == ActivityConst.FAMOUS_GENERAL_TURNPLATE) {
+            ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
+            if (CheckNull.isNull(activityBase)) {
+                return;
+            }
+
+            Date beginTime = activityBase.getBeginTime();
+            int begin = TimeHelper.getDay(beginTime);
+            Activity activity = player.activitys.get(activityType);
+            if (activity == null) {
+                activity = activityDataManager.conActivity(activityBase, activityType, begin, player);
+                player.activitys.put(activityType, activity);
+            } else {
+                activity.isReset(begin, player);// 是否重新设置活动
+                activity.autoDayClean(activityBase);
+                activity.cleanActivityAuction(activityBase);
+            }
+            activity.setOpen(activityBase.getBaseOpen());
+            turnTable = (ActTurnplat) activity;
+            if (activityBase.getStep0() == ActivityConst.OPEN_AWARD) {
+                turnTable.setRefreshCount(0);
+                turnTable.setCnt(0);
+                turnTable.setGoldCnt(0);
+                turnTable.setTodayCnt(0);
+                turnTable.getWinCnt().clear();
+                turnTable.getWinCnt211().clear();
+                turnTable.getStatusCnt().clear();
+                return;
+            }
+        } else {
+            turnTable = (ActTurnplat) activityDataManager.getActivityInfo(player, activityType);
+            if (CheckNull.isNull(turnTable)) { // 活动结束
+                return;
+            }
         }
-        turnplat.refreshFreeCnt(player);
+
+        turnTable.refreshFreeCnt(player);
     }
 
     /**
@@ -2387,6 +2428,9 @@ public class ActivityService {
 
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         if (CheckNull.isNull(activityBase)) {
+            throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), " 幸运/名将 转盘活动未开启,或未初始化 roleId:", roleId);
+        }
+        if (activityType == ActivityConst.FAMOUS_GENERAL_TURNPLATE && activityBase.getBaseOpen() == ActivityConst.OPEN_AWARD) {
             throw new MwException(GameError.ACTIVITY_NOT_OPEN.getCode(), " 幸运/名将 转盘活动未开启,或未初始化 roleId:", roleId);
         }
 
