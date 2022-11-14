@@ -298,7 +298,8 @@ public class FightCalc {
             boolean exist = (boolean) fightEffect.effectCalculateValue(actionDirection.getDef().getFightEffectMap(
                     actionDirection.getCurDefHeroId()), FightConstant.EffectLogicId.INVINCIBLE_DAMAGE);
             if (exist) {
-                LogUtil.fight("战斗伤害计算, 无敌效果作用, 伤害为0");
+                LogUtil.fight("战斗伤害计算, 防守方: ", actionDirection.getDef().ownerId, "-",
+                        actionDirection.getCurDefHeroId(), " 无敌效果作用, 伤害为0");
                 return 0d;
             }
         }
@@ -321,7 +322,8 @@ public class FightCalc {
                     }
                 }
 
-                LogUtil.fight("战斗伤害计算, 护盾效果返回作用, 护盾值抵消: ", beforeDamage - damage);
+                LogUtil.fight("战斗伤害计算,防守方: ", actionDirection.getDef().ownerId, "-",
+                        actionDirection.getCurDefHeroId(), " 护盾效果返回作用, 护盾值抵消: ", beforeDamage - damage);
             }
         }
 
