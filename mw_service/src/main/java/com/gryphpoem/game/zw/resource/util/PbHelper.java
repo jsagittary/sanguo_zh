@@ -1257,9 +1257,9 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.RptHero createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
-                                                 int addExp, int lost, Hero hero) {
-        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
+    public static CommonPb.RptBattleEntity createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
+                                                         int addExp, int lost, Hero hero, int battleHeroType) {
+        CommonPb.RptBattleEntity.Builder builder = CommonPb.RptBattleEntity.newBuilder();
         builder.setType(type);
         builder.setKill(kill);
         builder.setLost(lost);
@@ -1283,7 +1283,7 @@ public class PbHelper {
                 builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
             }
         }
-        return builder.build();
+        return builder.setBattleHeroType(battleHeroType).build();
     }
 
     public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,

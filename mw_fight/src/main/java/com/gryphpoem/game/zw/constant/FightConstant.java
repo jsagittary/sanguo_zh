@@ -83,6 +83,10 @@ public interface FightConstant {
      */
     interface BuffEffectTiming {
         /**
+         * buff消失
+         */
+        int BUFF_DISAPPEAR = -3;
+        /**
          * 主动释放
          */
         int ACTIVE_RELEASE = -2;

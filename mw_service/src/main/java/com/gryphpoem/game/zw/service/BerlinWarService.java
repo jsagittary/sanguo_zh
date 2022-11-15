@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
@@ -1648,7 +1649,7 @@ public class BerlinWarService {
                 subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
                 updArmyRank(defender, ids);
             }
-            CommonPb.Record record = fightLogic.generateRecord();
+            BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
             // 战斗记录
             Player defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
@@ -1847,7 +1848,7 @@ public class BerlinWarService {
                 subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
                 updArmyRank(defender, ids);
             }
-            CommonPb.Record record = fightLogic.generateRecord();
+            BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
             // 战斗记录
             int pos = berlinCityInfo.getPos();
@@ -2174,7 +2175,7 @@ public class BerlinWarService {
             subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
             updArmyRank(defender, ids);
         }
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         // 战斗记录
         int pos = berlinCityInfo.getPos();

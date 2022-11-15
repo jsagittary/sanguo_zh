@@ -43,6 +43,10 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
      * 技能伤害
      */
     private int skillDamage;
+    /**
+     * 技能释放次数
+     */
+    private int releaseCount;
 
     public SimpleHeroSkill(StaticHeroSkill s_skill) {
         super(s_skill);
@@ -163,10 +167,9 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
         if (this.isOnStageSkill) {
             // 登场技能
             contextHolder.getCurPreparationStagePb().addSkill(contextHolder.getCurSkillActionPb().build());
-        } else {
-            // 主动技能
-
         }
+
+        this.setReleaseCount(this.getReleaseCount() + 1);
     }
 
     @Override
@@ -177,6 +180,14 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public void addSkillDamage(int damage) {
         this.skillDamage += damage;
+    }
+
+    public int getReleaseCount() {
+        return releaseCount;
+    }
+
+    public void setReleaseCount(int releaseCount) {
+        this.releaseCount = releaseCount;
     }
 
     @Override

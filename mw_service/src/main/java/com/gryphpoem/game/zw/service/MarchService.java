@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDaily
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -502,7 +503,7 @@ public class MarchService {
         }
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         Lord lord = player.lord;
         boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
@@ -1331,7 +1332,7 @@ public class MarchService {
         }
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         Lord lord = player.lord;
         // 是否战胜目标
         boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
@@ -1873,7 +1874,7 @@ public class MarchService {
             }
         }
         DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setRecord(record);
         return rpt;
     }

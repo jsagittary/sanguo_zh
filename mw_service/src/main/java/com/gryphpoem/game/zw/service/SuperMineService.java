@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
@@ -935,7 +936,7 @@ public class SuperMineService {
 
                 // 战斗记录
                 CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-                CommonPb.Record record = fightLogic.generateRecord();
+                BattlePb.BattleRoundPb record = fightLogic.generateRecord();
                 rpt.setResult(atkSuccess);
                 rpt.setAttack(PbHelper.createRptMan(player.lord.getPos(), player.lord.getNick(), player.lord.getVip(),
                         player.lord.getLevel()));// 进攻方的信息

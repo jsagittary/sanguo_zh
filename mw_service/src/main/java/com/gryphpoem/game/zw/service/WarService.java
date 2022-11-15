@@ -14,6 +14,7 @@ import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDaily
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
@@ -285,7 +286,7 @@ public class WarService {
             atkPortrait = atkLord.getPortrait();
             atkPortraitFrame = atkPlayer.getDressUp().getCurPortraitFrame();
         }
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
         rpt.setRecord(record);
@@ -484,7 +485,7 @@ public class WarService {
         // ----------------------------- 兵力处理 -----------------------------
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
         rpt.setRecord(record);
@@ -761,7 +762,7 @@ public class WarService {
         if (null != battle.getDefencer()) {
             defLord = battle.getDefencer().lord;
         }
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
         rpt.setRecord(record);
@@ -2759,7 +2760,7 @@ public class WarService {
         fightLogic.start();
         GamePb4.CompareNotesRs.Builder builder = GamePb4.CompareNotesRs.newBuilder();
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);

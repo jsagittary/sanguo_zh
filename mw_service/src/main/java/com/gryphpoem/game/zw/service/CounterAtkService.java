@@ -927,25 +927,25 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         Turple<Integer, Integer> cityXY = MapHelper.reducePos(counterAttack.getPos());
         if (atkSuc && !CheckNull.isNull(config)) { // 进攻成功
             int credit = config.getScore(); // 获得的积分
-            CommonPb.Round lastRound = fightLogic.getLastRound();
-            if (!CheckNull.isNull(lastRound)) {
-                CommonPb.Action actionB = lastRound.getActionB();
-                long targetRoleId = actionB.getTargetRoleId();
-                if (targetRoleId != 0) {
-                    Player player = playerDataManager.getPlayer(targetRoleId); // 最后的击杀玩家
-                    if (!CheckNull.isNull(player)) {
-                        sendCreditAward(credit, player.roleId); // 发送积分
-                        Object[] params = {counterAttack.getCityId(), cityXY.getA(), cityXY.getB(), credit};
-                        if (counterAtkFail()) {
-                            mailDataManager
-                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_END, sendMailTime, params);
-                        } else {
-                            mailDataManager
-                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_DEAD, sendMailTime, params);
-                        }
-                    }
-                }
-            }
+//            CommonPb.Round lastRound = fightLogic.getLastRound();
+//            if (!CheckNull.isNull(lastRound)) {
+//                CommonPb.Action actionB = lastRound.getActionB();
+//                long targetRoleId = actionB.getTargetRoleId();
+//                if (targetRoleId != 0) {
+//                    Player player = playerDataManager.getPlayer(targetRoleId); // 最后的击杀玩家
+//                    if (!CheckNull.isNull(player)) {
+//                        sendCreditAward(credit, player.roleId); // 发送积分
+//                        Object[] params = {counterAttack.getCityId(), cityXY.getA(), cityXY.getB(), credit};
+//                        if (counterAtkFail()) {
+//                            mailDataManager
+//                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_END, sendMailTime, params);
+//                        } else {
+//                            mailDataManager
+//                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_DEAD, sendMailTime, params);
+//                        }
+//                    }
+//                }
+//            }
 
             if (counterAtkFail()) { // 没有下一个boss了
                 List<Integer> battleIds = warDataManager.getSpecialBattleMap().values().stream()
@@ -1233,8 +1233,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
             }
         }
         worldService.buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
-        CommonPb.Record record = fightLogic.generateRecord();
-        rpt.setRecord(record);
+//        CommonPb.Record record = fightLogic.generateRecord();
+//        rpt.setRecord(record);
         return rpt;
     }
 

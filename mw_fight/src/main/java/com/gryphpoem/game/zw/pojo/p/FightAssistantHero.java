@@ -31,6 +31,8 @@ public class FightAssistantHero {
      * 普攻伤害
      */
     private int attackDamage;
+    // 普攻次数
+    public int attackCount;
 
     public FightAssistantHero(Force force, int heroId, AttrData attrData, List<SimpleHeroSkill> skillList) {
         this.heroId = heroId;

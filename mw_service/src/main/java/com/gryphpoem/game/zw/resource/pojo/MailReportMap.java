@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.springframework.util.ObjectUtils;
+
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -51,6 +52,7 @@ public class MailReportMap {
 
     /**
      * 过期邮件
+     *
      * @param keyIds
      */
     public void expiredMail(List<Integer> keyIds) {
@@ -72,6 +74,7 @@ public class MailReportMap {
 
     /**
      * 过期战报
+     *
      * @param keyIds
      */
     public void expiredReport(List<Integer> keyIds, Map<Integer, Mail> mails) {
@@ -92,6 +95,7 @@ public class MailReportMap {
 
     /**
      * 处理过期战报信息
+     *
      * @param removeReportKeyId
      * @param mail
      */
@@ -106,45 +110,45 @@ public class MailReportMap {
         }
 
         CommonPb.Report.Builder report = builder.toBuilder();
-        if (report.hasRptBandit()) {
-            CommonPb.RptAtkBandit.Builder rptBandit = report.getRptBandit().toBuilder();
-            if (!ObjectUtils.isEmpty(rptBandit.getRecord())) {
-                CommonPb.Record.Builder record = rptBandit.getRecord().toBuilder();
-                if (!ObjectUtils.isEmpty(record.getRoundList())) {
-                    record.clearRound();
-                }
-                if (!ObjectUtils.isEmpty(record.getAuraList())) {
-                    record.clearAura();
-                }
+//        if (report.hasRptBandit()) {
+//            CommonPb.RptAtkBandit.Builder rptBandit = report.getRptBandit().toBuilder();
+//            if (!ObjectUtils.isEmpty(rptBandit.getRecord())) {
+//                CommonPb.Record.Builder record = rptBandit.getRecord().toBuilder();
+//                if (!ObjectUtils.isEmpty(record.getRoundList())) {
+//                    record.clearRound();
+//                }
+//                if (!ObjectUtils.isEmpty(record.getAuraList())) {
+//                    record.clearAura();
+//                }
+//
+//                rptBandit.setRecord(record.build());
+//                report.setRptBandit(rptBandit.build());
+//
+//                record = null;
+//            }
+//
+//            rptBandit = null;
+//        }
 
-                rptBandit.setRecord(record.build());
-                report.setRptBandit(rptBandit.build());
-
-                record = null;
-            }
-
-            rptBandit = null;
-        }
-
-        if (report.hasRptPlayer()) {
-            CommonPb.RptAtkPlayer.Builder rptAtkPlayer = report.getRptPlayer().toBuilder();
-            if (!ObjectUtils.isEmpty(rptAtkPlayer.getRecord())) {
-                CommonPb.Record.Builder record = rptAtkPlayer.getRecord().toBuilder();
-                if (!ObjectUtils.isEmpty(record.getRoundList())) {
-                    record.clearRound();
-                }
-                if (!ObjectUtils.isEmpty(record.getAuraList())) {
-                    record.clearAura();
-                }
-
-                rptAtkPlayer.setRecord(record.build());
-                report.setRptPlayer(rptAtkPlayer.build());
-
-                record = null;
-            }
-
-            rptAtkPlayer = null;
-        }
+//        if (report.hasRptPlayer()) {
+//            CommonPb.RptAtkPlayer.Builder rptAtkPlayer = report.getRptPlayer().toBuilder();
+//            if (!ObjectUtils.isEmpty(rptAtkPlayer.getRecord())) {
+//                CommonPb.Record.Builder record = rptAtkPlayer.getRecord().toBuilder();
+//                if (!ObjectUtils.isEmpty(record.getRoundList())) {
+//                    record.clearRound();
+//                }
+//                if (!ObjectUtils.isEmpty(record.getAuraList())) {
+//                    record.clearAura();
+//                }
+//
+//                rptAtkPlayer.setRecord(record.build());
+//                report.setRptPlayer(rptAtkPlayer.build());
+//
+//                record = null;
+//            }
+//
+//            rptAtkPlayer = null;
+//        }
 
         if (Objects.nonNull(mail)) {
             mail.setReportStatus(MailConstant.EXPIRED_REPORT);

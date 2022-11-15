@@ -11,9 +11,9 @@ import com.gryphpoem.cross.gameplay.player.common.CrossHero;
 import com.gryphpoem.cross.gameplay.player.common.CrossSeasonTalent;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.core.util.QuickLZ;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -43,15 +43,8 @@ public class RpcFighterConsumer {
     @Autowired
     private PlayerDataManager playerDataManager;
 
-    public CommonPb.Record parserPbRecord(CrossFightRecord record) {
-        try {
-            byte[] recordBytes = record.isCompress() ? QuickLZ.decompress(record.getRecord()) : record.getRecord();
-            CommonPb.Record pbRecord = CommonPb.Record.parseFrom(recordBytes);
-            return pbRecord;
-        } catch (Exception e) {
-            LogUtil.error("", e);
-        }
-        return CommonPb.Record.newBuilder().build();
+    public BattlePb.BattleRoundPb parserPbRecord(CrossFightRecord record) {
+        return null;
     }
 
 

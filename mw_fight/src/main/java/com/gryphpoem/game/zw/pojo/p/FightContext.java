@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description:
@@ -14,10 +15,6 @@ import java.util.List;
  */
 @Data
 public class FightContext {
-    /**
-     * 战斗唯一id
-     */
-    private long fightId;
     /**
      * 进攻战斗方
      */
@@ -54,13 +51,43 @@ public class FightContext {
     private HashMap<Integer, List<IFightBuff>> triggerBuffMap;
 
     // TODO 战斗PB信息
-    private BattlePb.BattleRoundPb.Builder recordData;                      // 总战报
-    private BattlePb.BothBattleEntityPb.Builder bothBattleEntity;           // 双方武将战报
-    private BattlePb.BattlePreparationStage.Builder preparationStagePb;     // 武将出场
-    private BattlePb.SkillAction.Builder skillActionPb;                     // 技能pb
-    private BattlePb.OrdinaryAttackAction.Builder ordinaryAttackActionPb;   // 普攻pb
+    private BattlePb.BattleRoundPb.Builder recordDataPb;                              // 总战报
+    private BattlePb.BattlePreparationStage.Builder preparationStagePb;               // 武将出场
+    private BattlePb.BattleRoundStage.Builder battleRoundStagePb;                     // 战斗回合阶段
+    private BattlePb.BattleSettlementLossStage.Builder battleSettlementLoseStagePb;   // 结算损兵阶段
+    private BattlePb.BattleRegroupStage.Builder battleRegroupStagePb;                 // 重振旗鼓阶段
+    private BattlePb.BattleEndStage.Builder battleEndStagePb;                         // 战斗结束阶段
+
+    private BattlePb.BothBattleEntityPb.Builder bothBattleEntityPb;                   // 双方武将战报
+    private BattlePb.RoundAction.Builder roundActionPb;                               // 回合动作pb
+    private BattlePb.SkillAction.Builder skillActionPb;                               // 技能pb
+    private BattlePb.OrdinaryAttackAction.Builder ordinaryAttackActionPb;             // 普攻pb
     // 游戏逻辑限制动作嵌套动作, 只嵌套一层
-    private BattlePb.MultiEffectAction.Builder multiEffectActionPb;         // 嵌套动作pb
-    private BattlePb.SkillAction.Builder effectSkillActionPb;               // 效果技能攻击
-    private BattlePb.OrdinaryAttackAction.Builder effectAttackActionPb;     // 效果普攻攻击
+    private BattlePb.MultiEffectAction.Builder multiEffectActionPb;                   // 嵌套动作pb
+    private BattlePb.SkillAction.Builder effectSkillActionPb;                         // 效果技能攻击
+    private BattlePb.OrdinaryAttackAction.Builder effectAttackActionPb;               // 效果普攻攻击
+
+    /**
+     * 回合结束清除pb
+     */
+    public void roundEnd() {
+        if (Objects.nonNull(bothBattleEntityPb)) {
+            this.bothBattleEntityPb.clear();
+        }
+        if (Objects.nonNull(skillActionPb)) {
+            this.skillActionPb = null;
+        }
+        if (Objects.nonNull(this.ordinaryAttackActionPb)) {
+            this.ordinaryAttackActionPb = null;
+        }
+        if (Objects.nonNull(this.multiEffectActionPb)) {
+            this.multiEffectActionPb = null;
+        }
+        if (Objects.nonNull(effectSkillActionPb)) {
+            this.effectSkillActionPb = null;
+        }
+        if (Objects.nonNull(effectAttackActionPb)) {
+            this.effectAttackActionPb = null;
+        }
+    }
 }

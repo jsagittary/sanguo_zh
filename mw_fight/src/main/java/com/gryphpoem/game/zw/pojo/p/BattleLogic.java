@@ -155,7 +155,6 @@ public class BattleLogic {
         List<SimpleHeroSkill> skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> Objects.nonNull(skill) && !skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
             skillList.forEach(skill -> {
-                contextHolder.getActionDirection().setSkill(skill);
                 skill.setCurEnergy(skill.getCurEnergy() + recoveryValue);
             });
         }
@@ -295,6 +294,7 @@ public class BattleLogic {
         actionDirection.getDef().lost = damage;
         actionDirection.getAtk().fighter.hurt += damage;
         actionDirection.getDef().fighter.lost += damage;
+        actionDirection.getDef().addRoundLost(damage);
         actionDirection.getDef().subHp(actionDirection.getAtk());
         deductMorale(actionDirection, damage);
         if (actionDirection.getSkill() == null) {
@@ -337,15 +337,15 @@ public class BattleLogic {
 //                ", 扣除前士气: ", beforeReducedMorale, ", 扣除后士气: ", force.morale);
     }
 
-    /**
-     * 战斗开始时, 初始化武将士气
-     */
-    public void battleStart(FightContextHolder contextHolder) {
-        initMorale(contextHolder.getAtkFighter());
-        initMorale(contextHolder.getDefFighter());
-    }
-
-    private void initMorale(Fighter fighter) {
+//    /**
+//     * 战斗开始时, 初始化武将士气
+//     */
+//    public void battleStart(FightContextHolder contextHolder) {
+//        initMorale(contextHolder.getAtkFighter());
+//        initMorale(contextHolder.getDefFighter());
+//    }
+//
+//    private void initMorale(Fighter fighter) {
 //        if (Objects.nonNull(fighter)) {
 //            if (!CheckNull.isEmpty(fighter.getForces())) {
 //                for (Force force : fighter.getForces()) {
@@ -353,7 +353,7 @@ public class BattleLogic {
 //                }
 //            }
 //        }
-    }
+//    }
 
     /**
      * 计算buff

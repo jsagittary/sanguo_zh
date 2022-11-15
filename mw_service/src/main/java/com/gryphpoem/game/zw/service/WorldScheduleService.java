@@ -9,6 +9,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.GetScheduleBossRq;
@@ -405,7 +406,7 @@ public class WorldScheduleService {
         List<CommonPb.Award> awards = new ArrayList<>();
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         CommonPb.RptAtkBandit.Builder rpt = createAtkScheduleBossRpt(player, 0, curId, attacker, defender, record,
                 player.lord, isSuccess);
@@ -856,7 +857,7 @@ public class WorldScheduleService {
      * @return
      */
     private CommonPb.RptAtkBandit.Builder createAtkScheduleBossRpt(Player player, int pos, int curId, Fighter attacker,
-                                                                   Fighter defender, CommonPb.Record record, Lord lord, boolean isSuccess) {
+                                                                   Fighter defender, BattlePb.BattleRoundPb record, Lord lord, boolean isSuccess) {
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));

@@ -404,9 +404,9 @@ public class EventDataUp {
             Map<String, Map<Integer, Integer>> exploitMap = new HashMap<>();
             if (CheckNull.nonEmpty(rptHeroList)) {
                 for (CommonPb.RptHero rptHero : rptHeroList) {
-                    if (CheckNull.isNull(rptHero) || rptHero.getType() != Constant.Role.PLAYER)
-                        continue;
-                    exploitMap.computeIfAbsent(rptHero.getOwner(), map -> new HashMap<>()).put(rptHero.getHeroId(), rptHero.getAward());
+//                    if (CheckNull.isNull(rptHero) || rptHero.getType() != Constant.Role.PLAYER)
+//                        continue;
+//                    exploitMap.computeIfAbsent(rptHero.getOwner(), map -> new HashMap<>()).put(rptHero.getHeroId(), rptHero.getAward());
                 }
             }
 

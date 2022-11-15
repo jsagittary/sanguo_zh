@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
@@ -427,7 +428,7 @@ public class CombatService {
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return builder.build();
@@ -893,7 +894,7 @@ public class CombatService {
 
         builder.addCombatFB(PbHelper.createCombatFBPb(combatFb));
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return builder.build();
@@ -994,7 +995,7 @@ public class CombatService {
 
         builder.addCombatFB(PbHelper.createCombatFBPb(combatFb));
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return builder.build();

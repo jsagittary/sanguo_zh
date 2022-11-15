@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -60,16 +61,26 @@ public class FightPbUtil {
     public static BattlePb.BattlePreparationStage.Builder createBattlePreparationStagePb(Force force, Force target) {
         BattlePb.BattlePreparationStage.Builder builder = BattlePb.BattlePreparationStage.newBuilder();
         builder.setTotalArms(createDataInt(force.hp, target.hp));
-        builder.addArrangeArms(createDataInt(force.curLine + 1, force.count));
-        builder.addArrangeArms(createDataInt(target.curLine + 1, target.count));
+        builder.addArrangeArms(createDataInt(force.curLine, force.count));
+        builder.addArrangeArms(createDataInt(target.curLine, target.count));
         return builder;
     }
 
-    public static BattlePb.BothBattleEntityPb.Builder createBothBattleEntityPb(Force atk, Force def) {
+    public static BattlePb.BothBattleEntityPb.Builder createBothBattleEntityPb() {
         BattlePb.BothBattleEntityPb.Builder builder = BattlePb.BothBattleEntityPb.newBuilder();
+        return builder;
+    }
+
+    /**
+     * 双方武将战斗结束, 填充战斗数值到PB中
+     *
+     * @param atk
+     * @param def
+     * @param builder
+     */
+    public static void paddingBattleEntity(Force atk, Force def, BattlePb.BothBattleEntityPb.Builder builder) {
         addBattleEntity(atk, builder, true);
         addBattleEntity(def, builder, false);
-        return builder;
     }
 
     private static void addBattleEntity(Force force, BattlePb.BothBattleEntityPb.Builder builder, boolean atk) {
@@ -96,6 +107,28 @@ public class FightPbUtil {
         builder.setHeroType(heroType);
         builder.setOwnerId(String.valueOf(force.ownerId));
         builder.setHeroId(heroId);
+
+        // 添加普攻记录
+        BattlePb.ActionDetails.Builder detailPb = BattlePb.ActionDetails.newBuilder();
+        detailPb.setActionType(BattlePb.ActionTypeDefine.ORDINARY_ATTACK_VALUE);
+        detailPb.setKilled(force.getAttackKilled(heroId));
+        detailPb.setActionCnt(force.attackCount);
+        builder.addDetails(detailPb.build());
+
+        detailPb.clear();
+        List<SimpleHeroSkill> skillList;
+        if (!CheckNull.isEmpty(skillList = force.getSkillList(heroId))) {
+            // 添加技能记录
+            skillList.forEach(simpleHeroSkill -> {
+                detailPb.setActionCnt(simpleHeroSkill.getReleaseCount());
+                detailPb.setActionType(BattlePb.ActionTypeDefine.SKILL_ATTACK_VALUE);
+                detailPb.setSkillId(simpleHeroSkill.getS_skill().getSkillId());
+                detailPb.setKilled(simpleHeroSkill.getSkillDamage());
+                detailPb.setKilled(simpleHeroSkill.getS_skill().getLevel());
+                builder.addDetails(detailPb.build());
+                detailPb.clear();
+            });
+        }
         return builder;
     }
 
@@ -133,13 +166,17 @@ public class FightPbUtil {
             return contextHolder.getCurEffectAttackActionPb().getEffectActionList();
         }
 
-        List<BattlePb.BaseEffectAction> actionList;
+        List<BattlePb.BaseEffectAction> actionList = null;
         if (contextHolder.getCurSkillActionPb() != null) {
             actionList = contextHolder.getCurSkillActionPb().getEffectActionList();
-        } else {
+        }
+        if (contextHolder.getCurAttackActionPb() != null) {
             actionList = contextHolder.getCurAttackActionPb().getEffectActionList();
         }
 
+        if (CheckNull.isNull(actionList) && contextHolder.getRoundActionPb() != null) {
+            actionList = contextHolder.getRoundActionPb().getEffectActionList();
+        }
         return actionList;
     }
 
@@ -196,16 +233,19 @@ public class FightPbUtil {
     public static void setActionResult(FightContextHolder contextHolder, BattlePb.ActionResult resultPb) {
         if (contextHolder.getCurEffectSkillActionPb() != null) {
             contextHolder.getCurEffectSkillActionPb().setResult(resultPb);
+            return;
         }
         if (contextHolder.getCurEffectAttackActionPb() != null) {
             contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
+            return;
         }
 
-        BattlePb.ActionResult.Builder builder;
         if (contextHolder.getCurSkillActionPb() != null) {
             contextHolder.getCurSkillActionPb().setResult(resultPb);
-        } else {
+        }
+        if (contextHolder.getCurAttackActionPb() != null) {
             contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
         }
+
     }
 }

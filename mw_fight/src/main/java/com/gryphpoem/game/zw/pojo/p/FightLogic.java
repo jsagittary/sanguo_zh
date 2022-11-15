@@ -4,7 +4,6 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.BattlePb;
-import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.game.zw.util.FightUtil;
@@ -37,7 +36,6 @@ public class FightLogic {
         this.battleType = battleType;
         attacker.isAttacker = true;
         this.contextHolder = new FightContextHolder(attacker, defender, battleType);
-        this.contextHolder.setRecordFlag(recordFlag);
         if (recordFlag) {
             contextHolder.setRecordData(BattlePb.BattleRoundPb.newBuilder().setKeyId(String.valueOf(fightId)));
         }
@@ -81,7 +79,7 @@ public class FightLogic {
 
     public void start() {
         logForm();
-        contextHolder.getBattleLogic().battleStart(contextHolder);
+        contextHolder.getInitRecordData().setKeyId(String.valueOf(this.fightId));
         while (winState == -1) {
             round();
             checkDie();
@@ -123,6 +121,7 @@ public class FightLogic {
             skillList.stream().forEach(skill -> {
                 contextHolder.getActionDirection().setSkill(skill);
                 skill.releaseSkill(contextHolder);
+                contextHolder.clearCurSkillActionPb();
             });
         }
         // 副将释放登场技能
@@ -137,6 +136,7 @@ public class FightLogic {
                 skills.forEach(skill -> {
                     contextHolder.getActionDirection().setSkill(skill);
                     skill.releaseSkill(contextHolder);
+                    contextHolder.clearCurSkillActionPb();
                 });
             });
         }
@@ -195,7 +195,7 @@ public class FightLogic {
         Force target = contextHolder.getDefFighter().getAliveForce();
         if (force != null && target != null) {
             // 初始化战斗信息
-            contextHolder.getInitBothBattleEntityPb(force, target);
+            contextHolder.getInitBothBattleEntityPb();
 
             // 添加开场pb
             contextHolder.getInitPreparationStagePb(force, target);
@@ -210,7 +210,17 @@ public class FightLogic {
             // 当前回合结束处理
             contextHolder.getBattleLogic().nextRoundBefore(force, target, contextHolder);
 
+            // 添加战斗结束pb到双方武将战报中
+            BattlePb.BattleEndStage.Builder battleEndPb = BattlePb.BattleEndStage.newBuilder();
+            battleEndPb.setRemainArms(FightPbUtil.createDataInt(force.hp, target.hp));
+            contextHolder.getCurBothBattleEntityPb().addStage(FightPbUtil.createBaseBattleStagePb(BattlePb.BattleStageDefine.ENDING_VALUE,
+                    BattlePb.BattleEndStage.round, battleEndPb.build()));
 
+            // 填充双方武将战斗结算数值到pb中
+            FightPbUtil.paddingBattleEntity(force, target, contextHolder.getCurBothBattleEntityPb());
+
+            // 将双方武将战斗情况加到总战报中
+            contextHolder.getRecordData().addBothForce(contextHolder.getCurBothBattleEntityPb().build());
         }
 
     }
@@ -232,10 +242,14 @@ public class FightLogic {
 
             contextHolder.addRoundNum();
 
+            contextHolder.getInitBattleRoundStagePb().setRoundNum(contextHolder.getRoundNum());
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
+
+                // 初始化roundActionPb
+                contextHolder.getInitRoundActionPb().setActionId(FightPbUtil.getActingSize(atk, fe.getHeroId()));
                 LinkedList<IFightBuff> buffList = atk.buffList(fe.getHeroId());
                 // 结算行动方buff, 清除次数为0的buff
                 contextHolder.getBattleLogic().settlementBuff(buffList, contextHolder);
@@ -247,17 +261,54 @@ public class FightLogic {
                 contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
 
                 // 释放技能
+                contextHolder.getInitSkillActionPb();
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
+                contextHolder.getRoundActionPb().setSkill(contextHolder.getCurSkillActionPb().build());
+                contextHolder.clearCurSkillActionPb();
+
                 // 清除没有作用次数的buff
                 contextHolder.getBattleLogic().clearBothForceBuffEffectTimes(force, target, contextHolder);
+
                 // 普攻
+                contextHolder.getInitAttackActionPb();
                 contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, this.battleType, contextHolder);
+                contextHolder.getRoundActionPb().setAttack(contextHolder.getCurAttackActionPb().build());
+                atk.attackCount++;
+                contextHolder.clearCurAttackActionPb();
+
                 // 清除没有作用次数的buff
                 contextHolder.getBattleLogic().clearBothForceBuffEffectTimes(force, target, contextHolder);
+
+                // 将此次战斗添加到回合阶段pb中
+                contextHolder.getBattleRoundStagePb().addAction(contextHolder.getRoundActionPb().build());
             }
 
-            // 修正士气
-            contextHolder.getBattleLogic().roundMoraleDeduction(force, target);
+            // 将当前回合数据添加到回合数据中
+            contextHolder.getCurBothBattleEntityPb().addStage(FightPbUtil.createBaseBattleStagePb(BattlePb.BattleStageDefine.ROUNDS_VALUE,
+                    BattlePb.BattleRoundStage.round, contextHolder.getBattleRoundStagePb().build()));
+            // 结算损兵添加到双方武将战斗中
+            BattlePb.BattleSettlementLossStage.Builder lossStagePb = BattlePb.BattleSettlementLossStage.newBuilder();
+            lossStagePb.addLost(FightPbUtil.createDataInt(force.curLine, force.roundLost));
+            lossStagePb.addLost(FightPbUtil.createDataInt(target.curLine, target.roundLost));
+            contextHolder.getCurBothBattleEntityPb().addStage(FightPbUtil.createBaseBattleStagePb(BattlePb.BattleStageDefine.SETTLEMENT_LOSS_VALUE,
+                    BattlePb.BattleSettlementLossStage.round, lossStagePb.build()));
+            force.roundLost = 0;
+            target.roundLost = 0;
+
+            // 双方武将都存活时
+            if (force.alive() && target.alive()) {
+                BattlePb.BattleRegroupStage.Builder regroupPb = BattlePb.BattleRegroupStage.newBuilder();
+                if (force.switchPlatoon()) {
+                    regroupPb.addBackToBattle(FightPbUtil.createDataInt(force.curLine, force.count));
+                }
+                if (target.switchPlatoon()) {
+                    regroupPb.addBackToBattle(FightPbUtil.createDataInt(target.curLine, target.count));
+                }
+                if (regroupPb.getBackToBattleList().size() > 0) {
+                    contextHolder.getCurBothBattleEntityPb().addStage(FightPbUtil.createBaseBattleStagePb(BattlePb.BattleStageDefine.REGROUP_VALUE,
+                            BattlePb.BattleRegroupStage.round, regroupPb.build()));
+                }
+            }
         }
     }
 
@@ -296,33 +347,16 @@ public class FightLogic {
         }
     }
 
-    /**
-     * 获取最后一回合
-     *
-     * @return
-     */
-    public CommonPb.Round getLastRound() {
-        CommonPb.Round round = null;
-        CommonPb.Record.Builder recordData = contextHolder.getRecordData();
-        if (!CheckNull.isNull(recordData)) {
-            List<CommonPb.Round> roundList = recordData.getRoundList();
-            if (!CheckNull.isEmpty(roundList)) {
-                round = roundList.get(roundList.size() - 1);
-            }
-        }
-        return round;
-    }
-
     public int getWinState() {
         return winState;
     }
 
-    public CommonPb.Record generateRecord() {
-        return CommonPb.Record.newBuilder().setKeyId(0).build();
+    public BattlePb.BattleRoundPb generateRecord() {
+        return contextHolder.getRecordData().build();
     }
 
-    public CommonPb.Record.Builder getRecordBuild() {
-        return null;
+    public BattlePb.BattleRoundPb.Builder getRecordBuild() {
+        return contextHolder.getRecordData();
     }
 
     public int getBattleType() {

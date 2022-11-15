@@ -6,7 +6,6 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.event.FightEvent;
 import com.gryphpoem.game.zw.pb.BattlePb;
-import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -342,8 +341,8 @@ public class FightUtil {
         EventBus.getDefault().post(new FightEvent.BuffTriggerEvent(contextHolder, timing, params));
     }
 
-    public static CommonPb.Form createFormPb(Force force) {
-        CommonPb.Form.Builder formPb = CommonPb.Form.newBuilder();
+    public static BattlePb.Form createFormPb(Force force) {
+        BattlePb.Form.Builder formPb = BattlePb.Form.newBuilder();
         formPb.setId(force.id);
         formPb.setCount(force.hp);
         formPb.setLine(force.maxLine);

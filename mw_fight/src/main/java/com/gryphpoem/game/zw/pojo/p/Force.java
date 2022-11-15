@@ -26,7 +26,7 @@ public class Force {
     public int maxHp;// 总血量，兵力
     public int armType;// 兵种类型
     public int lead;// 单排兵力
-    public int curLine;// 当前战斗的是第几排兵，从0开始
+    public int curLine;// 当前战斗的是第几排兵，从1开始
     public int maxLine;// 总兵力排数
     public int count;// 本排兵剩余数量
     public int killed;// 杀敌数
@@ -41,13 +41,16 @@ public class Force {
     public int camp; // 阵营
     public int roleType; // 1玩家,2流寇NPC,3城池守将NPC,4城池NPC
     public int skillId;// 技能id 0表示 无技能
-    private boolean useSkill; // 是否使用过技能,true表示使用过
     public int intensifyLv; // 兵种强化等级
     public int effect; // 强化克制比
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
+    // 普攻次数
+    public int attackCount;
     // 普攻伤害
     public int attackDamage;
+    // 回合损兵
+    public int roundLost;
 
     /**
      * 主将技能列表
@@ -72,7 +75,7 @@ public class Force {
     public Force(AttrData attrData, int armType, int line) {
         this.attrData = attrData;
         this.armType = armType;
-        this.curLine = 0;
+        this.curLine = 1;
         this.maxLine = line;
         this.lead = attrData.lead / line;
         this.count = attrData.lead / line;
@@ -94,7 +97,7 @@ public class Force {
         this.armType = armType;
         this.maxHp = totalCount;
         this.lead = lead;
-        this.curLine = 0;
+        this.curLine = 1;
         this.hp = maxHp;
         this.id = id;
         this.ownerId = roleId;
@@ -128,7 +131,7 @@ public class Force {
         this.armType = armType;
         this.maxHp = totalCount;
         this.lead = sLead;
-        this.curLine = 0;
+        this.curLine = 1;
         this.hp = maxHp;
         this.id = id;
 
@@ -255,22 +258,14 @@ public class Force {
      *
      * @return 是否死亡兵排数
      */
-    public boolean subHp(Force force) {
-        boolean deadLine = false;
-
+    public void subHp(Force force) {
         LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, 当前兵排: %d, 最大兵排: %d, <<<<<<战斗最终伤害>>>>>>: %d",
                 force == null ? 0 : force.ownerId, this.ownerId, count, curLine + 1, maxLine, lost));
 
         if (count <= lost) {
-            curLine++;
-            if (curLine >= maxLine) {
-                hp = 0;
-                count = 0;
-            } else {
-                hp -= count;
-                count = lead;
-                deadLine = true;
-            }
+            count = 0;
+            hp -= count;
+            if (hp < 0) hp = 0;
         } else {
             count -= lost;
             hp -= lost;
@@ -278,14 +273,21 @@ public class Force {
 
         totalLost += lost;
         lost = 0;
-        return deadLine;
     }
 
     /**
-     * 使用jineng
+     * 切换兵排
+     *
+     * @return
      */
-    public void useSkill() {
-        this.useSkill = true;
+    public boolean switchPlatoon() {
+        if (count > 0) {
+            return false;
+        }
+
+        ++curLine;
+        count = lead;
+        return true;
     }
 
     /**
@@ -294,9 +296,6 @@ public class Force {
      * @return
      */
     public int getDeadLine() {
-        if (count <= lost) {
-            return curLine + 1;
-        }
         return curLine;
     }
 
@@ -495,6 +494,30 @@ public class Force {
         }
     }
 
+    public int getAttackKilled(int heroId) {
+        if (heroId == this.id) {
+            return this.attackDamage;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            FightAssistantHero assistantHero = this.assistantHeroList.stream().filter(ass ->
+                    Objects.nonNull(ass) && ass.getHeroId() == heroId).findFirst().orElse(null);
+            if (Objects.nonNull(assistantHero)) {
+                return assistantHero.getAttackDamage();
+            }
+        }
+
+        return 0;
+    }
+
+    public void addRoundLost(int hurt) {
+        if (this.roundLost >= this.count)
+            return;
+
+        this.roundLost += hurt;
+        if (this.roundLost > this.count)
+            this.roundLost = this.count;
+    }
+
     @Override
     public String toString() {
         return "Force{" +
@@ -518,14 +541,11 @@ public class Force {
                 ", camp=" + camp +
                 ", roleType=" + roleType +
                 ", skillId=" + skillId +
-                ", useSkill=" + useSkill +
                 ", intensifyLv=" + intensifyLv +
                 ", effect=" + effect +
                 ", isBcs=" + isBcs +
                 ", isIronBas=" + isIronBas +
                 ", skillList=" + skillList +
-//                ", morale=" + morale +
-//                ", maxRoundMorale=" + maxRoundMorale +
                 ", buffList=" + buffList +
                 ", assistantHeroList=" + assistantHeroList +
                 '}';
@@ -550,7 +570,6 @@ public class Force {
                 ", camp=" + camp +
                 ", roleType=" + roleType +
                 ", skillId=" + skillId +
-                ", useSkill=" + useSkill +
                 ", intensifyLv=" + intensifyLv +
                 ", effect=" + effect +
                 ", isBcs=" + isBcs +
