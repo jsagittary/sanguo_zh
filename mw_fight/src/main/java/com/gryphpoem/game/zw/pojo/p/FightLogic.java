@@ -120,7 +120,10 @@ public class FightLogic {
         List<SimpleHeroSkill> skillList = force.skillList.stream().filter(
                 skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
-            skillList.stream().forEach(skill -> skill.releaseSkill(contextHolder));
+            skillList.stream().forEach(skill -> {
+                contextHolder.getActionDirection().setSkill(skill);
+                skill.releaseSkill(contextHolder);
+            });
         }
         // 副将释放登场技能
         if (!CheckNull.isEmpty(force.assistantHeroList)) {
@@ -131,7 +134,10 @@ public class FightLogic {
                         skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
                 if (CheckNull.isEmpty(skills)) return;
                 contextHolder.setCurAtkHeroId(ass.getHeroId());
-                skills.forEach(skill -> skill.releaseSkill(contextHolder));
+                skills.forEach(skill -> {
+                    contextHolder.getActionDirection().setSkill(skill);
+                    skill.releaseSkill(contextHolder);
+                });
             });
         }
     }
@@ -184,27 +190,29 @@ public class FightLogic {
      * 回合战斗
      */
     private void round() {
-        if (contextHolder.isRecordFlag()) {
-            // TODO pb初始化
-            contextHolder.getInitSkillActionPb();
-            contextHolder.getInitAttackActionPb();
-        }
         // 找出攻击方与防守方
         Force force = contextHolder.getAtkFighter().getAliveForce();
         Force target = contextHolder.getDefFighter().getAliveForce();
         if (force != null && target != null) {
+            // 初始化战斗信息
+            contextHolder.getInitBothBattleEntityPb(force, target);
+
             // 添加开场pb
-            FightPbUtil.createBattlePreparationStagePb(force, target);
+            contextHolder.getInitPreparationStagePb(force, target);
             // 回合开始时
             roundStart(force, target);
+            // 添加开场阶段pb到回合字段中
+            contextHolder.getCurBothBattleEntityPb().addStage(FightPbUtil.createBaseBattleStagePb(
+                    BattlePb.BattleStageDefine.PREPARATION_STAGE_VALUE, BattlePb.BattlePreparationStage.round, contextHolder.getCurPreparationStagePb().build()
+            ));
             // 双方武将以及副将战斗
             fight(force, target);
             // 当前回合结束处理
             contextHolder.getBattleLogic().nextRoundBefore(force, target, contextHolder);
+
+
         }
 
-        if (contextHolder.isRecordFlag()) {
-        }
     }
 
     /**

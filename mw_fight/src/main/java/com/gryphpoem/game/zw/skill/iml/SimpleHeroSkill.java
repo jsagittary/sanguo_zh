@@ -39,6 +39,10 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
      * 是否是登场技能
      */
     private boolean isOnStageSkill = false;
+    /**
+     * 技能伤害
+     */
+    private int skillDamage;
 
     public SimpleHeroSkill(StaticHeroSkill s_skill) {
         super(s_skill);
@@ -52,6 +56,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
         this.curEnergy = s_skill.getDebutEnergy();
     }
 
+    @Override
     public boolean isOnStageSkill() {
         return isOnStageSkill;
     }
@@ -88,7 +93,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             if (CheckNull.isNull(fightEffect)) continue;
             LogUtil.fight("进攻方: ", contextHolder.getCurAttacker().ownerId, "-", contextHolder.getCurAtkHeroId(), isOnStageSkill ? " 释放开场技能: " : "释放主动技能: ",
                     s_skill.getSkillId(), ", 技能主体效果: ", CheckNull.isEmpty(list) ? "null" : Arrays.toString(list.toArray()));
-            fightEffect.effectiveness(null, contextHolder, list, rule);
+            fightEffect.effectiveness(null, contextHolder, list, rule, FightConstant.BuffEffectTiming.ACTIVE_RELEASE);
         }
     }
 
@@ -106,6 +111,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             // 设置当前释放技能武将
             actionDirection.setAtk(contextHolder.getCurAttacker());
             actionDirection.setCurAtkHeroId(contextHolder.getCurAtkHeroId());
+            actionDirection.setSkill(this);
             LinkedList<IFightBuff> removeBuffList = new LinkedList<>();
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
 
@@ -132,7 +138,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
                     LinkedList<IFightBuff> buffs = buffsEntry.getValue();
                     actionDirection.setCurDefHeroId(buffsEntry.getKey());
                     // 释放buff
-                    battleLogic.releaseBuff(buffs, staticBuff, removeBuffList, actionDirection, contextHolder, buffConfig);
+                    battleLogic.releaseBuff(buffs, staticBuff, removeBuffList, actionDirection, contextHolder, buffConfig, this);
                 }
             }
         }
@@ -145,8 +151,32 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
 
     @Override
     public void releaseSkill(FightContextHolder contextHolder, Object... params) {
+        // 初始化技能pb
+        contextHolder.getInitSkillActionPb().setSkillId(this.s_skill.getSkillId());
         super.releaseSkill(contextHolder, params);
+        if (!this.isOnStageSkill) {
+            contextHolder.getCurSkillActionPb().
+                    setEnergyConsumed(this.s_skill.getReleaseNeedEnergy());
+        }
         this.curEnergy = this.curEnergy - this.s_skill.getReleaseNeedEnergy();
+        // 将当前技能pb添加进stage中
+        if (this.isOnStageSkill) {
+            // 登场技能
+            contextHolder.getCurPreparationStagePb().addSkill(contextHolder.getCurSkillActionPb().build());
+        } else {
+            // 主动技能
+
+        }
+    }
+
+    @Override
+    public int getSkillDamage() {
+        return this.skillDamage;
+    }
+
+    @Override
+    public void addSkillDamage(int damage) {
+        this.skillDamage += damage;
     }
 
     @Override

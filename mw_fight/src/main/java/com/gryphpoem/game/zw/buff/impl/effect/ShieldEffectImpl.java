@@ -6,8 +6,10 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
@@ -66,6 +68,14 @@ public class ShieldEffectImpl extends AbsFightEffect {
         return curShieldValue > minShieldValue.getValue() ? minShieldValue.getKey() : null;
     }
 
+    /**
+     * 计算护盾效果值
+     *
+     * @param force
+     * @param heroId
+     * @param effectConfig
+     * @return
+     */
     private int calEffectValue(Force force, int heroId, List<Integer> effectConfig) {
         double attributeValue = FightCalc.attributeValue(effectConfig.get(3), force, heroId);
         return (int) (attributeValue * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5));
@@ -171,5 +181,23 @@ public class ShieldEffectImpl extends AbsFightEffect {
         resultMap.values().forEach(dataList::addAll);
         Collections.sort(dataList, Comparator.comparing(FightEffectData::getEffectKeyId));
         return dataList;
+    }
+
+    @Override
+    protected void addPbValue(BattlePb.CommonEffectAction.Builder builder, Object... params) {
+        FightEffectData data = (FightEffectData) params[0];
+        FightBuffEffect fbe = (FightBuffEffect) params[1];
+        StaticEffectRule rule = (StaticEffectRule) params[2];
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, data.getValue()));
+
+        int shieldValue = 0;
+        Object value = effectCalculateValue(fbe, rule.getEffectLogicId());
+        if (Objects.nonNull(value)) {
+            List<FightEffectData> dataList = (List<FightEffectData>) value;
+            if (!CheckNull.isEmpty(dataList)) {
+                shieldValue = dataList.stream().mapToInt(FightEffectData::getValue).sum();
+            }
+        }
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, shieldValue));
     }
 }

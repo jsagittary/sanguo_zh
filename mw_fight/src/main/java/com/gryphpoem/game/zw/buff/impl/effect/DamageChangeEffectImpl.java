@@ -5,16 +5,19 @@ import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Description: 伤害变化效果
@@ -65,6 +68,23 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
     @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
         return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.get(5));
+    }
+
+    @Override
+    protected void addPbValue(BattlePb.CommonEffectAction.Builder builder, Object... params) {
+        FightEffectData data = (FightEffectData) params[0];
+        FightBuffEffect fbe = (FightBuffEffect) params[1];
+        StaticEffectRule rule = (StaticEffectRule) params[2];
+        if (CheckNull.isNull(data) || CheckNull.isEmpty(data.getData())) return;
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getData().get(0)));
+
+        // 计算效果影响最终值
+        Object value = effectCalculateValue(fbe, rule.getEffectLogicId());
+        int curValue = 0;
+        if (Objects.nonNull(value)) {
+            curValue = (int) value;
+        }
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, curValue));
     }
 
     @Override

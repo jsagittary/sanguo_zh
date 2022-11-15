@@ -7,9 +7,12 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.skill.IHeroSkill;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +42,7 @@ public class BattleLogic {
      */
     public IFightBuff releaseBuff(LinkedList<IFightBuff> buffs, StaticBuff staticBuff,
                                   List<IFightBuff> removeBuffList, ActionDirection actionDirection,
-                                  FightContextHolder contextHolder, List<Integer> buffConfig, Object... params) {
+                                  FightContextHolder contextHolder, List<Integer> buffConfig, IHeroSkill heroSkill, Object... params) {
         boolean removed;
         boolean addBuff = true;
         Force actingForce = actionDirection.getDef();
@@ -109,6 +112,7 @@ public class BattleLogic {
         fightBuff.setForceId(actionDirection.getCurDefHeroId());
         fightBuff.setBuffGiver(actionDirection.getAtk());
         fightBuff.setBuffGiverId(actionDirection.getCurAtkHeroId());
+        fightBuff.setSkill(heroSkill);
         contextHolder.addBuff(fightBuff);
 
         LogUtil.fight("执行方: ", actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ",
@@ -150,13 +154,19 @@ public class BattleLogic {
 
         List<SimpleHeroSkill> skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> Objects.nonNull(skill) && !skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
-            skillList.forEach(skill -> skill.setCurEnergy(skill.getCurEnergy() + recoveryValue));
+            skillList.forEach(skill -> {
+                contextHolder.getActionDirection().setSkill(skill);
+                skill.setCurEnergy(skill.getCurEnergy() + recoveryValue);
+            });
         }
         if (atk.canReleaseSkill(fe.getHeroId())) {
             // 释放技能
             skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> skill.getCurEnergy() >= skill.getS_skill().getReleaseNeedEnergy()).collect(Collectors.toList());
             if (!CheckNull.isEmpty(skillList)) {
-                skillList.forEach(skill -> skill.releaseSkill(contextHolder));
+                skillList.forEach(skill -> {
+                    contextHolder.getActionDirection().setSkill(skill);
+                    skill.releaseSkill(contextHolder);
+                });
             }
         }
     }
@@ -175,7 +185,7 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING, effectParams);
 
         // TODO 扣血
-        hurt(actionDirection, FightCalc.calSkillAttack(actionDirection, effectConfig, battleType));
+        hurt(actionDirection, FightCalc.calSkillAttack(actionDirection, effectConfig, battleType), contextHolder);
 
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT, effectParams);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_SKILL_DAMAGE, effectParams);
@@ -207,7 +217,7 @@ public class BattleLogic {
         contextHolder.resetActionDirection(atk, def, atkHeroId, targetId);
 
         // 计算普攻伤害
-        hurt(contextHolder.getActionDirection(), FightCalc.calAttack(contextHolder.getActionDirection(), battleType));
+        hurt(contextHolder.getActionDirection(), FightCalc.calAttack(contextHolder.getActionDirection(), battleType), contextHolder);
 
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT);
@@ -232,7 +242,7 @@ public class BattleLogic {
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING, effectParams);
 
         // 计算普攻伤害
-        hurt(actionDirection, FightCalc.calAttack(actionDirection, battleType));
+        hurt(actionDirection, FightCalc.calAttack(actionDirection, battleType), contextHolder);
 
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT, effectParams);
@@ -278,7 +288,7 @@ public class BattleLogic {
      *
      * @param damage
      */
-    public void hurt(ActionDirection actionDirection, int damage) {
+    public void hurt(ActionDirection actionDirection, int damage, FightContextHolder contextHolder) {
         // TODO 扣血
         damage = actionDirection.getDef().hurt(damage);
         actionDirection.getAtk().killed += damage;
@@ -287,6 +297,24 @@ public class BattleLogic {
         actionDirection.getDef().fighter.lost += damage;
         actionDirection.getDef().subHp(actionDirection.getAtk());
         deductMorale(actionDirection, damage);
+        if (actionDirection.getSkill() == null) {
+            actionDirection.getAtk().addAttackDamage(damage, actionDirection.getCurAtkHeroId());
+        } else {
+            actionDirection.getSkill().addSkillDamage(damage);
+        }
+
+        BattlePb.ActionResult.Builder builder = FightPbUtil.curActionResult(contextHolder);
+        if (Objects.nonNull(builder)) {
+            builder.setAtk(FightPbUtil.getActingSize(actionDirection.getAtk(), actionDirection.getCurAtkHeroId()));
+            builder.setDef(FightPbUtil.getActingSize(actionDirection.getDef(), actionDirection.getCurDefHeroId()));
+            builder.setLost(damage);
+            builder.setRemainArms(actionDirection.getDef().hp);
+            if (Objects.nonNull(actionDirection.getSkill())) {
+                builder.setSkillId(actionDirection.getSkill().getS_skill().getSkillId());
+            }
+
+            FightPbUtil.setActionResult(contextHolder, builder.build());
+        }
     }
 
     /**

@@ -18,11 +18,13 @@ public class FightBuffEffect {
      * 效果map  <效果逻辑id, <效果id， 效果列表>>
      */
     private Map<Integer, Map<Integer, List<FightEffectData>>> effectMap;
-
-    private Map<Integer, Integer> randomValueMap;
-
+    /**
+     * 玩家归属
+     */
     private Force force;
-
+    /**
+     * 武将归属
+     */
     private int heroId;
 
     public FightBuffEffect(Force force, int heroId) {

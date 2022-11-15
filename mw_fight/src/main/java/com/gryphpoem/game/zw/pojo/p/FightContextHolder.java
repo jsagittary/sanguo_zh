@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.impl.buff.ConditionBuffImpl;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.pb.BattlePb;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.*;
@@ -125,49 +126,86 @@ public class FightContextHolder {
         LOCAL.get().setFightId(fightId);
     }
 
-    public void setRecordFlag(boolean recordFlag) {
-        LOCAL.get().setRecordFlag(recordFlag);
+    public BattlePb.BothBattleEntityPb.Builder getInitBothBattleEntityPb(Force atk, Force def) {
+        if (LOCAL.get().getBothBattleEntity() == null) {
+            LOCAL.get().setBothBattleEntity(FightPbUtil.createBothBattleEntityPb(atk, def));
+        } else {
+            LOCAL.get().getBothBattleEntity().clear();
+        }
+
+        return LOCAL.get().getBothBattleEntity();
     }
 
-    public boolean isRecordFlag() {
-        return LOCAL.get().isRecordFlag();
+    public BattlePb.BothBattleEntityPb.Builder getCurBothBattleEntityPb() {
+        return LOCAL.get().getBothBattleEntity();
+    }
+
+    public BattlePb.BattlePreparationStage.Builder getInitPreparationStagePb(Force atk, Force def) {
+        if (LOCAL.get().getPreparationStagePb() == null) {
+            LOCAL.get().setPreparationStagePb(FightPbUtil.createBattlePreparationStagePb(atk, def));
+        } else {
+            LOCAL.get().getPreparationStagePb().clear();
+        }
+
+        return LOCAL.get().getPreparationStagePb();
+    }
+
+    public BattlePb.BattlePreparationStage.Builder getCurPreparationStagePb() {
+        return LOCAL.get().getPreparationStagePb();
     }
 
     public BattlePb.SkillAction.Builder getInitSkillActionPb() {
-        if (LOCAL.get().getSkillAction() == null) {
-            LOCAL.get().setSkillAction(BattlePb.SkillAction.newBuilder());
+        if (LOCAL.get().getSkillActionPb() == null) {
+            LOCAL.get().setSkillActionPb(BattlePb.SkillAction.newBuilder());
         } else {
-            LOCAL.get().getSkillAction().clear();
+            LOCAL.get().getSkillActionPb().clear();
         }
 
-        return LOCAL.get().getSkillAction();
+        return LOCAL.get().getSkillActionPb();
     }
 
     public BattlePb.SkillAction.Builder getCurSkillActionPb() {
-        if (LOCAL.get().getSkillAction() == null) {
-            LOCAL.get().setSkillAction(BattlePb.SkillAction.newBuilder());
-        }
-
-        return LOCAL.get().getSkillAction();
+        return LOCAL.get().getSkillActionPb();
     }
 
     public BattlePb.OrdinaryAttackAction.Builder getInitAttackActionPb() {
-        if (LOCAL.get().getAttackAction() == null) {
-            LOCAL.get().setAttackAction(BattlePb.OrdinaryAttackAction.newBuilder());
+        if (LOCAL.get().getOrdinaryAttackActionPb() == null) {
+            LOCAL.get().setOrdinaryAttackActionPb(BattlePb.OrdinaryAttackAction.newBuilder());
         } else {
-            LOCAL.get().getAttackAction().clear();
+            LOCAL.get().getOrdinaryAttackActionPb().clear();
         }
 
-        return LOCAL.get().getAttackAction();
+        return LOCAL.get().getOrdinaryAttackActionPb();
     }
 
     public BattlePb.OrdinaryAttackAction.Builder getCurAttackActionPb() {
-        if (LOCAL.get().getAttackAction() == null) {
-            LOCAL.get().setAttackAction(BattlePb.OrdinaryAttackAction.newBuilder());
-        }
-
-        return LOCAL.get().getAttackAction();
+        return LOCAL.get().getOrdinaryAttackActionPb();
     }
+
+    public BattlePb.SkillAction.Builder getCurEffectSkillActionPb() {
+        return LOCAL.get().getEffectSkillActionPb();
+    }
+
+    public void setEffectSkillActionPb(BattlePb.SkillAction.Builder builder) {
+        LOCAL.get().setEffectSkillActionPb(builder);
+    }
+
+    public BattlePb.OrdinaryAttackAction.Builder getCurEffectAttackActionPb() {
+        return LOCAL.get().getEffectAttackActionPb();
+    }
+
+    public void setEffectAttackActionPb(BattlePb.OrdinaryAttackAction.Builder builder) {
+        LOCAL.get().setEffectAttackActionPb(builder);
+    }
+
+    public BattlePb.MultiEffectAction.Builder getCurMultiEffectActionPb() {
+        return LOCAL.get().getMultiEffectActionPb();
+    }
+
+    public void setCurMultiEffectActionPb(BattlePb.MultiEffectAction.Builder builder) {
+        LOCAL.get().setMultiEffectActionPb(builder);
+    }
+
 
     public long getAtkRoleId() {
         return LOCAL.get().getAtkRoleId();

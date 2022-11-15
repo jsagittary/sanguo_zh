@@ -24,7 +24,7 @@ public interface IFightEffect<T> {
      * @param params
      * @return
      */
-    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, StaticEffectRule rule, Object... params);
+    void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig, StaticEffectRule rule, int timing, Object... params);
 
     /**
      * 效果结束, 属性等还原
@@ -54,4 +54,12 @@ public interface IFightEffect<T> {
      * @return
      */
     Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params);
+
+    /**
+     * 可否触发效果
+     *
+     * @param contextHolder
+     * @return
+     */
+    boolean canEffect(FightContextHolder contextHolder, Object... params);
 }

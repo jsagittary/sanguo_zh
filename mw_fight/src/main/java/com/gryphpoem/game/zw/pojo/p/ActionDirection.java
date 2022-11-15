@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 import lombok.Data;
 
@@ -38,21 +39,28 @@ public class ActionDirection {
      */
     private List<Integer> defHeroList;
 
+    /**
+     * 技能
+     */
+    private SimpleHeroSkill skill;
+
     public ActionDirection() {
     }
 
-    public ActionDirection(Force atk, Force def, int curAtkHeroId, int curDefHeroId, List<Integer> atkHeroList, List<Integer> defHeroList) {
+    public ActionDirection(Force atk, Force def, int curAtkHeroId, int curDefHeroId, List<Integer> atkHeroList, List<Integer> defHeroList, SimpleHeroSkill skill) {
         this.atk = atk;
         this.def = def;
         this.curAtkHeroId = curAtkHeroId;
         this.curDefHeroId = curDefHeroId;
         this.atkHeroList = atkHeroList;
         this.defHeroList = defHeroList;
+        this.skill = skill;
     }
 
     public void clearRound() {
         this.atk = null;
         this.def = null;
+        this.skill = null;
         this.curAtkHeroId = 0;
         this.curDefHeroId = 0;
         if (!CheckNull.isEmpty(this.atkHeroList))

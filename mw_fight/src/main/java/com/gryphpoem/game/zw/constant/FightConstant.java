@@ -83,6 +83,14 @@ public interface FightConstant {
      */
     interface BuffEffectTiming {
         /**
+         * 主动释放
+         */
+        int ACTIVE_RELEASE = -2;
+        /**
+         * 被动释放
+         */
+        int PASSIVE_RELEASE = -1;
+        /**
          * 回合开始
          */
         int ROUND_START = 0;
@@ -286,10 +294,14 @@ public interface FightConstant {
     /**
      * 伤害来源类型
      */
-    interface DamageType {
-        int SKILL = 1;
-        int ORIGINAL_ATTACK = 2;
-        int BUFF_DAMAGE = 3;
+    interface EffectStatus {
+        int DISAPPEAR = 0;
+        int APPEAR = 1;
+    }
+
+    interface ValueType {
+        int RATIO = 1;      // 万分比
+        int FIX_VALUE = 2;  // 固定值
     }
 
     interface ReplacementBuffRule {
@@ -331,6 +343,10 @@ public interface FightConstant {
          * 护盾
          */
         int SHIELD = 8;
+        /**
+         * 连击
+         */
+        int DOUBLE_HIT = 21;
         /**
          * 无视所有伤害
          */

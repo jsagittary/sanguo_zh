@@ -1,7 +1,13 @@
 package com.gryphpoem.game.zw.util;
 
+import com.google.protobuf.GeneratedMessage;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.pb.BattlePb;
+import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.push.util.CheckNull;
+
+import java.util.List;
 
 /**
  * Description:
@@ -9,6 +15,41 @@ import com.gryphpoem.game.zw.pojo.p.Force;
  * createTime: 2022-11-14 19:08
  */
 public class FightPbUtil {
+
+    public static <T> BattlePb.BaseBattleStage.Builder createBaseBattleStagePb(int stage,
+                                                                               GeneratedMessage.GeneratedExtension<BattlePb.BaseBattleStage, T> ext, T msg) {
+        BattlePb.BaseBattleStage.Builder builder = BattlePb.BaseBattleStage.newBuilder().setStage(stage);
+        if (msg != null) {
+            builder.setExtension(ext, msg);
+        }
+
+        return builder;
+    }
+
+    public static <T> BattlePb.BaseEffectAction.Builder createBaseEffectActionPb(GeneratedMessage.GeneratedExtension<BattlePb.BaseEffectAction, T> ext, T msg,
+                                                                                 int effectLogicId, int buffGiver, int bufferOwner, int timing, int actionType,
+                                                                                 boolean isOnStageSkill, int skillId) {
+        BattlePb.BaseEffectAction.Builder builder = BattlePb.BaseEffectAction.newBuilder().setEffectLogicId(effectLogicId).setActors(bufferOwner);
+        if (actionType == FightConstant.EffectStatus.APPEAR) {
+            builder.setEffectSource(buffGiver).setActionType(actionType).setTiming(timing).setOnStageSkill(isOnStageSkill).setSkillId(skillId);
+        }
+        if (msg != null) {
+            builder.setExtension(ext, msg);
+        }
+
+        return builder;
+    }
+
+    public static <T> BattlePb.BaseAction.Builder createBaseActionPb(GeneratedMessage.GeneratedExtension<BattlePb.BaseAction, T> ext, T msg,
+                                                                     int actionType, int actionOwner) {
+        BattlePb.BaseAction.Builder builder = BattlePb.BaseAction.newBuilder().setType(actionType).setActors(actionOwner);
+        if (msg != null) {
+            builder.setExtension(ext, msg);
+        }
+
+        return builder;
+    }
+
     /**
      * 创建开场pb
      *
@@ -24,17 +65,147 @@ public class FightPbUtil {
         return builder;
     }
 
-    public static BattlePb.BothBattleEntityPb.Builder createBothBattleEntityPb(Force force, Force target) {
+    public static BattlePb.BothBattleEntityPb.Builder createBothBattleEntityPb(Force atk, Force def) {
         BattlePb.BothBattleEntityPb.Builder builder = BattlePb.BothBattleEntityPb.newBuilder();
-        
+        addBattleEntity(atk, builder, true);
+        addBattleEntity(def, builder, false);
+        return builder;
     }
 
-    public static BattlePb.BattleEntityPb.Builder createBattleEntityPb(Force force) {
+    private static void addBattleEntity(Force force, BattlePb.BothBattleEntityPb.Builder builder, boolean atk) {
+        if (atk) {
+            builder.addAtk(createBattleEntityPb(force, force.id, BattlePb.BattleHeroTypeDefine.PRINCIPAL_HERO_VALUE));
+        } else {
+            builder.addDef(createBattleEntityPb(force, force.id, BattlePb.BattleHeroTypeDefine.PRINCIPAL_HERO_VALUE));
+        }
+        if (!CheckNull.isEmpty(force.assistantHeroList)) {
+            force.assistantHeroList.forEach(ass -> {
+                if (CheckNull.isNull(ass)) return;
+                if (atk) {
+                    builder.addAtk(createBattleEntityPb(force, ass.getHeroId(), BattlePb.BattleHeroTypeDefine.DEPUTY_HERO_VALUE));
+                } else {
+                    builder.addDef(createBattleEntityPb(force, ass.getHeroId(), BattlePb.BattleHeroTypeDefine.PRINCIPAL_HERO_VALUE));
+                }
+            });
+        }
+    }
+
+    public static BattlePb.BattleEntityPb.Builder createBattleEntityPb(Force force, int heroId, int heroType) {
         BattlePb.BattleEntityPb.Builder builder = BattlePb.BattleEntityPb.newBuilder();
+        builder.setEntityType(force.roleType);
+        builder.setHeroType(heroType);
+        builder.setOwnerId(String.valueOf(force.ownerId));
+        builder.setHeroId(heroId);
         return builder;
     }
 
     public static BattlePb.DataInt createDataInt(int v1, int v2) {
         return BattlePb.DataInt.newBuilder().setV1(v1).setV2(v2).build();
+    }
+
+    public static int getActingSize(Force force, int heroId) {
+        if (force.fighter.isAttacker) {
+            if (force.id == heroId) {
+                return BattlePb.ActorsDefine.ATTACKER_PRINCIPAL_HERO_VALUE;
+            } else {
+                return BattlePb.ActorsDefine.ATTACKER_DEPUTY_HERO_VALUE;
+            }
+        } else {
+            if (force.id == heroId) {
+                return BattlePb.ActorsDefine.DEFENDER_PRINCIPAL_HERO_VALUE;
+            } else {
+                return BattlePb.ActorsDefine.DEFENDER_DEPUTY_HERO_VALUE;
+            }
+        }
+    }
+
+    /**
+     * 获取当前行动
+     *
+     * @param contextHolder
+     * @return
+     */
+    public static List<BattlePb.BaseEffectAction> curEffectActionList(FightContextHolder contextHolder) {
+        if (contextHolder.getCurEffectSkillActionPb() != null) {
+            return contextHolder.getCurEffectSkillActionPb().getEffectActionList();
+        }
+        if (contextHolder.getCurEffectAttackActionPb() != null) {
+            return contextHolder.getCurEffectAttackActionPb().getEffectActionList();
+        }
+
+        List<BattlePb.BaseEffectAction> actionList;
+        if (contextHolder.getCurSkillActionPb() != null) {
+            actionList = contextHolder.getCurSkillActionPb().getEffectActionList();
+        } else {
+            actionList = contextHolder.getCurAttackActionPb().getEffectActionList();
+        }
+
+        return actionList;
+    }
+
+    /**
+     * 获取当前动作结算结果pb
+     *
+     * @param contextHolder
+     * @return
+     */
+    public static BattlePb.ActionResult.Builder curActionResult(FightContextHolder contextHolder) {
+        if (contextHolder.getCurEffectSkillActionPb() != null) {
+            BattlePb.ActionResult.Builder builder = contextHolder.getCurEffectSkillActionPb().getResultBuilder();
+            if (builder == null) {
+                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
+                contextHolder.getCurEffectSkillActionPb().setResult(resultPb);
+                return resultPb;
+            }
+        }
+        if (contextHolder.getCurEffectAttackActionPb() != null) {
+            BattlePb.ActionResult.Builder builder = contextHolder.getCurEffectAttackActionPb().getResultBuilder();
+            if (builder == null) {
+                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
+                contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
+                return resultPb;
+            }
+        }
+
+        BattlePb.ActionResult.Builder builder;
+        if (contextHolder.getCurSkillActionPb() != null) {
+            builder = contextHolder.getCurSkillActionPb().getResultBuilder();
+            if (builder == null) {
+                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
+                contextHolder.getCurSkillActionPb().setResult(resultPb);
+                return resultPb;
+            }
+        } else {
+            builder = contextHolder.getCurAttackActionPb().getResultBuilder();
+            if (builder == null) {
+                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
+                contextHolder.getCurAttackActionPb().setResult(resultPb);
+                return resultPb;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 往当前动作塞动作结果
+     *
+     * @param contextHolder
+     * @param resultPb
+     */
+    public static void setActionResult(FightContextHolder contextHolder, BattlePb.ActionResult resultPb) {
+        if (contextHolder.getCurEffectSkillActionPb() != null) {
+            contextHolder.getCurEffectSkillActionPb().setResult(resultPb);
+        }
+        if (contextHolder.getCurEffectAttackActionPb() != null) {
+            contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
+        }
+
+        BattlePb.ActionResult.Builder builder;
+        if (contextHolder.getCurSkillActionPb() != null) {
+            contextHolder.getCurSkillActionPb().setResult(resultPb);
+        } else {
+            contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
+        }
     }
 }

@@ -5,9 +5,11 @@ import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
@@ -59,7 +61,7 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
      * @param params
      */
     @Override
-    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, int timing, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
         ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig);
         if (CheckNull.isNull(actionDirection)) {
@@ -83,8 +85,8 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
                             LogUtil.fight("执行能量恢复效果, 能量恢复方: ", actionDirection.getDef().ownerId,
                                     ", 武将: ", heroId, ", 技能: ", skill.getS_skill().getSkillId(), ", 恢复的能量: ", recoveredEnergy,
                                     ", 恢复前能量: ", beforeRecoveredEnergy, ", 恢复后能量: ", skill.getCurEnergy());
-                            // TODO pb修改变更
 
+                            addEffectPb(fightBuff, contextHolder, effectConfig_, rule.getEffectLogicId(), timing, recoveredEnergy, skill.getCurEnergy());
                         });
                         break;
                     case FightConstant.EffectLogicId.ENERGY_DEDUCTION:
@@ -95,8 +97,8 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
                             LogUtil.fight("执行能量减少效果, 能量减少方: ", actionDirection.getDef().ownerId,
                                     ", 武将: ", heroId, ", 技能: ", skill.getS_skill().getSkillId(), ", 减少的能量: ", reducedEnergy,
                                     ", 减少前前能量: ", beforeReducedEnergy, ", 减少后能量: ", skill.getCurEnergy());
-                            // TODO pb修改变更
 
+                            addEffectPb(fightBuff, contextHolder, effectConfig_, rule.getEffectLogicId(), timing, reducedEnergy, skill.getCurEnergy());
                         });
                         break;
                 }
@@ -106,5 +108,30 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+    }
+
+    /**
+     * 添加效果pb
+     *
+     * @param fightBuff
+     * @param contextHolder
+     * @param effectConfig_
+     * @param effectLogicId
+     * @param timing
+     * @param changeValue
+     * @param curValue
+     */
+    private void addEffectPb(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig_, int effectLogicId, int timing, int changeValue, int curValue) {
+        List<BattlePb.BaseEffectAction> actionList = FightPbUtil.curEffectActionList(contextHolder);
+        BattlePb.CommonEffectAction.Builder builder = BattlePb.CommonEffectAction.newBuilder();
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, effectConfig_.get(4)));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, effectConfig_.get(5)));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, changeValue));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, curValue));
+        SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
+        BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.CommonEffectAction.effect, builder.build(), effectLogicId,
+                FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()), FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.
+                        getForceId()), timing, FightConstant.EffectStatus.APPEAR, simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
+        actionList.add(basePb.build());
     }
 }

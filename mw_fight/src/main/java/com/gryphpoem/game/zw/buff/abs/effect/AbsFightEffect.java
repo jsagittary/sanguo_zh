@@ -6,8 +6,11 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -39,6 +42,7 @@ public abstract class AbsFightEffect implements IFightEffect {
         ActionDirection actionDirection = new ActionDirection();
         FightUtil.buffEffectActionDirection(fightBuff, contextHolder, atkObj, actionDirection, true);
         FightUtil.buffEffectActionDirection(fightBuff, contextHolder, defObj, actionDirection, false);
+        actionDirection.setSkill((SimpleHeroSkill) fightBuff.getSkill());
         if (CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", 被执行人为空");
             return null;
@@ -138,7 +142,7 @@ public abstract class AbsFightEffect implements IFightEffect {
     }
 
     @Override
-    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, int timing, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
         ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
         if (CheckNull.isNull(actionDirection)) {
@@ -152,8 +156,8 @@ public abstract class AbsFightEffect implements IFightEffect {
                     FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe);
                     fbe.getEffectMap().computeIfAbsent(rule.getEffectLogicId(), m -> new HashMap<>()).
                             computeIfAbsent(effectConfig_.get(2), l -> new ArrayList<>()).add(data);
-                    // TODO 客户端pb添加
-
+                    addEffectPb(contextHolder, fightBuff, rule.getEffectLogicId(), timing,
+                            FightConstant.EffectStatus.APPEAR, data, fbe, rule);
                 }
             }
         }
@@ -186,8 +190,7 @@ public abstract class AbsFightEffect implements IFightEffect {
                         it.remove();
                         LogUtil.fight("buff效果失效, 效果持有人: ", def.ownerId, "-", heroId,
                                 ", 损失的效果: ", Arrays.toString(effectConfig_.toArray()), ", 消失的效果参数: ", data);
-                        // TODO 客户端pb添加
-
+                        addEffectPb(contextHolder, fightBuff, rule.getEffectLogicId(), -2, FightConstant.EffectStatus.DISAPPEAR, null);
                     }
                 }
                 if (CheckNull.isEmpty(effectList)) {
@@ -198,6 +201,42 @@ public abstract class AbsFightEffect implements IFightEffect {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean canEffect(FightContextHolder contextHolder, Object... params) {
+        return true;
+    }
+
+    /**
+     * 添加效果pb
+     *
+     * @param contextHolder
+     * @param fightBuff
+     * @param effectLogicId
+     * @param timing
+     * @param actionType
+     */
+    protected void addEffectPb(FightContextHolder contextHolder, IFightBuff fightBuff, int effectLogicId, int timing, int actionType, Object... params) {
+        List<BattlePb.BaseEffectAction> actionList = FightPbUtil.curEffectActionList(contextHolder);
+        BattlePb.CommonEffectAction.Builder builder = BattlePb.CommonEffectAction.newBuilder();
+        if (actionType == FightConstant.EffectStatus.APPEAR)
+            addPbValue(builder, timing, params);
+
+        SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
+        BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.CommonEffectAction.effect, builder.build(), effectLogicId,
+                FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()),
+                FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.getForceId()), timing, actionType,
+                simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
+        actionList.add(basePb.build());
+    }
+
+    /**
+     * 添加效果pb显示值
+     *
+     * @param builder
+     */
+    protected void addPbValue(BattlePb.CommonEffectAction.Builder builder, Object... params) {
     }
 
     /**

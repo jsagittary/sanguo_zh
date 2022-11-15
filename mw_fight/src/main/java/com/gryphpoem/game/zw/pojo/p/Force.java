@@ -46,18 +46,13 @@ public class Force {
     public int effect; // 强化克制比
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
+    // 普攻伤害
+    public int attackDamage;
+
     /**
      * 主将技能列表
      */
     public List<SimpleHeroSkill> skillList = new ArrayList<>();
-//    /**
-//     * 武将当前士气
-//     */
-//    public int morale;
-//    /**
-//     * 本轮士气值上限
-//     */
-//    public int maxRoundMorale;
     /**
      * 战斗buff集合 主将的buff列表
      */
@@ -484,6 +479,20 @@ public class Force {
 
     public int armyType(int heroId) {
         return this.armType;
+    }
+
+    public void addAttackDamage(int damage, int heroId) {
+        if (heroId == this.id) {
+            this.attackDamage += damage;
+            return;
+        }
+        if (!CheckNull.isEmpty(this.assistantHeroList)) {
+            FightAssistantHero assistantHero = this.assistantHeroList.stream().filter(ass ->
+                    Objects.nonNull(ass) && ass.getHeroId() == heroId).findFirst().orElse(null);
+            if (Objects.nonNull(assistantHero)) {
+                assistantHero.setAttackDamage(assistantHero.getAttackDamage() + damage);
+            }
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.buff;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.skill.IHeroSkill;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -88,7 +89,14 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
      *
      * @return
      */
-    int getSkillConfigId();
+    IHeroSkill getSkill();
+
+    /**
+     * 设置buff关联的技能配置
+     *
+     * @param sSkill
+     */
+    void setSkill(IHeroSkill sSkill);
 
     /**
      * 扣除buff次数

@@ -32,4 +32,25 @@ public interface IHeroSkill extends IUniqueId {
      * @param params
      */
     void releaseSkillBuff(FightContextHolder contextHolder, Object... params);
+
+    /**
+     * 是否是登场技能
+     *
+     * @return
+     */
+    boolean isOnStageSkill();
+
+    /**
+     * 获取技能伤害
+     *
+     * @return
+     */
+    int getSkillDamage();
+
+    /**
+     * 添加技能伤害
+     *
+     * @param damage
+     */
+    void addSkillDamage(int damage);
 }

@@ -6,16 +6,19 @@ import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Description: 恢复型的战斗属性(士气, 能量)
@@ -157,5 +160,21 @@ public class RecoveredInBattleEffectImpl extends AbsFightEffect {
         });
 
         return data;
+    }
+
+    @Override
+    protected void addPbValue(BattlePb.CommonEffectAction.Builder builder, Object... params) {
+        FightEffectData data = (FightEffectData) params[0];
+        FightBuffEffect fbe = (FightBuffEffect) params[1];
+        StaticEffectRule rule = (StaticEffectRule) params[2];
+        if (CheckNull.isNull(data) || CheckNull.isEmpty(data.getData())) return;
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getData().get(0)));
+
+        int curValue = 0;
+        Turple<Integer, Integer> valueTuple = (Turple<Integer, Integer>) effectCalculateValue(fbe, rule.getEffectLogicId(), 10000);
+        if (Objects.nonNull(valueTuple)) {
+            curValue = valueTuple.getA();
+        }
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, curValue));
     }
 }

@@ -29,19 +29,19 @@ public class PassiveBuffImpl extends AbsPassiveBuff {
     public void releaseBuff(LinkedList actingBuffList, FightContextHolder contextHolder, List staticBuffConfig, Object... params) {
         super.releaseBuff(actingBuffList, contextHolder, staticBuffConfig, params);
         // 释放buff时, 立马释放效果
-        releaseEffect(contextHolder, -1, params);
+        releaseEffect(contextHolder, FightConstant.BuffEffectTiming.PASSIVE_RELEASE, params);
     }
 
     @Override
     public void releaseEffect(FightContextHolder contextHolder, int timing, Object... params) {
-        if (timing != -1)
+        if (timing != FightConstant.BuffEffectTiming.PASSIVE_RELEASE)
             return;
         if (!hasRemainEffectiveTimes(contextHolder)) {
             LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
             return;
         }
         // 被动释放一次后, 不再释放
-        releaseBuffEffect(contextHolder);
+        releaseBuffEffect(contextHolder, timing);
     }
 
     @Override

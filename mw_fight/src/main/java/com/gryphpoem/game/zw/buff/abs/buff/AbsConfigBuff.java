@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.skill.IHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -58,9 +59,9 @@ public abstract class AbsConfigBuff implements IFightBuff {
      */
     protected int buffEffectiveTimes;
     /**
-     * 技能配置id
+     * 技能
      */
-    protected int skillConfigId;
+    protected IHeroSkill sSkill;
 
     public AbsConfigBuff() {
     }
@@ -89,8 +90,13 @@ public abstract class AbsConfigBuff implements IFightBuff {
     }
 
     @Override
-    public int getSkillConfigId() {
-        return this.skillConfigId;
+    public IHeroSkill getSkill() {
+        return this.sSkill;
+    }
+
+    @Override
+    public void setSkill(IHeroSkill sSkill) {
+        this.sSkill = sSkill;
     }
 
     @Override
@@ -216,7 +222,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
      * @param contextHolder
      * @param params
      */
-    protected void releaseBuffEffect(FightContextHolder contextHolder, Object... params) {
+    protected void releaseBuffEffect(FightContextHolder contextHolder, int timing, Object... params) {
         if (CheckNull.isNull(staticBuff) || CheckNull.isEmpty(staticBuff.getEffects())) return;
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         for (List<Integer> effectList : staticBuff.getEffects()) {
@@ -227,7 +233,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
             if (CheckNull.isNull(fightEffect))
                 continue;
 
-            fightEffect.effectiveness(this, contextHolder, effectList, rule, params);
+            fightEffect.effectiveness(this, contextHolder, effectList, rule, timing, params);
         }
     }
 

@@ -49,7 +49,7 @@ public class AddBuffEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+    public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, int timing, Object... params) {
         List<Integer> effectConfig_ = effectConfig;
         ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
         if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getDefHeroList())) {
@@ -73,7 +73,7 @@ public class AddBuffEffectImpl extends AbsFightEffect {
         for (Integer heroId : actionDirection.getDefHeroList()) {
             // 释放buff
             LogUtil.fight("释放添加buff效果, 效果逻辑id: ", rule.getEffectLogicId(), "， 被加buff方: ", actionDirection.getDef().ownerId, ", 被加buff武将: ", heroId);
-            battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, actionDirection, contextHolder, null, fightBuff.getBuffGiver());
+            battleLogic.releaseBuff(executor.buffList(heroId), staticBuff, removedList, actionDirection, contextHolder, null, fightBuff.getSkill(), fightBuff.getBuffGiver());
         }
     }
 

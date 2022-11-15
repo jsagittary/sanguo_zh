@@ -13,6 +13,7 @@ import com.gryphpoem.game.zw.event.FightEvent;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
@@ -109,6 +110,23 @@ public class FightManager {
         IFightBuffWork work;
         if ((work = buffWorkMap.get(timing)) != null) {
             return work.buffCanEffect(fightBuff, contextHolder, conditionConfig, params);
+        }
+
+        return true;
+    }
+
+    /**
+     * 效果可否释放
+     *
+     * @param contextHolder
+     * @param rule
+     * @param params
+     * @return
+     */
+    public boolean effectCanRelease(FightContextHolder contextHolder, StaticEffectRule rule, Object... params) {
+        IFightEffect fightEffect;
+        if ((fightEffect = effectMap.get(rule.getEffectLogicId())) != null) {
+            return fightEffect.canEffect(contextHolder, params);
         }
 
         return true;

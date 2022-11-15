@@ -27,6 +27,10 @@ public class FightAssistantHero {
      * 战斗中的buff与效果
      */
     private FightBuffEffect fightBuffEffect;
+    /**
+     * 普攻伤害
+     */
+    private int attackDamage;
 
     public FightAssistantHero(Force force, int heroId, AttrData attrData, List<SimpleHeroSkill> skillList) {
         this.heroId = heroId;

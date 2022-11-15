@@ -30,8 +30,8 @@ public class ActiveBuffImpl extends AbsActiveBuff {
             LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
             return;
         }
-        
-        releaseBuffEffect(contextHolder);
+
+        releaseBuffEffect(contextHolder, timing);
         // buff作用次数扣除
         this.effect = true;
         if (this.staticBuff.getBuffEffectiveTimes() > 0) {
