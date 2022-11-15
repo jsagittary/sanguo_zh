@@ -2,17 +2,23 @@ package com.gryphpoem.game.zw.service.buildHomeCity;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
+import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicCrop;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.pojo.BuildingState;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.PlayerService;
@@ -32,7 +38,7 @@ import java.util.stream.Collectors;
  * @Date: 2022/11/5 10:20
  */
 @Service
-public class BuildHomeCityService /*implements DelayInvokeEnvironment*/ implements GmCmdService {
+public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironment {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -212,22 +218,22 @@ public class BuildHomeCityService /*implements DelayInvokeEnvironment*/ implemen
         // 校验原建筑地基信息
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         BuildingState sourceBuildingState = buildingData.get(sourceBuildingId);
-        Integer sourceFoundationId = sourceBuildingState.getFoundationId();
-        if (sourceBuildingState.getFoundationId() == null) {
+        int sourceFoundationId = sourceBuildingState.getFoundationId();
+        if (sourceBuildingState.getFoundationId() <= 0) {
             throw new MwException(GameError.FOUNDATION_DATA_OF_BUILDING_IS_ERROR, String.format("交换建筑位置时, 未获取到原建筑的地基信息, roleId:%s, sourceBuildingId:%s", roleId, sourceBuildingId));
         }
         // 目标地基是否已有建筑
-        Integer targetBuildingId = buildingData.values().stream()
-                .filter(tmp ->tmp.getFoundationId().equals(targetFoundationId))
+        int targetBuildingId = buildingData.values().stream()
+                .filter(tmp -> tmp.getFoundationId() == targetFoundationId)
                 .map(BuildingState::getBuildingId)
                 .findFirst()
-                .orElse(null);
+                .orElse(0);
         // 交换位置
         GamePb1.SwapBuildingLocationRs.Builder builder = GamePb1.SwapBuildingLocationRs.newBuilder();
         sourceBuildingState.setFoundationId(targetFoundationId);
         buildingData.put(sourceBuildingId, sourceBuildingState);
         builder.addBuildingState(sourceBuildingState.creatPb());
-        if (targetBuildingId != null) {
+        if (targetBuildingId > 0) {
             BuildingState targetBuildingState = buildingData.get(targetBuildingId);
             targetBuildingState.setFoundationId(sourceFoundationId);
             buildingData.put(targetBuildingId, targetBuildingState);
@@ -247,40 +253,96 @@ public class BuildHomeCityService /*implements DelayInvokeEnvironment*/ implemen
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         int buildingId = rq.getBuildingId();
         List<Integer> economicCropIdList = rq.getEconomicCropIdList();
-        // 获取玩家对应建筑等级
-        int buildingLv = player.mills.get(buildingId).getLv();
+        boolean isResType = BuildingDataManager.isResType(buildingId);
+        if (!isResType) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 不能选择非资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
+        }
+        // 获取玩家对应建筑信息
+        Mill mill = player.mills.get(buildingId);
+        if (mill == null) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家未解锁对应的资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
+        }
+        int buildingLv = mill.getLv();
+        BuildingState buildingState = player.getBuildingData().get(buildingId);
+        Map<Integer, Integer> economicCropData = buildingState.getEconomicCropData();
         for (Integer economicCropId : economicCropIdList) {
             // 获取经济作物配置
             StaticEconomicCrop staticEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(economicCropId);
             if (staticEconomicCrop == null
                     || staticEconomicCrop.getNeedBuildingLv() == null
-                    || staticEconomicCrop.getProductTime() == null
-                    || staticEconomicCrop.getProductCnt() == null) {
+                    || staticEconomicCrop.getProductTime() <= 0
+                    || staticEconomicCrop.getProductCnt() <= 0) {
                 throw new MwException(GameError.NO_CONFIG, "分配经济作物时, 未找到对应的经济作物配置, roleId:%s, economicCropId:%s", roleId, economicCropId);
             }
             Map<Integer, Integer> needBuildingLv = staticEconomicCrop.getNeedBuildingLv();
             if (!needBuildingLv.containsKey(buildingId) || buildingLv < needBuildingLv.get(buildingId)) {
                 throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家建筑等级未达到要求, roleId:%s, buildingId:%s, economicCropId:%s", roleId, buildingId, economicCropId));
             }
-
-            Integer productCnt = staticEconomicCrop.getProductCnt();
-            Integer productTime = staticEconomicCrop.getProductTime();
-            // 创建经济作物延时任务、离线任务
+            int maxCnt = staticEconomicCrop.getMaxCnt();
+            if (player.props.get(economicCropId).getCount() >= maxCnt) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家拥有的经济作物数量已达上限, roleId:%s, economicCropId:%s", roleId, economicCropId));
+            }
+            if (!economicCropData.containsKey(economicCropId)) {
+                int now = TimeHelper.getCurrentSecond();
+                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
+                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, now, staticEconomicCrop, buildingId));
+                economicCropData.put(economicCropId, now);
+            }
         }
 
+        // 移除建筑上不再绑定的经济作物
+        economicCropData.entrySet().removeIf(e -> !economicCropIdList.contains(e.getKey()));
 
+        // TODO 移除已分配的收取经济作物延时队列
+
+        // TODO 同步建筑状态信息
 
         GamePb1.AssignEconomicCropRs.Builder builder = GamePb1.AssignEconomicCropRs.newBuilder();
         return builder.build();
     }
 
-    // 给建筑派遣居民
-    public void dispatchResidentToBuilding(long roleId) {
+    /**
+     * 收取经济作物
+     *
+     * @param player
+     * @param staticEconomicCrop
+     * @param buildingId
+     */
+    public void gainEconomicCrop(Player player, StaticEconomicCrop staticEconomicCrop, int buildingId) {
+        BuildingState buildingState = player.getBuildingData().get(buildingId);
+        if (buildingState.getEconomicCropData().containsKey(staticEconomicCrop.getPropId())) {
+            int startTime = buildingState.getEconomicCropData().get(staticEconomicCrop.getPropId());
+            if (startTime + staticEconomicCrop.getProductTime() >= TimeHelper.getCurrentSecond()) {
+                // 获取经济作物道具并向客户端同步
+                rewardDataManager.sendRewardSignle(player, AwardType.PROP, staticEconomicCrop.getPropId(), staticEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
+            }
+        }
+    }
 
+    /**
+     * 给建筑派遣居民
+     *
+     * @param roleId
+     * @param rq
+     * @return
+     */
+    public GamePb1.DispatchResidentRs dispatchResidentToBuilding(long roleId, GamePb1.DispatchResidentRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        boolean autoDispatch = rq.getAutoDispatch();
+        if (autoDispatch) {
+            // 一键派遣
+            autoDispatchResident(player);
+        } else {
+            // 单个建筑派遣
+        }
+
+
+        GamePb1.DispatchResidentRs.Builder builder = GamePb1.DispatchResidentRs.newBuilder();
+        return builder.build();
     }
 
     // 一键派遣
-    public void autoDispatchResident(long roleId) {
+    public void autoDispatchResident(Player player) {
 
     }
 
@@ -294,9 +356,18 @@ public class BuildHomeCityService /*implements DelayInvokeEnvironment*/ implemen
 
     }
 
-    // 提交经济订单
-    public void submitEconomicOrder(long roleId) {
+    /**
+     * 提交经济订单
+     *
+     * @param roleId
+     * @param rq
+     * @return
+     */
+    public GamePb1.SubmitEconomicOrderRs submitEconomicOrder(long roleId, GamePb1.SubmitEconomicOrderRq rq) {
 
+
+        GamePb1.SubmitEconomicOrderRs.Builder builder = GamePb1.SubmitEconomicOrderRs.newBuilder();
+        return builder.build();
     }
 
     // 刷新玩家经济订单栏
@@ -321,12 +392,12 @@ public class BuildHomeCityService /*implements DelayInvokeEnvironment*/ implemen
 
     }
 
-    /*private DelayQueue<BuildHomeCityDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+    private DelayQueue<GainEconomicCropDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
 
     @Override
     public DelayQueue getDelayQueue() {
         return DELAY_QUEUE;
-    }*/
+    }
 
     /**
      * 迷雾探索结束时要做的事

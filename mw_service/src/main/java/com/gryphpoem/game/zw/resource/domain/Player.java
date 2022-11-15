@@ -972,22 +972,9 @@ public class Player {
     }
 
     /**
-     * 居民上限
+     * 居民数量, [总数, 空闲数, 上限]
      */
-    private Integer residentMaxCnt;
-
-    public Integer getResidentMaxCnt() {
-        return residentMaxCnt;
-    }
-
-    public void setResidentMaxCnt(Integer residentMaxCnt) {
-        this.residentMaxCnt = residentMaxCnt;
-    }
-
-    /**
-     * 居民数量, [总数, 空闲数]
-     */
-    private List<Integer> residentData = new ArrayList<>(2);
+    private List<Integer> residentData = new ArrayList<>(3);
 
     public List<Integer> getResidentData() {
         return residentData;
@@ -1085,6 +1072,7 @@ public class Player {
     public void setUnlockEconomicCrops(List<Integer> unlockEconomicCrops) {
         this.unlockEconomicCrops = unlockEconomicCrops;
     }
+
 
     /**
      * 是否第一次打造宝具
@@ -2426,11 +2414,7 @@ public class Player {
         }
         // 居民信息
         if (CheckNull.nonEmpty(residentData)) {
-            ser.setResidentData(PbHelper.createTwoIntPb(getResidentTotalCnt(), getIdleResidentCnt()));
-        }
-        // 居民上限
-        if (!CheckNull.isNull(residentMaxCnt)) {
-            ser.setResidentMaxCnt(residentMaxCnt);
+            ser.addAllResidentData(residentData);
         }
         // // 探索队列
         // if (CheckNull.nonEmpty(exploreQue)) {
@@ -3078,31 +3062,29 @@ public class Player {
         // 性格奖励记录
         Optional.ofNullable(ser.getCharacterRewardRecordList()).ifPresent(tmp -> tmp.forEach(o -> this.characterRewardRecord.put(o.getV1(), o.getV2())));
         // 侦察兵数据
-        if (CheckNull.isEmpty(ser.getScoutMapList())) {
+        if (CheckNull.nonEmpty(ser.getScoutMapList())) {
             ser.getScoutMapList().forEach(o -> this.scoutData.put(o.getV1(), o.getV2()));
         }
         // 解锁的地图格子
-        if (CheckNull.isEmpty(ser.getMapCellDataList())) {
+        if (CheckNull.nonEmpty(ser.getMapCellDataList())) {
             for (CommonPb.MapCell mapCell : ser.getMapCellDataList()) {
                 this.mapCellData.put(mapCell.getCellId(), mapCell.getStateList());
             }
         }
         // 建筑状态信息
-        if (!CheckNull.isEmpty(ser.getBuildingStateList())) {
+        if (CheckNull.nonEmpty(ser.getBuildingStateList())) {
             ser.getBuildingStateList().forEach(o -> this.buildingData.put(o.getBuildingId(), new BuildingState(o)));
         }
         // 解锁的地基数据
-        if (!CheckNull.isEmpty(ser.getFoundationDataList())) {
+        if (CheckNull.nonEmpty(ser.getFoundationDataList())) {
             this.foundationData.addAll(ser.getFoundationDataList());
         }
         // 居民信息
-        if (ser.hasResidentData() && ser.getResidentData().hasV1() && ser.getResidentData().hasV2()) {
+        if (CheckNull.nonEmpty(ser.getResidentDataList())) {
             this.residentData.clear();
-            this.residentData.add(0, ser.getResidentData().getV1());
-            this.residentData.add(1, ser.getResidentData().getV2());
-        }
-        if (ser.hasResidentMaxCnt()) {
-            this.residentMaxCnt = ser.getResidentMaxCnt();
+            this.residentData.add(0, ser.getResidentData(0));
+            this.residentData.add(1, ser.getResidentData(1));
+            this.residentData.add(2, ser.getResidentData(2));
         }
         // // 探索对列
         // Optional.ofNullable(ser.getExploreQueList()).ifPresent(tmp -> tmp.forEach(o -> this.exploreQue.put(o.getScoutIndex(), new ExploreQue(o))));

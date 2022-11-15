@@ -10,17 +10,16 @@ import java.util.List;
  */
 public class StaticEconomicOrder {
 
-    private Integer id;
+    private int id;
 
     /**
      * 需要的领主等级
      */
     private List<Integer> needLordLv;
-
     /**
      * 订单品质：1-普通; 2-稀有; 3-传说
      */
-    private Integer quantity;
+    private int quantity;
 
     /**
      * 订单出处, area id和集市建筑id, [集市，酒泉郡城，武陵郡城，南阳郡城，会稽郡城，丹阳郡城，阳平郡城，常山郡城，敦煌郡城，武威，江夏，交趾，巨鹿，洛阳]
@@ -28,17 +27,17 @@ public class StaticEconomicOrder {
     private List<Integer> place;
 
     /**
-     * 订单需求1  [[经济产物的道具id1，经济产物的道具id2],[数量下限，数量上限]]
+     * 订单需求1  [[经济产物的道具id下限，经济产物的道具id上限],[数量下限，数量上限]]
      */
     private List<List<Integer>> orderDemand1;
 
     /**
-     * 订单需求1  [[经济产物的道具id1，经济产物的道具id2],[数量下限，数量上限]]
+     * 订单需求2  [[经济产物的道具id下限，经济产物的道具id上限],[数量下限，数量上限]]
      */
     private List<List<Integer>> orderDemand2;
 
     /**
-     * 订单需求1  [[经济产物的道具id1，经济产物的道具id2],[数量下限，数量上限]]
+     * 订单需求3  [[经济产物的道具id下限，经济产物的道具id上限],[数量下限，数量上限]]
      */
     private List<List<Integer>> orderDemand3;
 
@@ -67,26 +66,27 @@ public class StaticEconomicOrder {
      */
     private List<List<Integer>> specialReward;
 
+
     /**
      * 订单权重，在相同等级区间下，订单权重和为10000
      */
-    private Integer weight;
+    private int weight;
 
     /**
      * 订单的预显示时间, 秒
      */
-    private Integer preDisplayTime;
+    private int preDisplayTime;
 
     /**
      * 订单的有效时间, 秒
      */
-    private Integer durationTime;
+    private int durationTime;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -98,11 +98,11 @@ public class StaticEconomicOrder {
         this.needLordLv = needLordLv;
     }
 
-    public Integer getQuantity() {
+    public int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
@@ -178,27 +178,27 @@ public class StaticEconomicOrder {
         this.specialReward = specialReward;
     }
 
-    public Integer getWeight() {
+    public int getWeight() {
         return weight;
     }
 
-    public void setWeight(Integer weight) {
+    public void setWeight(int weight) {
         this.weight = weight;
     }
 
-    public Integer getPreDisplayTime() {
+    public int getPreDisplayTime() {
         return preDisplayTime;
     }
 
-    public void setPreDisplayTime(Integer preDisplayTime) {
+    public void setPreDisplayTime(int preDisplayTime) {
         this.preDisplayTime = preDisplayTime;
     }
 
-    public Integer getDurationTime() {
+    public int getDurationTime() {
         return durationTime;
     }
 
-    public void setDurationTime(Integer durationTime) {
+    public void setDurationTime(int durationTime) {
         this.durationTime = durationTime;
     }
 

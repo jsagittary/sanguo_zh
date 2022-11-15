@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class StaticHappiness {
 
-    private Integer id;
+    private int id;
 
     /**
      * 范围, [最小值, 最大值]
@@ -22,11 +22,11 @@ public class StaticHappiness {
      */
     private List<List<Integer>> effective;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

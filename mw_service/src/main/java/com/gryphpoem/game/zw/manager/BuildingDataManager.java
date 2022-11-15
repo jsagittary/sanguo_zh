@@ -1486,4 +1486,5 @@ public class BuildingDataManager {
         LogUtil.channel(player.roleId + resourceMult.toString());
         return list;
     }
+
 }

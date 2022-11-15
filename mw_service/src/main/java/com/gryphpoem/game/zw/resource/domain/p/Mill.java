@@ -1,8 +1,6 @@
 package com.gryphpoem.game.zw.resource.domain.p;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
 public class Mill {
     private int type;

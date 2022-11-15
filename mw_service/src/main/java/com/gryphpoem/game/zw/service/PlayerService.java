@@ -1063,8 +1063,7 @@ public class PlayerService implements GmCmdService {
                 builder.addBuildingState(buildingState.creatPb());
             }
             builder.addAllFoundationData(player.getFoundationData());
-            builder.setResidentMaxCnt(player.getResidentMaxCnt());
-            builder.setResidentData(PbHelper.createTwoIntPb(player.getResidentTotalCnt(), player.getIdleResidentCnt()));
+            builder.addAllResidentData(player.getResidentData());
             builder.setTestLong(Long.MAX_VALUE);
             return builder.build();
         }

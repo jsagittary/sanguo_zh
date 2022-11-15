@@ -1,9 +1,9 @@
 package com.gryphpoem.game.zw.resource.constant;
 
 public class BuildingType {
-    // 司令部
+    // 君王殿
     public static final int COMMAND = 1;
-    // 科研所
+    // 太史院
     public static final int TECH = 11;
     // 战争工厂
     public static final int WAR_FACTORY = 12;
@@ -22,13 +22,13 @@ public class BuildingType {
     // 围墙
     public static final int WALL = 29;
 
-    // 炼油厂
+    // 铸币厂
     public static final int RES_OIL = 31;
-    // 发电厂
+    // 伐木场
     public static final int RES_ELE = 32;
-    // 供应站
+    // 良田
     public static final int RES_FOOD = 33;
-    // 矿石精炼厂
+    // 矿石厂
     public static final int RES_ORE = 34;
     //核弹井
     public static final int NUCLEAR_BOMB = 35;

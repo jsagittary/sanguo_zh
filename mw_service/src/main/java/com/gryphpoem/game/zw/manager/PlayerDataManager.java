@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -25,6 +26,7 @@ import com.gryphpoem.game.zw.resource.domain.Role;
 import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
 import com.gryphpoem.game.zw.resource.pojo.BuildingState;
@@ -370,21 +372,65 @@ public class PlayerDataManager implements PlayerDM {
         Player player = new Player(lord, TimeHelper.getCurrentSecond());
         // 初始化建筑建筑信息
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        List<Integer> foundationData = player.getFoundationData();
         Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
-        buildingInfo.forEach((k, v) -> {
-            BuildingState buildingState = new BuildingState(k, v);
-            buildingData.put(k, buildingState);
-        });
+        if (CheckNull.nonEmpty(buildingInfo)) {
+            buildingInfo.forEach((k, v) -> {
+                BuildingState buildingState = new BuildingState(k, v);
+                StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(v);
+                List<Integer> cellList = staticHomeCityFoundation.getCellList();
+                for (int i = 0; i < cellList.size(); i++) {
+                    List<Integer> cellState = new ArrayList<>(2);
+                    cellState.add(1);// 已开垦
+                    cellState.add(0);// 没有土匪
+                    mapCellData.put(cellList.get(i), cellState);
+                }
+                if (!foundationData.contains(v)) {
+                    foundationData.add(v);
+                }
+                buildingData.put(k, buildingState);
+            });
+        } else {
+            BuildingState buildingState = new BuildingState(1, 1);
+            buildingData.put(1, buildingState);
+            StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
+            List<Integer> cellList = staticHomeCityFoundation.getCellList();
+            for (int i = 0; i < cellList.size(); i++) {
+                List<Integer> cellState = new ArrayList<>(2);
+                cellState.add(1);// 已开垦
+                cellState.add(0);// 没有土匪
+                mapCellData.put(cellList.get(i), cellState);
+            }
+            if (!foundationData.contains(1)) {
+                foundationData.add(1);
+            }
+        }
+
         // 初始化农民配置
-        player.setResidentMaxCnt(staticIniLord.getResidentCnt().get(0));
-        List<Integer> farmerCount = player.getResidentData();
-        farmerCount.add(staticIniLord.getResidentCnt().get(1));
-        farmerCount.add(staticIniLord.getResidentCnt().get(1));
+        List<Integer> residentCnt = staticIniLord.getResidentCnt();
+        List<Integer> residentData = player.getResidentData();
+        residentData.clear();
+        if (CheckNull.nonEmpty(residentCnt)) {
+            residentData.add(residentCnt.get(1)); // 总数
+            residentData.add(residentCnt.get(1)); // 空闲数
+            residentData.add(residentCnt.get(0)); // 上限
+        } else {
+            residentData.add(4); // 总数
+            residentData.add(4); // 空闲数
+            residentData.add(4); // 上限
+        }
+
         // 初始化侦察兵配置
         Map<Integer, Integer> scoutData = player.getScoutData();
-        for (int i = 0; i < staticIniLord.getScoutCnt(); i++) {
-            scoutData.put(i, 0);
+        if (staticIniLord.getScoutCnt() > 0) {
+            for (int i = 0; i < staticIniLord.getScoutCnt(); i++) {
+                scoutData.put(i, 0);
+            }
+        } else {
+            scoutData.put(1, 0);
         }
+
         createAccount(account, player);
         newPlayerCache.put(player.roleId, player);
         return player;

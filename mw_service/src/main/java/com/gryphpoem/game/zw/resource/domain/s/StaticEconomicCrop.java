@@ -10,12 +10,12 @@ import java.util.Map;
  */
 public class StaticEconomicCrop {
     
-    private Integer id;
+    private int id;
 
     /**
      * 道具id, 经济作物算作普通道具，对应s_prop表中propType为4的id
      */
-    private Integer propId;
+    private int propId;
 
     /**
      * 解锁需要的建筑等级, 例如: [[33, 5], [32, 10]], 表示需要任一良田等级达到5级, 且任一伐木场等级达到10级, 可生产该经济副作物
@@ -25,26 +25,31 @@ public class StaticEconomicCrop {
     /**
      * 单次产出需要的时间，秒
      */
-    private Integer productTime;
+    private int productTime;
 
     /**
      * 单次产出的数量
      */
-    private Integer productCnt;
+    private int productCnt;
 
-    public Integer getId() {
+    /**
+     * 拥有数量上限
+     */
+    private int maxCnt;
+
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public Integer getPropId() {
+    public int getPropId() {
         return propId;
     }
 
-    public void setPropId(Integer propId) {
+    public void setPropId(int propId) {
         this.propId = propId;
     }
 
@@ -56,20 +61,27 @@ public class StaticEconomicCrop {
         this.needBuildingLv = needBuildingLv;
     }
 
-    public Integer getProductTime() {
+    public int getProductTime() {
         return productTime;
     }
 
-    public void setProductTime(Integer productTime) {
+    public void setProductTime(int productTime) {
         this.productTime = productTime;
     }
 
-    public Integer getProductCnt() {
+    public int getProductCnt() {
         return productCnt;
     }
 
-    public void setProductCnt(Integer productCnt) {
+    public void setProductCnt(int productCnt) {
         this.productCnt = productCnt;
     }
 
+    public int getMaxCnt() {
+        return maxCnt;
+    }
+
+    public void setMaxCnt(int maxCnt) {
+        this.maxCnt = maxCnt;
+    }
 }
