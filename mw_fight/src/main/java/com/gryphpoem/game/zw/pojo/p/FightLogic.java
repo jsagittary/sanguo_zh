@@ -243,12 +243,15 @@ public class FightLogic {
 
             contextHolder.addRoundNum();
 
+            LogUtil.fight("进攻方: ", force.ownerId, ", 防守方: ", target.ownerId, ", =============新回合开始=============");
             contextHolder.getInitBattleRoundStagePb().setRoundNum(contextHolder.getRoundNum());
             List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
 
+                LogUtil.fight("进攻方: ", atk.ownerId, "-", fe.getHeroId(), ", 防守方: ", def.ownerId, ", 当前回合: ",
+                        contextHolder.getRoundNum(), ", -----------开始-----------");
                 // 初始化roundActionPb
                 contextHolder.getInitRoundActionPb().setActionId(FightPbUtil.getActingSize(atk, fe.getHeroId()));
                 LinkedList<IFightBuff> buffList = atk.buffList(fe.getHeroId());
