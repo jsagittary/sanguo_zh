@@ -83,7 +83,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 // TODO buff增益
                 List<List<Integer>> buff = sSimulatorChoose.getBuff();
             }
-            int stepId = lifeSimulatorStep.getStepId();
+            long stepId = lifeSimulatorStep.getStepId();
             StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
             // 根据配置, 如果没有下一步, 则模拟器结束
             long nextId = staticSimulatorStep.getNextId();
