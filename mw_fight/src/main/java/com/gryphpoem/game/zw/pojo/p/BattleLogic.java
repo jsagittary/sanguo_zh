@@ -303,7 +303,7 @@ public class BattleLogic {
             actionDirection.getSkill().addSkillDamage(damage);
         }
 
-        BattlePb.ActionResult.Builder builder = FightPbUtil.curActionResult(contextHolder);
+        BattlePb.ActionResult.Builder builder = BattlePb.ActionResult.newBuilder();
         if (Objects.nonNull(builder)) {
             builder.setAtk(FightPbUtil.getActingSize(actionDirection.getAtk(), actionDirection.getCurAtkHeroId()));
             builder.setDef(FightPbUtil.getActingSize(actionDirection.getDef(), actionDirection.getCurDefHeroId()));

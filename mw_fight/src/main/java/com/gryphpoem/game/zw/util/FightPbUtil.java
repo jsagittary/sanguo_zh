@@ -194,7 +194,7 @@ public class FightPbUtil {
      */
     public static BattlePb.ActionResult.Builder curActionResult(FightContextHolder contextHolder) {
         if (contextHolder.getCurEffectSkillActionPb() != null) {
-            BattlePb.ActionResult.Builder builder = contextHolder.getCurEffectSkillActionPb().getResultBuilder();
+            BattlePb.ActionResult builder = contextHolder.getCurEffectSkillActionPb().getResult();
             if (builder == null) {
                 BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
                 contextHolder.getCurEffectSkillActionPb().setResult(resultPb);
@@ -202,7 +202,7 @@ public class FightPbUtil {
             }
         }
         if (contextHolder.getCurEffectAttackActionPb() != null) {
-            BattlePb.ActionResult.Builder builder = contextHolder.getCurEffectAttackActionPb().getResultBuilder();
+            BattlePb.ActionResult builder = contextHolder.getCurEffectAttackActionPb().getResult();
             if (builder == null) {
                 BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
                 contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
@@ -210,20 +210,19 @@ public class FightPbUtil {
             }
         }
 
-        BattlePb.ActionResult.Builder builder;
         if (contextHolder.getCurSkillActionPb() != null) {
-            builder = contextHolder.getCurSkillActionPb().getResultBuilder();
-            if (builder == null) {
-                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
-                contextHolder.getCurSkillActionPb().setResult(resultPb);
-                return resultPb;
+            BattlePb.ActionResult resultPb = contextHolder.getCurSkillActionPb().getResult();
+            if (resultPb == null) {
+                BattlePb.ActionResult.Builder resultPb_ = BattlePb.ActionResult.newBuilder();
+                contextHolder.getCurSkillActionPb().setResult(resultPb_);
+                return resultPb_;
             }
         } else {
-            builder = contextHolder.getCurAttackActionPb().getResultBuilder();
-            if (builder == null) {
-                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
-                contextHolder.getCurAttackActionPb().setResult(resultPb);
-                return resultPb;
+            BattlePb.ActionResult resultPb = contextHolder.getCurAttackActionPb().getResult();
+            if (resultPb == null) {
+                BattlePb.ActionResult.Builder resultPb_ = BattlePb.ActionResult.newBuilder();
+                contextHolder.getCurAttackActionPb().setResult(resultPb_);
+                return resultPb_;
             }
         }
 
@@ -250,7 +249,7 @@ public class FightPbUtil {
             contextHolder.getCurSkillActionPb().setResult(resultPb);
         }
         if (contextHolder.getCurAttackActionPb() != null) {
-            contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
+            contextHolder.getCurAttackActionPb().setResult(resultPb);
         }
 
     }

@@ -344,15 +344,16 @@ public class FightCalc {
         double def = attributeValue(FightCommonConstant.AttrId.DEFEND, target, actionDirection.getCurDefHeroId());
         double defDown = attributeValue(FightCommonConstant.AttrId.DEFEND_TOWN, target, actionDirection.getCurDefHeroId());
 
-        // 伤害类型1 (A综合攻击-B综合防御) / 3
-        // A综合攻击 = A战中攻击 + A战中攻坚
-        // B综合防御 = B战中防御+B战中据守
-        double hurt1 = (atk + atkDown - def - defDown) / 3;
+        // 伤害类型1 伤害类型1 结果 = A综合攻击*A综合攻击/(综合攻击a+B综合防御)
+        // A综合攻击 = A战中攻击 + A战中攻坚 - B战中据守
+        // B综合防御 = B战中防御
+        double attackerAtk = (atk + atkDown - defDown);
+        double hurt1 = attackerAtk * attackerAtk / (attackerAtk + def);
 
         // 伤害类型2=（A战中穿甲-B战中防护）/ 3
         double attackExt = attributeValue(FightCommonConstant.AttrId.ATTACK_EXT, force, actionDirection.getCurAtkHeroId());
         double defendExt = attributeValue(FightCommonConstant.AttrId.DEFEND_EXT, target, actionDirection.getCurDefHeroId());
-        double hurt2 = (attackExt - defendExt) / 3;
+        double hurt2 = attackExt - defendExt;
 
         // 基础伤害=max ( RANDIEST ( 1 , 10 ) , 伤害类型1 ) + max ( RANDIEST ( 1 , 10 ) , 伤害类型2 )
         double baseHurt = Math.max(RandomUtils.nextFloat(1f, 10f), hurt1) + Math.max(RandomUtils.nextFloat(1f, 10f), hurt2);
