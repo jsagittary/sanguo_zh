@@ -10,19 +10,19 @@ import com.gryphpoem.game.zw.pb.CommonPb;
  */
 public class LifeSimulatorInfo {
 
-    private Integer type;  // 模拟器类型
+    private int type;  // 模拟器类型
 
-    private Long stepId; // 进行到哪一步了
+    private long stepId; // 进行到哪一步了
 
-    private Integer addDate; // 城镇事件刷新的日期(秒)
+    private int addDate; // 城镇事件刷新的日期(秒)
 
-    private Integer pauseTime; // 事件暂停的时间点(秒)
+    private int pauseTime; // 事件暂停的时间点(秒)
 
-    private Integer delay; // 多久之后可玩(天)
+    private int delay; // 多久之后可玩(天)
 
-    private Integer bindType; // 1-绑定的建筑; 2-绑定的NPC
+    private int bindType; // 1-绑定的建筑; 2-绑定的NPC
 
-    private Integer bindId; // 模拟器绑定的建筑或NPC的id
+    private int bindId; // 模拟器绑定的建筑或NPC的id
 
     public LifeSimulatorInfo() {
     }
@@ -33,59 +33,59 @@ public class LifeSimulatorInfo {
         this.bindId = bindId;
     }
 
-    public Integer getType() {
+    public int getType() {
         return type;
     }
 
-    public void setType(Integer type) {
+    public void setType(int type) {
         this.type = type;
     }
 
-    public Long getStepId() {
+    public long getStepId() {
         return stepId;
     }
 
-    public void setStepId(Long stepId) {
+    public void setStepId(long stepId) {
         this.stepId = stepId;
     }
 
-    public Integer getAddDate() {
+    public int getAddDate() {
         return addDate;
     }
 
-    public void setAddDate(Integer addDate) {
+    public void setAddDate(int addDate) {
         this.addDate = addDate;
     }
 
-    public Integer getPauseTime() {
+    public int getPauseTime() {
         return pauseTime;
     }
 
-    public void setPauseTime(Integer pauseTime) {
+    public void setPauseTime(int pauseTime) {
         this.pauseTime = pauseTime;
     }
 
-    public Integer getDelay() {
+    public int getDelay() {
         return delay;
     }
 
-    public void setDelay(Integer delay) {
+    public void setDelay(int delay) {
         this.delay = delay;
     }
 
-    public Integer getBindType() {
+    public int getBindType() {
         return bindType;
     }
 
-    public void setBindType(Integer bindType) {
+    public void setBindType(int bindType) {
         this.bindType = bindType;
     }
 
-    public Integer getBindId() {
+    public int getBindId() {
         return bindId;
     }
 
-    public void setBindId(Integer bindId) {
+    public void setBindId(int bindId) {
         this.bindId = bindId;
     }
 

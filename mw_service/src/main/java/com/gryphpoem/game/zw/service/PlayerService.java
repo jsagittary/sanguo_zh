@@ -495,14 +495,14 @@ public class PlayerService implements GmCmdService {
                         // TODO 更新buff增益
                         List<List<Integer>> buff = sSimulatorChoose.getBuff();
                     }
-                    int stepId = lifeSimulatorStep.getStepId();
+                    long stepId = lifeSimulatorStep.getStepId();
                     StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
                     // 根据配置, 判断模拟器是否结束
                     if (!isEnd) {
-                        Long nextId = staticSimulatorStep.getNextId();
+                        long nextId = staticSimulatorStep.getNextId();
                         List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
                         boolean isExistForwardStep = staticChooseList.stream().anyMatch(temp -> temp.get(0) == (long) chooseId && temp.get(1) == 0L);
-                        if (nextId == null && isExistForwardStep) {
+                        if (nextId == 0L && isExistForwardStep) {
                             isEnd = true;
                         }
                     }
@@ -592,7 +592,7 @@ public class PlayerService implements GmCmdService {
                                         rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
                                         break;
                                     case 0:
-                                        rewardDataManager.checkAndSubPlayerRes(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, true, "");
+                                        rewardDataManager.subPlayerResCanSubCount(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
                                         break;
                                 }
                             }

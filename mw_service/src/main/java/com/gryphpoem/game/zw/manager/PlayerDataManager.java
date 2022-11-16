@@ -25,6 +25,8 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.Role;
 import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
@@ -370,6 +372,18 @@ public class PlayerDataManager implements PlayerDM {
         }
 
         Player player = new Player(lord, TimeHelper.getCurrentSecond());
+        // 初始化性格值
+        Map<Integer, Integer> characterData = player.getCharacterData();
+        List<StaticCharacter> staticCharacterList = StaticBuildCityDataMgr.getStaticCharacterList();
+        for (int i = 0; i < staticCharacterList.size(); i++) {
+            characterData.put(i + 1, 0);
+        }
+        // 初始化性格奖励记录
+        Map<Integer, Integer> characterRewardRecord = player.getCharacterRewardRecord();
+        List<StaticCharacterReward> staticCharacterRewardList = StaticBuildCityDataMgr.getStaticCharacterRewardList();
+        for (int i = 0; i < staticCharacterRewardList.size(); i++) {
+            characterRewardRecord.put(i + 1, 0);
+        }
         // 初始化建筑建筑信息
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         Map<Integer, List<Integer>> mapCellData = player.getMapCellData();

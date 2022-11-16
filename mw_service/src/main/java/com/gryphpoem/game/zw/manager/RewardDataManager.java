@@ -3748,6 +3748,28 @@ public class RewardDataManager {
 
     }
 
+    /**
+     * 扣除玩家可扣除数量的资源
+     *
+     * @param player
+     * @param type
+     * @param id
+     * @param num
+     * @param from
+     * @param param
+     * @throws MwException
+     */
+    public void subPlayerResCanSubCount(Player player, int type, int id, int num, AwardFrom from, Object... param) throws MwException {
+        // 检查是否足够
+        long playerResCanSubNum = getPlayerResCanSubNum(player, type, id, num);
+        // 扣除资源
+        subPlayerResHasChecked(player, type, id, (int)playerResCanSubNum, from, param);
+        ChangeInfo change = ChangeInfo.newIns();
+        change.addChangeType(type, id);
+        // 向客户端同步玩家资源数据
+        syncRoleResChanged(player, change);
+    }
+
     public void subAndSyncProp(Player player, int type, int propId, int count, AwardFrom from, Object... params) throws MwException {
         subPlayerResHasChecked(player, type, propId, count, from, params);
         ChangeInfo change = ChangeInfo.newIns();
@@ -3962,6 +3984,42 @@ public class RewardDataManager {
     }
 
     /**
+     * 获取玩家可扣减的资源数量
+     *
+     * @param player
+     * @param type
+     * @param id
+     * @param num
+     * @return
+     */
+    public long getPlayerResCanSubNum(Player player, int type, int id, int num) {
+        switch (type) {
+            case AwardType.MONEY:
+                return getCanSubMoneyNum(player, id, num);
+            case AwardType.RESOURCE:
+                return getCanSubResourceNum(player.resource, id, num);
+            case AwardType.ARMY:
+                return getCanSubArmyNum(player.resource, id, num);
+            case AwardType.PROP:
+                return getCanSubPropNum(player, id, num);
+            case AwardType.STONE:
+                return getCanSubStoneNum(player, id, num);
+            case AwardType.PLANE_CHIP:
+                return getCanSubChipNum(player, id, num);
+            case AwardType.JEWEL:
+                return getCanSubEquipJewelNum(player, id, num);
+            case AwardType.SANDTABLE_SCORE:
+                return getCanSubSandTableScoreNum(player, num);
+            case AwardType.SPECIAL:
+                return getCanSubSpecialNum(player, id, num);
+            case AwardType.HERO_FRAGMENT:
+                return getCanSubHeroFragmentNum(player, id, num);
+            default:
+                return 0L;
+        }
+    }
+
+    /**
      * 校验英雄碎片
      *
      * @param player
@@ -3976,6 +4034,18 @@ public class RewardDataManager {
             throw new MwException(GameError.NOT_ENOUGH_HERO_FRAGMENTS, String.format("player:%d, not enough hero fragments, ownNum:%d, need:%d, heroId:%d, message:%s",
                     player.roleId, ownNum, need, heroId, message));
         }
+    }
+
+    /**
+     * 获取玩家可扣减的英雄碎片数量
+     * @param player
+     * @param heroId
+     * @param need
+     * @throws MwException
+     */
+    private long getCanSubHeroFragmentNum(Player player, int heroId, long need) throws MwException {
+        Integer ownNum = player.getDrawCardData().getFragmentData().getOrDefault(heroId, 0);
+        return Math.min(ownNum, need);
     }
 
     /**
@@ -3998,6 +4068,15 @@ public class RewardDataManager {
         }
     }
 
+    private long getCanSubSpecialNum(Player player, int specialId, long need) throws MwException {
+        switch (specialId) {
+            case AwardType.Special.SEASON_TALENT_STONE:
+                return getCanSubSeasonTalentStoneNum(player, need);
+            default:
+                return 0;
+        }
+    }
+
     /**
      * 检测赛季天赋石是否足够
      *
@@ -4014,11 +4093,29 @@ public class RewardDataManager {
         }
     }
 
+    /**
+     * 获取玩家可扣减的赛季天赋石数量
+     *
+     * @param player
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    private long getCanSubSeasonTalentStoneNum(Player player, long need) throws MwException {
+        SeasonTalent talent = player.getPlayerSeasonData().getSeasonTalent();
+        int have = talent.getRemainStone();
+        return Math.min(have, need);
+    }
+
     private void checkSandTableScoreEnought(Player player, int id, int num, String... message) throws MwException {
         if (player.getSandTableScore() < num) {
             throw new MwException(GameError.SANDTABLE_CONTEST_SCORE_NOT_ENOUGHT.getCode(), message, " 沙盘演武积分不足, roleId:", player.getLordId(),
                     ", type:", id, ", need:", num, ", have:", player.getSandTableScore());
         }
+    }
+
+    private int getCanSubSandTableScoreNum(Player player, int need) throws MwException {
+        return Math.min(player.getSandTableScore(), need);
     }
 
     /**
@@ -4043,6 +4140,23 @@ public class RewardDataManager {
     }
 
     /**
+     * 获取玩家可扣减的装备宝石数量
+     * @param player
+     * @param id
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    private int getCanSubEquipJewelNum(Player player, int id, int need) throws MwException {
+        EquipJewel equipJewel = player.equipJewel.get(id);
+        if (null != equipJewel) {
+            return Math.min(equipJewel.canUseCnt(), need);
+        } else {
+            return 0;
+        }
+    }
+
+    /**
      * 检查玩家的战机碎片是否足够
      *
      * @param player
@@ -4060,6 +4174,19 @@ public class RewardDataManager {
             throw new MwException(GameError.PLANE_CHIP_NOT_ENOUGH.getCode(), message, " 战机碎片数量不足, roleId:",
                     player.roleId, ", id:", id, ", need:", count, ", have:", planeChip.getCnt());
         }
+    }
+
+    /**
+     * 获取玩家可扣减的战机碎片数量
+     * @param player
+     * @param id
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    private int getCanSubChipNum(Player player, int id, int need) throws MwException {
+        PlaneChip planeChip = player.getPlaneChip(id);
+        return Math.min(planeChip.getCnt(), need);
     }
 
     /**
@@ -4149,6 +4276,78 @@ public class RewardDataManager {
     }
 
     /**
+     * 获取玩家可扣减的货币数量
+     * @param player
+     * @param moneyType
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    public long getCanSubMoneyNum(Player player, int moneyType, int need) throws MwException {
+        Lord lord = player.lord;
+        long count = 0;
+        switch (moneyType) {
+            case AwardType.Money.EXP:
+                count = lord.getExp();
+                break;
+            case AwardType.Money.VIP_EXP:
+                count = lord.getVip();
+                break;
+            case AwardType.Money.GOLD:
+                count = lord.getGold();
+                break;
+            case AwardType.Money.ACT:
+                count = lord.getPower();
+                break;
+            case AwardType.Money.EXPLOIT:
+                count = lord.getExploit();
+                break;
+            case AwardType.Money.HERO_TOKEN:
+                count = lord.getHeroToken();
+                break;
+            case AwardType.Money.CREDIT:
+                count = lord.getCredit();
+                break;
+            case AwardType.Money.HONOR:
+                count = lord.getHonor();
+                break;
+            case AwardType.Money.GOLD_BAR:
+                count = lord.getGoldBar();
+                break;
+            case AwardType.Money.MENTOR_BILL:
+                count = player.getMixtureDataById(PlayerConstant.MENTOR_BILL);
+                break;
+            case AwardType.Money.GOLD_INGOT:
+                count = player.getMixtureDataById(PlayerConstant.GOLD_INGOT);
+                break;
+            case AwardType.Money.WAR_FIRE_COIN:
+                count = player.getMixtureDataById(PlayerConstant.WAR_FIRE_PRICE);
+                break;
+            case AwardType.Money.FISH_SCORE:
+                count = player.getFishingData().getScore();
+                break;
+            case AwardType.Money.TREASURE_WARE_GOLDEN:
+                count = player.lord.getTreasureWareGolden();
+                break;
+            case AwardType.Money.TREASURE_WARE_DUST:
+                count = player.lord.getTreasureWareDust();
+                break;
+            case AwardType.Money.TREASURE_WARE_ESSENCE:
+                count = player.lord.getTreasureWareEssence();
+                break;
+            case AwardType.Money.CROSS_WAR_FIRE_COIN:
+                count = player.getMixtureDataById(PlayerConstant.CROSS_WAR_FIRE_PRICE);
+                break;
+            case AwardType.Money.ANCIENT_BOOK:
+                count = player.lord.getAncientBook();
+                break;
+            default:
+                break;
+        }
+        return Math.min(count, need);
+    }
+
+    /**
      * 检查玩家建筑资源是否足够，如果不足，将会抛出异常
      *
      * @param resource
@@ -4189,6 +4388,41 @@ public class RewardDataManager {
         }
     }
 
+    /**
+     * 获取玩家可扣减的建筑资源数量
+     *
+     * @param resource
+     * @param resourceType
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    private long getCanSubResourceNum(Resource resource, int resourceType, long need)
+            throws MwException {
+        long count = 0;
+        switch (resourceType) {
+            case AwardType.Resource.OIL:
+                count = resource.getOil();
+                break;
+            case AwardType.Resource.ELE:
+                count = resource.getElec();
+                break;
+            case AwardType.Resource.FOOD:
+                count = resource.getFood();
+                break;
+            case AwardType.Resource.ORE:
+                count = resource.getOre();
+                break;
+            case AwardType.Resource.HUMAN:
+                count = resource.getHuman();
+                break;
+            case AwardType.Resource.URANIUM:
+                count = resource.getUranium();
+                break;
+        }
+        return Math.min(count, need);
+    }
+
     /*-----------------------------------------检测是否充足end-------------------------------------*/
 
     private void checkArmyIsEnough(Resource resource, int resourceType, long need, String... message)
@@ -4212,6 +4446,32 @@ public class RewardDataManager {
             throw new MwException(GameError.RESOURCE_NOT_ENOUGH.getCode(), message, " 资源数量不足, roleId:",
                     resource.getLordId(), ", type:", resourceType, ", need:", need, ", have:", count);
         }
+    }
+
+    /**
+     * 获取玩家可扣减的士兵数量
+     *
+     * @param resource
+     * @param resourceType
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    private long getCanSubArmyNum(Resource resource, int resourceType, long need)
+            throws MwException {
+        long count = 0;
+        switch (resourceType) {
+            case AwardType.Army.FACTORY_1_ARM:
+                count = resource.getArm1();
+                break;
+            case AwardType.Army.FACTORY_2_ARM:
+                count = resource.getArm2();
+                break;
+            case AwardType.Army.FACTORY_3_ARM:
+                count = resource.getArm3();
+                break;
+        }
+        return Math.min(count, need);
     }
 
     /*-----------------------------------------同步start-------------------------------------------*/
@@ -4240,6 +4500,24 @@ public class RewardDataManager {
     }
 
     /**
+     * 获取玩家可扣减的道具数量
+     *
+     * @param player
+     * @param propId
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    public int getCanSubPropNum(Player player, int propId, int need) throws MwException {
+        Prop prop = player.props.get(propId);
+        if (null == prop) {
+            return 0;
+        } else {
+            return Math.min(prop.getCount(), need);
+        }
+    }
+
+    /**
      * 检查玩家的宝石是否足够，如果不足，将会抛出异常
      *
      * @param player
@@ -4256,6 +4534,24 @@ public class RewardDataManager {
         if (null == stone || stone.getCnt() < count) {
             throw new MwException(GameError.STONE_NOT_ENOUGH.getCode(), message, " 宝石数量不足, roleId:", player.roleId,
                     ", id:", id, ", need:", count, ", have:", null == stone ? 0 : stone.getCnt());
+        }
+    }
+
+    /**
+     * 获取玩家可扣减的宝石数量
+     *
+     * @param player
+     * @param id
+     * @param need
+     * @return
+     * @throws MwException
+     */
+    public int getCanSubStoneNum(Player player, int id, int need) throws MwException {
+        Stone stone = player.getStoneInfo().getStones().get(id);
+        if (null == stone) {
+            return 0;
+        } else {
+            return Math.min(stone.getCnt(), need);
         }
     }
 
@@ -4617,6 +4913,9 @@ public class RewardDataManager {
     }
 
     private static final AwardFrom[] HAS_INFO2_AWARD_FROM = new AwardFrom[]{AwardFrom.TREASURE_ON_HOOK_AWARD};
+
+
+
 
     /*-----------------------------------------工具相关end-------------------------------------------*/
 }

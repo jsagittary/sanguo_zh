@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.simulator;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
@@ -83,10 +84,10 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 // TODO buff增益
                 List<List<Integer>> buff = sSimulatorChoose.getBuff();
             }
-            int stepId = lifeSimulatorStep.getStepId();
+            long stepId = lifeSimulatorStep.getStepId();
             StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
             // 根据配置, 如果没有下一步, 则模拟器结束
-            Long nextId = staticSimulatorStep.getNextId();
+            long nextId = staticSimulatorStep.getNextId();
             List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
             List<Long> playerChoose = new ArrayList<>();
             if (CheckNull.nonEmpty(staticChooseList)) {
@@ -96,7 +97,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 nextId = playerChoose.get(1);
             }
             if (!isEnd) {
-                isEnd = nextId == null;
+                isEnd = nextId == 0L;
             }
             // 如果该步有延时执行, 新增模拟器器延时任务
             delay = staticSimulatorStep.getDelay();
@@ -130,9 +131,9 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 player.setCharacterRewardRecord(new HashMap<>(8));
             }
             for (List<Integer> characterChange : finalCharacterFixList) {
-                Integer index = characterChange.get(0);
-                Integer value = characterChange.get(1);
-                Integer addOrSub = characterChange.get(0);
+                int index = characterChange.get(0);
+                int value = characterChange.get(1);
+                int addOrSub = characterChange.get(0);
                 updateCharacterData(player.getCharacterData(), index, value, addOrSub);
             }
             checkAndSendCharacterReward(player);
@@ -142,16 +143,17 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
         // 更新对应奖励变化
         if (CheckNull.nonEmpty(finalRewardList)) {
             for (List<Integer> reward : finalRewardList) {
-                Integer awardType = reward.get(0);
-                Integer awardId = reward.get(1);
-                Integer awardCount = reward.get(2);
-                Integer addOrSub = reward.get(3);
+                int awardType = reward.get(0);
+                int awardId = reward.get(1);
+                int awardCount = reward.get(2);
+                int addOrSub = reward.get(3);
                 switch (addOrSub) {
                     case 1:
                         rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
                         break;
                     case 0:
-                        rewardDataManager.checkAndSubPlayerRes(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, true, "");
+                        // 如果资源不足则扣减至0
+                        rewardDataManager.subPlayerResCanSubCount(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
                         break;
                 }
             }
@@ -172,7 +174,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
      * @param addOrSub
      */
     public void updateCharacterData(Map<Integer, Integer> characterData, int index, int value, int addOrSub) {
-        Integer oldValue = characterData.get(index);
+        int oldValue = characterData.get(index);
         List<Integer> characterRange = StaticBuildCityDataMgr.getCharacterRange(index);
         int minCharacterValue = 0;
         int maxCharacterValue = 0;
@@ -204,15 +206,15 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
         Map<Integer, Integer> characterRewardRecord = player.getCharacterRewardRecord();
         List<StaticCharacterReward> staticCharacterRewardList = StaticBuildCityDataMgr.getStaticCharacterRewardList();
         for (StaticCharacterReward staticCharacterReward : staticCharacterRewardList) {
-            Integer characterRewardId = staticCharacterReward.getId();
+            int characterRewardId = staticCharacterReward.getId();
             // 已获取奖励不再重复获取
             if (characterRewardRecord.get(characterRewardId) == 1) {
                 continue;
             }
             boolean checkRewardCondition = true;
             for (List<Integer> need : staticCharacterReward.getNeed()) {
-                Integer index = need.get(0);
-                Integer needValue = need.get(1);
+                int index = need.get(0);
+                int needValue = need.get(1);
                 if (characterData.get(index) < needValue) {
                     checkRewardCondition = false;
                     break;
@@ -247,9 +249,9 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
         List<LifeSimulatorInfo> lifeSimulatorInfoList = cityEvent.getLifeSimulatorInfoList();
         List<Integer> cityEventRefreshConfig = Constant.CITY_EVENT_REFRESH_CONFIG;
         // 获取当前周期开启时间, 当前周期结束时间, 周期次数
-        Integer latestEndTime = cityEvent.getEndTime();
-        Integer totalCountCurPeriod = cityEvent.getTotalCountCurPeriod();
-        Integer curPeriodCount = cityEvent.getPeriodCount();
+        int latestEndTime = cityEvent.getEndTime();
+        int totalCountCurPeriod = cityEvent.getTotalCountCurPeriod();
+        int curPeriodCount = cityEvent.getPeriodCount();
 
         int currentSecond = TimeHelper.getCurrentSecond();
         // 开启新一轮, 重新设置周期开始时间、结束时间, 更新周期次数
@@ -269,7 +271,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
 
         // 随机城镇事件
         List<StaticSimCity> staticSimCityList = StaticBuildCityDataMgr.getCanRandomSimCityList(player);
-        if (staticSimCityList.size() > 0) {
+        if (CheckNull.nonEmpty(staticSimCityList)) {
             int random = RandomHelper.randomInSize(staticSimCityList.size());
             if (random > 1) {
                 StaticSimCity staticSimCity = staticSimCityList.get(random - 1);
@@ -279,9 +281,11 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 lifeSimulatorInfo.setPauseTime(0);
                 lifeSimulatorInfo.setDelay(0);
                 lifeSimulatorInfoList.add(lifeSimulatorInfo);
+                LogUtil.common(String.format("转点刷新玩家城镇事件成功, roleId:%s, simulatorType:%s", player.roleId, staticSimCity.getType()));
                 cityEvent.setTotalCountCurPeriod(totalCountCurPeriod + 1);
                 // 向客户端同步新增的模拟器
                 SyncNewSimulatorToPlayer(player, lifeSimulatorInfo, 3);
+                LogUtil.common(String.format("向客户端同步新增可玩的模拟器成功, roleId:%s, simulatorType:%s", player.roleId, lifeSimulatorInfo.getType()));
             }
         }
     }
@@ -299,7 +303,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
     }*/
 
     /**
-     * 模拟器延时结束后向客户端同步
+     * 向客户端同步新增可玩的模拟器
      *
      * @param player
      */

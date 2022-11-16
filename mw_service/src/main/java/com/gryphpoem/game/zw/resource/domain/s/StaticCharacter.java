@@ -10,15 +10,15 @@ import java.util.List;
  */
 public class StaticCharacter {
 
-    private Integer id;
+    private int id;
 
     private List<Integer> range;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

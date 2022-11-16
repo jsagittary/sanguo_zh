@@ -8,17 +8,17 @@ import java.util.List;
  */
 public class StaticCharacterReward {
 
-    private Integer id;
+    private int id;
 
     private List<List<Integer>> need;
 
     private List<Integer> reward;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
