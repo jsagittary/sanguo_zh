@@ -155,6 +155,7 @@ import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.EconomicOrder;
 import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
@@ -1037,12 +1038,18 @@ public class Player {
         this.happiness = happiness;
     }
 
-    // 增加幸福度
+    /**
+     * 增加幸福度
+     * @param count
+     */
     public void addHappiness(int count) {
         this.happiness += count;
     }
 
-    // 减少幸福度
+    /**
+     * 减少幸福度
+     * @param count
+     */
     public void subHappiness(int count) {
         this.happiness -= count;
     }
@@ -1073,6 +1080,16 @@ public class Player {
         this.unlockEconomicCrops = unlockEconomicCrops;
     }
 
+    /**
+     * 可提交的订单
+     */
+    public Map<Integer, EconomicOrder> economicOrderData = new HashMap<>();
+
+    /**
+     *
+     *
+     */
+    public Map<Integer, EconomicOrder> preDisplayEconomicOrder = new HashMap<>();
 
     /**
      * 是否第一次打造宝具
