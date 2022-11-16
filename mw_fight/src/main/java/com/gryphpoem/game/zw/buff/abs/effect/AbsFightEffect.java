@@ -42,7 +42,8 @@ public abstract class AbsFightEffect implements IFightEffect {
         ActionDirection actionDirection = new ActionDirection();
         FightUtil.buffEffectActionDirection(fightBuff, contextHolder, atkObj, actionDirection, true);
         FightUtil.buffEffectActionDirection(fightBuff, contextHolder, defObj, actionDirection, false);
-        actionDirection.setSkill((SimpleHeroSkill) fightBuff.getSkill());
+        if (Objects.nonNull(fightBuff))
+            actionDirection.setSkill((SimpleHeroSkill) fightBuff.getSkill());
         if (CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             LogUtil.error("fightBuff: ", fightBuff, ", effectConfig: ", effectConfig, ", 被执行人为空");
             return null;
@@ -219,17 +220,16 @@ public abstract class AbsFightEffect implements IFightEffect {
      * @param actionType
      */
     protected void addEffectPb(FightContextHolder contextHolder, IFightBuff fightBuff, int effectLogicId, int timing, int actionType, Object... params) {
-        List<BattlePb.BaseEffectAction> actionList = FightPbUtil.curEffectActionList(contextHolder);
         BattlePb.CommonEffectAction.Builder builder = BattlePb.CommonEffectAction.newBuilder();
         if (actionType == FightConstant.EffectStatus.APPEAR)
-            addPbValue(builder, timing, params);
+            addPbValue(builder, params);
 
         SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
         BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.CommonEffectAction.effect, builder.build(), effectLogicId,
                 FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()),
                 FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.getForceId()), timing, actionType,
                 simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
-        actionList.add(basePb.build());
+        FightPbUtil.addEffectActionList(contextHolder, basePb);
     }
 
     /**

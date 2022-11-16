@@ -109,12 +109,11 @@ public class PurifyEffectImpl extends AbsFightEffect {
      * @param timing
      */
     private void addEffectPb(IFightBuff fightBuff, FightContextHolder contextHolder, int effectLogicId, int timing) {
-        List<BattlePb.BaseEffectAction> actionList = FightPbUtil.curEffectActionList(contextHolder);
         BattlePb.CommonEffectAction.Builder builder = BattlePb.CommonEffectAction.newBuilder();
         SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
         BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.CommonEffectAction.effect, builder.build(), effectLogicId,
                 FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()), FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.
                         getForceId()), timing, FightConstant.EffectStatus.APPEAR, simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
-        actionList.add(basePb.build());
+        FightPbUtil.addEffectActionList(contextHolder, basePb);
     }
 }

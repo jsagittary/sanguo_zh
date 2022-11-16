@@ -115,6 +115,7 @@ public class FightLogic {
         contextHolder.getActionDirection().setDef(target);
         contextHolder.setCurAtkHeroId(force.id);
         // 主将释放登场技能
+        contextHolder.getInitSkillActionPb();
         List<SimpleHeroSkill> skillList = force.skillList.stream().filter(
                 skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
@@ -263,7 +264,6 @@ public class FightLogic {
                 // 释放技能
                 contextHolder.getInitSkillActionPb();
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
-                contextHolder.getRoundActionPb().setSkill(contextHolder.getCurSkillActionPb().build());
                 contextHolder.clearCurSkillActionPb();
 
                 // 清除没有作用次数的buff
@@ -299,10 +299,10 @@ public class FightLogic {
             if (force.alive() && target.alive()) {
                 BattlePb.BattleRegroupStage.Builder regroupPb = BattlePb.BattleRegroupStage.newBuilder();
                 if (force.switchPlatoon()) {
-                    regroupPb.addBackToBattle(FightPbUtil.createDataInt(force.curLine, force.count));
+                    regroupPb.addBackToBattle(FightPbUtil.create3DataInt(FightConstant.ForceSide.ATTACKER, force.curLine, force.count));
                 }
                 if (target.switchPlatoon()) {
-                    regroupPb.addBackToBattle(FightPbUtil.createDataInt(target.curLine, target.count));
+                    regroupPb.addBackToBattle(FightPbUtil.create3DataInt(FightConstant.ForceSide.DEFENDER, target.curLine, target.count));
                 }
                 if (regroupPb.getBackToBattleList().size() > 0) {
                     contextHolder.getCurBothBattleEntityPb().addStage(FightPbUtil.createBaseBattleStagePb(BattlePb.BattleStageDefine.REGROUP_VALUE,

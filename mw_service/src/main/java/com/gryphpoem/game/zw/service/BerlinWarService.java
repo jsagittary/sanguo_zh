@@ -2324,7 +2324,7 @@ public class BerlinWarService {
                 hero = player.heros.get(force.id);
             }
             String owner = playerDataManager.getNickByLordId(force.ownerId);
-            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force.id, owner, 0, 0, force.lost, hero);
+            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force, owner, 0, 0, force.lost);
             if (isAttacker) {
                 rpt.addAtkHero(rptHero);
             } else {

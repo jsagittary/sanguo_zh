@@ -424,7 +424,7 @@ public class CombatService {
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
@@ -888,7 +888,7 @@ public class CombatService {
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
@@ -989,7 +989,7 @@ public class CombatService {
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
@@ -1110,8 +1110,8 @@ public class CombatService {
                     if (hero.getLevel() < roleLv) {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
-                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
+//                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
+//                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }
@@ -1300,8 +1300,8 @@ public class CombatService {
                     if (hero.getLevel() < roleLv) {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
-                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
+//                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
+//                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }
@@ -1596,7 +1596,7 @@ public class CombatService {
         builder.setRecord(fightLogic.generateRecord());
         builder.addAllAtkHero(fightSettleLogic.stoneCombatCreateRptHero(player, attacker.forces));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         return builder.build();
     }
 

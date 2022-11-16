@@ -83,9 +83,11 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
                     battleLogic.skillAttack(actionDirection, contextHolder, effectConfig_, contextHolder.getBattleType());
 
                     if (timing != FightConstant.BuffEffectTiming.ACTIVE_RELEASE) {
+                        SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
                         // 将当前动作添加进嵌套动作里
                         contextHolder.getCurMultiEffectActionPb().addAction(FightPbUtil.createBaseActionPb(BattlePb.SkillAction.action,
-                                contextHolder.getCurEffectSkillActionPb().build(), BattlePb.ActionTypeDefine.SKILL_ATTACK_VALUE, actionAtkId));
+                                contextHolder.getCurEffectSkillActionPb().setSkillId(simpleHeroSkill.getS_skill().getSkillId()).build(),
+                                BattlePb.ActionTypeDefine.SKILL_ATTACK_VALUE, actionAtkId));
                     }
                 }
             }

@@ -24,9 +24,9 @@ public class HttpWork extends AbstractWork {
                 LogUtil.error("请求账号服获取的数据为空[" + this.accountServerUrl + "]msg-->" + msg);
                 return;
             }
-            int len = MessageUtil.getInt(result);
+            int len = MessageUtil.getShort(result, 0);
             byte[] data = new byte[len];
-            System.arraycopy(result, 4, data, 0, len);
+            System.arraycopy(result, 2, data, 0, len);
 
             Base rs = Base.parseFrom(data, DataResource.getRegistry());
             httpServer.doPublicCommand(rs);

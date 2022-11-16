@@ -156,7 +156,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public void releaseSkill(FightContextHolder contextHolder, Object... params) {
         // 初始化技能pb
-        contextHolder.getInitSkillActionPb().setSkillId(this.s_skill.getSkillId());
+        contextHolder.getCurSkillActionPb().setSkillId(this.s_skill.getSkillId());
         super.releaseSkill(contextHolder, params);
         if (!this.isOnStageSkill) {
             contextHolder.getCurSkillActionPb().
@@ -167,6 +167,8 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
         if (this.isOnStageSkill) {
             // 登场技能
             contextHolder.getCurPreparationStagePb().addSkill(contextHolder.getCurSkillActionPb().build());
+        } else {
+            contextHolder.getRoundActionPb().setSkill(contextHolder.getCurSkillActionPb().build());
         }
 
         this.setReleaseCount(this.getReleaseCount() + 1);

@@ -1400,15 +1400,16 @@ public class SandTableContestService {
     }
 
     private CommonPb.RptHero buildRptHero(FightReplay.FightHeroDetail detail) {
-        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
-        builder.setHeroId(detail.heroId);
-        builder.setHp(detail.hp);
-        builder.setKill(detail.kill);
-        builder.setLost(detail.lost);
-        builder.setType(0);
-        builder.setAward(0);
-        builder.setHeroDecorated(detail.heroDecorated);
-        return builder.build();
+        return null;
+//        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
+//        builder.setHeroId(detail.heroId);
+//        builder.setHp(detail.hp);
+//        builder.setKill(detail.kill);
+//        builder.setLost(detail.lost);
+//        builder.setType(0);
+//        builder.setAward(0);
+//        builder.setHeroDecorated(detail.heroDecorated);
+//        return builder.build();
     }
 
     public GamePb4.SandTableGetLinePlayersRs getLinePlayers(long roleId, int line) throws MwException {

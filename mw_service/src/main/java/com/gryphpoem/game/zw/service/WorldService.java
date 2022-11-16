@@ -4514,16 +4514,10 @@ public class WorldService {
             Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
             if (CheckNull.isNull(tmpP)) {
                 rpt.addDefHero(
-                        PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, force.id, null, 0, 0, force.lost));
+                        PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, force, null, 0, 0, force.totalLost));
             } else {
-                Hero hero = tmpP.heros.get(force.id);
-                if (CheckNull.isNull(hero)) {
-                    rpt.addDefHero(
-                            PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, force.id, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
-                } else {
-                    rpt.addDefHero(
-                            PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, hero, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
-                }
+                rpt.addDefHero(
+                        PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, award, force, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.totalLost));
             }
         }
     }
@@ -4537,16 +4531,10 @@ public class WorldService {
             Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
             if (CheckNull.isNull(tmpP)) {
                 rpt.addDefHero(
-                        PbHelper.createRptHero(roleType, force.killed, award, force.id, null, 0, 0, force.lost));
+                        PbHelper.createRptHero(roleType, force.killed, award, force, null, 0, 0, force.totalLost));
             } else {
-                Hero hero = tmpP.heros.get(force.id);
-                if (CheckNull.isNull(hero)) {
-                    rpt.addDefHero(
-                            PbHelper.createRptHero(roleType, force.killed, award, force.id, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
-                } else {
-                    rpt.addDefHero(
-                            PbHelper.createRptHero(roleType, force.killed, award, hero, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.lost));
-                }
+                rpt.addDefHero(
+                        PbHelper.createRptHero(roleType, force.killed, award, force, playerDataManager.getNickByLordId(force.ownerId), 0, 0, force.totalLost));
             }
         }
     }

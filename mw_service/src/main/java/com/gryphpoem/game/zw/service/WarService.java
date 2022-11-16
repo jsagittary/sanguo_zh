@@ -2349,7 +2349,7 @@ public class WarService {
                     }
                 }
             }
-            RptHero rptHero = PbHelper.createRptHero(type, kill, award, heroId, owner, lv, addExp, lost, hero);
+            RptHero rptHero = PbHelper.createRptHero(type, kill, award, force, owner, lv, addExp, lost);
             if (isAttacker) {
                 rpt.addAtkHero(rptHero);
             } else {

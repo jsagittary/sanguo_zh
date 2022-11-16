@@ -260,7 +260,7 @@ public class Force {
      */
     public void subHp(Force force) {
         LogUtil.fight(String.format("进攻方角色id: %d, 防守方角色id: %d, 防守方当前兵排剩余血量: %d, 当前兵排: %d, 最大兵排: %d, <<<<<<战斗最终伤害>>>>>>: %d",
-                force == null ? 0 : force.ownerId, this.ownerId, count, curLine + 1, maxLine, lost));
+                force == null ? 0 : force.ownerId, this.ownerId, count, curLine, maxLine, lost));
 
         if (count <= lost) {
             count = 0;
@@ -286,7 +286,12 @@ public class Force {
         }
 
         ++curLine;
+        if (curLine >= maxLine)
+            return false;
         count = lead;
+
+        LogUtil.fight(String.format("防守方角色id: %d, 当前兵排: %d, 最大兵排: %d, <<<<<<切换兵排>>>>>>",
+                this.ownerId, count, curLine, maxLine));
         return true;
     }
 

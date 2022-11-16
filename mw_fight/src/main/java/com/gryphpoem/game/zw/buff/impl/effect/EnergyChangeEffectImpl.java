@@ -122,7 +122,6 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
      * @param curValue
      */
     private void addEffectPb(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig_, int effectLogicId, int timing, int changeValue, int curValue) {
-        List<BattlePb.BaseEffectAction> actionList = FightPbUtil.curEffectActionList(contextHolder);
         BattlePb.CommonEffectAction.Builder builder = BattlePb.CommonEffectAction.newBuilder();
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, effectConfig_.get(4)));
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, effectConfig_.get(5)));
@@ -132,6 +131,6 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
         BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.CommonEffectAction.effect, builder.build(), effectLogicId,
                 FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()), FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.
                         getForceId()), timing, FightConstant.EffectStatus.APPEAR, simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
-        actionList.add(basePb.build());
+        FightPbUtil.addEffectActionList(contextHolder, basePb);
     }
 }

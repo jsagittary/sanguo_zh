@@ -30,9 +30,9 @@ public class FightPbUtil {
     public static <T> BattlePb.BaseEffectAction.Builder createBaseEffectActionPb(GeneratedMessage.GeneratedExtension<BattlePb.BaseEffectAction, T> ext, T msg,
                                                                                  int effectLogicId, int buffGiver, int bufferOwner, int timing, int actionType,
                                                                                  boolean isOnStageSkill, int skillId) {
-        BattlePb.BaseEffectAction.Builder builder = BattlePb.BaseEffectAction.newBuilder().setEffectLogicId(effectLogicId).setActors(bufferOwner);
+        BattlePb.BaseEffectAction.Builder builder = BattlePb.BaseEffectAction.newBuilder().setEffectLogicId(effectLogicId).setActors(bufferOwner).setActionType(actionType);
         if (actionType == FightConstant.EffectStatus.APPEAR) {
-            builder.setEffectSource(buffGiver).setActionType(actionType).setTiming(timing).setOnStageSkill(isOnStageSkill).setSkillId(skillId);
+            builder.setEffectSource(buffGiver).setTiming(timing).setOnStageSkill(isOnStageSkill).setSkillId(skillId);
         }
         if (msg != null) {
             builder.setExtension(ext, msg);
@@ -136,6 +136,10 @@ public class FightPbUtil {
         return BattlePb.DataInt.newBuilder().setV1(v1).setV2(v2).build();
     }
 
+    public static BattlePb.Data3Int create3DataInt(int v1, int v2, int v3) {
+        return BattlePb.Data3Int.newBuilder().setV1(v1).setV2(v2).setV3(v3).build();
+    }
+
     public static int getActingSize(Force force, int heroId) {
         if (force.fighter.isAttacker) {
             if (force.id == heroId) {
@@ -158,26 +162,28 @@ public class FightPbUtil {
      * @param contextHolder
      * @return
      */
-    public static List<BattlePb.BaseEffectAction> curEffectActionList(FightContextHolder contextHolder) {
+    public static void addEffectActionList(FightContextHolder contextHolder, BattlePb.BaseEffectAction.Builder basePb) {
         if (contextHolder.getCurEffectSkillActionPb() != null) {
-            return contextHolder.getCurEffectSkillActionPb().getEffectActionList();
+            contextHolder.getCurEffectSkillActionPb().addEffectAction(basePb.build());
+            return;
         }
         if (contextHolder.getCurEffectAttackActionPb() != null) {
-            return contextHolder.getCurEffectAttackActionPb().getEffectActionList();
+            contextHolder.getCurEffectAttackActionPb().addEffectAction(basePb.build());
+            return;
         }
 
-        List<BattlePb.BaseEffectAction> actionList = null;
         if (contextHolder.getCurSkillActionPb() != null) {
-            actionList = contextHolder.getCurSkillActionPb().getEffectActionList();
+            contextHolder.getCurSkillActionPb().addEffectAction(basePb.build());
+            return;
         }
         if (contextHolder.getCurAttackActionPb() != null) {
-            actionList = contextHolder.getCurAttackActionPb().getEffectActionList();
+            contextHolder.getCurAttackActionPb().addEffectAction(basePb.build());
+            return;
         }
 
-        if (CheckNull.isNull(actionList) && contextHolder.getRoundActionPb() != null) {
-            actionList = contextHolder.getRoundActionPb().getEffectActionList();
+        if (contextHolder.getRoundActionPb() != null) {
+            contextHolder.getRoundActionPb().addEffectAction(basePb.build());
         }
-        return actionList;
     }
 
     /**

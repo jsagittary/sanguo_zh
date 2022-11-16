@@ -311,8 +311,8 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.addAllDefHero(defender.forces.stream().map(force -> {
             Hero hero = challengingPlayer.heros.get(force.id);
             if (CheckNull.isNull(hero))
-                return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost);
-            return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, hero, null, 0, 0, force.totalLost);
+                return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost);
+            return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost);
         }).collect(Collectors.toList()));
         if (Objects.nonNull(awards)) {
             builder.addAllAward(awards);

@@ -166,7 +166,7 @@ public class TreasureCombatService implements GmCmdService {
             builder.setRecord(fightLogic.generateRecord());
             builder.setChallengePlayer(treasureChallengePlayerService.getChallengeData(player));
             builder.addAllAtkHero(fightSettleLogic.stoneCombatCreateRptHero(player, attacker.forces));
-            builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+            builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         } else if (wipe == 2) {
             checkOpenNextSection(player, treasureCombat);
             Integer nextSectionId = StaticTreasureWareDataMgr.getNextSectionId(treasureCombat.getSectionId());

@@ -87,8 +87,8 @@ public class FightSettleLogic {
                     info.addChangeType(AwardType.MONEY, AwardType.Money.EXPLOIT);
                 }
 
-                rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, count, force.id,
-                        player.lord.getNick(), hero.getLevel(), addExp, force.lost, hero));
+                rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, count, force,
+                        player.lord.getNick(), hero.getLevel(), addExp, force.totalLost));
             }
             rewardDataManager.syncRoleResChanged(player, info);
         }
@@ -126,9 +126,10 @@ public class FightSettleLogic {
                 addExp *= num; // 活动翻倍
                 addExp = heroService.addHeroExp(hero, addExp, roleLv, player);
             }
-
-            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                    hero.getLevel(), addExp, force.lost, hero));
+            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force,
+                    player.lord.getNick(), hero.getLevel(), addExp, force.totalLost));
+            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force, player.lord.getNick(),
+                    hero.getLevel(), addExp, force.totalLost));
         }
         return rptList;
     }
@@ -205,8 +206,8 @@ public class FightSettleLogic {
 
             LogUtil.debug("end 副本将领经验奖励结算逻辑===" + heroExp);
 
-            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                    hero.getLevel(), heroExp, force.totalLost, hero));
+            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force, player.lord.getNick(),
+                    hero.getLevel(), heroExp, force.totalLost));
         }
         return rptList;
     }
@@ -230,8 +231,8 @@ public class FightSettleLogic {
                 LogUtil.error("副本将领经验结算，将领不存在, roleId:", player.roleId, ", heroId:", force.id);
                 continue;
             }
-            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id, player.lord.getNick(),
-                    hero.getLevel(), 0, force.totalLost, hero));
+            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force, player.lord.getNick(),
+                    hero.getLevel(), 0, force.totalLost));
         }
         return rptList;
     }
@@ -254,8 +255,8 @@ public class FightSettleLogic {
                         LogUtil.error("副本将领经验结算，将领不存在, roleId:", player.roleId, ", heroId:", force.id);
                         continue;
                     }
-                    rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force.id,
-                            player.lord.getNick(), hero.getLevel(), 0, force.lost, hero));
+                    rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force,
+                            player.lord.getNick(), hero.getLevel(), 0, force.lost));
                 }
             }
         }

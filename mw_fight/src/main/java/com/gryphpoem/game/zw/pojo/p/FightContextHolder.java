@@ -286,12 +286,9 @@ public class FightContextHolder {
     }
 
     public BattlePb.BattlePreparationStage.Builder getInitPreparationStagePb(Force atk, Force def) {
-        if (LOCAL.get().getPreparationStagePb() == null) {
-            LOCAL.get().setPreparationStagePb(FightPbUtil.createBattlePreparationStagePb(atk, def));
-        } else {
+        if (LOCAL.get().getPreparationStagePb() != null)
             LOCAL.get().getPreparationStagePb().clear();
-        }
-
+        LOCAL.get().setPreparationStagePb(FightPbUtil.createBattlePreparationStagePb(atk, def));
         return LOCAL.get().getPreparationStagePb();
     }
 

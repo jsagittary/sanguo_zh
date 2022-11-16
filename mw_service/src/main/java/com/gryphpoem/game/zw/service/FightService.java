@@ -1532,7 +1532,7 @@ public class FightService {
             lv = hero.getLevel();
             heroDecorated = hero.getDecorated();
         }
-        CommonPb.RptHero rptHero = PbHelper.createRptHero(type, kill, 0, heroId, owner, lv, 0, lost, hero);
+        CommonPb.RptHero rptHero = PbHelper.createRptHero(type, kill, 0, force, owner, lv, 0, lost);
         return rptHero;
     }
 
@@ -1576,6 +1576,6 @@ public class FightService {
         int exploit = (int) (force.totalLost * 0.1f);
         Player player = playerDataManager.getPlayer(force.ownerId);
         warService.addExploit(player, exploit, changeInfo, awardFrom);
-        return PbHelper.createRptHero(force.roleType, force.killed, exploit, force.id, player.lord.getNick(), player.lord.getLevel(), 0, force.totalLost, player.heros.get(force.id));
+        return PbHelper.createRptHero(force.roleType, force.killed, exploit, force, player.lord.getNick(), player.lord.getLevel(), 0, force.totalLost);
     }
 }

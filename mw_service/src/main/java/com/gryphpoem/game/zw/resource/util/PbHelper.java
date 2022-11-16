@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.resource.util;
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.rank.RankItem;
@@ -1257,8 +1258,22 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.RptBattleEntity createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
-                                                         int addExp, int lost, Hero hero, int battleHeroType) {
+    /**
+     * 创建主将战斗实体
+     *
+     * @param type
+     * @param kill
+     * @param award
+     * @param heroId
+     * @param owner
+     * @param lv
+     * @param addExp
+     * @param lost
+     * @param hero
+     * @return
+     */
+    public static CommonPb.RptBattleEntity createChiefBattleEntity(int type, int kill, int award, int heroId, String owner, int lv,
+                                                                   int addExp, int lost, Hero hero) {
         CommonPb.RptBattleEntity.Builder builder = CommonPb.RptBattleEntity.newBuilder();
         builder.setType(type);
         builder.setKill(kill);
@@ -1283,18 +1298,95 @@ public class PbHelper {
                 builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
             }
         }
-        return builder.setBattleHeroType(battleHeroType).build();
+        return builder.setBattleHeroType(FightConstant.HeroType.PRINCIPAL_HERO).build();
     }
 
-    public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,
-                                                 int addExp, int lost) {
-        if (hero instanceof Integer) {
-            Integer heroId = (Integer) hero;
-            return createRptHero(type, kill, award, CheckNull.isNull(heroId) ? 0 : heroId, owner, lv, addExp, lost, null);
-        } else {
-            Hero hero_ = (Hero) hero;
-            return createRptHero(type, kill, award, CheckNull.isNull(hero_) ? 0 : hero_.getHeroId(), owner, lv, addExp, lost, hero_);
+    /**
+     * 创建副将战斗实体
+     *
+     * @param type
+     * @param heroId
+     * @param owner
+     * @param lv
+     * @param addExp
+     * @param hero
+     * @return
+     */
+    public static CommonPb.RptBattleEntity createAssBattleEntity(int type, int heroId, String owner, int lv,
+                                                                 int addExp, Hero hero) {
+        CommonPb.RptBattleEntity.Builder builder = CommonPb.RptBattleEntity.newBuilder();
+        builder.setType(type);
+        if (heroId > 0) {
+            builder.setHeroId(heroId);
         }
+        if (null != owner) {
+            builder.setOwner(owner);
+        }
+        if (lv > 0) {
+            builder.setLv(lv);
+        }
+        if (addExp > 0) {
+            builder.setExp(addExp);
+        }
+        builder.setHeroDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        if (Objects.nonNull(hero)) {
+            builder.setGradeKeyId(hero.getGradeKeyId());
+            if (!ObjectUtils.isEmpty(hero.getAttr())) {
+                builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
+            }
+        }
+        return builder.setBattleHeroType(FightConstant.HeroType.DEPUTY_HERO).build();
+    }
+
+//    public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,
+//                                                 int addExp, int lost) {
+//        if (hero instanceof Integer) {
+//            Integer heroId = (Integer) hero;
+//            return createRptHero(type, kill, award, CheckNull.isNull(heroId) ? 0 : heroId, owner, lv, addExp, lost, null);
+//        } else {
+//            Hero hero_ = (Hero) hero;
+//            return createRptHero(type, kill, award, CheckNull.isNull(hero_) ? 0 : hero_.getHeroId(), owner, lv, addExp, lost, hero_);
+//        }
+//    }
+
+    public static CommonPb.RptHero createRptHero(int type, int kill, int award, com.gryphpoem.game.zw.pojo.p.Force force, String owner, int lv,
+                                                 int addExp, int lost) {
+        if (CheckNull.isNull(force)) return null;
+
+        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
+        if (force.ownerId <= 0l) {
+            // 未初始化玩家id, 则为副本武将
+            if (force.id > 0) {
+                CommonPb.RptBattleEntity battleEntityPb = createChiefBattleEntity(type, kill, award, force.id, owner, lv,
+                        addExp, lost, null);
+                builder.addEntity(battleEntityPb);
+            }
+            if (CheckNull.nonEmpty(force.assistantHeroList)) {
+                force.assistantHeroList.forEach(ass -> {
+                    CommonPb.RptBattleEntity battleEntityPb = createAssBattleEntity(type, ass.getHeroId(), owner, lv,
+                            addExp, null);
+                    builder.addEntity(battleEntityPb);
+                });
+            }
+        } else {
+            Player player = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
+            if (CheckNull.isNull(player)) return null;
+            Hero hero = player.heros.get(force.id);
+            CommonPb.RptBattleEntity battleEntityPb = createChiefBattleEntity(type, kill, award, force.id, owner, lv,
+                    addExp, lost, hero);
+            builder.addEntity(battleEntityPb);
+
+            if (CheckNull.nonEmpty(force.assistantHeroList)) {
+                force.assistantHeroList.forEach(ass -> {
+                    Hero hero_ = player.heros.get(ass.getHeroId());
+                    CommonPb.RptBattleEntity battleEntityPb_ = createAssBattleEntity(type, ass.getHeroId(), owner, lv,
+                            addExp, hero_);
+                    builder.addEntity(battleEntityPb_);
+                });
+            }
+        }
+
+        return builder.build();
     }
 
     public static CommonPb.Mail saveMailPb(Mail mail, Player player) {
