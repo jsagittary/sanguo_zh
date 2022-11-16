@@ -141,6 +141,8 @@ public class FightLogic {
                 });
             });
         }
+        // 清除当前技能pb
+        contextHolder.clearCurSkillActionPb();
     }
 
     /**

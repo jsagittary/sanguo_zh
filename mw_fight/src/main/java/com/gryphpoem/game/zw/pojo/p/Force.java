@@ -284,10 +284,11 @@ public class Force {
             return false;
         }
 
-        if (++curLine > maxLine)
+        if (curLine + 1 > maxLine)
             return false;
         count = lead;
-
+        this.curLine++;
+        
         LogUtil.fight(String.format("防守方角色id: %d, 当前兵排: %d, 最大兵排: %d, <<<<<<切换兵排>>>>>>",
                 this.ownerId, count, curLine, maxLine));
         return true;
