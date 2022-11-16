@@ -263,9 +263,8 @@ public class Force {
                 force == null ? 0 : force.ownerId, this.ownerId, count, curLine, maxLine, lost));
 
         if (count <= lost) {
-            count = 0;
             hp -= count;
-            if (hp < 0) hp = 0;
+            count = 0;
         } else {
             count -= lost;
             hp -= lost;
@@ -285,8 +284,7 @@ public class Force {
             return false;
         }
 
-        ++curLine;
-        if (curLine >= maxLine)
+        if (++curLine > maxLine)
             return false;
         count = lead;
 
