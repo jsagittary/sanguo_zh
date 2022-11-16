@@ -3,12 +3,15 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
+import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.BuildingBase;
 import com.gryphpoem.game.zw.pb.CommonPb.OffLineBuild;
+import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.OnOffAutoBuildRs;
@@ -19,7 +22,9 @@ import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
+import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
@@ -28,6 +33,7 @@ import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
+import com.gryphpoem.game.zw.service.buildHomeCity.GainEconomicCropDelayRun;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +49,7 @@ import java.util.stream.Collectors;
  * @author tyler
  */
 @Service
-public class BuildingService {
+public class BuildingService implements DelayInvokeEnvironment {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -125,106 +131,257 @@ public class BuildingService {
             // 先更新一下所有建筑的解锁状态
             buildingDataManager.updateBuildingLockState(player);
             buildingDataManager.refreshSourceData(player);
+            Map<Integer, BuildingState> buildingData = player.getBuildingData();
 
             GetBuildingRs.Builder builder = GetBuildingRs.newBuilder();
             BuildingBase.Builder buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.COMMAND).setType(BuildingType.COMMAND).setLv(building.getCommand())
+            buildingBase.setId(BuildingType.COMMAND)
+                    .setType(BuildingType.COMMAND)
+                    .setLv(building.getCommand())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.COMMAND));
+            if (buildingData != null && buildingData.get(BuildingType.COMMAND) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.COMMAND).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.COMMAND).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.COMMAND).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.TECH).setType(BuildingType.TECH).setLv(building.getTech())
+            buildingBase.setId(BuildingType.TECH)
+                    .setType(BuildingType.TECH)
+                    .setLv(building.getTech())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.TECH));
+            if (buildingData != null && buildingData.get(BuildingType.TECH) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.TECH).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.TECH).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.TECH).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WAR_FACTORY).setType(BuildingType.WAR_FACTORY).setLv(building.getWar())
+            buildingBase.setId(BuildingType.WAR_FACTORY)
+                    .setType(BuildingType.WAR_FACTORY)
+                    .setLv(building.getWar())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WAR_FACTORY));
+            if (buildingData != null && buildingData.get(BuildingType.WAR_FACTORY) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.WAR_FACTORY).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.WAR_FACTORY).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.WAR_FACTORY).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.STOREHOUSE).setType(BuildingType.STOREHOUSE).setLv(building.getWare())
+            buildingBase.setId(BuildingType.STOREHOUSE)
+                    .setType(BuildingType.STOREHOUSE)
+                    .setLv(building.getWare())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.STOREHOUSE));
+            if (buildingData != null && buildingData.get(BuildingType.STOREHOUSE) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.STOREHOUSE).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.STOREHOUSE).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.STOREHOUSE).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WAR_COLLEGE).setType(BuildingType.WAR_COLLEGE).setLv(building.getCollege())
+            buildingBase.setId(BuildingType.WAR_COLLEGE)
+                    .setType(BuildingType.WAR_COLLEGE)
+                    .setLv(building.getCollege())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WAR_COLLEGE));
+            if (buildingData != null && buildingData.get(BuildingType.WAR_COLLEGE) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.WAR_COLLEGE).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.WAR_COLLEGE).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.WAR_COLLEGE).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.REMAKE).setType(BuildingType.REMAKE).setLv(building.getRefit())
+            buildingBase.setId(BuildingType.REMAKE)
+                    .setType(BuildingType.REMAKE)
+                    .setLv(building.getRefit())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.REMAKE));
+            if (buildingData != null && buildingData.get(BuildingType.REMAKE) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.REMAKE).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.REMAKE).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.REMAKE).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.ORDNANCE_FACTORY).setType(BuildingType.ORDNANCE_FACTORY)
+            buildingBase.setId(BuildingType.ORDNANCE_FACTORY)
+                    .setType(BuildingType.ORDNANCE_FACTORY)
                     .setLv(building.getMunition())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.ORDNANCE_FACTORY));
+            if (buildingData != null && buildingData.get(BuildingType.ORDNANCE_FACTORY) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.ORDNANCE_FACTORY).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.ORDNANCE_FACTORY).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.ORDNANCE_FACTORY).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.CHEMICAL_PLANT).setType(BuildingType.CHEMICAL_PLANT)
+            buildingBase.setId(BuildingType.CHEMICAL_PLANT)
+                    .setType(BuildingType.CHEMICAL_PLANT)
                     .setLv(building.getChemical())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.CHEMICAL_PLANT));
+            if (buildingData != null && buildingData.get(BuildingType.CHEMICAL_PLANT) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.CHEMICAL_PLANT).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.CHEMICAL_PLANT).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.CHEMICAL_PLANT).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WALL).setType(BuildingType.WALL).setLv(building.getWall())
+            buildingBase.setId(BuildingType.WALL)
+                    .setType(BuildingType.WALL)
+                    .setLv(building.getWall())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WALL));
+            if (buildingData != null && buildingData.get(BuildingType.WALL) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.WALL).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.WALL).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.WALL).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.TRADE_CENTRE).setType(BuildingType.TRADE_CENTRE).setLv(building.getTrade())
+            buildingBase.setId(BuildingType.TRADE_CENTRE)
+                    .setType(BuildingType.TRADE_CENTRE)
+                    .setLv(building.getTrade())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.TRADE_CENTRE));
+            if (buildingData != null && buildingData.get(BuildingType.TRADE_CENTRE) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.TRADE_CENTRE).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.TRADE_CENTRE).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.TRADE_CENTRE).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.CLUB).setType(BuildingType.CLUB).setLv(building.getClub())
+            buildingBase.setId(BuildingType.CLUB)
+                    .setType(BuildingType.CLUB)
+                    .setLv(building.getClub())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.CLUB));
+            if (buildingData != null && buildingData.get(BuildingType.CLUB) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.CLUB).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.CLUB).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.CLUB).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.CIA).setType(BuildingType.CIA).setLv(1)
+            buildingBase.setId(BuildingType.CIA)
+                    .setType(BuildingType.CIA)
+                    .setLv(1)
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.CIA));
+            if (buildingData != null && buildingData.get(BuildingType.CIA) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.CIA).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.CIA).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.CIA).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.NUCLEAR_BOMB).setType(BuildingType.NUCLEAR_BOMB).setLv(1)
+            buildingBase.setId(BuildingType.NUCLEAR_BOMB)
+                    .setType(BuildingType.NUCLEAR_BOMB)
+                    .setLv(1)
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.NUCLEAR_BOMB));
+            if (buildingData != null && buildingData.get(BuildingType.NUCLEAR_BOMB) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.NUCLEAR_BOMB).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.NUCLEAR_BOMB).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.NUCLEAR_BOMB).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FACTORY_1).setType(BuildingType.FACTORY_1).setLv(building.getFactory1())
+            buildingBase.setId(BuildingType.FACTORY_1)
+                    .setType(BuildingType.FACTORY_1)
+                    .setLv(building.getFactory1())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_1));
+            if (buildingData != null && buildingData.get(BuildingType.FACTORY_1) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.FACTORY_1).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_1).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_1).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FACTORY_2).setType(BuildingType.FACTORY_2).setLv(building.getFactory2())
+            buildingBase.setId(BuildingType.FACTORY_2)
+                    .setType(BuildingType.FACTORY_2)
+                    .setLv(building.getFactory2())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_2));
+            if (buildingData != null && buildingData.get(BuildingType.FACTORY_2) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.FACTORY_2).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_2).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_2).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FACTORY_3).setType(BuildingType.FACTORY_3).setLv(building.getFactory3())
+            buildingBase.setId(BuildingType.FACTORY_3)
+                    .setType(BuildingType.FACTORY_3)
+                    .setLv(building.getFactory3())
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_3));
+            if (buildingData != null && buildingData.get(BuildingType.FACTORY_3) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.FACTORY_3).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_3).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_3).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.SEASON_TREASURY).setType(BuildingType.SEASON_TREASURY).setLv(1)
+            buildingBase.setId(BuildingType.SEASON_TREASURY)
+                    .setType(BuildingType.SEASON_TREASURY)
+                    .setLv(1)
                     .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.SEASON_TREASURY));
+            if (buildingData != null && buildingData.get(BuildingType.SEASON_TREASURY) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.SEASON_TREASURY).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.SEASON_TREASURY).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.SEASON_TREASURY).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             //码头
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WHARF).setType(BuildingType.WHARF).setLv(1)
+            buildingBase.setId(BuildingType.WHARF)
+                    .setType(BuildingType.WHARF)
+                    .setLv(1)
                     .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.WHARF));
+            if (buildingData != null && buildingData.get(BuildingType.WHARF) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.WHARF).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.WHARF).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.WHARF).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             BuildingExt train = player.buildingExts.get(BuildingType.TRAIN_FACTORY_1);
             if (!CheckNull.isNull(train)) {
                 buildingBase = BuildingBase.newBuilder();
-                buildingBase.setId(train.getId()).setType(train.getType()).setLv(building.getTrain())
+                buildingBase.setId(train.getId())
+                        .setType(train.getType())
+                        .setLv(building.getTrain())
                         .setUnlock(buildingDataManager.checkBuildingLock(player, train.getId()));
+                if (buildingData != null && buildingData.get(train.getId()) != null) {
+                    buildingBase
+                            .addAllHeroId(buildingData.get(train.getId()).getHeroIds())
+                            .addAllEconomicCropId(buildingData.get(train.getId()).getEconomicCropData())
+                            .setResidentCnt(buildingData.get(train.getId()).getResidentCnt());
+                }
                 builder.addBuildingBase(buildingBase);
             }
 
@@ -238,14 +395,30 @@ public class BuildingService {
             }
             if (!CheckNull.isNull(train2)) {
                 buildingBase = BuildingBase.newBuilder();
-                buildingBase.setId(train2.getId()).setType(train2.getType()).setLv(building.getTrain2())
+                buildingBase.setId(train2.getId())
+                        .setType(train2.getType())
+                        .setLv(building.getTrain2())
                         .setUnlock(buildingDataManager.checkBuildingLock(player, train2.getId()));
+                if (buildingData != null && buildingData.get(train2.getId()) != null) {
+                    buildingBase
+                            .addAllHeroId(buildingData.get(train2.getId()).getHeroIds())
+                            .addAllEconomicCropId(buildingData.get(train2.getId()).getEconomicCropData())
+                            .setResidentCnt(buildingData.get(train2.getId()).getResidentCnt());
+                }
                 builder.addBuildingBase(buildingBase);
             }
 
             buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.AIR_BASE).setType(BuildingType.AIR_BASE).setLv(1)
+            buildingBase.setId(BuildingType.AIR_BASE)
+                    .setType(BuildingType.AIR_BASE)
+                    .setLv(1)
                     .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.AIR_BASE));
+            if (buildingData != null && buildingData.get(BuildingType.AIR_BASE) != null) {
+                buildingBase
+                        .addAllHeroId(buildingData.get(BuildingType.AIR_BASE).getHeroIds())
+                        .addAllEconomicCropId(buildingData.get(BuildingType.AIR_BASE).getEconomicCropData())
+                        .setResidentCnt(buildingData.get(BuildingType.AIR_BASE).getResidentCnt());
+            }
             builder.addBuildingBase(buildingBase);
 
             Iterator<BuildQue> it1 = player.buildQue.values().iterator();
@@ -255,7 +428,14 @@ public class BuildingService {
 
             Iterator<Mill> it2 = player.mills.values().iterator();
             while (it2.hasNext()) {
-                builder.addMill(PbHelper.createMillPb(it2.next()));
+                CommonPb.Mill millPb = PbHelper.createMillPb(it2.next());
+                if (buildingData != null && buildingData.get(millPb.getId()) != null) {
+                    millPb.toBuilder()
+                            .setResidentCnt(buildingData.get(millPb.getId()).getResidentCnt())
+                            .addAllHeroId(buildingData.get(millPb.getId()).getEconomicCropData())
+                            .addAllHeroId(buildingData.get(millPb.getId()).getHeroIds());
+                }
+                builder.addMill(millPb);
             }
 
             builder.setResCnt(player.common.getResCnt());
@@ -2466,6 +2646,103 @@ public class BuildingService {
                     break;
                 }
             }
+        }
+    }
+
+    private DelayQueue<GainEconomicCropDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+
+    @Override
+    public DelayQueue getDelayQueue() {
+        return DELAY_QUEUE;
+    }
+
+    /**
+     * 给资源建筑分配经济副作物
+     *
+     * @param roleId
+     * @param rq
+     * @return
+     */
+    public GamePb1.AssignEconomicCropRs assignEconomicCropToResBuilding(long roleId, GamePb1.AssignEconomicCropRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        int buildingId = rq.getBuildingId();
+        List<Integer> economicCropIdList = rq.getEconomicCropIdList();
+        boolean isResType = BuildingDataManager.isResType(buildingId);
+        if (!isResType) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 不能选择非资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
+        }
+        // 获取玩家对应建筑信息
+        Mill mill = player.mills.get(buildingId);
+        if (mill == null) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家未解锁对应的资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
+        }
+        int buildingLv = mill.getLv();
+        int buildingType = BuildingDataManager.getBuildingTypeById(buildingId);
+        BuildingState buildingState = player.getBuildingData().get(buildingId);
+        List<Integer> economicCropData = buildingState.getEconomicCropData();
+        for (Integer economicCropId : economicCropIdList) {
+            // 获取经济作物配置
+            StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(economicCropId);
+            if (sEconomicCrop == null
+                    || sEconomicCrop.getPropId() <= 0
+                    || sEconomicCrop.getBuildingType() <= 0
+                    || sEconomicCrop.getBuildingLv() <= 0
+                    || sEconomicCrop.getProductTime() <= 0
+                    || sEconomicCrop.getProductCnt() <= 0
+                    || sEconomicCrop.getMaxCnt() <= 0) {
+                throw new MwException(GameError.NO_CONFIG, "分配经济作物时, 对应的经济作物配置错误, roleId:%s, economicCropId:%s", roleId, economicCropId);
+            }
+            int needBuildingType = sEconomicCrop.getBuildingType();
+            if (buildingType != needBuildingType) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 该建筑不可分配对应经济作物, roleId:%s, buildingId:%s, economicCropId:%s", roleId, buildingId, economicCropId));
+            }
+            int needBuildingLv = sEconomicCrop.getBuildingLv();
+            if (buildingLv < needBuildingLv) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家建筑等级未达到要求, roleId:%s, buildingId:%s, economicCropId:%s", roleId, buildingId, economicCropId));
+            }
+            int maxCnt = sEconomicCrop.getMaxCnt();
+            if (player.props.get(economicCropId) != null && player.props.get(economicCropId).getCount() >= maxCnt) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家拥有的经济作物数量已达上限, roleId:%s, economicCropId:%s", roleId, economicCropId));
+            }
+            if (!economicCropData.contains(economicCropId)) {
+                int now = TimeHelper.getCurrentSecond();
+                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
+                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, now, sEconomicCrop, buildingId));
+                economicCropData.add(economicCropId);
+            }
+        }
+
+        // 移除建筑上不再绑定的经济作物
+        economicCropData.removeIf(e -> !economicCropIdList.contains(e));
+
+        // TODO 移除已分配的收取经济作物延时队列
+
+        // TODO 同步建筑状态信息
+
+        GamePb1.AssignEconomicCropRs.Builder builder = GamePb1.AssignEconomicCropRs.newBuilder();
+        return builder.build();
+    }
+
+    /**
+     * 采集经济作物
+     *
+     * @param player
+     * @param staticEconomicCrop
+     * @param buildingId
+     */
+    public void gainEconomicCrop(Player player, StaticEconomicCrop staticEconomicCrop, int buildingId) {
+        BuildingState buildingState = player.getBuildingData().get(buildingId);
+        if (buildingState == null) {
+            return;
+        }
+        // 如果经济作物中途从建筑上移除了, 则不予采集了
+        if(!buildingState.getEconomicCropData().contains(staticEconomicCrop.getPropId())) {
+            return;
+        }
+        Prop prop = player.props.get(staticEconomicCrop.getPropId());
+        if (prop == null || prop.getCount() < staticEconomicCrop.getMaxCnt()) {
+            // 获取经济作物道具并向客户端同步
+            rewardDataManager.sendRewardSignle(player, AwardType.PROP, staticEconomicCrop.getPropId(), staticEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
         }
     }
 }

@@ -3,9 +3,7 @@ package com.gryphpoem.game.zw.resource.pojo;
 import com.gryphpoem.game.zw.pb.CommonPb;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 建筑状态, 用来记录被派遣在建筑上的居民与武将
@@ -28,7 +26,7 @@ public class BuildingState {
     /**
      * 被委任的武将id
      */
-    private List<Integer> heroIds;
+    private List<Integer> heroIds = new ArrayList<>();
 
     /**
      * 建筑被放置的地基id
@@ -38,7 +36,7 @@ public class BuildingState {
     /**
      * 被分配产出的经济作物, key-经济作物id, value-开始产出时间
      */
-    private Map<Integer, Integer> economicCropData = new HashMap<>();
+    private List<Integer> economicCropData = new ArrayList<>();
 
     public int getBuildingId() {
         return buildingId;
@@ -72,11 +70,11 @@ public class BuildingState {
         this.foundationId = foundationId;
     }
 
-    public Map<Integer, Integer> getEconomicCropData() {
+    public List<Integer> getEconomicCropData() {
         return economicCropData;
     }
 
-    public void setEconomicCropData(Map<Integer, Integer> economicCropData) {
+    public void setEconomicCropData(List<Integer> economicCropData) {
         this.economicCropData = economicCropData;
     }
 
@@ -87,7 +85,6 @@ public class BuildingState {
         this.buildingId = buildingId;
         this.foundationId = foundationId;
         this.residentCnt = 0;
-        this.heroIds = new ArrayList<>();
     }
 
     public BuildingState(CommonPb.BuildingState pb) {
@@ -95,6 +92,7 @@ public class BuildingState {
         this.residentCnt = pb.getResidentCnt();
         this.heroIds = pb.getHeroIdList();
         this.foundationId = pb.getFoundationId();
+        this.economicCropData = pb.getEconomicCropIdList();
     }
 
     public CommonPb.BuildingState creatPb() {
@@ -103,6 +101,7 @@ public class BuildingState {
         pb.setResidentCnt(this.getResidentCnt());
         pb.addAllHeroId(this.getHeroIds());
         pb.setFoundationId(this.getFoundationId());
+        pb.addAllEconomicCropId(this.economicCropData);
         return pb.build();
     }
 

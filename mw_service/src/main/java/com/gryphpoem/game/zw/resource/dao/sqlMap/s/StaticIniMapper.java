@@ -20,6 +20,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGroup;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicCrop;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicOrder;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFireworks;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishBait;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishBaitHerocombination;
@@ -30,8 +32,11 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticFishattribute;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishing;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishingLv;
 import com.gryphpoem.game.zw.resource.domain.s.StaticGeneration;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyAttr;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyShow;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMusicFestivalBoxOffice;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMusicFestivalBoxOfficeParam;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRandomLibrary;
@@ -447,8 +452,7 @@ public interface StaticIniMapper {
     @Select("select * from s_homecity_foundation")
     @Results({
             @Result(column = "cell", property = "cellList", typeHandler = ListIntTypeHandler.class),
-            @Result(column = "buildType", property = "buildType", typeHandler = ListIntTypeHandler.class),
-            @Result(column = "buffConfig", property = "buffConfig", typeHandler = ListListTypeHandler.class)
+            @Result(column = "buildType", property = "buildType", typeHandler = ListIntTypeHandler.class)
     })
     List<StaticHomeCityFoundation> selectStaticHomeCityFoundationList();
 

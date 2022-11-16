@@ -5,6 +5,8 @@ import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 
 /**
+ * 记录模拟器结果
+ *
  * @Author: GeYuanpeng
  * @Date: 2022/10/31 10:46
  */

@@ -1487,4 +1487,30 @@ public class BuildingDataManager {
         return list;
     }
 
+    /**
+     * 根据建筑id获取建筑类型
+     *
+     * @param buildingId
+     * @return
+     */
+    public static int getBuildingTypeById(int buildingId) {
+        if (buildingId >= 101 && buildingId <= 116) {
+            return BuildingType.RES_OIL;
+        }
+
+        if (buildingId >= 201 && buildingId <= 216) {
+            return BuildingType.RES_ELE;
+        }
+
+        if (buildingId >= 301 && buildingId <= 316) {
+            return BuildingType.RES_FOOD;
+        }
+
+        if (buildingId >= 401 && buildingId <= 416) {
+            return BuildingType.RES_FOOD;
+        }
+
+        return buildingId;
+    }
+
 }

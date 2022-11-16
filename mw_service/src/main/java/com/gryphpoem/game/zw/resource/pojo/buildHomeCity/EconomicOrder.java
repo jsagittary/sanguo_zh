@@ -1,5 +1,9 @@
 package com.gryphpoem.game.zw.resource.pojo.buildHomeCity;
 
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.domain.p.AwardItem;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+
 import java.util.List;
 import java.util.Map;
 
@@ -44,14 +48,114 @@ public class EconomicOrder {
     private int preDisplay;
 
     /**
-     * 订单需求  [<经济产物的道具id, 数量>, <经济产物的道具id, 数量>, <经济产物的道具id, 数量>]
+     * 订单需求  [[经济产物的道具id, 数量], [经济产物的道具id, 数量], [经济产物的道具id, 数量]]
      */
-    private List<Map<Integer, Integer>> orderDemand;
+    private Map<Integer, Integer> orderDemand;
 
     /**
      * 订单奖励  [[rewardType, subType, count], [rewardType, subType, count], [rewardType, subType, count]] <br>
      * 第1个放特殊奖励
      */
-    private List<List<Integer>> reward;
+    private List<AwardItem> reward;
 
+    public int getKeyId() {
+        return keyId;
+    }
+
+    public void setKeyId(int keyId) {
+        this.keyId = keyId;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public int getPlace() {
+        return place;
+    }
+
+    public void setPlace(int place) {
+        this.place = place;
+    }
+
+    public int getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(int startTime) {
+        this.startTime = startTime;
+    }
+
+    public int getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(int endTime) {
+        this.endTime = endTime;
+    }
+
+    public int getPreDisplay() {
+        return preDisplay;
+    }
+
+    public void setPreDisplay(int preDisplay) {
+        this.preDisplay = preDisplay;
+    }
+
+    public Map<Integer, Integer> getOrderDemand() {
+        return orderDemand;
+    }
+
+    public void setOrderDemand(Map<Integer, Integer> orderDemand) {
+        this.orderDemand = orderDemand;
+    }
+
+    public List<AwardItem> getReward() {
+        return reward;
+    }
+
+    public void setReward(List<AwardItem> reward) {
+        this.reward = reward;
+    }
+
+    @Override
+    public String toString() {
+        return "EconomicOrder{" +
+                "keyId=" + keyId +
+                ", orderId=" + orderId +
+                ", quantity=" + quantity +
+                ", place=" + place +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", preDisplay=" + preDisplay +
+                ", orderDemand=" + orderDemand +
+                ", reward=" + reward +
+                '}';
+    }
+
+    public CommonPb.EconomicOrder createPb() {
+        CommonPb.EconomicOrder.Builder builder = CommonPb.EconomicOrder.newBuilder();
+        builder.setKeyId(this.keyId);
+        builder.setOrderId(this.orderId);
+        builder.setQuantity(this.quantity);
+        builder.setPlace(this.place);
+        builder.setStartTime(this.startTime);
+        builder.setPreDisplay(this.preDisplay);
+        builder.setEndTime(this.endTime);
+        builder.addAllOrderDemand(PbHelper.createTwoIntListByMap(this.orderDemand));
+        builder.addAllReward(PbHelper.createAwards(this.reward));
+        return builder.build();
+    }
 }

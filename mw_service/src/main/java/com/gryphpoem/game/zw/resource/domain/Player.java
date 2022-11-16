@@ -1081,15 +1081,48 @@ public class Player {
     }
 
     /**
-     * 可提交的订单
+     * 订单数上限（不包含预显示订单）
      */
-    public Map<Integer, EconomicOrder> economicOrderData = new HashMap<>();
+    private int economicOrderMaxCnt;
+
+    public int getEconomicOrderMaxCnt() {
+        return economicOrderMaxCnt;
+    }
+
+    public void setEconomicOrderMaxCnt(int economicOrderMaxCnt) {
+        this.economicOrderMaxCnt = economicOrderMaxCnt;
+    }
 
     /**
-     *
-     *
+     * 可提交的订单
      */
-    public Map<Integer, EconomicOrder> preDisplayEconomicOrder = new HashMap<>();
+    private Map<Integer, EconomicOrder> canSubmitOrderData = new HashMap<>();
+
+    public Map<Integer, EconomicOrder> getCanSubmitOrderData() {
+        return canSubmitOrderData;
+    }
+
+    public void setCanSubmitOrderData(Map<Integer, EconomicOrder> canSubmitOrderData) {
+        this.canSubmitOrderData = canSubmitOrderData;
+    }
+
+    /**
+     * 预显示的订单
+     */
+    private Map<Integer, EconomicOrder> preDisplayOrderData = new HashMap<>();
+
+    public Map<Integer, EconomicOrder> getPreDisplayOrderData() {
+        return preDisplayOrderData;
+    }
+
+    public void setPreDisplayOrderData(Map<Integer, EconomicOrder> preDisplayOrderData) {
+        this.preDisplayOrderData = preDisplayOrderData;
+    }
+
+    /**
+     * 安民济物记录, key-具体类型; value-最近一次记录时间(秒)
+     */
+    private Map<Integer, Long> peaceAndWelfareRecord = new HashMap<>(2);
 
     /**
      * 是否第一次打造宝具
@@ -2413,7 +2446,7 @@ public class Player {
                 mapCell.setCellId(cellId);
                 if (cellState.get(1) == null) {
                     StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                    cellState.add(staticHomeCityCell.getHasBandit() == null ? 0 : staticHomeCityCell.getHasBandit());
+                    cellState.add(staticHomeCityCell.getHasBandit());
                 }
                 mapCell.addAllState(cellState);
                 ser.addMapCellData(mapCell.build());

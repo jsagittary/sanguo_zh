@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class StaticHomeCityCell {
 
-    private Integer id; // 格子id
+    private int id; // 格子id
 
     private List<Integer> route; // [起点格子id, 终点格子id] 客户端计算npc路线需要
 
@@ -24,13 +24,13 @@ public class StaticHomeCityCell {
 
     private List<Integer> neighborCellList; // 周围4个需要前置解锁的格子
 
-    private Integer hasBandit;
+    private int hasBandit;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -82,11 +82,11 @@ public class StaticHomeCityCell {
         this.neighborCellList = neighborCellList;
     }
 
-    public Integer getHasBandit() {
+    public int getHasBandit() {
         return hasBandit;
     }
 
-    public void setHasBandit(Integer hasBandit) {
+    public void setHasBandit(int hasBandit) {
         this.hasBandit = hasBandit;
     }
 }

@@ -2,23 +2,16 @@ package com.gryphpoem.game.zw.service.buildHomeCity;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Mill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicCrop;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.pojo.BuildingState;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.PlayerService;
@@ -38,7 +31,7 @@ import java.util.stream.Collectors;
  * @Date: 2022/11/5 10:20
  */
 @Service
-public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironment {
+public class BuildHomeCityService implements GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -98,7 +91,7 @@ public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironmen
         List<Integer> cellState = new ArrayList<>(2);
         // 新增解锁的地图格子
         cellState.add(0); // 未开垦
-        cellState.add(staticHomeCityCell.getHasBandit() == null ? 0 : staticHomeCityCell.getHasBandit()); // 是否有土匪
+        cellState.add(staticHomeCityCell.getHasBandit()); // 是否有土匪
         newAddMapCellData.put(cellId, cellState);
         // 关联解锁的地图格子
         List<Integer> bindCellList = staticHomeCityCell.getBindCellList();
@@ -106,7 +99,7 @@ public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironmen
             StaticHomeCityCell bindCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
             List<Integer> bindCellState = new ArrayList<>(2);
             bindCellState.add(0); // 未开垦
-            bindCellState.add(bindCell.getHasBandit() == null ? 0 : staticHomeCityCell.getHasBandit()); // 是否有土匪
+            bindCellState.add(staticHomeCityCell.getHasBandit()); // 是否有土匪
             if (!mapCellData.containsKey(bindCellId)) {
                 newAddMapCellData.put(bindCellId, bindCellState);
             }
@@ -243,83 +236,6 @@ public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironmen
     }
 
     /**
-     * 给资源建筑分配经济副作物
-     *
-     * @param roleId
-     * @param rq
-     * @return
-     */
-    public GamePb1.AssignEconomicCropRs assignEconomicCropToResBuilding(long roleId, GamePb1.AssignEconomicCropRq rq) {
-        Player player = playerDataManager.checkPlayerIsExist(roleId);
-        int buildingId = rq.getBuildingId();
-        List<Integer> economicCropIdList = rq.getEconomicCropIdList();
-        boolean isResType = BuildingDataManager.isResType(buildingId);
-        if (!isResType) {
-            throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 不能选择非资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
-        }
-        // 获取玩家对应建筑信息
-        Mill mill = player.mills.get(buildingId);
-        if (mill == null) {
-            throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家未解锁对应的资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
-        }
-        int buildingLv = mill.getLv();
-        BuildingState buildingState = player.getBuildingData().get(buildingId);
-        Map<Integer, Integer> economicCropData = buildingState.getEconomicCropData();
-        for (Integer economicCropId : economicCropIdList) {
-            // 获取经济作物配置
-            StaticEconomicCrop staticEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(economicCropId);
-            if (staticEconomicCrop == null
-                    || staticEconomicCrop.getNeedBuildingLv() == null
-                    || staticEconomicCrop.getProductTime() <= 0
-                    || staticEconomicCrop.getProductCnt() <= 0) {
-                throw new MwException(GameError.NO_CONFIG, "分配经济作物时, 未找到对应的经济作物配置, roleId:%s, economicCropId:%s", roleId, economicCropId);
-            }
-            Map<Integer, Integer> needBuildingLv = staticEconomicCrop.getNeedBuildingLv();
-            if (!needBuildingLv.containsKey(buildingId) || buildingLv < needBuildingLv.get(buildingId)) {
-                throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家建筑等级未达到要求, roleId:%s, buildingId:%s, economicCropId:%s", roleId, buildingId, economicCropId));
-            }
-            int maxCnt = staticEconomicCrop.getMaxCnt();
-            if (player.props.get(economicCropId).getCount() >= maxCnt) {
-                throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家拥有的经济作物数量已达上限, roleId:%s, economicCropId:%s", roleId, economicCropId));
-            }
-            if (!economicCropData.containsKey(economicCropId)) {
-                int now = TimeHelper.getCurrentSecond();
-                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
-                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, now, staticEconomicCrop, buildingId));
-                economicCropData.put(economicCropId, now);
-            }
-        }
-
-        // 移除建筑上不再绑定的经济作物
-        economicCropData.entrySet().removeIf(e -> !economicCropIdList.contains(e.getKey()));
-
-        // TODO 移除已分配的收取经济作物延时队列
-
-        // TODO 同步建筑状态信息
-
-        GamePb1.AssignEconomicCropRs.Builder builder = GamePb1.AssignEconomicCropRs.newBuilder();
-        return builder.build();
-    }
-
-    /**
-     * 收取经济作物
-     *
-     * @param player
-     * @param staticEconomicCrop
-     * @param buildingId
-     */
-    public void gainEconomicCrop(Player player, StaticEconomicCrop staticEconomicCrop, int buildingId) {
-        BuildingState buildingState = player.getBuildingData().get(buildingId);
-        if (buildingState.getEconomicCropData().containsKey(staticEconomicCrop.getPropId())) {
-            int startTime = buildingState.getEconomicCropData().get(staticEconomicCrop.getPropId());
-            if (startTime + staticEconomicCrop.getProductTime() >= TimeHelper.getCurrentSecond()) {
-                // 获取经济作物道具并向客户端同步
-                rewardDataManager.sendRewardSignle(player, AwardType.PROP, staticEconomicCrop.getPropId(), staticEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
-            }
-        }
-    }
-
-    /**
      * 给建筑派遣居民
      *
      * @param roleId
@@ -357,29 +273,26 @@ public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironmen
     }
 
     /**
-     * 提交经济订单
+     * 安民济物
      *
      * @param roleId
      * @param rq
      * @return
      */
-    public GamePb1.SubmitEconomicOrderRs submitEconomicOrder(long roleId, GamePb1.SubmitEconomicOrderRq rq) {
+    public GamePb1.PeaceAndWelfareRs peaceAndWelfare(long roleId, GamePb1.PeaceAndWelfareRq rq) {
+        int type = rq.getType();
+        if (type == 1) {
+            // 饮至策勋
 
+        }
 
-        GamePb1.SubmitEconomicOrderRs.Builder builder = GamePb1.SubmitEconomicOrderRs.newBuilder();
+        if (type == 2) {
+            // 千秋庆典
+
+        }
+
+        GamePb1.PeaceAndWelfareRs.Builder builder = GamePb1.PeaceAndWelfareRs.newBuilder();
         return builder.build();
-    }
-
-    // 刷新玩家经济订单栏
-    public void refreshEconomicOrder(long roleId) {
-
-    }
-
-    // 安民济物
-    public void peaceAndWelfare(long roleId) {
-        // 饮至策勋
-
-        // 千秋庆典
     }
 
     // 清剿土匪
@@ -390,13 +303,6 @@ public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironmen
     // 叛军入侵
     public void rebelInvade(long roleId) {
 
-    }
-
-    private DelayQueue<GainEconomicCropDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
-
-    @Override
-    public DelayQueue getDelayQueue() {
-        return DELAY_QUEUE;
     }
 
     /**
@@ -472,23 +378,43 @@ public class BuildHomeCityService implements GmCmdService, DelayInvokeEnvironmen
     @GmCmd("buildCity")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        List<Integer> cellState;
+        List<Integer> foundationData = player.getFoundationData();
         switch (params[0]) {
-            // 清楚所有已探索的格子
             case "clearMapCell":
-                player.getMapCellData().clear();
-                List<Integer> cellState = new ArrayList<>(2);
+                // 清除所有已探索的格子
+                mapCellData.clear();
+                cellState = new ArrayList<>(2);
                 cellState.add(1);
                 cellState.add(0);
-                player.getMapCellData().put(1, cellState);
-                playerDataManager.syncRoleInfo(player);
+                mapCellData.put(1, cellState);
                 break;
             case "fixFoundationData":
-                List<Integer> newFoundationData = player.getFoundationData().stream().distinct().collect(Collectors.toList());
-                player.getFoundationData().clear();
-                player.getFoundationData().addAll(newFoundationData);
-                playerDataManager.syncRoleInfo(player);
+                // 去除重复地基
+                List<Integer> newFoundationData = foundationData.stream().distinct().collect(Collectors.toList());
+                foundationData.clear();
+                foundationData.addAll(newFoundationData);
                 break;
+            case "openTheWholeMap":
+                // 一键解锁全部地图格和地基
+                List<StaticHomeCityCell> staticHomeCityCellList = StaticBuildCityDataMgr.getStaticHomeCityCellList();
+                for (StaticHomeCityCell sHomeCityCell : staticHomeCityCellList) {
+                    if (!mapCellData.containsKey(sHomeCityCell.getId())) {
+                        cellState = new ArrayList<>(2);
+                        cellState.add(1);
+                        cellState.add(sHomeCityCell.getHasBandit());
+                        mapCellData.put(sHomeCityCell.getId(), cellState);
+                    }
+                }
+                List<StaticHomeCityFoundation> staticHomeCityFoundationList = StaticBuildCityDataMgr.getStaticHomeCityFoundationList();
+                for (StaticHomeCityFoundation sHomeCityFoundation : staticHomeCityFoundationList) {
+                    if (!foundationData.contains(sHomeCityFoundation.getId())) {
+                        foundationData.add(sHomeCityFoundation.getId());
+                    }
+                }
             default:
         }
+        playerDataManager.syncRoleInfo(player);
     }
 }

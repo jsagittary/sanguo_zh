@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.List;
 
 /**
  * 城建开荒配置
@@ -90,8 +89,16 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         return staticEconomicCropList.stream().filter(p -> Objects.equals(p.getPropId(), propId)).findFirst().orElse(null);
     }
 
+    public static List<StaticHomeCityFoundation> getStaticHomeCityFoundationList() {
+        return staticHomeCityFoundationList;
+    }
+
     public static List<Integer> getFoundationIdListByCellId(int cellId) {
         return cellFoundationMap.get(cellId);
+    }
+
+    public static List<StaticHomeCityCell> getStaticHomeCityCellList() {
+        return staticHomeCityCellList;
     }
 
     public static StaticHomeCityCell getStaticHomeCityCellById(int id) {

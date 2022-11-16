@@ -4,8 +4,11 @@ import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayRun;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicCrop;
+import com.gryphpoem.game.zw.service.BuildingService;
 
 /**
+ * 收取经济作物的延时任务
+ *
  * @Author: GeYuanpeng
  * @Date: 2022/11/15 13:44
  */
@@ -33,9 +36,9 @@ public class GainEconomicCropDelayRun implements DelayRun {
 
     @Override
     public void deadRun(int runTime, DelayInvokeEnvironment env) {
-        if (env instanceof BuildHomeCityService) {
-            BuildHomeCityService buildHomeCityService = (BuildHomeCityService) env;
-            buildHomeCityService.gainEconomicCrop(player, staticEconomicCrop, buildingId);
+        if (env instanceof BuildingService) {
+            BuildingService buildingService = (BuildingService) env;
+            buildingService.gainEconomicCrop(player, staticEconomicCrop, buildingId);
         }
     }
 }

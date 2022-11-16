@@ -1054,7 +1054,7 @@ public class PlayerService implements GmCmdService {
                 mapCell.setCellId(cellId);
                 if (cellState.get(1) == null) {
                     StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                    cellState.add(staticHomeCityCell.getHasBandit() == null ? 0 : staticHomeCityCell.getHasBandit());
+                    cellState.add(staticHomeCityCell.getHasBandit());
                 }
                 mapCell.addAllState(cellState);
                 builder.addMapCellData(mapCell.build());

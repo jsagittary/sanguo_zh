@@ -1335,9 +1335,11 @@ public class PlayerDataManager implements PlayerDM {
         SyncRoleInfoRs.Builder builder = SyncRoleInfoRs.newBuilder();
         builder.setLevel(player.lord.getLevel());
         builder.setExp(player.lord.getExp());
+        // 性格值
         builder.addAllCharacter(PbHelper.createTwoIntListByMap(player.getCharacterData()));
+        // 侦察兵状态
         builder.addAllScoutData(PbHelper.createTwoIntListByMap(player.getScoutData()));
-        builder.setFarmerCnt(PbHelper.createTwoIntPb(player.getResidentTotalCnt(), player.getIdleResidentCnt()));
+        builder.addAllResidentData(player.getResidentData());
         player.getMapCellData().forEach((cellId, cellState) -> {
             CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
             mapCell.setCellId(cellId);

@@ -149,6 +149,7 @@ import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveTaskAwardHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.ExploreHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.ReclaimHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.SwapBuildingLocationHandler;
+import com.gryphpoem.game.zw.handler.client.building.AssignEconomicCropHandler;
 import com.gryphpoem.game.zw.handler.client.building.BuildingHanlder;
 import com.gryphpoem.game.zw.handler.client.building.CommandAddHandler;
 import com.gryphpoem.game.zw.handler.client.building.DesBuildingHanlder;
@@ -257,6 +258,7 @@ import com.gryphpoem.game.zw.handler.client.crosssimple.GetCrossInfoHandler;
 import com.gryphpoem.game.zw.handler.client.crosssimple.OpFortHeroHandler;
 import com.gryphpoem.game.zw.handler.client.dressup.ChangeDressUpHandler;
 import com.gryphpoem.game.zw.handler.client.dressup.GetDressUpDataHandler;
+import com.gryphpoem.game.zw.handler.client.economicOrder.SubmitEconomicOrderHandler;
 import com.gryphpoem.game.zw.handler.client.equip.BagExpandHandler;
 import com.gryphpoem.game.zw.handler.client.equip.DoJewelImproveHandler;
 import com.gryphpoem.game.zw.handler.client.equip.EquipBaptizeHandler;
@@ -2413,6 +2415,9 @@ public class MessagePool implements IMessagePool {
         registerC(ExploreRq.EXT_FIELD_NUMBER, ExploreRs.EXT_FIELD_NUMBER, ExploreHandler.class);
         registerC(ReclaimFoundationRq.EXT_FIELD_NUMBER, ReclaimFoundationRs.EXT_FIELD_NUMBER, ReclaimHandler.class);
         registerC(SwapBuildingLocationRq.EXT_FIELD_NUMBER, SwapBuildingLocationRs.EXT_FIELD_NUMBER, SwapBuildingLocationHandler.class);
+        // 经济订单
+        registerC(AssignEconomicCropRq.EXT_FIELD_NUMBER, AssignEconomicCropRs.EXT_FIELD_NUMBER, AssignEconomicCropHandler.class);
+        registerC(SubmitEconomicOrderRq.EXT_FIELD_NUMBER, SubmitEconomicOrderRs.EXT_FIELD_NUMBER, SubmitEconomicOrderHandler.class);
     }
 
     /**

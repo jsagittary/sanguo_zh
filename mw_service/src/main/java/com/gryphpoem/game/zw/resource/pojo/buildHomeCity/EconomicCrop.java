@@ -18,7 +18,6 @@ public class EconomicCrop {
      */
     private int startTime;
 
-
     /**
      * 产出数量
      */

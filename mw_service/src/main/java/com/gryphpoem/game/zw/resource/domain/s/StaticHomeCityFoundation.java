@@ -10,21 +10,21 @@ import java.util.List;
  */
 public class StaticHomeCityFoundation {
 
-    private Integer id; // 地基id
+    private int id; // 地基id
 
     private List<Integer> cellList; // 地基占的格子id
 
     private List<Integer> buildType; // 地基可建造的建筑类型
 
-    private Integer foundationType; // 地基类型：1：城内2：城外
+    private int foundationType; // 地基类型：1：城内2：城外
 
-    private List<List<Integer>> buffConfig; // 地貌buff及对应生效的资源建筑类型
+    private int landType; // 地貌类型, 对应s_foundation_buff表的landType
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -44,20 +44,19 @@ public class StaticHomeCityFoundation {
         this.buildType = buildType;
     }
 
-    public Integer getFoundationType() {
+    public int getFoundationType() {
         return foundationType;
     }
 
-    public void setFoundationType(Integer foundationType) {
+    public void setFoundationType(int foundationType) {
         this.foundationType = foundationType;
     }
 
-    public List<List<Integer>> getBuffConfig() {
-        return buffConfig;
+    public int getLandType() {
+        return landType;
     }
 
-    public void setBuffConfig(List<List<Integer>> buffConfig) {
-        this.buffConfig = buffConfig;
+    public void setLandType(int landType) {
+        this.landType = landType;
     }
-
 }

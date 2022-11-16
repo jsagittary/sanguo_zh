@@ -1,7 +1,5 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
-import java.util.Map;
-
 /**
  * 经济副作物
  * 
@@ -18,9 +16,14 @@ public class StaticEconomicCrop {
     private int propId;
 
     /**
-     * 解锁需要的建筑等级, 例如: [[33, 5], [32, 10]], 表示需要任一良田等级达到5级, 且任一伐木场等级达到10级, 可生产该经济副作物
+     * 解锁需要的资源建筑类型
      */
-    private Map<Integer, Integer> needBuildingLv;
+    private int buildingType;
+
+    /**
+     * 解锁需要的建筑等级
+     */
+    private int buildingLv;
 
     /**
      * 单次产出需要的时间，秒
@@ -53,12 +56,20 @@ public class StaticEconomicCrop {
         this.propId = propId;
     }
 
-    public Map<Integer, Integer> getNeedBuildingLv() {
-        return needBuildingLv;
+    public int getBuildingType() {
+        return buildingType;
     }
 
-    public void setNeedBuildingLv(Map<Integer, Integer> needBuildingLv) {
-        this.needBuildingLv = needBuildingLv;
+    public void setBuildingType(int buildingType) {
+        this.buildingType = buildingType;
+    }
+
+    public int getBuildingLv() {
+        return buildingLv;
+    }
+
+    public void setBuildingLv(int buildingLv) {
+        this.buildingLv = buildingLv;
     }
 
     public int getProductTime() {
