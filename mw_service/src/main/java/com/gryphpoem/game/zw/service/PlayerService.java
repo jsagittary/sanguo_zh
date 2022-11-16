@@ -493,7 +493,7 @@ public class PlayerService implements GmCmdService {
                         // TODO 更新buff增益
                         List<List<Integer>> buff = sSimulatorChoose.getBuff();
                     }
-                    int stepId = lifeSimulatorStep.getStepId();
+                    long stepId = lifeSimulatorStep.getStepId();
                     StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
                     // 根据配置, 判断模拟器是否结束
                     if (!isEnd) {
