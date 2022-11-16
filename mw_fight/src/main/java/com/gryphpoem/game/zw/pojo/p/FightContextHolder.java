@@ -297,12 +297,7 @@ public class FightContextHolder {
     }
 
     public BattlePb.SkillAction.Builder getInitSkillActionPb() {
-        if (LOCAL.get().getSkillActionPb() == null) {
-            LOCAL.get().setSkillActionPb(BattlePb.SkillAction.newBuilder());
-        } else {
-            LOCAL.get().getSkillActionPb().clear();
-        }
-
+        LOCAL.get().setSkillActionPb(BattlePb.SkillAction.newBuilder());
         return LOCAL.get().getSkillActionPb();
     }
 
@@ -315,12 +310,7 @@ public class FightContextHolder {
     }
 
     public BattlePb.OrdinaryAttackAction.Builder getInitAttackActionPb() {
-        if (LOCAL.get().getOrdinaryAttackActionPb() == null) {
-            LOCAL.get().setOrdinaryAttackActionPb(BattlePb.OrdinaryAttackAction.newBuilder());
-        } else {
-            LOCAL.get().getOrdinaryAttackActionPb().clear();
-        }
-
+        LOCAL.get().setOrdinaryAttackActionPb(BattlePb.OrdinaryAttackAction.newBuilder());
         return LOCAL.get().getOrdinaryAttackActionPb();
     }
 
