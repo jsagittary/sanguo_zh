@@ -54,6 +54,7 @@ import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
 import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
@@ -798,8 +799,9 @@ public class WorldService {
 
             type = ArmyConstant.ARMY_TYPE_ATK_PLAYER;
 
-            for (Integer heroId : target.heroBattle) {
-                hero = target.heros.get(heroId);
+            for (PartnerHero partnerHero : target.getPlayerFormation().getHeroBattle()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                hero = partnerHero.getPrincipalHero();
                 if (hero != null) {
                     defArmCount += hero.getCount();
                 }
@@ -1473,14 +1475,16 @@ public class WorldService {
                         ", heroIdList.size:", heroIdList.size());
             }
             int stateAcqCount = 0; // 有多少个将领正在采集
-            for (int heroId : player.heroAcq) {
-                Hero h = player.heros.get(heroId);
+            for (PartnerHero partnerHero : player.getPlayerFormation().getHeroAcq()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                Hero h = partnerHero.getPrincipalHero();
                 if (null != h && h.getState() == HeroConstant.HERO_STATE_COLLECT) {
                     stateAcqCount++;
                 }
             }
-            for (int heroId : player.heroBattle) {
-                Hero h = player.heros.get(heroId);
+            for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                Hero h = partnerHero.getPrincipalHero();
                 if (null != h && h.getState() == HeroConstant.HERO_STATE_COLLECT) {
                     stateAcqCount++;
                 }
@@ -2162,10 +2166,11 @@ public class WorldService {
                 LogUtil.error("获取Battle补兵出错", e);
             }
             // 空闲上阵将领,和城防军
-            List<Hero> heroList = defencer.getDefendHeros();
-            for (Hero hero : heroList) {
-                if (hero.getCount() > 0) {
-                    realDefArm += hero.getCount();
+            List<PartnerHero> heroList = defencer.getDefendHeroList();
+            for (PartnerHero hero : heroList) {
+                if (HeroUtil.isEmptyPartner(hero)) continue;
+                if (hero.getPrincipalHero().getCount() > 0) {
+                    realDefArm += hero.getPrincipalHero().getCount();
                 }
             }
             // 城防NPC
@@ -3591,14 +3596,14 @@ public class WorldService {
                     city = PbHelper.createScoutCityPb(target.building.getWall(), tarLord.getFight(),
                             (int) res.getArm1(), (int) res.getArm2(), (int) res.getArm3());
                     if (ret >= WorldConstant.SCOUT_RET_SUCC3) {// 获取资源、城池、将领信息
-                        List<Hero> defheros = target.getAllOnBattleHeros();// 玩家所有上阵将领信息
+                        List<PartnerHero> defheros = target.getAllOnBattleHeroList();// 玩家所有上阵将领信息
                         sHeroList = new ArrayList<>();
                         int state;
                         int source;
-                        for (Hero hero : defheros) {
+                        for (PartnerHero hero : defheros) {
                             source = WorldConstant.HERO_SOURCE_BATTLE;
-                            state = getScoutHeroState(source, hero.getState());
-                            sHeroList.add(PbHelper.createScoutHeroPb(hero, source, state, target));
+                            state = getScoutHeroState(source, hero.getPrincipalHero().getState());
+                            sHeroList.add(PbHelper.createScoutHeroPb(hero.getPrincipalHero(), source, state, target));
                         }
 
                         // 城防将、城防军、协防驻守玩家的将领信息

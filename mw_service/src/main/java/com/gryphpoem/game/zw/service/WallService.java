@@ -24,11 +24,11 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -173,8 +173,10 @@ public class WallService {
         int allSecond = 0;// 距离上次补兵的间隔时间
         int armyCount = 0; // 先计算距离现在最多可以补兵多少
         boolean flag = true;
-        for (int i = 1; i < player.heroWall.length; i++) {
-            Hero hero = player.heros.get(player.heroWall[i]);
+        for (int i = 1; i < player.getPlayerFormation().getHeroWall().length; i++) {
+            PartnerHero partnerHero = player.getPlayerFormation().getHeroWall()[i];
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            Hero hero = partnerHero.getPrincipalHero();
             if (hero == null) {
                 continue;
             }
@@ -234,28 +236,16 @@ public class WallService {
                                 AwardFrom.WALL_NPC_AUTO_ARMY);// , "城墙自动补兵"
                         hero.setCount(hero.getCount() + add);
                         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
-
-                        //记录玩家兵力变化信息
-                        // LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
-                        //         Constant.ACTION_ADD, armyType, hero.getQuality());
-
-                        // 上报玩家兵力变化信息
-//                        LogLordHelper.playerArm(
-//                                AwardFrom.WALL_NPC_AUTO_ARMY,
-//                                player,
-//                                armyType,
-//                                Constant.ACTION_ADD,
-//                                add,
-//                                playerDataManager.getArmCount(player.resource, armyType)
-//                        );
                     }
                 }
                 hero.setWallArmyTime(now);
                 armyCount -= add; // 计算剩余的可以补的兵力
                 // 如果本将领补满了修改下一个将领的补兵时间
                 if (hero.getCount() >= maxArmy) {// 每次补满兵都会影响都城墙上所有的时间
-                    for (int j = i + 1; j < player.heroWall.length; j++) {
-                        Hero heroNest = player.heros.get(player.heroWall[j]);
+                    for (int j = i + 1; j < player.getPlayerFormation().getHeroWall().length; j++) {
+                        PartnerHero partnerHeroJ = player.getPlayerFormation().getHeroWall()[j];
+                        if (HeroUtil.isEmptyPartner(partnerHeroJ)) continue;
+                        Hero heroNest = partnerHeroJ.getPrincipalHero();
                         if (heroNest != null) {
                             heroNest.setWallArmyTime(now);
                         }
@@ -348,150 +338,6 @@ public class WallService {
     }
 
     /**
-     * 城墙布置
-     *
-     * @param roleId
-     * @param pos
-     * @param heroId
-     * @param type
-     * @return
-     * @throws MwException
-     */
-    public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
-        Player player = playerDataManager.checkPlayerIsExist(roleId);
-        // 检测是否满足开启天策府
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(1)) {
-            // 内阁等级小于3级禁止开发
-            throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
-        }
-
-        // 检查pos位是否正常
-        if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
-            throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:",
-                    pos);
-        }
-        // for (int id : player.heroBattle) {
-        // if (heroId == id) {
-        // throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), "将领已上阵, roleId:", roleId, ", heroId:",
-        // heroId);
-        // }
-        // }
-
-        // 检测配置是否正确
-        List<Integer> lvRequire = Constant.GUARDS_HERO_REQUIRE;
-        if (CheckNull.isEmpty(lvRequire) || lvRequire.size() != 4) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "内阁采集将领上阵队列位置不正确, roleId:", roleId, ", pos:", pos);
-        }
-        int lv = player.lord.getLevel();
-        // 检测等级是否满足
-        if (pos == HeroConstant.HERO_BATTLE_1) {
-            if (lv < lvRequire.get(0)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_2) {
-            if (lv < lvRequire.get(1)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_3) {
-            if (lv < lvRequire.get(2)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_4) {
-            if (lv < lvRequire.get(3)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        }
-
-        Hero hero = heroService.checkHeroIsExist(player, heroId);
-        WallSetRs.Builder builder = WallSetRs.newBuilder();
-        boolean sysClientUpdateMedal = false;
-        if (type == 1) {
-            // 判断该将领是否在武将上阵
-            if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId)) {
-                throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), "是武将将领已上阵, roleId:", roleId, ", heroId:",
-                        heroId);
-            }
-            Hero battleHero = player.getWallHeroByPos(pos);
-
-            if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
-                if (!battleHero.isIdle()) {
-                    throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
-                }
-                // 位置上已有其他将领存在，现将该将领下阵
-                if (swap) {// 如果需要交换装备，执行交换装备的逻辑
-                    // rewardDataManager.checkBagCnt(player);
-                    heroService.swapHeroEquip(player, hero, battleHero);
-                }
-                if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
-                    heroService.swapHeroTreasure(player, battleHero, hero);
-                }
-                if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
-                    heroService.swapHeroMedal(player, battleHero, hero);
-                    sysClientUpdateMedal = true;
-                }
-                downWallHeroAndBackRes(player, battleHero);
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, battleHero);
-                // 下阵
-                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
-            }
-
-            List<TwoInt> seasonTalentAttr = null;
-            // 将领上阵
-            hero.onWall(pos);
-            player.heroWall[pos] = heroId;// 更新已上阵将领队列信息
-            // 重新调整位置
-            reAdjustHeroPos(player.heroWall, player.heros);
-            // 重新计算并更新将领属性
-            CalculateUtil.processAttr(player, hero);
-            // 返回将领上阵协议
-            if (hero.isOnWall()) {
-                //禁卫军赛季天赋加成
-                List<TwoInt> janitorAttr = DataResource.getBean(SeasonTalentService.class).getSeasonTalentEffectTwoInt(player, hero, SeasonConst.TALENT_EFFECT_619);
-                if (!ObjectUtils.isEmpty(janitorAttr)) {
-                    seasonTalentAttr = new ArrayList<>(janitorAttr);
-                }
-            }
-
-            builder.setUpHero(PbHelper.createHeroPb(hero, player, seasonTalentAttr));
-        } else {
-            // 下阵
-            int myPos = 0;
-            for (int i = 1; i < player.heroAcq.length; i++) {
-                if (player.heroWall[i] == heroId) {
-                    myPos = i;
-                    break;
-                }
-            }
-            Hero battleHero = player.getWallHeroByPos(myPos);
-            if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
-                if (!battleHero.isIdle()) {
-                    throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
-                }
-                downWallHeroAndBackRes(player, battleHero);
-                player.heroWall[myPos] = 0; // 下阵的位置清0
-                // 重新调整位置
-                reAdjustHeroPos(player.heroWall, player.heros);
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, battleHero);
-                // 下阵
-                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
-            }
-        }
-        for (int i = 1; i < player.heroWall.length; i++) {
-            if (player.heroWall[i] != 0)
-                builder.addHeroIds(player.heroWall[i]);
-        }
-
-        builder.setUpdateMedal(sysClientUpdateMedal);
-        return builder.build();
-    }
-
-    /**
      * 重新调整位置
      *
      * @param heroIds
@@ -525,7 +371,7 @@ public class WallService {
      * @param player
      * @param downHero 需要下的将领
      */
-    private void downWallHeroAndBackRes(Player player, Hero downHero) {
+    public void downWallHeroAndBackRes(Player player, Hero downHero) {
         downHero.onWall(0);// 将领下阵，pos设置为0
         // 返还资源
         int sub = downHero.getCount();
@@ -538,19 +384,6 @@ public class WallService {
         downHero.setCount(0);
         rewardDataManager
                 .addAward(player, AwardType.RESOURCE, AwardType.Resource.FOOD, sub * radio, AwardFrom.HERO_DOWN);
-        //记录玩家兵力变化信息
-        // LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
-        //         Constant.ACTION_SUB, armyType, downHero.getQuality());
-
-        // 上报玩家兵力变化信息
-//        LogLordHelper.playerArm(
-//                AwardFrom.HERO_DOWN,
-//                player,
-//                armyType,
-//                Constant.ACTION_SUB,
-//                -sub,
-//                playerDataManager.getArmCount(player.resource, armyType)
-//        );
 
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
@@ -982,8 +815,10 @@ public class WallService {
 
             // 设置所有城防将领时间
             int now = TimeHelper.getCurrentSecond();
-            for (int j = 1; j < player.heroWall.length; j++) {
-                Hero heroNest = player.heros.get(player.heroWall[j]);
+            for (int j = 1; j < player.getPlayerFormation().getHeroWall().length; j++) {
+                PartnerHero partnerHero = player.getPlayerFormation().getHeroWall()[j];
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                Hero heroNest = partnerHero.getPrincipalHero();
                 if (heroNest != null) {
                     heroNest.setWallArmyTime(now);
                 }

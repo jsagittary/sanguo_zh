@@ -6,7 +6,6 @@ import com.gryphpoem.cross.gameplay.player.common.*;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFightDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
@@ -204,17 +203,17 @@ public class CrossEntity2Dto {
             Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
             crossHero.setAttrMap(attrMap);
 
-            if (!ObjectUtils.isEmpty(hero.getSkillLevels())) {
-                crossHero.setSkillAction(new ArrayList<>());
-                for (Map.Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-                    StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
-                    if (Objects.nonNull(heroSkill)) {
-                        StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
-                        if (Objects.nonNull(ska))
-                            crossHero.getSkillAction().add(ska.getId());
-                    }
-                }
-            }
+//            if (!ObjectUtils.isEmpty(hero.getSkillLevels())) {
+//                crossHero.setSkillAction(new ArrayList<>());
+//                for (Map.Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
+//                    StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
+//                    if (Objects.nonNull(heroSkill)) {
+//                        StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
+//                        if (Objects.nonNull(ska))
+//                            crossHero.getSkillAction().add(ska.getId());
+//                    }
+//                }
+//            }
 
             crossHero.setState(hero.getState());
         }

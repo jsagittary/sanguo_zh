@@ -23,6 +23,7 @@ import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
@@ -30,6 +31,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.BerlinForce;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -704,10 +706,6 @@ public class FightService {
      * @return
      */
     public Fighter createCombatPlayerFighter(Player player, List<Integer> heroIds) {
-        if (null == player.heroBattle) {
-            return null;
-        }
-
         Fighter fighter = createFighter();
         StaticHero staticHero = null;
         Force force;
@@ -826,26 +824,21 @@ public class FightService {
         Fighter fighter = createFighter();
 
         for (Player p : players) {
-            if (p.heroBattle != null) {
-                for (int i = 1; i < p.heroBattle.length; i++) {
-                    int heroId = p.heroBattle[i];
-                    Hero hero = p.heros.get(heroId);
-                    if (hero == null) {
-                        continue;
-                    }
-                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                    if (null == staticHero) {
-                        LogUtil.error("创建Fighter，heroId未配置, heroId:", hero.getHeroId());
-                        continue;
-                    }
-                    Force force = createForce(p, staticHero, hero.getHeroId(), hero.getAttr()[HeroConstant.ATTR_LEAD]);
-                    force.roleType = Constant.Role.PLAYER;
-                    force.ownerId = p.roleId;
-                    force.camp = p.lord.getCamp();
-                    force.skillId = staticHero.getSkillId();
-                    fighter.addForce(force);
-                    addMedalAuraSkill(fighter, hero, p);
+            PartnerHero[] heroBattle = p.getPlayerFormation().getHeroBattle();
+            for (int i = 1; i < heroBattle.length; i++) {
+                PartnerHero partnerHero = heroBattle[i];
+                if (HeroUtil.isEmptyPartner(partnerHero)) {
+                    continue;
                 }
+
+                Force force = createPartnerForce(p, partnerHero);
+                if (CheckNull.isNull(force)) continue;
+
+                force.roleType = Constant.Role.PLAYER;
+                force.ownerId = p.roleId;
+                force.camp = p.lord.getCamp();
+                fighter.addForce(force);
+                addMedalAuraSkill(fighter, hero, p);
             }
         }
         fighter.roleType = Constant.Role.PLAYER;
@@ -1112,6 +1105,53 @@ public class FightService {
     }
 
     /**
+     * 创建带有副将的force
+     *
+     * @param player
+     * @param partnerHero
+     * @return
+     */
+    public Force createPartnerForce(Player player, PartnerHero partnerHero) {
+        if (HeroUtil.isEmptyPartner(partnerHero) || CheckNull.isNull(partnerHero.getPrincipalHero()))
+            return null;
+
+        Hero hero = partnerHero.getPrincipalHero();
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        if (null == staticHero) {
+            LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHero.getPrincipalHero().getHeroId());
+            return null;
+        }
+
+        Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
+        AttrData attrData = new AttrData(attrMap);
+        int line = calcHeroLine(player, hero, staticHero.getLine());
+        int lead = (int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / line);// 当兵力不能被整除时，向上取整
+        int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
+        int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
+        Force force = new Force(attrData, staticHero.getType(), hero.getAttr()[HeroConstant.ATTR_LEAD], lead,
+                staticHero.getHeroId(), player.roleId);
+        // 添加战机详情
+        addPlaneInfo(player, hero, force);
+        //设置英雄战斗技能
+        loadHeroSkill(force, hero);
+        force.setIntensifyLv(heroLv);
+        force.setEffect(restrain);
+
+        if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+            // 添加所有副将
+            partnerHero.getDeputyHeroList().forEach(hero_ -> {
+                if (CheckNull.isNull(hero_)) return;
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
+                force.assistantHeroList.add(fightAssistantHero);
+            });
+        }
+
+        return force;
+    }
+
+    /**
      * @param player
      * @param staticHero
      * @param heroId     将领id
@@ -1176,12 +1216,48 @@ public class FightService {
             force.getSkillList(hero.getHeroId()).add(simpleHeroSkill);
         }
         for (Integer skillGroupId : staticHero.getActiveSkills()) {
-            StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, 1);
+            StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+            if (CheckNull.isNull(staticHeroUpgrade)) continue;
+            StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, staticHeroUpgrade.getSkillLv());
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
             SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, false);
             force.getSkillList(hero.getHeroId()).add(simpleHeroSkill);
         }
+    }
+
+    /**
+     * 获取当前武将所有技能
+     *
+     * @param hero
+     * @return
+     */
+    private List<SimpleHeroSkill> getHeroSkill(Hero hero) {
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        if (CheckNull.isNull(staticHero))
+            return null;
+        if (CheckNull.isEmpty(staticHero.getOnStageSkills()) && CheckNull.isEmpty(staticHero.getActiveSkills()))
+            return null;
+
+        List<SimpleHeroSkill> skillList = new ArrayList<>(staticHero.getTotalSkillNum());
+        for (Integer skillGroupId : staticHero.getOnStageSkills()) {
+            StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, 1);
+            if (CheckNull.isNull(staticHeroSkill))
+                continue;
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, true);
+            skillList.add(simpleHeroSkill);
+        }
+        for (Integer skillGroupId : staticHero.getActiveSkills()) {
+            StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
+            if (CheckNull.isNull(staticHeroUpgrade)) continue;
+            StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, staticHeroUpgrade.getSkillLv());
+            if (CheckNull.isNull(staticHeroSkill))
+                continue;
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, false);
+            skillList.add(simpleHeroSkill);
+        }
+
+        return skillList;
     }
 
     /**

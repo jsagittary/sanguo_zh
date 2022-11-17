@@ -826,8 +826,8 @@ public class EventDataUp {
             StaticHeroUpgrade upgradeStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
             common.put("hero_quality", Objects.nonNull(upgradeStaticData) ? upgradeStaticData.getGrade() * 1000 + upgradeStaticData.getLevel() : 0);
             common.put("hero_awaken_times", hero.getDecorated());
-            Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
-            common.put("hero_skill", Objects.nonNull(skillLvMap) ? skillLvMap.getValue() : 0);
+//            Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
+//            common.put("hero_skill", 0);
             Map<String, Object> propertyMap = new HashMap<>(); //固定格式，只改name
             propertyMap.put("name", "hero_level_up");
             propertyMap.put("time", TimeHelper.getCurrentSecond());

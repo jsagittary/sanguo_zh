@@ -21,6 +21,7 @@ import com.gryphpoem.game.zw.resource.pojo.StoneHole;
 import com.gryphpoem.game.zw.resource.pojo.StoneImprove;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.LogLordHelper;
@@ -34,9 +35,9 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
+ * @author QiuKun
  * @ClassName StoneService.java
  * @Description 宝石
- * @author QiuKun
  * @date 2018年5月8日
  */
 @Service
@@ -59,7 +60,7 @@ public class StoneService {
 
     /**
      * 获取宝石相关信息
-     * 
+     *
      * @param roleId
      * @return
      */
@@ -80,7 +81,7 @@ public class StoneService {
 
     /**
      * 宝石镶嵌
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -91,8 +92,9 @@ public class StoneService {
         int type = req.hasType() ? req.getType() : 0; // 0 镶嵌宝石 , 1 镶嵌进阶后宝石
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-        for (Hero hero : player.getAllOnBattleHeros()) {
+        for (PartnerHero partnerHero : player.getAllOnBattleHeroList()) {
             // 非空闲状态
+            Hero hero = partnerHero.getPrincipalHero();
             if (!hero.isIdle() && hero.getState() != ArmyConstant.ARMY_STATE_RETREAT) {
                 throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "AttackPos，将领不在空闲中, roleId:", roleId, ", heroId:",
                         hero.getHeroId(), ", state:", hero.getState());
@@ -154,7 +156,7 @@ public class StoneService {
                         stoneImprove.getKeyId(), ", holeIndex:", stoneImprove.getHoleIndex());
             }
             for (StoneHole sh : stoneHoles.values()) {
-                if(sh.getType() == StoneHole.TYPE_STONE_IMPROVE && sh.getStoneId()==stoneId){
+                if (sh.getType() == StoneHole.TYPE_STONE_IMPROVE && sh.getStoneId() == stoneId) {
                     throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId:", roleId, ",此宝石已经穿戴了 keyId:",
                             stoneImprove.getKeyId(), ", holeIndex:", sh.getHoleIndex());
                 }
@@ -203,7 +205,7 @@ public class StoneService {
 
     /**
      * 检查孔位是否开启
-     * 
+     *
      * @param player
      * @param hole
      * @return
@@ -225,7 +227,7 @@ public class StoneService {
 
     /**
      * 宝石合成升级
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -473,7 +475,7 @@ public class StoneService {
         // 扣除玩家升星消耗
         rewardDataManager.checkAndSubPlayerRes(player, costStone, AwardFrom.STONE_IMPROVE_UP_LV);
         //打印日志
-        LogLordHelper.stoneLvUp(AwardFrom.STONE_IMPROVE_UP_LV, player.account, player.lord,keyId, stoneImprove.getStoneImproveId(),stoneImprove.getExp(),addExp);
+        LogLordHelper.stoneLvUp(AwardFrom.STONE_IMPROVE_UP_LV, player.account, player.lord, keyId, stoneImprove.getStoneImproveId(), stoneImprove.getExp(), addExp);
         // 加经验
         addStoneImproveExp(player, stoneImprove, addExp);
         StoneImproveUpLvRs.Builder builder = StoneImproveUpLvRs.newBuilder();
@@ -527,7 +529,7 @@ public class StoneService {
 
     /**
      * 合并宝石
-     * 
+     *
      * @param costStoneList
      * @return key:stoneId value:cnt
      */
@@ -553,7 +555,7 @@ public class StoneService {
 
     /**
      * 单个等级升
-     * 
+     *
      * @param player
      * @param nextLvStone
      * @param stoneHole
@@ -584,6 +586,7 @@ public class StoneService {
 
     /**
      * 自动升级
+     *
      * @param player
      * @param nextLvStone
      * @param stoneHole
@@ -622,7 +625,7 @@ public class StoneService {
 
     /**
      * 计算合成的次数
-     * 
+     *
      * @param needCost
      * @return
      */
@@ -632,9 +635,9 @@ public class StoneService {
 
     /**
      * 计算需要消耗的宝石的数量
-     * 
+     *
      * @param player
-     * @param sStone 需要升级的到的等级
+     * @param sStone        需要升级的到的等级
      * @param holeonStoneId 孔上面宝石的id
      * @return 返回null 宝石数量不够
      */

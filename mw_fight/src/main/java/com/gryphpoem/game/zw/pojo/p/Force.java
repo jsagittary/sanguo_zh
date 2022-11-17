@@ -40,7 +40,6 @@ public class Force {
     public boolean hasFight;// 记录是否参与过战斗
     public int camp; // 阵营
     public int roleType; // 1玩家,2流寇NPC,3城池守将NPC,4城池NPC
-    public int skillId;// 技能id 0表示 无技能
     public int intensifyLv; // 兵种强化等级
     public int effect; // 强化克制比
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
@@ -111,6 +110,7 @@ public class Force {
         if (this.count == 0) {
             this.count = lead;
         }
+        this.assistantHeroList = new ArrayList<>();
         LogUtil.fight("Force=" + toString());
     }
 
@@ -288,7 +288,7 @@ public class Force {
             return false;
         count = lead;
         this.curLine++;
-        
+
         LogUtil.fight(String.format("防守方角色id: %d, 当前兵排: %d, 最大兵排: %d, <<<<<<切换兵排>>>>>>",
                 this.ownerId, count, curLine, maxLine));
         return true;

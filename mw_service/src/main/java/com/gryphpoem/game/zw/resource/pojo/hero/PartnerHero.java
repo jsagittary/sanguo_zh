@@ -1,0 +1,67 @@
+package com.gryphpoem.game.zw.resource.pojo.hero;
+
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.pojo.GamePb;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
+import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Description:
+ * Author: zhangpeng
+ * createTime: 2022-11-17 10:21
+ */
+@Data
+public class PartnerHero implements GamePb<CommonPb.PartnerHeroPb> {
+    /**
+     * 若当前武将为主将, 副将列表
+     */
+    private List<Hero> deputyHeroList;
+    /**
+     * 若当前武将为副将, 主将信息
+     */
+    private Hero principalHero;
+
+    public PartnerHero() {
+        deputyHeroList = new ArrayList<>(1);
+    }
+
+    public void setState(int state) {
+        if (CheckNull.isEmpty(deputyHeroList)) return;
+        deputyHeroList.forEach(hero -> {
+            if (CheckNull.isNull(hero)) return;
+            hero.setState(state);
+        });
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PartnerHero that = (PartnerHero) o;
+        if (that.getPrincipalHero() == null) return false;
+        return principalHero.getHeroId() == that.getPrincipalHero().getHeroId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(principalHero.getHeroId());
+    }
+
+    @Override
+    public CommonPb.PartnerHeroPb createPb(boolean isSaveDb) {
+        CommonPb.PartnerHeroPb.Builder builder = CommonPb.PartnerHeroPb.newBuilder();
+        if (Objects.nonNull(this.principalHero)) {
+            builder.addOne(HeroUtil.onePartnerHeroPb(this.principalHero));
+        }
+        if (CheckNull.nonEmpty(this.getDeputyHeroList())) {
+            this.deputyHeroList.forEach(hero -> builder.addOne(HeroUtil.onePartnerHeroPb(hero)));
+        }
+
+        return builder.build();
+    }
+}

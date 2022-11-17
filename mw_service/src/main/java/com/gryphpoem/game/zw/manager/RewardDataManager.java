@@ -2523,14 +2523,14 @@ public class RewardDataManager {
             hero.initHeroGrade();
             //如果是赛季英雄则初始化英雄技能
             if (staticHero.getSeason() > 0) {
-                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
-                if (Objects.nonNull(skillMap)) {
-                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
-                        int skillId = entry.getKey();
-                        int initLv = entry.getValue().firstKey();
-                        hero.getSkillLevels().put(skillId, initLv);
-                    }
-                }
+//                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+//                if (Objects.nonNull(skillMap)) {
+//                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+//                        int skillId = entry.getKey();
+//                        int initLv = entry.getValue().firstKey();
+//                        hero.getSkillLevels().put(skillId, initLv);
+//                    }
+//                }
                 hero.setCgyStage(1);
                 hero.setCgyLv(0);
 
@@ -2628,14 +2628,14 @@ public class RewardDataManager {
             hero.setGradeKeyId(gradeKeyId);
             //如果是赛季英雄则初始化英雄技能
             if (staticHero.getSeason() > 0) {
-                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
-                if (Objects.nonNull(skillMap)) {
-                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
-                        int skillId = entry.getKey();
-                        int initLv = entry.getValue().firstKey();
-                        hero.getSkillLevels().put(skillId, initLv);
-                    }
-                }
+//                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+//                if (Objects.nonNull(skillMap)) {
+//                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+//                        int skillId = entry.getKey();
+//                        int initLv = entry.getValue().firstKey();
+//                        hero.getSkillLevels().put(skillId, initLv);
+//                    }
+//                }
                 hero.setCgyStage(1);
                 hero.setCgyLv(0);
 

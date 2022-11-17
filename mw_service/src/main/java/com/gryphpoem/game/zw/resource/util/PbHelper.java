@@ -492,12 +492,6 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue() + addAttrValue));
         }
         int value;
-//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-//            value = hero.getWash()[i];
-//            if (value > 0) {
-//                builder.addWash(createTwoIntPb(i, value));
-//            }
-//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -582,9 +576,6 @@ public class PbHelper {
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
         builder.setCgyLv(hero.getCgyLv());
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
-        }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
         Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
             if (hero.getTotemKey(j) > 0) {
@@ -596,6 +587,8 @@ public class PbHelper {
         }
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
+        builder.setHeroRoleType(hero.getRoleType());
+        builder.setDeputyPos(hero.getDeputyPos());
         return builder.build();
     }
 
@@ -611,12 +604,6 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         int value;
-//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-//            value = hero.getWash()[i];
-//            if (value > 0) {
-//                builder.addWash(createTwoIntPb(i, value));
-//            }
-//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -703,9 +690,6 @@ public class PbHelper {
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
         builder.setCgyLv(hero.getCgyLv());
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
-        }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
         Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
             if (hero.getTotemKey(j) > 0) {
@@ -2038,42 +2022,42 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.Friend createFriendAndHeroPb(Man man, List<FriendHero> heros, DbFriend dbFriend) {
+    public static CommonPb.Friend createFriendAndHeroPb(Man man, List<CommonPb.PartnerHeroPb> heroPbList, DbFriend dbFriend) {
         CommonPb.Friend.Builder builder = CommonPb.Friend.newBuilder();
         builder.setMan(man);
         builder.setAddTime(dbFriend.getAddTime());
         builder.setState(dbFriend.getState());
-        builder.addAllHero(heros);
+        builder.addAllHero(heroPbList);
         return builder.build();
     }
 
-    public static CommonPb.FriendHero createFriendAndHeroPb(Hero hero, Player player) {
-        CommonPb.FriendHero.Builder builder = CommonPb.FriendHero.newBuilder();
-        builder.setHeroId(hero.getHeroId());
-        builder.setLevel(hero.getLevel());
-        builder.setExp(hero.getExp());
-        if (hero.isOnBattle()) {
-            builder.setCount(hero.getCount());
-            builder.setPos(hero.getPos());
-        }
-        List<Integer> warPlanes = hero.getWarPlanes();
-        if (!CheckNull.isEmpty(warPlanes)) {
-            for (int planeId : warPlanes) {
-                try {
-                    WarPlane warPlane = player.checkWarPlaneIsExist(planeId);
-                    if (!CheckNull.isNull(warPlane)) {
-                        builder.addPlanes(createTwoIntPb(planeId, warPlane.getLevel()));
-                        builder.addPlanePos(createTwoIntPb(warPlane.getBattlePos(), planeId));
-                    }
-                } catch (MwException e) {
-                    LogUtil.error(e);
-                }
-            }
-        }
-        builder.setDecorated(hero.getDecorated());
-        builder.setGradeKeyId(hero.getGradeKeyId());
-        return builder.build();
-    }
+//    public static CommonPb.FriendHero createFriendAndHeroPb(Hero hero, Player player) {
+//        CommonPb.FriendHero.Builder builder = CommonPb.FriendHero.newBuilder();
+//        builder.setHeroId(hero.getHeroId());
+//        builder.setLevel(hero.getLevel());
+//        builder.setExp(hero.getExp());
+//        if (hero.isOnBattle()) {
+//            builder.setCount(hero.getCount());
+//            builder.setPos(hero.getPos());
+//        }
+//        List<Integer> warPlanes = hero.getWarPlanes();
+//        if (!CheckNull.isEmpty(warPlanes)) {
+//            for (int planeId : warPlanes) {
+//                try {
+//                    WarPlane warPlane = player.checkWarPlaneIsExist(planeId);
+//                    if (!CheckNull.isNull(warPlane)) {
+//                        builder.addPlanes(createTwoIntPb(planeId, warPlane.getLevel()));
+//                        builder.addPlanePos(createTwoIntPb(warPlane.getBattlePos(), planeId));
+//                    }
+//                } catch (MwException e) {
+//                    LogUtil.error(e);
+//                }
+//            }
+//        }
+//        builder.setDecorated(hero.getDecorated());
+//        builder.setGradeKeyId(hero.getGradeKeyId());
+//        return builder.build();
+//    }
 
     public static CommonPb.DbMasterApprentice createDbMasterApprenticePb(DbMasterApprentice masterApprentice) {
         CommonPb.DbMasterApprentice.Builder builder = CommonPb.DbMasterApprentice.newBuilder();

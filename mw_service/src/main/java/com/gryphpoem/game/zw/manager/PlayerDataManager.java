@@ -30,6 +30,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PlayerFormation;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -1121,13 +1123,15 @@ public class PlayerDataManager implements PlayerDM {
             int armType; // 记录将领所属兵种
             StaticHero staticHero;
             ChangeInfo change = ChangeInfo.newIns();
+            PlayerFormation playerFormation = player.getPlayerFormation();
+
             // 上阵将领 + 采集将领 自动补兵
-            int[] heroIds = new int[player.heroBattle.length + player.heroAcq.length + player.heroCommando.length];
-            System.arraycopy(player.heroBattle, 0, heroIds, 0, player.heroBattle.length);
-            System.arraycopy(player.heroAcq, 0, heroIds, player.heroBattle.length, player.heroAcq.length);
-            System.arraycopy(player.heroCommando, 0, heroIds, player.heroBattle.length + player.heroAcq.length, player.heroCommando.length);
-            for (int heroId : heroIds) {
-                hero = player.heros.get(heroId);
+            PartnerHero[] heroIds = new PartnerHero[playerFormation.getHeroBattle().length + playerFormation.getHeroAcq().length];
+            System.arraycopy(playerFormation.getHeroBattle(), 0, heroIds, 0, playerFormation.getHeroBattle().length);
+            System.arraycopy(playerFormation.getHeroAcq(), 0, heroIds, playerFormation.getHeroBattle().length, playerFormation.getHeroAcq().length);
+
+            for (PartnerHero partnerHero : heroIds) {
+                hero = partnerHero.getPrincipalHero();
                 if (hero == null) {
                     continue;
                 }
@@ -1136,6 +1140,7 @@ public class PlayerDataManager implements PlayerDM {
                     continue;
                 }
 
+                int heroId = hero.getHeroId();
                 max = hero.getAttr()[HeroConstant.ATTR_LEAD];
                 if (hero.getCount() >= max) {
                     hero.setCount(max);
@@ -1169,16 +1174,6 @@ public class PlayerDataManager implements PlayerDM {
                 }
                 // 增加武将兵力
                 hero.setCount(hero.getCount() + add);
-                // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
-                //         Constant.ACTION_ADD);
-
-                // 上报玩家兵力变化信息
-//                LogLordHelper.playerArm(
-//                        AwardFrom.REPLENISH,
-//                        player, armType,
-//                        Constant.ACTION_ADD,
-//                        add
-//                );
 
                 change.addChangeType(AwardType.ARMY, armType);
                 change.addChangeType(AwardType.HERO_ARM, heroId);

@@ -7,7 +7,6 @@ import com.gryphpoem.cross.gameplay.player.common.CrossMedal;
 import com.gryphpoem.cross.gameplay.player.common.CrossSeasonTalent;
 import com.gryphpoem.cross.player.dto.PlayerLordDto;
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.dataMgr.StaticFightDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.manager.MedalDataManager;
@@ -20,9 +19,7 @@ import com.gryphpoem.game.zw.resource.constant.SeasonConst;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSeasonSkill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalent;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSkillAction;
 import com.gryphpoem.game.zw.resource.pojo.chat.RoleChat;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -181,19 +178,19 @@ public final class DtoParser {
     }
 
     private static List<Integer> buildHeroSkill(Hero hero) {
-        List<Integer> skillActionList = null;
-        for (Map.Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
-            if (Objects.nonNull(heroSkill)) {
-                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
-                if (Objects.nonNull(ska)) {
-                    if (skillActionList == null) {
-                        skillActionList = new ArrayList<>();
-                    }
-                    skillActionList.add(ska.getId());
-                }
-            }
-        }
-        return skillActionList;
+//        List<Integer> skillActionList = null;
+//        for (Map.Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
+//            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
+//            if (Objects.nonNull(heroSkill)) {
+//                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
+//                if (Objects.nonNull(ska)) {
+//                    if (skillActionList == null) {
+//                        skillActionList = new ArrayList<>();
+//                    }
+//                    skillActionList.add(ska.getId());
+//                }
+//            }
+//        }
+        return null;
     }
 }

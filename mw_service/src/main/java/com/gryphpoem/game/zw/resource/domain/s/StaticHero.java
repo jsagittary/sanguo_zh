@@ -59,6 +59,10 @@ public class StaticHero {
      * 每回合充能属性
      */
     private List<List<Integer>> chargeEveryRound;
+    /**
+     * 副将容许的兵种
+     */
+    private List<Integer> deputyArms;
 
     public int getHeroType() {
         return heroType;
@@ -350,6 +354,14 @@ public class StaticHero {
         return this.chargeEveryRound.stream().filter(arr -> arr.get(0) == attrId).map(arr -> arr.get(1)).findFirst().orElse(0);
     }
 
+    public List<Integer> getDeputyArms() {
+        return deputyArms;
+    }
+
+    public void setDeputyArms(List<Integer> deputyArms) {
+        this.deputyArms = deputyArms;
+    }
+
     /**
      * 根据属性id获取将领的基础属性值
      *
@@ -392,5 +404,14 @@ public class StaticHero {
     public int getAttrGrowthById(int attrId) {
         Integer value = getGrowth().get(attrId);
         return null == value ? 0 : value;
+    }
+
+    public int getTotalSkillNum() {
+        int total = 0;
+        if (CheckNull.nonEmpty(this.onStageSkills))
+            total += this.onStageSkills.size();
+        if (CheckNull.nonEmpty(this.activeSkills))
+            total += this.activeSkills.size();
+        return total;
     }
 }

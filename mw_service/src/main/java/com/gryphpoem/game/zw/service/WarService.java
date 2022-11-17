@@ -589,61 +589,13 @@ public class WarService {
             }
         }
 
-        // 如果不是怪物攻城， 而且是发起国战，没人参与打，直接结束
-        // if (battle.isCampBattle() && battle.getSponsor() != null &&
-        // battle.getAtkRoles().isEmpty()) {
-        // removeBattleIdSet.add(battle.getBattleId());
-        // StaticCity staticCity = StaticWorldDataMgr.getCityByPos(pos);
-        // City city = worldDataManager.getCityById(staticCity.getCityId());
-        // city.setStatus(WorldConstant.CITY_STATUS_CALM);
-        // Player atkP = battle.getSponsor();
-        // Turple<Integer, Integer> atkPos =
-        // MapHelper.reducePos(atkP.lord.getPos());
-        // Turple<Integer, Integer> defPos =
-        // MapHelper.reducePos(battle.getPos());
-        // int cityId = staticCity.getCityId();
-        // Lord atkLord = battle.getSponsor().lord;
-        // // 给进攻方发送进攻失败邮件
-        // mailDataManager.sendReportMail(battle.getSponsor(), null,
-        // MailConstant.MOLD_ATK_CAMP_FAIL, null, now,
-        // atkLord.getNick(), cityId, atkLord.getNick(), atkPos.getA(),
-        // atkPos.getB(), cityId, defPos.getA(),
-        // defPos.getB());
-        // // 给防守防发送防守成功邮件
-        // if (battle.getDefencer() != null) {
-        // mailDataManager.sendReportMail(battle.getDefencer(), null,
-        // MailConstant.MOLD_DEF_CAMP_SUCC, null, now,
-        // cityId, atkLord.getCamp(), atkLord.getLevel(), atkLord.getNick(),
-        // atkLord.getCamp(),
-        // atkLord.getLevel(), atkLord.getNick(), atkPos.getA(), atkPos.getB(),
-        // cityId, defPos.getA(),
-        // defPos.getB());
-        // }
-        // List<Integer> posList = new ArrayList<>();
-        // posList.add(staticCity.getCityPos());
-        // EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList,
-        // 0L, 3));
-        // return;
-        // }
-
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
 
         // 战斗计算
         int cityId = 0;
         City city = null;
-        Fighter defender = null;
+        Fighter defender;
         StaticCity staticCity = StaticWorldDataMgr.getCityByPos(pos);
-        // if (battle.isAtkNpc()) {
-        // if (null == staticCity) {
-        // LogUtil.error("创建阵营战Fighter， 未找到城池配置, pos:", pos);
-        // // 部队返回
-        // removeBattleIdSet.add(battle.getBattleId());
-        // return;
-        // }
-        // cityId = staticCity.getCityId();
-        // city = worldDataManager.getCityById(cityId);
-        // defender = fightService.createCityNpcFighter(cityId);
-        // } else {
         if (battle.isCityBattle()) {// 如果是城战，加上被攻击玩家的上阵将领
             addCityDefendRoleHeros(battle);
         } else {
@@ -671,9 +623,6 @@ public class WarService {
 
         // 判断是否由都城发起的攻击
         City atkCity = worldDataManager.getCityById(battle.getAtkCity());
-        // Fighter attacker = fightService.createMultiPlayerFighter(atkRoleList,
-        // battle.getAtkHeroIdMap(),
-        // null == atkCity ? null : getFormList4City(atkCity.getCityLv()));
         Fighter attacker = fightService.createMultiPlayerFighter(battle,
                 null == atkCity ? null : getFormList4City(atkCity.getCityLv()));
         LogUtil.debug("atkCity=" + atkCity + ",attacker=" + attacker);

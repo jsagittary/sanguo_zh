@@ -4,26 +4,9 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.CampDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.manager.TechDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.pb.GamePb1.AcqHeroSetRs;
-import com.gryphpoem.game.zw.pb.GamePb1.CabinetFinishRs;
-import com.gryphpoem.game.zw.pb.GamePb1.CabinetLvFinishRs;
-import com.gryphpoem.game.zw.pb.GamePb1.ComandoHeroSetRs;
-import com.gryphpoem.game.zw.pb.GamePb1.CreateLeadRs;
-import com.gryphpoem.game.zw.pb.GamePb1.GetCabinetRs;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.TechConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.GamePb1.*;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
@@ -51,23 +34,32 @@ import java.util.stream.Collectors;
  * @Description 西点军校(内阁)
  * @date 2017年7月14日
  */
-@Service public class WarFactoryService {
+@Service
+public class WarFactoryService {
 
-    @Autowired private PlayerDataManager playerDataManager;
+    @Autowired
+    private PlayerDataManager playerDataManager;
 
-    @Autowired private HeroService heroService;
+    @Autowired
+    private HeroService heroService;
 
-    @Autowired private RewardDataManager rewardDataManager;
+    @Autowired
+    private RewardDataManager rewardDataManager;
 
-    @Autowired private CampDataManager campDataManager;
+    @Autowired
+    private CampDataManager campDataManager;
 
-    @Autowired private WorldDataManager worldDataManager;
+    @Autowired
+    private WorldDataManager worldDataManager;
 
-    @Autowired private TechDataManager techDataManager;
+    @Autowired
+    private TechDataManager techDataManager;
 
-    @Autowired private ArmyService armyService;
+    @Autowired
+    private ArmyService armyService;
 
-    @Autowired private TaskDataManager taskDataManager;
+    @Autowired
+    private TaskDataManager taskDataManager;
 
     public ComandoHeroSetRs commandoHeroSet(long roleId, int pos, int heroId, int type, boolean swap, boolean swapPlane) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
@@ -126,11 +118,11 @@ import java.util.stream.Collectors;
                 downHero.setCount(0);
                 StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
 //                if (Objects.nonNull(staticHero)) {
-                    // 获取武将对应类型的兵力
+                // 获取武将对应类型的兵力
 //                    int armType = staticHero.getType();
-                    // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, downHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+                // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, downHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
 
-                    // 上报玩家兵力变化
+                // 上报玩家兵力变化
 //                    LogLordHelper.playerArm(
 //                            AwardFrom.HERO_DOWN,
 //                            player,
@@ -239,181 +231,21 @@ import java.util.stream.Collectors;
     }
 
     /**
-     * 内阁采集将领布置
-     *
-     * @param roleId
-     * @param pos    位置
-     * @param heroId
-     * @param type   1上阵 2下阵
-     * @return
-     * @throws MwException
-     */
-    public AcqHeroSetRs acqHeroSet(long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
-        Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(0)) {
-            // 内阁等级小于1级禁止开放
-            throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
-        }
-        // 检查pos位是否正常
-        if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
-            throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "内阁采集将领上阵队列位置不正确, roleId:", roleId,
-                    ", pos:", pos);
-        }
-
-        // 检测配置是否正确
-        List<Integer> lvRequire = Constant.ACQ_HERO_REQUIRE;
-        if (CheckNull.isEmpty(lvRequire) || lvRequire.size() != 4) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "内阁采集将领上阵队列位置不正确, roleId:", roleId, ", pos:", pos);
-        }
-        int lv = player.lord.getLevel();
-        // 检测等级是否满足
-        if (pos == HeroConstant.HERO_BATTLE_1) {
-            if (lv < lvRequire.get(0)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁采集将领布置等级不够 roleId:", roleId,
-                        ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_2) {
-            if (lv < lvRequire.get(1)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁采集将领布置等级不够 roleId:", roleId,
-                        ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_3) {
-            if (lv < lvRequire.get(2)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁采集将领布置等级不够 roleId:", roleId,
-                        ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_4) {
-            if (lv < lvRequire.get(3)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁采集将领布置等级不够 roleId:", roleId,
-                        ", pos:", pos);
-            }
-        }
-
-        // 将领是否存在
-        ChangeInfo change = null;
-        AcqHeroSetRs.Builder builder = AcqHeroSetRs.newBuilder();
-        boolean sysClientUpdateMedal = false;
-        if (1 == type) {// 上阵
-            Hero hero = heroService.checkHeroIsExist(player, heroId);
-            // 判断该将领是否在武将上阵
-            if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId) || player.isOnCommandoHero(heroId)) {
-                throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), "是武将将领已上阵, roleId:", roleId, ", heroId:",
-                        heroId);
-            }
-
-            Hero downHero = player.getAcqHeroByPos(pos);
-            if (null != downHero) {
-                if (!downHero.isIdle()) {
-                    throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作  roleId:", roleId, " state:",
-                            downHero.getState());
-                }
-                // 位置上已有其他将领存在，现将该将领下阵
-                if (swap) {// 如果需要交换装备，执行交换装备的逻辑
-                    // rewardDataManager.checkBagCnt(player);
-                    heroService.swapHeroEquip(player, hero, downHero);
-                }
-                if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
-                    heroService.swapHeroTreasure(player, downHero, hero);
-                }
-                if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
-                    heroService.swapHeroMedal(player, downHero, hero);
-                    sysClientUpdateMedal = true;
-                }
-                change = downAcqHeroAndBackRes(player, downHero);
-                // 记录返回下阵将领
-                builder.setDownHero(PbHelper.createHeroPb(downHero, player));
-
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, downHero);
-            }
-
-            // 采集将领上阵
-            hero.onAcq(pos);
-            player.heroAcq[pos] = heroId;// 更新已上阵将领队列信息
-            // 重新调整位置
-            reAdjustHeroPos(player.heroAcq, player.heros);
-            // 重新计算并更新将领属性
-            CalculateUtil.processAttr(player, hero);
-            taskDataManager.updTask(player,TaskType.COND_510,1,hero.getQuality());
-
-            if (techDataManager.isOpen(player, TechConstant.TYPE_19) && player.common.getAutoArmy() == 0) {
-                // 研究自动补兵,并且关闭了自动补兵:不进行补兵
-            } else {
-                // 上阵将领自动补兵
-                armyService.autoAddArmySingle(player, hero);
-            }
-            change = ChangeInfo.newIns();
-            change.addChangeType(AwardType.ARMY, hero.getType());
-            change.addChangeType(AwardType.HERO_ARM, hero.getHeroId());
-
-            builder.setUpHero(PbHelper.createHeroPb(hero, player));
-        } else {
-            int myPos = 0;
-            for (int i = 1; i < player.heroAcq.length; i++) {
-                if (player.heroAcq[i] == heroId) {
-                    myPos = i;
-                    break;
-                }
-            }
-            // 下阵
-            Hero downHero = player.getAcqHeroByPos(myPos);
-            if (downHero != null) {
-                if (!downHero.isIdle()) {
-                    throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作 roleId:", roleId, " state:",
-                            downHero.getState(), ", heroId:", downHero.getHeroId());
-                }
-                // 士兵回营
-                change = downAcqHeroAndBackRes(player, downHero);
-                // 重新调整
-                player.heroAcq[myPos] = 0;// 下阵的位置清0
-                reAdjustHeroPos(player.heroAcq, player.heros);
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, downHero);
-                // 记录返回下阵将领
-                builder.setDownHero(PbHelper.createHeroPb(downHero, player));
-            }
-        }
-        // 通知客户端玩家资源改变
-        if (change != null)
-            rewardDataManager.syncRoleResChanged(player, change);
-
-        for (int i = 1; i < player.heroAcq.length; i++) {
-            if (player.heroAcq[i] != 0)
-                builder.addHeroIds(player.heroAcq[i]);
-        }
-
-        builder.setUpdateMedal(sysClientUpdateMedal);
-        return builder.build();
-    }
-
-    /**
      * 下将领并返还兵数
      *
      * @param player
      * @param downHero
      * @return
      */
-    private ChangeInfo downAcqHeroAndBackRes(Player player, Hero downHero) {
+    public ChangeInfo downAcqHeroAndBackRes(Player player, Hero downHero) {
         downHero.onAcq(0); // 将领下阵，pos设置为0
+        downHero.onDeputy(0, -1);
         // 士兵回营
         int sub = downHero.getCount();
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
         int armyType = staticHero.getType();
         downHero.setCount(0);
         rewardDataManager.modifyArmyResource(player, armyType, sub, 0, AwardFrom.HERO_DOWN);
-        //记录玩家兵力变化信息
-        // LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
-        //         Constant.ACTION_SUB, armyType, downHero.getQuality());
-
-        // 上报玩家兵力变化
-//        LogLordHelper.playerArm(
-//                AwardFrom.HERO_DOWN,
-//                player,
-//                armyType,
-//                Constant.ACTION_SUB,
-//                -sub,
-//                playerDataManager.getArmCount(player.resource, armyType)
-//        );
 
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.ARMY, staticHero.getType());
@@ -423,6 +255,7 @@ import java.util.stream.Collectors;
 
     /**
      * 重新调整位置
+     *
      * @param heroIds 将领ids
      * @param heros   将领
      */

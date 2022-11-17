@@ -18,11 +18,13 @@ import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.RebelService;
@@ -33,9 +35,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName RoleMapEntity.java
  * @Description
- * @author QiuKun
  * @date 2019年3月21日
  */
 public class PlayerMapEntity extends BaseWorldEntity {
@@ -120,11 +122,9 @@ public class PlayerMapEntity extends BaseWorldEntity {
         battle.setDefCamp(targetPlayer.lord.getCamp());
         battle.addAtkArm(param.getArmCount());
         int defArmCount = 0;
-        for (Integer heroId : targetPlayer.heroBattle) {
-            Hero hero = targetPlayer.heros.get(heroId);
-            if (hero != null) {
-                defArmCount += hero.getCount();
-            }
+        for (PartnerHero partnerHero : targetPlayer.getPlayerFormation().getHeroBattle()) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            defArmCount += partnerHero.getPrincipalHero().getCount();
         }
         battle.addDefArm(defArmCount);
         battle.getAtkRoles().add(roleId);

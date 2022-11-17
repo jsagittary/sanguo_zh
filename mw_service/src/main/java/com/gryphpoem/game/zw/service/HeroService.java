@@ -11,67 +11,26 @@ import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
-import com.gryphpoem.game.zw.manager.ActivityDataManager;
-import com.gryphpoem.game.zw.manager.BattlePassDataManager;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.MedalDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.manager.TechDataManager;
-import com.gryphpoem.game.zw.manager.WarPlaneDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1;
-import com.gryphpoem.game.zw.pb.GamePb1.ChooseWishHeroRs;
-import com.gryphpoem.game.zw.pb.GamePb1.GetHeroBattlePosRs;
-import com.gryphpoem.game.zw.pb.GamePb1.HeroDecoratedRq;
-import com.gryphpoem.game.zw.pb.GamePb1.HeroDecoratedRs;
-import com.gryphpoem.game.zw.pb.GamePb1.HeroQuickUpRq;
-import com.gryphpoem.game.zw.pb.GamePb1.HeroQuickUpRs;
-import com.gryphpoem.game.zw.pb.GamePb1.ReceiveRecruitRewardRs;
-import com.gryphpoem.game.zw.pb.GamePb1.SaveHeroWashRq;
-import com.gryphpoem.game.zw.pb.GamePb1.SaveHeroWashRs;
+import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.resource.constant.ActivityConst;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.ChatConst;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
-import com.gryphpoem.game.zw.resource.constant.PropConstant;
-import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
-import com.gryphpoem.game.zw.resource.constant.SeasonConst;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.TechConstant;
-import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.s.StaticEquip;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroDecorated;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearch;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSearchExtAward;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
-import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
-import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
+import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PlayerFormation;
 import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
-import com.gryphpoem.game.zw.resource.util.AccountHelper;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.fish.FishingService;
@@ -80,18 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author TanDonghai
@@ -166,7 +115,7 @@ public class HeroService implements GmCmdService {
      * @return
      * @throws MwException
      */
-    public GamePb1.GetHerosRs getHeros(long roleId) throws MwException {
+    public GamePb1.GetHerosRs getHeroList(long roleId) throws MwException {
         Player player = playerDataManager.getPlayer(roleId);
 
         // 检查角色是否存在
@@ -182,12 +131,23 @@ public class HeroService implements GmCmdService {
         GamePb1.GetHerosRs.Builder builder = GamePb1.GetHerosRs.newBuilder();
         playerDataManager.refreshDaily(player);
         playerDataManager.autoAddArmy(player);
-        if (!checkHeroPosIsInit(player.heroDef)) {
-            player.heroDef = Arrays.copyOf(player.heroBattle, player.heroBattle.length);
-            for (int heroId : player.heroDef) {
-                Hero hero = player.heros.get(heroId);
-                if (hero != null && heroId == hero.getHeroId() && hero.getDefPos() == 0) {
+        PlayerFormation playerFormation = player.getPlayerFormation();
+        if (!checkHeroPosIsInit(playerFormation.getHeroDef())) {
+            playerFormation.setHeroDef(Arrays.copyOf(playerFormation.getHeroBattle(), playerFormation.getHeroBattle().length));
+            for (PartnerHero partnerHero : playerFormation.getHeroDef()) {
+                if (CheckNull.isNull(partnerHero))
+                    continue;
+                Hero hero = partnerHero.getPrincipalHero();
+                if (CheckNull.isNull(hero))
+                    continue;
+                if (hero.getDefPos() == 0) {
                     hero.onDef(hero.getPos());
+                }
+                if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                    partnerHero.getDeputyHeroList().forEach(h -> {
+                        if (CheckNull.isNull(h)) return;
+                        h.onDef(hero.getPos());
+                    });
                 }
             }
         }
@@ -301,176 +261,6 @@ public class HeroService implements GmCmdService {
     }
 
     /**
-     * 将领上阵
-     *
-     * @param roleId
-     * @param req
-     * @return
-     * @throws MwException
-     */
-    public GamePb1.HeroBattleRs heroBattle(long roleId, GamePb1.HeroBattleRq req) throws MwException {
-        Player player = playerDataManager.getPlayer(roleId);
-
-        // 检查角色是否存在
-        AccountHelper.checkPlayerIsExist(player, roleId);
-
-        int heroId = req.getHeroId();
-        int pos = req.getPos();
-        boolean swap = false;
-        if (req.hasSwap()) {
-            swap = req.getSwap();
-        }
-        boolean swapPlane = false;
-        if (req.hasSwapPlane()) {
-            swapPlane = req.getSwapPlane();
-        }
-
-        // 替换宝具标识
-        boolean swapTreasure = false;
-        if (req.hasSwapTreasure()) {
-            swapTreasure = req.getSwapTreasure();
-        }
-        // 替换兵书标识
-        boolean swapMedal = false;
-        if (req.hasSwapMedal()) {
-            swapMedal = req.getSwapMedal();
-        }
-
-        // 检查pos位是否正常
-        if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
-            throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:",
-                    pos);
-        }
-
-        // 检查科技开启位置
-        if (pos == HeroConstant.HERO_BATTLE_3) {
-            if (!techDataManager.isOpen(player, TechConstant.TYPE_10)) {
-                throw new MwException(GameError.HERO_BATTLE_POS_NEED_TECH.getCode(), "未开启,请提升科技等级 roleId:", roleId,
-                        ", pos:", pos, "lv:", techDataManager.getTechEffect4SingleVal(player, TechConstant.TYPE_10));
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_4) {
-            if (!techDataManager.isOpen(player, TechConstant.TYPE_20)) {
-                throw new MwException(GameError.HERO_BATTLE_POS_NEED_TECH.getCode(), "未开启,请提升科技等级, roleId:", roleId,
-                        ", pos:", pos, "lv:", techDataManager.getTechEffect4SingleVal(player, TechConstant.TYPE_20));
-            }
-        }
-
-        // 检查玩家是否有该将领
-        Hero hero = checkHeroIsExist(player, heroId);
-        // 判断该将领是否已经上阵
-        if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId) || player.isOnCommandoHero(heroId)) {
-            throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), String.format("roleId :%d, heroId :%d, status :%d, pos :%d, wallPos :%d, acqPos :%d",
-                    roleId, heroId, hero.getStatus(), hero.getPos(), hero.getWallPos(), hero.getAcqPos()));
-        }
-
-        GamePb1.HeroBattleRs.Builder builder = GamePb1.HeroBattleRs.newBuilder();
-        Hero battleHero = player.getBattleHeroByPos(pos);
-        // Hero defendHero = null;
-        int defPos = 0;
-        if (battleHero != null) {
-            // defendHero = player.getDefendHeroByPos(battleHero.getHeroId());
-            defPos = battleHero.getDefPos();
-        }
-        ChangeInfo change = ChangeInfo.newIns();
-        boolean sysClientUpdateMedal = false;
-        if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
-            if (!battleHero.isIdle()) {
-                throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
-            }
-            if (swap) {// 如果需要交换装备，执行交换装备的逻辑
-                // rewardDataManager.checkBagCnt(player);
-                swapHeroEquip(player, hero, battleHero);
-            }
-            if (swapPlane) {// 如果需要交换战机, 执行交换战机的逻辑
-                swapHeroPlanes(player, hero, battleHero, pos);
-            } else {
-                downHeroAllPlane(player, battleHero); // 下阵将领, 把战机也下阵
-            }
-            if (swapTreasure) {// 如果需要替换宝具，执行宝具替换的逻辑
-                swapHeroTreasure(player, battleHero, hero);
-            }
-            if (swapMedal) {// 如果需要替换兵书，执行兵书替换的逻辑
-                swapHeroMedal(player, battleHero, hero);
-                sysClientUpdateMedal = true; // 只要玩家选择交互，则默认通知客户端需要重新拉取兵书信息
-            }
-            battleHero.onBattle(0);// 将领下阵，pos设置为0
-            battleHero.onDef(0);// 防守将领下阵, pos设置为0
-            // 告诉客户端武将兵书是否有更新
-            builder.setUpdateMedal(sysClientUpdateMedal);
-
-            // 士兵回营
-            int sub = battleHero.getCount();
-            battleHero.setCount(0);
-            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
-//            if (Objects.nonNull(staticHero)) {
-//                int armType = staticHero.getType();// 获取将领对应类型的兵力
-                // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, heroId, hero.getCount(), -sub, staticHero.getType(),
-                //         Constant.ACTION_ADD);
-
-                // 上报玩家兵力变化
-//                LogLordHelper.playerArm(
-//                        AwardFrom.HERO_DOWN,
-//                        player, armType,
-//                        Constant.ACTION_ADD,
-//                        -sub,
-//                        playerDataManager.getArmCount(player.resource, armType)
-//                );
-//            }
-
-            rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
-
-            // 重新计算并更新将领属性
-            CalculateUtil.processAttr(player, battleHero);
-            change.addChangeType(AwardType.ARMY, staticHero.getType());
-            change.addChangeType(AwardType.HERO_ARM, battleHero.getHeroId());
-            builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
-        }
-
-        // 将领上阵
-        hero.onBattle(pos);
-
-        if (!CheckNull.isEmpty(hero.getWarPlanes())) {
-            for (int planeId : hero.getWarPlanes()) {
-                WarPlane plane = player.checkWarPlaneIsExist(planeId);
-                if (!CheckNull.isNull(plane)) {
-                    plane.setPos(pos);
-                }
-            }
-        }
-        player.heroBattle[pos] = heroId;// 更新已上阵将领队列信息
-        if (defPos != 0) { // 更换将领
-            hero.onDef(defPos);
-            player.heroDef[defPos] = heroId;// 更新已防守将领队列信息
-        } else { // 上阵防守将领
-            hero.onDef(pos);
-            player.heroDef[pos] = heroId;// 更新已防守将领队列信息
-        }
-
-        // 重新计算并更新将领属性
-        CalculateUtil.processAttr(player, hero);
-        if (techDataManager.isOpen(player, TechConstant.TYPE_19) && player.common.getAutoArmy() == 0) {
-            // 研究自动补兵,并且关闭了自动补兵:不进行补兵
-        } else {
-            // 上阵将领自动补兵
-            armyService.autoAddArmySingle(player, hero);
-        }
-        change.addChangeType(AwardType.ARMY, hero.getType());
-        change.addChangeType(AwardType.HERO_ARM, hero.getHeroId());
-        // 通知客户端玩家资源改变
-        rewardDataManager.syncRoleResChanged(player, change);
-
-        // 返回将领上阵协议
-        builder.setUpHero(PbHelper.createHeroPb(hero, player));
-        taskDataManager.updTask(player, TaskType.COND_HERO_UP, 1, hero.getHeroId());
-        taskDataManager.updTask(player, TaskType.COND_509, 1, hero.getQuality());
-        CalculateUtil.reCalcFight(player);
-        // rankDataManager.setFight(player.lord);
-        taskDataManager.updTask(player, TaskType.COND_28, 1, hero.getType());
-        checkHeroQueueStatus(player);
-        return builder.build();
-    }
-
-    /**
      * 下阵将领所有战机
      *
      * @param player
@@ -490,97 +280,6 @@ public class HeroService implements GmCmdService {
                 }
             }
         }
-    }
-
-    /**
-     * 将领换位置
-     *
-     * @param roleId
-     * @param req
-     * @return
-     * @throws MwException
-     */
-    public GamePb1.HeroPosSetRs heroPosSet(long roleId, GamePb1.HeroPosSetRq req) throws MwException {
-        Player player = playerDataManager.getPlayer(roleId);
-        Set<Integer> check = new HashSet<>();
-        int posType = req.getPosType();
-        if (posType < HeroConstant.CHANGE_POS_TYPE || posType > HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId :", roleId);
-        }
-        for (TwoInt kv : req.getHerosList()) {
-            int pos = kv.getV1();
-
-            if (check.contains(kv.getV1()) || check.contains(kv.getV2())) {
-                throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId,
-                        ", pos:", pos);
-            }
-            check.add(kv.getV1());
-            check.add(kv.getV2());
-
-            if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
-                throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:", pos);
-            }
-
-            if (pos == HeroConstant.HERO_BATTLE_3) {
-                if (!techDataManager.isOpen(player, TechConstant.TYPE_10)) {
-                    throw new MwException(GameError.HERO_BATTLE_POS_NEED_TECH.getCode(), "未开启,请提升科技等级 roleId:", roleId, ", pos:", pos);
-                }
-            } else if (pos == HeroConstant.HERO_BATTLE_4) {
-                if (!techDataManager.isOpen(player, TechConstant.TYPE_20)) {
-                    throw new MwException(GameError.HERO_BATTLE_POS_NEED_TECH.getCode(), "未开启,请提升科技等级, roleId:", roleId, ", pos:", pos);
-                }
-            }
-            Hero hero = checkHeroIsExist(player, kv.getV2());
-            if (hero.getPos() <= 0) {
-                throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:", pos);
-            }
-        }
-
-        if (posType == HeroConstant.CHANGE_POS_TYPE ||
-                posType == HeroConstant.CHANGE_DEFEND_POS_TYPE ||
-                posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
-            int[] heroArray = posType == HeroConstant.CHANGE_POS_TYPE ||
-                    posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE ?
-                    player.heroBattle : player.heroDef;
-            Set<Integer> set = Arrays.stream(heroArray).filter(heroId -> heroId > 0).boxed().collect(Collectors.toSet());
-            if (req.getHerosCount() != set.size()) {
-                throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId :%d, hero arrays :%s", roleId, Arrays.toString(heroArray)));
-            }
-            for (TwoInt twoInt : req.getHerosList()) {
-                if (!set.contains(twoInt.getV2())) {
-                    throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId :%d, heroId :%d, not In arrays,  hero arrays :%s",
-                            roleId, twoInt.getV2(), Arrays.toString(heroArray)));
-                }
-            }
-        }
-
-
-        GamePb1.HeroPosSetRs.Builder builder = GamePb1.HeroPosSetRs.newBuilder();
-        List<Integer> posList = player.heroBattlePos.get(posType);
-        if (posType == HeroConstant.CHANGE_COMBAT_POS_TYPE ||
-                posType == HeroConstant.CHANGE_BATTLE_POS_TYPE ||
-                posType == HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE) {
-            if (posList == null) {
-                posList = new ArrayList<>();
-                player.heroBattlePos.put(posType, posList);
-            }
-            posList.clear();
-        }
-        for (TwoInt kv : req.getHerosList()) {
-            Hero hero = checkHeroIsExist(player, kv.getV2());
-            if (posType == HeroConstant.CHANGE_POS_TYPE) {
-                hero.onBattle(kv.getV1());
-                player.heroBattle[kv.getV1()] = kv.getV2();// 更新已上阵将领队列信息
-            } else if (posType == HeroConstant.CHANGE_DEFEND_POS_TYPE) {
-                hero.onDef(kv.getV1());
-                player.heroDef[kv.getV1()] = kv.getV2();// 更新已上阵防守将领队列信息
-            } else {
-                posList.add(kv.getV1());
-            }
-            builder.addHeros(PbHelper.createHeroPb(hero, player));
-        }
-        checkHeroQueueStatus(player);
-        return builder.build();
     }
 
     /**
@@ -606,10 +305,9 @@ public class HeroService implements GmCmdService {
      * @param heroPos
      * @return
      */
-    public boolean checkHeroPosIsInit(int[] heroPos) {
-        // ArrayList<Integer> list = new ArrayList<>();
-        for (int heroId : heroPos) {
-            if (heroId != 0) {
+    public boolean checkHeroPosIsInit(PartnerHero[] heroPos) {
+        for (PartnerHero heroId : heroPos) {
+            if (heroId != null) {
                 return true;
             }
         }
@@ -1608,165 +1306,34 @@ public class HeroService implements GmCmdService {
      */
     public GetHeroBattlePosRs getHeroBattlePos(long roleId) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        GetHeroBattlePosRs.Builder bulider = GetHeroBattlePosRs.newBuilder();
-        List<Integer> combatPos = player.heroBattlePos.get(HeroConstant.CHANGE_COMBAT_POS_TYPE);
+        GetHeroBattlePosRs.Builder builder = GetHeroBattlePosRs.newBuilder();
+        PlayerFormation playerFormation = player.getPlayerFormation();
+        List<Integer> combatPos = playerFormation.getHeroBattlePos().get(HeroConstant.CHANGE_COMBAT_POS_TYPE);
         if (CheckNull.isEmpty(combatPos)) {// 为空就是默认
-            for (int i = 1; i < player.heroBattle.length; i++) {
-                if (player.heroBattle[i] > 0) {
-                    bulider.addCombatPos(i);
+            for (int i = 1; i < playerFormation.getHeroBattle().length; i++) {
+                if (playerFormation.getHeroBattle()[i] != null &&
+                        playerFormation.getHeroBattle()[i].getPrincipalHero() != null) {
+                    builder.addCombatPos(i);
                 }
             }
         } else {
-            bulider.addAllCombatPos(combatPos);
+            builder.addAllCombatPos(combatPos);
         }
 
-        List<Integer> battlePos = player.heroBattlePos.get(HeroConstant.CHANGE_BATTLE_POS_TYPE);
+        List<Integer> battlePos = playerFormation.getHeroBattlePos().get(HeroConstant.CHANGE_BATTLE_POS_TYPE);
         if (CheckNull.isEmpty(battlePos)) {
-            for (int i = 1; i < player.heroBattle.length; i++) {
-                if (player.heroBattle[i] > 0) {
-                    bulider.addBattlePos(i);
+            for (int i = 1; i < playerFormation.getHeroBattle().length; i++) {
+                if (playerFormation.getHeroBattle()[i] != null &&
+                        playerFormation.getHeroBattle()[i].getPrincipalHero() != null) {
+                    builder.addCombatPos(i);
                 }
             }
         } else {
-            bulider.addAllBattlePos(battlePos);
+            builder.addAllBattlePos(battlePos);
         }
 
-        return bulider.build();
+        return builder.build();
     }
-
-    /**
-     * 良将寻访
-     *
-     * @param roleId
-     * @param req
-     * @return
-     * @throws MwException
-     */
-//    public SearchHeroRs searchHero(long roleId, SearchHeroRq req) throws MwException {
-//        // 检查角色是否存在
-//        Player player = playerDataManager.checkPlayerIsExist(roleId);
-//
-//        if (player.lord.getLevel() < HeroConstant.HERO_SEARCH_ROLE_LV) {
-//            throw new MwException(GameError.HERO_SEARCH_NOT_OPEN.getCode(), "玩家将领寻访未开启, roleId:", player.roleId);
-//        }
-//
-//        int searchType = req.getSearchType();
-//        int countType = req.getCountType();
-//        int costType = req.getCostType();
-//        // 检查参数是否正确
-//        if (!realSearchType(searchType) || !realCountType(countType) || !realSearchCostType(costType)) {
-//            throw new MwException(GameError.PARAM_ERROR.getCode(), "将领寻访，参数错误, roleId:", player.roleId, ", searchType:",
-//                    searchType, ", countType:", countType, ", costType:", costType);
-//        }
-//
-//        if (searchType == HeroConstant.SEARCH_TYPE_SUPER && countType == HeroConstant.COUNT_TYPE_ONE
-//                && costType == HeroConstant.SEARCH_COST_FREE && player.common.getSuperFreeNum() > 0) {
-//            throw new MwException(GameError.PARAM_ERROR.getCode(), "将领寻访，神将无免费次数, roleId:", player.roleId,
-//                    ", searchType:", searchType, ", countType:", countType, ", costType:", costType);
-//        }
-//
-//        Common common = player.common;
-//        refreshHeroSearchData(common);// 刷新将领寻访数据
-//
-//        int gold = 0;// 如果金币寻访，记录需要消耗的金币数
-//        if (costType == HeroConstant.SEARCH_COST_FREE) {// 如果是使用免费次数良将寻访，检查相关数据
-//            if (countType != HeroConstant.COUNT_TYPE_ONE) {
-//                throw new MwException(GameError.PARAM_ERROR.getCode(), "将领寻访，免费寻访只能单次寻访, roleId:", player.roleId,
-//                        ", searchType:", searchType, ", countType:", countType, ", costType:", costType);
-//            }
-//        } else if (costType == HeroConstant.SEARCH_COST_GOLD) {
-//            gold = HeroConstant.getHeroSearchGoldByType(searchType, countType);
-//            if (gold < 0) {
-//                throw new MwException(GameError.NO_CONFIG.getCode(), "将领寻访金币消耗未配置, roleId:", player.roleId,
-//                        ", searchType:", searchType, ", countType:", countType);
-//            }
-//        }
-//
-//        // 如果是神将寻访，检查是否开启
-//        if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
-//            if (common.getSuperProcess() < Constant.INT_HUNDRED) {
-//                throw new MwException(GameError.HERO_SUPER_SEARCH_NOT_OPEN.getCode(), "神将寻访未开启, roleId:", player.roleId,
-//                        ", superProcess:", common.getSuperProcess());
-//            }
-//        }
-//
-//        int count = 0;// 记录本次准备寻访次数
-//        if (countType == HeroConstant.COUNT_TYPE_ONE) {// 寻访1次
-//            count = 1;
-//        } else if (countType == HeroConstant.COUNT_TYPE_TEN) {// 寻访10次
-//            count = 10;
-//        }
-//
-//        int costCount = 0;
-//        if (costType == HeroConstant.SEARCH_COST_PROP) costCount = count;
-//        if (costType == HeroConstant.SEARCH_COST_GOLD) costCount = gold;
-//
-//        // gold *= count; 已经算好了
-//        ChangeInfo change = ChangeInfo.newIns();// 记录玩家资源变更类型
-//
-//        // 检查并扣除相关消耗
-//        if (searchType == HeroConstant.SEARCH_TYPE_NORMAL) {
-//            if (costType == HeroConstant.SEARCH_COST_FREE) {
-//                int now = TimeHelper.getCurrentSecond();
-//                if (common.getHeroCdTime() > now) {
-//                    throw new MwException(GameError.HERO_SEARCH_CD.getCode(), "良将寻访免费次数CD中, roleId:", player.roleId,
-//                            ", cdTime:", common.getHeroCdTime(), ", now:", now);
-//                }
-//
-//                // 扣除免费次数
-//                common.setHeroCdTime(now + HeroConstant.NORMAL_SEARCH_CD);
-//            } else if (costType == HeroConstant.SEARCH_COST_PROP) {
-//                rewardDataManager.checkPropIsEnough(player, HeroConstant.NORMAL_HERO_ID, count, "良将道具寻访");
-//                rewardDataManager.subProp(player, HeroConstant.NORMAL_HERO_ID, count, AwardFrom.HERO_NORMAL_SEARCH);// "良将道具寻访"
-//                change.addChangeType(AwardType.PROP, HeroConstant.NORMAL_HERO_ID);
-//            } else if (costType == HeroConstant.SEARCH_COST_GOLD) {
-//                rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, gold, "良将金币寻访");
-//                rewardDataManager.subGold(player, gold, AwardFrom.HERO_NORMAL_SEARCH);
-//                change.addChangeType(AwardType.MONEY, AwardType.Money.GOLD);
-//            }
-//        } else if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
-//            if (costType == HeroConstant.SEARCH_COST_PROP) {
-//                rewardDataManager.checkPropIsEnough(player, HeroConstant.SUPER_HERO_ID, count, "神将道具寻访");
-//                rewardDataManager.subProp(player, HeroConstant.SUPER_HERO_ID, count, AwardFrom.HERO_SUPER_SEARCH);// "神将道具寻访"
-//                change.addChangeType(AwardType.PROP, HeroConstant.SUPER_HERO_ID);
-//            } else if (costType == HeroConstant.SEARCH_COST_GOLD) {
-//                rewardDataManager.checkMoneyIsEnough(player, AwardType.Money.GOLD, gold, "神将金币寻访");
-//                rewardDataManager.subGold(player, gold, AwardFrom.HERO_SUPER_SEARCH);
-//                change.addChangeType(AwardType.MONEY, AwardType.Money.GOLD);
-//            } else if (costType == HeroConstant.SEARCH_COST_FREE) {
-//                player.common.setSuperFreeNum(1);
-//            }
-//        }
-//        // 更新战令任务进度
-//        battlePassDataManager.updTaskSchedule(roleId, TaskType.COND_SEARCH_HERO_CNT, count);
-//        // 通知玩家消耗的资源类型
-//        rewardDataManager.syncRoleResChanged(player, change);
-//        // 检测触发将领寻访礼包
-//        activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_HERO_SEARCH, player);
-//
-//        SearchHeroRs.Builder builder = SearchHeroRs.newBuilder();
-//        for (int i = 0; i < count; i++) {// 执行将领寻访逻辑
-//            SearchHero sh = doHeroSearch(player, searchType, costCount);
-//            if (null != sh) {
-//                builder.addHero(sh);
-//            }
-//        }
-//        if (searchType == HeroConstant.SEARCH_TYPE_NORMAL) {// 良将寻访
-//            builder.setCount(HeroConstant.NORMAL_SPECIL_NUM - common.getNormalHero());
-//            builder.setCdTime(common.getHeroCdTime());
-//            builder.setSuperProcess(common.getSuperProcess());
-//            if (common.getSuperProcess() >= Constant.INT_HUNDRED) {
-//                builder.setSuperTime(common.getSuperTime());
-//            }
-//        } else if (searchType == HeroConstant.SEARCH_TYPE_SUPER) {
-//            builder.setCount(showSuperSearchCnt(common.getSuperHero()));
-//        }
-//        builder.setRecruitRecord(player.getMixtureDataById(PlayerConstant.NORMAL_HERO_SEARCH_COUNT));
-//        builder.setWishHero(PbHelper.createTwoIntPb(player.getMixtureDataById(PlayerConstant.WISH_HERO), player.getMixtureDataById(PlayerConstant.WISH_HERO_SEARCH_COUNT)));
-//        builder.setSuperFreeNum(common.getSuperFreeNum());
-//        builder.setSuperOpenNum(common.getSuperOpenNum());
-//        return builder.build();
-//    }
 
     /**
      * 计算升降寻访的次数
@@ -2165,15 +1732,15 @@ public class HeroService implements GmCmdService {
      */
     public void repaire(Player player) {
         //修复出战队列
-        int[] heroBattle = player.heroBattle;
+        PartnerHero[] heroBattle = player.getPlayerFormation().getHeroBattle();
         StringBuilder logSb = new StringBuilder();
         logSb.append(String.format("roleId :%d 修复前的出战队列 :%s", player.roleId, Arrays.toString(heroBattle))).append("\n");
         for (int i = 1; i < heroBattle.length; i++) {
-            if (heroBattle[i] == 0) {
+            if (HeroUtil.isEmptyPartner(heroBattle[i])) {
                 for (int j = i + 1; j < heroBattle.length; j++) {
-                    if (heroBattle[j] != 0) {
+                    if (HeroUtil.isEmptyPartner(heroBattle[j])) {
                         heroBattle[i] = heroBattle[j];
-                        heroBattle[j] = 0;
+                        heroBattle[j] = null;
                         Hero hero = player.heros.get(heroBattle[i]);
                         hero.onBattle(i);
                     }
@@ -2185,16 +1752,13 @@ public class HeroService implements GmCmdService {
             }
         }
         logSb.append(String.format("roleId :%d 修复后的出战队列 :%s", player.roleId, Arrays.toString(heroBattle))).append("\n");
-        logSb.append(String.format("roleId :%d 修复前的防守队列 :%s", player.roleId, Arrays.toString(player.heroDef))).append("\n");
+        logSb.append(String.format("roleId :%d 修复前的防守队列 :%s", player.roleId, Arrays.toString(player.getPlayerFormation().getHeroDef()))).append("\n");
         //将出战队列顺序复制到防守队列顺序
-        player.heroDef = Arrays.copyOf(heroBattle, heroBattle.length);
-        for (int heroId : heroBattle) {
-            if (heroId > 0) {
-                Hero hero = player.heros.get(heroId);
-                hero.onDef(hero.getPos());
-            }
+        player.getPlayerFormation().setHeroDef(Arrays.copyOf(heroBattle, heroBattle.length));
+        for (PartnerHero partnerHero : heroBattle) {
+            HeroUtil.heroOnDef(partnerHero);
         }
-        logSb.append(String.format("roleId :%d 修复后的防守队列 :%s", player.roleId, Arrays.toString(player.heroDef)));
+        logSb.append(String.format("roleId :%d 修复后的防守队列 :%s", player.roleId, Arrays.toString(player.getPlayerFormation().getHeroDef())));
         LogUtil.error(logSb);
     }
 
@@ -2211,94 +1775,46 @@ public class HeroService implements GmCmdService {
     public boolean checkHeroQueueStatus(Player player) {
         try {
             boolean isOk = true;
-            int[] heroBattle = player.heroBattle;
+            PartnerHero[] heroBattle = player.getPlayerFormation().getHeroBattle();
             for (int i = 1; i < heroBattle.length; i++) {
-                int heroId = heroBattle[i];
-                if (heroId != 0) {
-                    Hero hero = player.heros.get(heroId);
-                    if (Objects.isNull(hero)) {//英雄不存在
-                        LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, not found!!! %s", player.getLordId(), heroId, i, Arrays.toString(heroBattle)));
-                        break;
-                    } else {
-                        if (hero.getStatus() != HeroConstant.HERO_STATUS_BATTLE) {//英雄状态不正确
-                            LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, status error !!! %s", player.getLordId(), heroId, i, Arrays.toString(heroBattle)));
+                PartnerHero partnerHero = heroBattle[i];
+                if (HeroUtil.isEmptyPartner(partnerHero)) {
+                    for (int j = i + 1; j < heroBattle.length; j++) {
+                        if (!HeroUtil.isEmptyPartner(heroBattle[j])) {
+                            //出战队列中间缺失了英雄 eg:[0, 1335, 0, 1854, 1294]
+                            LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, empty pos !!! %s", player.getLordId(), 0, i, Arrays.toString(heroBattle)));
                             isOk = false;
-                        } else {
-                            for (int j = i + 1; j < heroBattle.length; j++) {
-                                if (heroBattle[j] == heroId) {//出战队列中有重复英雄
-                                    LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, has repeat !!! %s", player.getLordId(), heroId, i, Arrays.toString(heroBattle)));
-                                    isOk = false;
-                                }
-                            }
                         }
                     }
                 } else {
-                    for (int j = i + 1; j < heroBattle.length; j++) {
-                        if (heroBattle[j] != 0) {//出战队列中间缺失了英雄 eg:[0, 1335, 0, 1854, 1294]
-                            LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, empty pos !!! %s", player.getLordId(), heroId, i, Arrays.toString(heroBattle)));
-                            isOk = false;
+                    Hero hero = partnerHero.getPrincipalHero();
+                    if (hero.getStatus() != HeroConstant.HERO_STATUS_BATTLE) {//英雄状态不正确
+                        LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, status error !!! %s", player.getLordId(), hero.getHeroId(), i, Arrays.toString(heroBattle)));
+                        isOk = false;
+                    } else {
+                        for (int j = i + 1; j < heroBattle.length; j++) {
+                            if (partnerHero.equals(heroBattle[j])) {//出战队列中有重复英雄
+                                LogUtil.error(String.format("roleId :%d, heroId :%d, idx :%d, has repeat !!! %s", player.getLordId(), hero.getHeroId(), i, Arrays.toString(heroBattle)));
+                                isOk = false;
+                            }
                         }
                     }
                 }
             }
 
             //检查出战队列英雄列表是否与防守英雄列表相同
-            String battleString = Arrays.stream(player.heroBattle).sorted().mapToObj(String::valueOf).collect(Collectors.joining(",", "{", "}"));
-            String defString = Arrays.stream(player.heroDef).sorted().mapToObj(String::valueOf).collect(Collectors.joining(",", "{", "}"));
-            if (!battleString.equals(defString)) {
-                LogUtil.error(String.format("roleId :%d, 出战英雄列表 :%s, 防守英雄列表 :%s, 2个队列英雄ID不一致", player.roleId, battleString, defString));
-                isOk = false;
-            }
-            if (!isOk) LogUtil.sentry(String.format("roleId :%d 英雄状态异常, 请复查 error log !!!", player.getLordId()));
+//            String battleString = Arrays.stream(player.getPlayerFormation().getHeroBattle()).sorted().mapToObj(String::valueOf).collect(Collectors.joining(",", "{", "}"));
+//            String defString = Arrays.stream(player.heroDef).sorted().mapToObj(String::valueOf).collect(Collectors.joining(",", "{", "}"));
+//            if (!battleString.equals(defString)) {
+//                LogUtil.error(String.format("roleId :%d, 出战英雄列表 :%s, 防守英雄列表 :%s, 2个队列英雄ID不一致", player.roleId, battleString, defString));
+//                isOk = false;
+//            }
+//            if (!isOk) LogUtil.sentry(String.format("roleId :%d 英雄状态异常, 请复查 error log !!!", player.getLordId()));
             return isOk;
         } catch (Exception e) {
             LogUtil.error("roleId : " + player.getLordId(), e);
         }
         return false;
-    }
-
-    public boolean checkHeroStatus(Player player, Hero hero) {
-        if (hero.getStatus() == HeroConstant.HERO_STATUS_BATTLE) {//出战
-            int pos = hero.getPos();
-            if (pos > 0 && pos <= 4) {
-                if (player.heroBattle[pos] != hero.getHeroId()) {
-                    LogUtil.error(String.format("Hero Battle Status Error!!! roleId :%d, heroId :%d, pos :%d, ---> %s", player.getLordId(), hero.getHeroId(), pos,
-                            Arrays.toString(player.heroBattle)));
-                    return false;
-                }
-            } else {
-                LogUtil.error(String.format("Hero Battle Pos Error!!! roleId :%d, heroId :%d, status battle pos :%d ",
-                        player.getLordId(), hero.getHeroId(), pos));
-                return false;
-            }
-        } else if (hero.getStatus() == HeroConstant.HERO_STATUS_COLLECT) {//采集
-            int pos = hero.getAcqPos();
-            if (pos > 0 && pos <= 4) {
-                if (player.heroAcq[pos] != hero.getHeroId()) {
-                    LogUtil.error(String.format("Hero Acq Status Error!!! roleId :%d, heroId :%d, pos :%d, ---> %s", player.getLordId(), hero.getHeroId(), pos,
-                            Arrays.toString(player.heroAcq)));
-                    return false;
-                }
-            } else {
-                LogUtil.error(String.format("Hero Acq Pos Error!!! roleId :%d, heroId :%d, status battle pos :%d ",
-                        player.getLordId(), hero.getHeroId(), pos));
-                return false;
-            }
-        } else if (hero.getStatus() == HeroConstant.HERO_STATUS_WALL_BATTLE) {//禁卫军
-            int pos = hero.getWallPos();
-            if (pos > 0 && pos <= 4) {
-                if (player.heroWall[pos] != hero.getHeroId()) {
-                    LogUtil.error(String.format("Hero Wall Status Error!!! roleId :%d, heroId :%d, pos :%d, ---> %s", player.getLordId(), hero.getHeroId(), pos,
-                            Arrays.toString(player.heroWall)));
-                    return false;
-                }
-            } else {
-                LogUtil.error(String.format("Hero Wall Pos Error!!! roleId :%d, heroId :%d, status battle pos :%d ",
-                        player.getLordId(), hero.getHeroId(), pos));
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

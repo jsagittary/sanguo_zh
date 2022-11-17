@@ -362,6 +362,8 @@
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="activeSkills" property="activeSkills"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+        <result column="deputyArms" property="deputyArms"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
     </resultMap>
 
     <select id="selectHeroMap" resultMap="heroMap">

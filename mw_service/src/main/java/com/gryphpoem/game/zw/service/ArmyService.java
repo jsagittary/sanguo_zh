@@ -20,7 +20,9 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -330,9 +332,9 @@ public class ArmyService {
             } else if (3 == type) {
                 rewardDataManager.sendRewardSignle(player0, AwardType.ARMY, AwardType.Army.FACTORY_3_ARM, count, AwardFrom.DO_SOME);
             }
-            for (int heroId : player0.heroBattle) {
-                if (heroId > 0) {
-                    Hero hero0 = player0.heros.get(heroId);
+            for (PartnerHero partnerHero : player0.getPlayerFormation().getHeroBattle()) {
+                if (!HeroUtil.isEmptyPartner(partnerHero)) {
+                    Hero hero0 = partnerHero.getPrincipalHero();
                     if (Objects.nonNull(hero0)) {
                         autoAddArmySingle(player0, hero0);
                     }

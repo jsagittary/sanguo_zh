@@ -1288,13 +1288,13 @@ public class CalculateUtil {
      */
     public static int reCalcHeroSkillFight(Hero hero) {
         int skillFightVal = 0;
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
-            if (Objects.nonNull(heroSkill)) {
-                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
-                return ska != null ? ska.getFightVal() : 0;
-            }
-        }
+//        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
+//            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
+//            if (Objects.nonNull(heroSkill)) {
+//                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
+//                return ska != null ? ska.getFightVal() : 0;
+//            }
+//        }
         //英雄的战力加上技能战力Constant.ShowFightId.HERO
         hero.getShowFight().merge(Constant.ShowFightId.HERO, skillFightVal, Integer::sum);
         return skillFightVal;

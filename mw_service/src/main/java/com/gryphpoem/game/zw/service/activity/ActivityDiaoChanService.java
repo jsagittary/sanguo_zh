@@ -496,7 +496,7 @@ public class ActivityDiaoChanService {
                 hero = player.heros.get(config.getParam().get(0));
                 if (Objects.nonNull(hero)) {
                     b = true;
-                    activityTask.setProgress(hero.getSkillLevels().getOrDefault(config.getParam().get(1), 0));
+//                    activityTask.setProgress(hero.getSkillLevels().getOrDefault(config.getParam().get(1), 0));
                 }
                 break;
             case HERO_LEVELUP:

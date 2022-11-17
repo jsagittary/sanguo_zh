@@ -60,6 +60,8 @@ import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.pojo.fish.FishingData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PlayerFormation;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.party.SupplyRecord;
@@ -228,15 +230,6 @@ public class Player {
      * 司令部，兵工厂官员招募
      */
     public Map<Integer, Gains> gains = new ConcurrentHashMap<>();
-//    /**
-//     * 主线支线,剧情任务
-//     */
-//    public Map<Integer, Task> majorTasks = new ConcurrentHashMap<>();
-//    /**
-//     * 当前显示的支线任务id,此值不会被序列化
-//     */
-//    public List<Integer> curMajorTaskIds = new ArrayList<>();
-
     /**
      * 日常任务
      */
@@ -270,31 +263,6 @@ public class Player {
      * 玩家将领
      */
     public Map<Integer, Hero> heros = new HashMap<>();
-    /**
-     * 上阵将领，记录上阵将领的id，0位为补位，1-4位为上阵将领id
-     */
-    public int[] heroBattle = new int[HeroConstant.HERO_BATTLE_LEN + 1];
-
-    /**
-     * 防守将领, 记录防守将领的id, 0位为补位，1-4位为上阵将领id
-     */
-    public int[] heroDef = new int[HeroConstant.HERO_BATTLE_LEN + 1];
-    /**
-     * 上阵将领在其他位置的映射(基于上阵将领为基础,存储的是位置,而非将领id) key:2表示副本 key:3出征将领
-     */
-    public Map<Integer, List<Integer>> heroBattlePos = new HashMap<>();
-    /**
-     * 城防将领
-     */
-    public int[] heroWall = new int[HeroConstant.HERO_BATTLE_LEN + 1];
-    /**
-     * 采集将领
-     */
-    public int[] heroAcq = new int[HeroConstant.HERO_BATTLE_LEN + 1];
-    /**
-     * 特攻将领
-     */
-    public int[] heroCommando = new int[Constant.ACQ_HERO_REQUIRE.size() + 1];
     /**
      * 道具
      */
@@ -768,6 +736,15 @@ public class Player {
      * 是否第一次打造宝具
      */
     private MakeTreasureWare makeTreasureWare = new MakeTreasureWare();
+
+    /**
+     * 武将阵容信息
+     */
+    private PlayerFormation playerFormation = new PlayerFormation();
+
+    public PlayerFormation getPlayerFormation() {
+        return playerFormation;
+    }
 
     public MakeTreasureWare getMakeTreasureWare() {
         return makeTreasureWare;
@@ -1348,31 +1325,13 @@ public class Player {
      * @param pos
      * @return
      */
-    public Hero getBattleHeroByPos(int pos) {
+    public PartnerHero getBattleHeroByPos(int pos) {
         if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
             return null;
         }
 
-        int heroId = heroBattle[pos];
-        if (heroId > 0) {
-            return heros.get(heroId);
-        }
-        return null;
-    }
-
-    /**
-     * 根据防守队列的pos位获取对应的将领信息
-     *
-     * @param heroId
-     * @return
-     */
-    public Hero getDefendHeroByPos(int heroId) {
-        for (int heroDefId : heroDef) {
-            if (heroDefId == heroId) {
-                return heros.get(heroId);
-            }
-        }
-        return null;
+        PartnerHero[] heroBattle = playerFormation.getHeroBattle();
+        return heroBattle[pos];
     }
 
     /**
@@ -1381,16 +1340,12 @@ public class Player {
      * @param pos
      * @return
      */
-    public Hero getWallHeroByPos(int pos) {
+    public PartnerHero getWallHeroByPos(int pos) {
         if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
             return null;
         }
 
-        int heroId = heroWall[pos];
-        if (heroId > 0) {
-            return heros.get(heroId);
-        }
-        return null;
+        return playerFormation.getHeroWall()[pos];
     }
 
     /**
@@ -1399,16 +1354,12 @@ public class Player {
      * @param pos
      * @return
      */
-    public Hero getAcqHeroByPos(int pos) {
+    public PartnerHero getAcqHeroByPos(int pos) {
         if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
             return null;
         }
 
-        int heroId = heroAcq[pos];
-        if (heroId > 0) {
-            return heros.get(heroId);
-        }
-        return null;
+        return playerFormation.getHeroAcq()[pos];
     }
 
     /**
@@ -1418,14 +1369,6 @@ public class Player {
      * @return
      */
     public Hero getCommandoHeroByPos(int pos) {
-        if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_2) {
-            return null;
-        }
-
-        int heroId = heroCommando[pos];
-        if (heroId > 0) {
-            return heros.get(heroId);
-        }
         return null;
     }
 
@@ -1436,11 +1379,21 @@ public class Player {
      * @return
      */
     public boolean isOnWallHero(int heroId) {
-        for (int pos = 0; pos < heroWall.length; pos++) {
-            if (heroWall[pos] == heroId) {
+        PartnerHero[] onWallArr = playerFormation.getHeroWall();
+        if (ObjectUtils.isEmpty(onWallArr)) return false;
+        for (PartnerHero hero : onWallArr) {
+            if (CheckNull.isNull(hero)) continue;
+            if (Objects.nonNull(hero.getPrincipalHero()) && hero.getPrincipalHero().getHeroId() == heroId) {
                 return true;
             }
+            if (CheckNull.nonEmpty(hero.getDeputyHeroList())) {
+                if (Objects.nonNull(hero.getDeputyHeroList().stream().filter(
+                        de -> de.getHeroId() == heroId).findFirst().orElse(null))) {
+                    return true;
+                }
+            }
         }
+
         return false;
     }
 
@@ -1451,11 +1404,21 @@ public class Player {
      * @return
      */
     public boolean isOnBattleHero(int heroId) {
-        for (int pos = 0; pos < heroBattle.length; pos++) {
-            if (heroBattle[pos] == heroId) {
+        PartnerHero[] onBattleArr = playerFormation.getHeroBattle();
+        if (ObjectUtils.isEmpty(onBattleArr)) return false;
+        for (PartnerHero hero : onBattleArr) {
+            if (CheckNull.isNull(hero)) continue;
+            if (Objects.nonNull(hero.getPrincipalHero()) && hero.getPrincipalHero().getHeroId() == heroId) {
                 return true;
             }
+            if (CheckNull.nonEmpty(hero.getDeputyHeroList())) {
+                if (Objects.nonNull(hero.getDeputyHeroList().stream().filter(
+                        de -> de.getHeroId() == heroId).findFirst().orElse(null))) {
+                    return true;
+                }
+            }
         }
+
         return false;
     }
 
@@ -1465,13 +1428,13 @@ public class Player {
      * @param heroId
      * @return
      */
-    public boolean isOnAcqHero(int heroId) {
-        for (int pos = 0; pos < heroAcq.length; pos++) {
-            if (heroAcq[pos] == heroId) {
-                return true;
-            }
+    public boolean isOnDeputyHero(int heroId) {
+        Hero hero;
+        if (CheckNull.isNull(hero = heros.get(heroId))) {
+            return false;
         }
-        return false;
+
+        return hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_DEPUTY;
     }
 
     /**
@@ -1481,11 +1444,25 @@ public class Player {
      * @return
      */
     public boolean isOnCommandoHero(int heroId) {
-        for (int pos = 0; pos < heroCommando.length; pos++) {
-            if (heroCommando[pos] == heroId) {
+        return false;
+    }
+
+    public boolean isOnAcqHero(int heroId) {
+        PartnerHero[] onAcqArr = playerFormation.getHeroAcq();
+        if (ObjectUtils.isEmpty(onAcqArr)) return false;
+        for (PartnerHero hero : onAcqArr) {
+            if (CheckNull.isNull(hero)) continue;
+            if (Objects.nonNull(hero.getPrincipalHero()) && hero.getPrincipalHero().getHeroId() == heroId) {
                 return true;
             }
+            if (CheckNull.nonEmpty(hero.getDeputyHeroList())) {
+                if (Objects.nonNull(hero.getDeputyHeroList().stream().filter(
+                        de -> de.getHeroId() == heroId).findFirst().orElse(null))) {
+                    return true;
+                }
+            }
         }
+
         return false;
     }
 
@@ -1495,10 +1472,10 @@ public class Player {
      * @return true是空
      */
     private boolean defHeroIsEmpty() {
-        for (int heroId : heroDef) {
-            if (heroId > 0) {
-                return false;
-            }
+        PartnerHero[] heroDef = playerFormation.getHeroDef();
+        for (PartnerHero partnerHero : heroDef) {
+            if (CheckNull.isNull(partnerHero)) continue;
+            if (Objects.nonNull(partnerHero.getPrincipalHero())) return false;
         }
         return true;
     }
@@ -1508,43 +1485,36 @@ public class Player {
      *
      * @return
      */
-    public List<Hero> getDefendHeros() {
-        List<Hero> heroList = new ArrayList<>();
-        Hero hero;
-        // 驻守本城的其他玩家将领 外部计算
-
+    public List<PartnerHero> getDefendHeroList() {
+        List<PartnerHero> heroList = new ArrayList<>();
         // 城防将
-        int[] myHerDef = heroDef;
+        PartnerHero[] myHerDef = playerFormation.getHeroDef();
         // 在城内的上阵将领
-        if (defHeroIsEmpty()) { // 如果城防位置全空就算上阵将领的顺序
-            myHerDef = heroBattle;
+        if (defHeroIsEmpty()) {
+            // 如果城防位置全空就算上阵将领的顺序
+            myHerDef = playerFormation.getHeroBattle();
         }
 
-        int[] heroIds = new int[myHerDef.length + heroCommando.length];
-        System.arraycopy(myHerDef, 0, heroIds, 0, myHerDef.length);
-        System.arraycopy(heroCommando, 0, heroIds, myHerDef.length, heroCommando.length);
-
-        for (int heroId : heroIds) {
-            if (heroId > 0) {
-                hero = heros.get(heroId);
-                if (hero == null) {
-                    continue;
-                }
+        Hero hero;
+        if (!ObjectUtils.isEmpty(myHerDef)) {
+            for (PartnerHero partnerHero : myHerDef) {
+                if (CheckNull.isNull(partnerHero)) continue;
+                if (CheckNull.isNull(partnerHero.getPrincipalHero())) continue;
+                hero = partnerHero.getPrincipalHero();
                 if (hero.isIdle() && hero.getCount() > 0) {
-                    heroList.add(hero);
+                    heroList.add(partnerHero);
                 }
             }
         }
+
         // 城防军
-        for (int heroId : heroWall) {
-            if (heroId > 0) {
-                hero = heros.get(heroId);
-                if (hero == null) {
-                    continue;
-                }
+        if (!ObjectUtils.isEmpty(playerFormation.getHeroWall())) {
+            for (PartnerHero partnerHero : playerFormation.getHeroWall()) {
+                if (CheckNull.isNull(partnerHero)) continue;
+                if (CheckNull.isNull(partnerHero.getPrincipalHero())) continue;
+                hero = partnerHero.getPrincipalHero();
                 if (hero.isIdle() && hero.getCount() > 0 && hero.getCount() == hero.getAttr()[HeroConstant.ATTR_LEAD]) {
-                    heroList.add(hero);
-                    LogUtil.debug(roleId + ",城防守将=" + heroId);
+                    heroList.add(partnerHero);
                 }
             }
         }
@@ -1558,17 +1528,10 @@ public class Player {
      */
     public Map<Integer, Integer> getBattleHeroShowFightInfo() {
         Map<Integer, Integer> fightInfo = new HashMap<>();
-        List<Hero> battleHeros = getAllOnBattleHeros();
-        if (!CheckNull.isEmpty(battleHeros)) {
-            // 把采集将领加入战斗力模块中
-            Arrays.stream(heroCommando).boxed().forEach(heroId -> {
-                Hero hero = heros.get(heroId);
-                if (hero != null) {
-                    battleHeros.add(hero);
-                }
-            });
-            for (Hero hero : battleHeros) {
-                Map<Integer, Integer> showFight = hero.getShowFight();
+        List<PartnerHero> battleHeroList = getAllOnBattleHeroList();
+        if (!CheckNull.isEmpty(battleHeroList)) {
+            for (PartnerHero hero : battleHeroList) {
+                Map<Integer, Integer> showFight = hero.getPrincipalHero().getShowFight();
                 if (!CheckNull.isEmpty(showFight)) {
                     for (Entry<Integer, Integer> entry : showFight.entrySet()) {
                         Integer key = entry.getKey();
@@ -1591,11 +1554,11 @@ public class Player {
      *
      * @return
      */
-    public List<Hero> getAllOnBattleHeros() {
-        List<Hero> heroList = new ArrayList<>();
-        for (int heroId : heroBattle) {
-            if (heroId > 0 && heros.get(heroId) != null) {
-                heroList.add(heros.get(heroId));
+    public List<PartnerHero> getAllOnBattleHeroList() {
+        List<PartnerHero> heroList = new ArrayList<>();
+        for (PartnerHero partnerHero : playerFormation.getHeroBattle()) {
+            if (!HeroUtil.isEmptyPartner(partnerHero)) {
+                heroList.add(partnerHero);
             }
         }
         return heroList;
@@ -1607,8 +1570,8 @@ public class Player {
      * @return
      */
     public boolean isOnBattle() {
-        for (int heroId : heroBattle) {
-            if (heroId > 0 && heros.get(heroId) != null) {
+        for (PartnerHero partnerHero : playerFormation.getHeroBattle()) {
+            if (Objects.nonNull(partnerHero) && Objects.nonNull(partnerHero.getPrincipalHero())) {
                 return true;
             }
         }
@@ -1632,16 +1595,6 @@ public class Player {
      */
     public int getTechLvById(int techId) {
         return tech == null ? 0 : tech.getTechLvById(techId);
-    }
-
-    /**
-     * 免费洗髓次数是否已满
-     *
-     * @return
-     */
-    public boolean washCountFull() {
-        return false;
-//        return common.washCountFull();
     }
 
     /**
@@ -1903,10 +1856,10 @@ public class Player {
         }
         ser.setHeroSkin(heroSkin);
         ser.setLoginRewardTime(loginRewardTime);
-        for (Entry<Integer, List<Integer>> kv : heroBattlePos.entrySet()) {
-            IntListInt inListInt = PbHelper.createIntListInt(kv.getKey(), kv.getValue());
-            ser.addBattleHeroPos(inListInt);
-        }
+//        for (Entry<Integer, List<Integer>> kv : heroBattlePos.entrySet()) {
+//            IntListInt inListInt = PbHelper.createIntListInt(kv.getKey(), kv.getValue());
+//            ser.addBattleHeroPos(inListInt);
+//        }
         ser.addAllFirstPayDouble(firstPayDouble);
         ser.setBanditCnt(banditCnt);
         ser.setCollectMineCount(collectMineCount);//同阵营攻打采集
@@ -2456,13 +2409,13 @@ public class Player {
         if (ser.hasLoginRewardTime()) {
             loginRewardTime = ser.getLoginRewardTime();
         }
-        for (IntListInt ili : ser.getBattleHeroPosList()) {
-            List<Integer> v2List = ili.getV2List();
-            if (!CheckNull.isEmpty(v2List)) {
-                List<Integer> iliList = new ArrayList<>(v2List);
-                heroBattlePos.put(ili.getV1(), iliList);
-            }
-        }
+//        for (IntListInt ili : ser.getBattleHeroPosList()) {
+//            List<Integer> v2List = ili.getV2List();
+//            if (!CheckNull.isEmpty(v2List)) {
+//                List<Integer> iliList = new ArrayList<>(v2List);
+//                heroBattlePos.put(ili.getV1(), iliList);
+//            }
+//        }
         firstPayDouble.addAll(ser.getFirstPayDoubleList());
         if (ser.hasBanditCnt()) {
             banditCnt = ser.getBanditCnt();
@@ -3067,31 +3020,31 @@ public class Player {
         for (CommonPb.Hero h : ser.getHeroList()) {
             hero = new Hero(h);
             heros.put(hero.getHeroId(), hero);
-            if (hero.isOnBattle()) {
-                if (hero.getPos() >= HeroConstant.HERO_BATTLE_1 && hero.getPos() <= HeroConstant.HERO_BATTLE_4) {
-                    heroBattle[hero.getPos()] = hero.getHeroId();
-                }
-                if (hero.getDefPos() >= HeroConstant.HERO_BATTLE_1 && hero.getDefPos() <= HeroConstant.HERO_BATTLE_4) {
-                    heroDef[hero.getDefPos()] = hero.getHeroId();
-                }
-            }
-            if (hero.isOnWall()) {
-                if (hero.getWallPos() >= HeroConstant.HERO_BATTLE_1
-                        && hero.getWallPos() <= HeroConstant.HERO_BATTLE_4) {
-                    heroWall[hero.getWallPos()] = hero.getHeroId();
-                }
-            }
-            if (hero.isOnAcq()) {
-                if (hero.getAcqPos() >= HeroConstant.HERO_BATTLE_1 && hero.getAcqPos() <= HeroConstant.HERO_BATTLE_4) {
-                    heroAcq[hero.getAcqPos()] = hero.getHeroId();
-                }
-            }
-            if (hero.isCommando()) {
-                if (hero.getCommandoPos() >= HeroConstant.HERO_BATTLE_1
-                        && hero.getCommandoPos() <= Constant.COMMANDO_HERO_REQUIRE.size()) {
-                    heroCommando[hero.getCommandoPos()] = hero.getHeroId();
-                }
-            }
+//            if (hero.isOnBattle()) {
+//                if (hero.getPos() >= HeroConstant.HERO_BATTLE_1 && hero.getPos() <= HeroConstant.HERO_BATTLE_4) {
+//                    heroBattle[hero.getPos()] = hero.getHeroId();
+//                }
+//                if (hero.getDefPos() >= HeroConstant.HERO_BATTLE_1 && hero.getDefPos() <= HeroConstant.HERO_BATTLE_4) {
+//                    heroDef[hero.getDefPos()] = hero.getHeroId();
+//                }
+//            }
+//            if (hero.isOnWall()) {
+//                if (hero.getWallPos() >= HeroConstant.HERO_BATTLE_1
+//                        && hero.getWallPos() <= HeroConstant.HERO_BATTLE_4) {
+//                    heroWall[hero.getWallPos()] = hero.getHeroId();
+//                }
+//            }
+//            if (hero.isOnAcq()) {
+//                if (hero.getAcqPos() >= HeroConstant.HERO_BATTLE_1 && hero.getAcqPos() <= HeroConstant.HERO_BATTLE_4) {
+//                    heroAcq[hero.getAcqPos()] = hero.getHeroId();
+//                }
+//            }
+//            if (hero.isCommando()) {
+//                if (hero.getCommandoPos() >= HeroConstant.HERO_BATTLE_1
+//                        && hero.getCommandoPos() <= Constant.COMMANDO_HERO_REQUIRE.size()) {
+//                    heroCommando[hero.getCommandoPos()] = hero.getHeroId();
+//                }
+//            }
         }
 
         if (ser.hasCia()) {

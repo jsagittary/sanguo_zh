@@ -601,7 +601,7 @@ public class TaskService {
             case HERO_UPSKILL:
                 hero = player.heros.get(condList.get(0));
                 if (Objects.nonNull(hero)) {
-                    task.setSchedule(hero.getSkillLevels().getOrDefault(condList.get(1), 0));
+//                    task.setSchedule(hero.getSkillLevels().getOrDefault(condList.get(1), 0));
                     if (task.getSchedule() >= condList.get(2)) {
                         task.setStatus(TaskType.TYPE_STATUS_FINISH);
                         task.setSchedule(condList.get(2));
