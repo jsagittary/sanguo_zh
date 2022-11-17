@@ -21,6 +21,7 @@ import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -58,8 +59,12 @@ public class BuildingDataManager {
     public void createBuilding(Player player) {
         Building building = new Building();
         building.setLordId(player.roleId);
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
         Map<Integer, StaticBuildingInit> initBuildingMap = StaticBuildingDataMgr.getBuildingInitMap();
         for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
+            BuildingState buildingState = new BuildingState();
+            buildingState.setBuildingId(buildingInit.getBuildingId());
+            buildingData.put(buildingInit.getBuildingId(), buildingState);
             if (isResType(buildingInit.getBuildingType())) {
                 // Map<Integer, Mill> millMap = new HashMap<>();
                 // millMap.put(buildingInit.getBuildingType(),

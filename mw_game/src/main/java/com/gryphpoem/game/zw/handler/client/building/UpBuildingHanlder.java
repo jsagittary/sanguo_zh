@@ -19,7 +19,7 @@ public class UpBuildingHanlder extends ClientHandler {
         UpBuildingRq req = msg.getExtension(UpBuildingRq.ext);
         BuildingService buildingService = getService(BuildingService.class);
         boolean immediate = req.getImmediate();
-        UpBuildingRs resp = buildingService.upgradeBuilding(getRoleId(), req.getId(), immediate);
+        UpBuildingRs resp = buildingService.upgradeBuilding(getRoleId(), req.getId(), immediate, req.getFoundationId());
         sendMsgToPlayer(UpBuildingRs.EXT_FIELD_NUMBER, UpBuildingRs.ext, resp);
     }
 }

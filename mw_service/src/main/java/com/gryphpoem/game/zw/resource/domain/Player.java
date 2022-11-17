@@ -140,7 +140,7 @@ import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
-import com.gryphpoem.game.zw.resource.pojo.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.EquipJewel;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
@@ -981,7 +981,7 @@ public class Player {
         return residentData;
     }
 
-    public Integer getResidentTotalCnt() {
+    public int getResidentTotalCnt() {
         return residentData.get(0);
     }
 
@@ -994,7 +994,7 @@ public class Player {
         this.residentData.set(0, newTotalCount);
     }
 
-    public Integer getIdleResidentCnt() {
+    public int getIdleResidentCnt() {
         return residentData.get(1);
     }
 
@@ -1006,24 +1006,6 @@ public class Player {
         int newIdleCount = Math.max(getIdleResidentCnt() - count, 0);
         this.residentData.set(1, newIdleCount);
     }
-
-    // /**
-    //  * 探索队列
-    //  */
-    // private Map<Integer, ExploreQue> exploreQue = new ConcurrentHashMap<>();
-    //
-    // public Map<Integer, ExploreQue> getExploreQue() {
-    //     return exploreQue;
-    // }
-    //
-    // /**
-    //  * 开垦队列
-    //  */
-    // private Map<Integer, ReclaimQue> reclaimQue = new ConcurrentHashMap<>();
-    //
-    // public Map<Integer, ReclaimQue> getReclaimQue() {
-    //     return reclaimQue;
-    // }
 
     /**
      * 幸福度
@@ -2466,18 +2448,6 @@ public class Player {
         if (CheckNull.nonEmpty(residentData)) {
             ser.addAllResidentData(residentData);
         }
-        // // 探索队列
-        // if (CheckNull.nonEmpty(exploreQue)) {
-        //     for (ExploreQue tmp : exploreQue.values()) {
-        //         ser.addExploreQue(tmp.creatExploreQuePb());
-        //     }
-        // }
-        // // 开垦队列
-        // if (CheckNull.nonEmpty(reclaimQue)) {
-        //     for (ReclaimQue tmp : reclaimQue.values()) {
-        //         ser.addReclaimQue(tmp.creatReclaimQuePb());
-        //     }
-        // }
 
         return ser.build().toByteArray();
     }

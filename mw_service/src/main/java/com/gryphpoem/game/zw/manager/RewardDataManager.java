@@ -1988,7 +1988,7 @@ public class RewardDataManager {
             LogLordHelper.gameLog(LogParamConstant.LEVEL_UP, player, from, preLv, lv);
             // 活动处理玩家升级
             EventBus.getDefault().post(new Events.ActLevelUpEvent(lord.getLordId(), preLv, lv));
-            // 校验领主等级是否达到城镇事件开启等级
+            // 城镇事件刷新开启
             StaticFunctionOpen sOpen = StaticFunctionDataMgr.getOpenById(FunctionConstant.CITY_EVENT);
             if (sOpen != null) {
                 // 等级条件
@@ -1996,6 +1996,15 @@ public class RewardDataManager {
                 if (lvThroughList.contains(cityEventNeedLv)) {
                     // 如果条件满足, 立刻开启
                     DataResource.ac.getBean(LifeSimulatorService.class).assignCityEventToPlayerJob(player);
+                }
+            }
+            // 增加经济订单数量上限
+            List<Integer> orderTopLimitIncreaseConfig = Constant.ORDER_TOP_LIMIT_INCREASE_CONFIG;
+            int orderIniTopLimit = Constant.ORDER_INI_TOP_LIMIT;
+            for (Integer canAddLordLv : orderTopLimitIncreaseConfig) {
+                // 达到对应需要的领主等级, 且订单数未超过上限
+                if (lvThroughList.contains(canAddLordLv) && player.getEconomicOrderMaxCnt() < orderTopLimitIncreaseConfig.size() + orderIniTopLimit) {
+                    player.setEconomicOrderMaxCnt(player.getEconomicOrderMaxCnt() + 1);
                 }
             }
         }

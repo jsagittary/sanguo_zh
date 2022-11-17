@@ -1958,4 +1958,109 @@ public class SystemId {
      */
     public static final int CITY_EVENT_REFRESH_CONFIG = 800;
 
+    /**
+     * 城墙解锁条件
+     */
+    public static final int WALL_UNLOCK_CONDITION = 5000;
+
+    /**
+     * 城池被击飞时损耗的居民数, [损失系数万分比, 损失最小值]
+     */
+    public static final int RESIDENT_LOST_COEFFICIENT = 5001;
+
+    /**
+     * 城池被击飞时损耗的幸福度, [损失系数万分比, 损失最小值]
+     */
+    public static final int HAPPINESS_LOST_COEFFICIENT = 5002;
+
+    /**
+     * 叛军入侵配置, [领主等级最小值, 领主等级最大值, 持续未被攻打的时间(秒)]
+     */
+    public static final int REBEL_ATTACK_CONFIG = 5003;
+
+    /**
+     * 叛军入侵失败损耗系数, 损耗资源、人口、幸福度, 即玩家被击飞的真实损耗×该系数
+     */
+    public static final int REBEL_ATTACK_LOST_COEFFICIENT = 5004;
+
+    /**
+     * 举办戏剧, [[举办戏剧消耗], [幸福度+xx], [人口+xx]]
+     */
+    public static final int PEACE_WELFARE_TYPE1_CONFIG = 5005;
+
+    /**
+     * 幸福度上限
+     */
+    public static final int HAPPINESS_TOP_LIMIT = 5006;
+
+    /**
+     * 幸福度自然恢复速度, 多长时间增加一点(秒)
+     */
+    public static final int HAPPINESS_RECOVERY_SPEED = 5007;
+
+    /**
+     * 幸福度自然恢复上限
+     */
+    public static final int HAPPINESS_RECOVERY_TOP_LIMIT = 5008;
+
+    /**
+     * 幸福度自然损失速度, 超过自然恢复度上限开始损失, 多长时间损失一点(秒)
+     */
+    public static final int HAPPINESS_LOSS_SPEED = 5009;
+
+    /**
+     * 土匪每日的刷新时间，持续时间, [整点数, 持续秒数]
+     */
+    public static final int BANDIT_REFRESH_CONFIG = 5010;
+
+    /**
+     * 订单初始数量上限
+     */
+    public static final int ORDER_INI_TOP_LIMIT = 5011;
+
+    /**
+     * 提升订单数量的领主等级, 达到对应等级, 上限加1
+     */
+    public static final int ORDER_TOP_LIMIT_INCREASE_CONFIG = 5012;
+
+    /**
+     * 单个居民在单个农田的每小时加成产量
+     */
+    public static final int SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING = 5013;
+
+    /**
+     * 单个居民在单个伐木场的每小时加成产量
+     */
+    public static final int SINGLE_RESIDENT_ADDITION_IN_SINGLE_WOOD_BUILDING = 5014;
+
+    /**
+     * 单个居民在单个铸币厂的每小时加成产量
+     */
+    public static final int SINGLE_RESIDENT_ADDITION_IN_SINGLE_SILVER_BUILDING = 5015;
+
+    /**
+     * 单个居民在单个矿石厂的每小时加成产量
+     */
+    public static final int SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING = 5016;
+
+    /**
+     * 单个居民在渡口减少生产需要时间的万分比
+     */
+    public static final int SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT = 5017;
+
+    /**
+     * 同阵营订单来源处奖励加成
+     */
+    public static final int ORDER_ADDITION_BY_SAME_CAMP_PLACE = 5018;
+
+    /**
+     * 千秋庆典, [[千秋庆典消耗], [幸福度+xx], [人口+xx]]
+     */
+    public static final int PEACE_WELFARE_TYPE2_CONFIG = 5020;
+
+    /**
+     * 居民人口数量保底万分比
+     */
+    public static final int RESIDENT_BOTTOM_LIMIT_COEFFICIENT = 5020;
+
 }

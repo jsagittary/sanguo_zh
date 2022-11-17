@@ -1034,6 +1034,111 @@ public final class Constant {
     public static List<Integer> CITY_EVENT_REFRESH_CONFIG;
 
     /**
+     * 城墙解锁条件, [需要开垦的地图格]
+     */
+    public static List<Integer> WALL_UNLOCK_CONDITION;
+
+    /**
+     * 城池被击飞时损耗的居民数, [损失系数万分比, 损失最小值]
+     */
+    public static List<Integer> RESIDENT_LOST_COEFFICIENT;
+
+    /**
+     * 城池被击飞时损耗的幸福度, [损失系数万分比, 损失最小值]
+     */
+    public static List<Integer> HAPPINESS_LOST_COEFFICIENT;
+
+    /**
+     * 叛军入侵配置, [领主等级最小值, 领主等级最大值, 持续未被攻打的时间(秒)]
+     */
+    public static List<Integer> REBEL_ATTACK_CONFIG;
+
+    /**
+     * 叛军入侵失败损耗系数, 损耗资源、人口、幸福度, 即玩家被击飞的真实损耗×该系数
+     */
+    public static int REBEL_ATTACK_LOST_COEFFICIENT;
+
+    /**
+     * 举办戏剧, [[举办戏剧消耗], [幸福度+xx], [人口+xx]]
+     */
+    public static List<List<Integer>> PEACE_WELFARE_TYPE1_CONFIG;
+
+    /**
+     * 千秋庆典, [[千秋庆典消耗], [幸福度+xx], [人口+xx]]
+     */
+    public static List<List<Integer>> PEACE_WELFARE_TYPE2_CONFIG;
+
+    /**
+     * 幸福度上限
+     */
+    public static int HAPPINESS_TOP_LIMIT;
+
+    /**
+     * 幸福度自然恢复速度, 多长时间增加一点(秒)
+     */
+    public static int HAPPINESS_RECOVERY_SPEED;
+
+    /**
+     * 幸福度自然恢复上限
+     */
+    public static int HAPPINESS_RECOVERY_TOP_LIMIT;
+
+    /**
+     * 幸福度自然损失速度, 超过自然恢复度上限开始损失, 多长时间损失一点(秒)
+     */
+    public static  int HAPPINESS_LOSS_SPEED;
+
+    /**
+     * 土匪每日的刷新时间，持续时间, [整点数, 持续秒数]
+     */
+    public static List<Integer> BANDIT_REFRESH_CONFIG;
+
+    /**
+     * 订单初始数量上限
+     */
+    public static int ORDER_INI_TOP_LIMIT;
+
+    /**
+     * 提升订单数量的领主等级, 达到对应等级, 上限加1
+     */
+    public static List<Integer> ORDER_TOP_LIMIT_INCREASE_CONFIG;
+
+    /**
+     * 单个居民在单个农田的每小时加成产量
+     */
+    public static int SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING;
+
+    /**
+     * 单个居民在单个伐木场的每小时加成产量
+     */
+    public static int SINGLE_RESIDENT_ADDITION_IN_SINGLE_WOOD_BUILDING;
+
+    /**
+     * 单个居民在单个铸币厂的每小时加成产量
+     */
+    public static int SINGLE_RESIDENT_ADDITION_IN_SINGLE_SILVER_BUILDING;
+
+    /**
+     * 单个居民在单个矿石厂的每小时加成产量
+     */
+    public static int SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING;
+
+    /**
+     * 单个居民在渡口减少生产需要时间的万分比
+     */
+    public static int SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
+
+    /**
+     * 同阵营订单来源处奖励加成, 万分比
+     */
+    public static int ORDER_ADDITION_BY_SAME_CAMP_PLACE;
+
+    /**
+     * 居民人口数量保底万分比
+     */
+    public static int RESIDENT_BOTTOM_LIMIT_COEFFICIENT;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
@@ -1335,7 +1440,28 @@ public final class Constant {
         EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = SystemTabLoader.getListListIntSystemValue(SystemId.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT, "[[]]");
         BATTLE_PICK_BOX_DROP_CAP = SystemTabLoader.getListListIntSystemValue(SystemId.BATTLE_PICK_BOX_DROP_CAP, "[[]]");
         REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = SystemTabLoader.getListListIntSystemValue(SystemId.REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION, "[[]]");
+
         CITY_EVENT_REFRESH_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.CITY_EVENT_REFRESH_CONFIG, "[]");
+        WALL_UNLOCK_CONDITION = SystemTabLoader.getListIntSystemValue(SystemId.WALL_UNLOCK_CONDITION, "[]");
+        RESIDENT_LOST_COEFFICIENT = SystemTabLoader.getListIntSystemValue(SystemId.RESIDENT_LOST_COEFFICIENT, "[]");
+        HAPPINESS_LOST_COEFFICIENT = SystemTabLoader.getListIntSystemValue(SystemId.HAPPINESS_LOST_COEFFICIENT, "[]");
+        REBEL_ATTACK_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.REBEL_ATTACK_CONFIG, "[]");
+        REBEL_ATTACK_LOST_COEFFICIENT = SystemTabLoader.getIntegerSystemValue(SystemId.REBEL_ATTACK_LOST_COEFFICIENT, 0);
+        PEACE_WELFARE_TYPE1_CONFIG = SystemTabLoader.getListListIntSystemValue(SystemId.PEACE_WELFARE_TYPE1_CONFIG, "[[]]");
+        PEACE_WELFARE_TYPE2_CONFIG = SystemTabLoader.getListListIntSystemValue(SystemId.PEACE_WELFARE_TYPE2_CONFIG, "[[]]");
+        HAPPINESS_TOP_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_TOP_LIMIT, 0);
+        HAPPINESS_RECOVERY_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_RECOVERY_SPEED, 0);
+        HAPPINESS_RECOVERY_TOP_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_RECOVERY_TOP_LIMIT, 0);
+        HAPPINESS_LOSS_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_LOSS_SPEED, 0);
+        BANDIT_REFRESH_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.BANDIT_REFRESH_CONFIG, "[]");
+        ORDER_INI_TOP_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.ORDER_INI_TOP_LIMIT, 0);
+        ORDER_TOP_LIMIT_INCREASE_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.ORDER_TOP_LIMIT_INCREASE_CONFIG, "[]");
+        SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING, 0);
+        SINGLE_RESIDENT_ADDITION_IN_SINGLE_WOOD_BUILDING = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_ADDITION_IN_SINGLE_WOOD_BUILDING, 0);
+        SINGLE_RESIDENT_ADDITION_IN_SINGLE_SILVER_BUILDING = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_ADDITION_IN_SINGLE_SILVER_BUILDING, 0);
+        SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING, 0);
+        SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT, 0);
+        ORDER_ADDITION_BY_SAME_CAMP_PLACE = SystemTabLoader.getIntegerSystemValue(SystemId.ORDER_ADDITION_BY_SAME_CAMP_PLACE, 0);
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

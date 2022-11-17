@@ -1,6 +1,7 @@
-package com.gryphpoem.game.zw.resource.pojo;
+package com.gryphpoem.game.zw.resource.pojo.buildHomeCity;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +35,14 @@ public class BuildingState {
     private int foundationId;
 
     /**
-     * 被分配产出的经济作物, key-经济作物id, value-开始产出时间
+     * 被分配产出的经济作物id
      */
     private List<Integer> economicCropData = new ArrayList<>();
+
+    /**
+     * 建筑当前正在产出的经济作物 [作物id, 开始时间, 结束时间]
+     */
+    private List<Integer> curProductCrop = new ArrayList<>();
 
     public int getBuildingId() {
         return buildingId;
@@ -78,10 +84,18 @@ public class BuildingState {
         this.economicCropData = economicCropData;
     }
 
+    public List<Integer> getCurProductCrop() {
+        return curProductCrop;
+    }
+
+    public void setCurProductCrop(List<Integer> curProductCrop) {
+        this.curProductCrop = curProductCrop;
+    }
+
     public BuildingState() {
     }
 
-    public BuildingState(Integer buildingId, Integer foundationId) {
+    public BuildingState(int buildingId, int foundationId) {
         this.buildingId = buildingId;
         this.foundationId = foundationId;
         this.residentCnt = 0;
@@ -93,6 +107,10 @@ public class BuildingState {
         this.heroIds = pb.getHeroIdList();
         this.foundationId = pb.getFoundationId();
         this.economicCropData = pb.getEconomicCropIdList();
+        CommonPb.EconomicCropInfo economicCropInfo = pb.getEconomicCropInfo();
+        this.curProductCrop.add(economicCropInfo.getCropId());
+        this.curProductCrop.add(economicCropInfo.getStartTime());
+        this.curProductCrop.add(economicCropInfo.getEndTime());
     }
 
     public CommonPb.BuildingState creatPb() {
@@ -102,6 +120,13 @@ public class BuildingState {
         pb.addAllHeroId(this.getHeroIds());
         pb.setFoundationId(this.getFoundationId());
         pb.addAllEconomicCropId(this.economicCropData);
+        if (CheckNull.nonEmpty(this.curProductCrop) && this.curProductCrop.size() >= 3) {
+            CommonPb.EconomicCropInfo.Builder economicCropInfo = CommonPb.EconomicCropInfo.newBuilder();
+            economicCropInfo.setCropId(this.curProductCrop.get(0));
+            economicCropInfo.setStartTime(this.curProductCrop.get(1));
+            economicCropInfo.setEndTime(this.curProductCrop.get(2));
+        }
+
         return pb.build();
     }
 

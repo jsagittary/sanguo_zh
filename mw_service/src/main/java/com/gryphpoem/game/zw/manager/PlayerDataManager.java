@@ -28,10 +28,11 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
-import com.gryphpoem.game.zw.resource.pojo.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.Task;
@@ -384,40 +385,77 @@ public class PlayerDataManager implements PlayerDM {
         for (int i = 0; i < staticCharacterRewardList.size(); i++) {
             characterRewardRecord.put(i + 1, 0);
         }
-        // 初始化建筑建筑信息
+        // 初始化建筑信息、地图格子信息、已开垦的地基
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
         List<Integer> foundationData = player.getFoundationData();
         Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
         if (CheckNull.nonEmpty(buildingInfo)) {
             buildingInfo.forEach((k, v) -> {
+                foundationData.add(v);
                 BuildingState buildingState = new BuildingState(k, v);
                 StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(v);
                 List<Integer> cellList = staticHomeCityFoundation.getCellList();
                 for (int i = 0; i < cellList.size(); i++) {
+                    Integer cellId = cellList.get(i);
+                    // 解锁的格子
                     List<Integer> cellState = new ArrayList<>(2);
                     cellState.add(1);// 已开垦
-                    cellState.add(0);// 没有土匪
-                    mapCellData.put(cellList.get(i), cellState);
-                }
-                if (!foundationData.contains(v)) {
-                    foundationData.add(v);
+                    StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                    cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
+                    mapCellData.put(cellId, cellState);
+                    // 解锁的地基
+                    List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
+                    List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
+                    player.getMapCellData().forEach((key, value) -> {
+                        if (value.get(0) == 1) {
+                            reclaimedCellIdList.add(key);
+                        }
+                    });
+                    for (Integer foundationId : foundationIdList) {
+                        // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+                        StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                        if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
+                            if (!foundationData.contains(foundationId)) {
+                                foundationData.add(foundationId);
+                            }
+                        }
+                    }
+
                 }
                 buildingData.put(k, buildingState);
             });
         } else {
-            BuildingState buildingState = new BuildingState(1, 1);
-            buildingData.put(1, buildingState);
+            foundationData.add(1);
+            BuildingState buildingState = new BuildingState(BuildingType.COMMAND, 1);
+            buildingData.put(BuildingType.COMMAND, buildingState);
             StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
             List<Integer> cellList = staticHomeCityFoundation.getCellList();
             for (int i = 0; i < cellList.size(); i++) {
+                Integer cellId = cellList.get(i);
+                // 解锁的格子
                 List<Integer> cellState = new ArrayList<>(2);
                 cellState.add(1);// 已开垦
-                cellState.add(0);// 没有土匪
-                mapCellData.put(cellList.get(i), cellState);
-            }
-            if (!foundationData.contains(1)) {
-                foundationData.add(1);
+                StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
+                mapCellData.put(cellId, cellState);
+                // 解锁的地基
+                List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
+                List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
+                player.getMapCellData().forEach((key, value) -> {
+                    if (value.get(0) == 1) {
+                        reclaimedCellIdList.add(key);
+                    }
+                });
+                for (Integer foundationId : foundationIdList) {
+                    // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+                    StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                    if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
+                        if (!foundationData.contains(foundationId)) {
+                            foundationData.add(foundationId);
+                        }
+                    }
+                }
             }
         }
 
@@ -444,6 +482,10 @@ public class PlayerDataManager implements PlayerDM {
         } else {
             scoutData.put(1, 0);
         }
+        // 初始化幸福度
+        player.setHappiness(50);
+        // 初始化订单数上限
+        player.setEconomicOrderMaxCnt(Constant.ORDER_INI_TOP_LIMIT);
 
         createAccount(account, player);
         newPlayerCache.put(player.roleId, player);

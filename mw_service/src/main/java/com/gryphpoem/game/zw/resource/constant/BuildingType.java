@@ -30,8 +30,10 @@ public class BuildingType {
     public static final int RES_FOOD = 33;
     // 矿石厂
     public static final int RES_ORE = 34;
-    //核弹井
+    // 戏台
     public static final int NUCLEAR_BOMB = 35;
+    // 民居
+    public static final int RESIDENT_HOUSE = 36;
 
     // 兵营
     public static final int FACTORY_1 = 41;

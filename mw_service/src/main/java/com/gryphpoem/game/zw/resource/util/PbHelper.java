@@ -880,6 +880,7 @@ public class PbHelper {
             builder.setFree(e.getFree());
             builder.setParam(e.getParam());
         }
+        builder.setFoundationId(e.getFoundationId());
         return builder.build();
     }
 

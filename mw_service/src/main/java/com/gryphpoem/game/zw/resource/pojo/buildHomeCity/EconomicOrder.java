@@ -33,6 +33,11 @@ public class EconomicOrder {
     private int place;
 
     /**
+     * 订单来源非集市时的占领势力
+     */
+    private int placeCamp;
+
+    /**
      * 开始展示时间(不论是否预显示)
      */
     private int startTime;
@@ -90,6 +95,14 @@ public class EconomicOrder {
         this.place = place;
     }
 
+    public int getPlaceCamp() {
+        return placeCamp;
+    }
+
+    public void setPlaceCamp(int placeCamp) {
+        this.placeCamp = placeCamp;
+    }
+
     public int getStartTime() {
         return startTime;
     }
@@ -130,21 +143,6 @@ public class EconomicOrder {
         this.reward = reward;
     }
 
-    @Override
-    public String toString() {
-        return "EconomicOrder{" +
-                "keyId=" + keyId +
-                ", orderId=" + orderId +
-                ", quantity=" + quantity +
-                ", place=" + place +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", preDisplay=" + preDisplay +
-                ", orderDemand=" + orderDemand +
-                ", reward=" + reward +
-                '}';
-    }
-
     public CommonPb.EconomicOrder createPb() {
         CommonPb.EconomicOrder.Builder builder = CommonPb.EconomicOrder.newBuilder();
         builder.setKeyId(this.keyId);
@@ -156,6 +154,7 @@ public class EconomicOrder {
         builder.setEndTime(this.endTime);
         builder.addAllOrderDemand(PbHelper.createTwoIntListByMap(this.orderDemand));
         builder.addAllReward(PbHelper.createAwards(this.reward));
+        builder.setPlaceCamp(this.placeCamp);
         return builder.build();
     }
 }

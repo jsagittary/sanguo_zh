@@ -464,9 +464,9 @@ public interface StaticIniMapper {
             @Result(column = "orderDemand2", property = "orderDemand2", typeHandler = ListListTypeHandler.class),
             @Result(column = "orderDemand3", property = "orderDemand3", typeHandler = ListListTypeHandler.class),
             @Result(column = "reward1", property = "reward1", typeHandler = ListListTypeHandler.class),
-            @Result(column = "number1", property = "number1", typeHandler = ListListTypeHandler.class),
+            @Result(column = "number1", property = "number1", typeHandler = ListIntTypeHandler.class),
             @Result(column = "reward2", property = "reward2", typeHandler = ListListTypeHandler.class),
-            @Result(column = "number2", property = "number2", typeHandler = ListListTypeHandler.class),
+            @Result(column = "number2", property = "number2", typeHandler = ListIntTypeHandler.class),
             @Result(column = "specialReward", property = "specialReward", typeHandler = ListListTypeHandler.class)
     })
     List<StaticEconomicOrder> selectStaticEconomicOrderList();

@@ -119,7 +119,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
-import com.gryphpoem.game.zw.resource.pojo.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;

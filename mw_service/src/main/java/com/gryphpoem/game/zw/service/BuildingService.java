@@ -1,46 +1,124 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
+import com.gryphpoem.game.zw.manager.BattlePassDataManager;
+import com.gryphpoem.game.zw.manager.BuildingDataManager;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.VipDataManager;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.BuildingBase;
 import com.gryphpoem.game.zw.pb.CommonPb.OffLineBuild;
 import com.gryphpoem.game.zw.pb.GamePb1;
-import com.gryphpoem.game.zw.pb.GamePb1.*;
+import com.gryphpoem.game.zw.pb.GamePb1.CommandAddRs;
+import com.gryphpoem.game.zw.pb.GamePb1.DesBuildingRs;
+import com.gryphpoem.game.zw.pb.GamePb1.EquipFactoryRecruitRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GainResRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetBuildingRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetCommandRs;
+import com.gryphpoem.game.zw.pb.GamePb1.GetEquipFactoryRs;
+import com.gryphpoem.game.zw.pb.GamePb1.ReBuildRs;
+import com.gryphpoem.game.zw.pb.GamePb1.RebuildRewardRs;
+import com.gryphpoem.game.zw.pb.GamePb1.SpeedBuildingRs;
+import com.gryphpoem.game.zw.pb.GamePb1.SynGainResRs;
+import com.gryphpoem.game.zw.pb.GamePb1.SyncRoleRebuildRs;
+import com.gryphpoem.game.zw.pb.GamePb1.UpBuildingRs;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.OnOffAutoBuildRs;
 import com.gryphpoem.game.zw.pb.GamePb4.UptBuildingRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BerlinWarConstant;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.CiaConstant;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.Constant.TypeInfo;
+import com.gryphpoem.game.zw.resource.constant.EffectConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
+import com.gryphpoem.game.zw.resource.constant.PropConstant;
+import com.gryphpoem.game.zw.resource.constant.PushConstant;
+import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.VipConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.BuildingState;
+import com.gryphpoem.game.zw.resource.domain.p.Account;
+import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
+import com.gryphpoem.game.zw.resource.domain.p.Building;
+import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.p.Common;
+import com.gryphpoem.game.zw.resource.domain.p.Effect;
+import com.gryphpoem.game.zw.resource.domain.p.EquipQue;
+import com.gryphpoem.game.zw.resource.domain.p.Factory;
+import com.gryphpoem.game.zw.resource.domain.p.Gains;
+import com.gryphpoem.game.zw.resource.domain.p.History;
+import com.gryphpoem.game.zw.resource.domain.p.Lord;
+import com.gryphpoem.game.zw.resource.domain.p.Mill;
+import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCommandMult;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicCrop;
+import com.gryphpoem.game.zw.resource.domain.s.StaticGuidAward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticGuideBuild;
+import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
+import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
+import com.gryphpoem.game.zw.resource.domain.s.StaticUptBuild;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.PushMessageUtil;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.buildHomeCity.GainEconomicCropDelayRun;
+import com.gryphpoem.game.zw.service.economicOrder.EconomicOrderService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -143,7 +221,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.COMMAND).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.COMMAND).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.COMMAND).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.COMMAND).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.COMMAND).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -156,7 +235,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.TECH).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.TECH).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.TECH).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.TECH).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.TECH).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -169,7 +249,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.WAR_FACTORY).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.WAR_FACTORY).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WAR_FACTORY).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.WAR_FACTORY).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.WAR_FACTORY).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -182,7 +263,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.STOREHOUSE).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.STOREHOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.STOREHOUSE).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.STOREHOUSE).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.STOREHOUSE).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -195,7 +277,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.WAR_COLLEGE).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.WAR_COLLEGE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WAR_COLLEGE).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.WAR_COLLEGE).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.WAR_COLLEGE).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -208,7 +291,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.REMAKE).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.REMAKE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.REMAKE).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.REMAKE).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.REMAKE).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -221,7 +305,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.ORDNANCE_FACTORY).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.ORDNANCE_FACTORY).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.ORDNANCE_FACTORY).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.ORDNANCE_FACTORY).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.ORDNANCE_FACTORY).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -234,7 +319,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.CHEMICAL_PLANT).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.CHEMICAL_PLANT).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.CHEMICAL_PLANT).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.CHEMICAL_PLANT).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.CHEMICAL_PLANT).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -247,7 +333,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.WALL).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.WALL).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WALL).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.WALL).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.WALL).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -260,7 +347,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.TRADE_CENTRE).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.TRADE_CENTRE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.TRADE_CENTRE).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.TRADE_CENTRE).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.TRADE_CENTRE).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -273,7 +361,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.CLUB).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.CLUB).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.CLUB).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.CLUB).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.CLUB).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -286,7 +375,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.CIA).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.CIA).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.CIA).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.CIA).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.CIA).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -299,7 +389,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.NUCLEAR_BOMB).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.NUCLEAR_BOMB).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.NUCLEAR_BOMB).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.NUCLEAR_BOMB).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.NUCLEAR_BOMB).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -312,7 +403,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.FACTORY_1).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_1).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_1).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_1).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.FACTORY_1).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -325,7 +417,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.FACTORY_2).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_2).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_2).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_2).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.FACTORY_2).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -338,7 +431,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.FACTORY_3).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_3).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_3).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_3).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.FACTORY_3).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -351,7 +445,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.SEASON_TREASURY).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.SEASON_TREASURY).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.SEASON_TREASURY).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.SEASON_TREASURY).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.SEASON_TREASURY).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -365,7 +460,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.WHARF).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.WHARF).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WHARF).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.WHARF).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.WHARF).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -380,7 +476,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                     buildingBase
                             .addAllHeroId(buildingData.get(train.getId()).getHeroIds())
                             .addAllEconomicCropId(buildingData.get(train.getId()).getEconomicCropData())
-                            .setResidentCnt(buildingData.get(train.getId()).getResidentCnt());
+                            .setResidentCnt(buildingData.get(train.getId()).getResidentCnt())
+                            .setFoundationId(buildingData.get(train.getId()).getFoundationId());
                 }
                 builder.addBuildingBase(buildingBase);
             }
@@ -403,7 +500,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                     buildingBase
                             .addAllHeroId(buildingData.get(train2.getId()).getHeroIds())
                             .addAllEconomicCropId(buildingData.get(train2.getId()).getEconomicCropData())
-                            .setResidentCnt(buildingData.get(train2.getId()).getResidentCnt());
+                            .setResidentCnt(buildingData.get(train2.getId()).getResidentCnt())
+                            .setFoundationId(buildingData.get(train2.getId()).getFoundationId());
                 }
                 builder.addBuildingBase(buildingBase);
             }
@@ -417,7 +515,8 @@ public class BuildingService implements DelayInvokeEnvironment {
                 buildingBase
                         .addAllHeroId(buildingData.get(BuildingType.AIR_BASE).getHeroIds())
                         .addAllEconomicCropId(buildingData.get(BuildingType.AIR_BASE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.AIR_BASE).getResidentCnt());
+                        .setResidentCnt(buildingData.get(BuildingType.AIR_BASE).getResidentCnt())
+                        .setFoundationId(buildingData.get(BuildingType.AIR_BASE).getFoundationId());
             }
             builder.addBuildingBase(buildingBase);
 
@@ -431,9 +530,10 @@ public class BuildingService implements DelayInvokeEnvironment {
                 CommonPb.Mill millPb = PbHelper.createMillPb(it2.next());
                 if (buildingData != null && buildingData.get(millPb.getId()) != null) {
                     millPb.toBuilder()
+                            .addAllHeroId(buildingData.get(millPb.getId()).getHeroIds())
+                            .addAllEconomicCropId(buildingData.get(millPb.getId()).getEconomicCropData())
                             .setResidentCnt(buildingData.get(millPb.getId()).getResidentCnt())
-                            .addAllHeroId(buildingData.get(millPb.getId()).getEconomicCropData())
-                            .addAllHeroId(buildingData.get(millPb.getId()).getHeroIds());
+                            .setFoundationId(buildingData.get(millPb.getId()).getFoundationId());
                 }
                 builder.addMill(millPb);
             }
@@ -461,7 +561,7 @@ public class BuildingService implements DelayInvokeEnvironment {
      * @param immediate  是否立即完成,true表示立即完成
      * @return 升级后的建筑信息
      */
-    public UpBuildingRs upgradeBuilding(long roleId, int buildingId, boolean immediate) throws MwException {
+    public UpBuildingRs upgradeBuilding(long roleId, int buildingId, boolean immediate, int foundationId) throws MwException {
         StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
         if (sBuildingInit == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
@@ -653,12 +753,54 @@ public class BuildingService implements DelayInvokeEnvironment {
         }
         // 判断建造还是升级
         if (BuildingDataManager.getBuildingLv(buildingId, player) < 1) {
+            // 客户端给建筑类型
+            boolean resType = BuildingDataManager.isResType(buildingId);
+            if (resType) {
+                // 资源建筑按建筑id从小到达顺序建造
+                Map<Integer, StaticBuildingInit> staticBuildingInitMap = StaticBuildingDataMgr.getBuildingByTypeMapByType(buildingId);
+                Integer staticMaxBuildingId = staticBuildingInitMap.values().stream().map(StaticBuildingInit::getBuildingId).max(Integer::compareTo).orElse(0);
+                Integer maxMillId = player.mills.values().stream().map(Mill::getPos).max(Integer::compareTo).orElse(0);
+                if (maxMillId >= staticMaxBuildingId) {
+                    throw new MwException(GameError.PARAM_ERROR, String.format("建造资源建筑时, 该资源建筑已达建造数量上限, roleId:%s, buildingType:%s", roleId, buildingId));
+                }
+
+                if (maxMillId == 0) {
+                    // 该资源建筑从未建造过
+                    Integer staticMinBuildingId = staticBuildingInitMap.values().stream().map(StaticBuildingInit::getBuildingId).min(Integer::compareTo).orElse(0);
+                    if (staticMinBuildingId == 0) {
+                        throw new MwException(GameError.PARAM_ERROR, String.format("资源建筑等级配置错误, roleId:%s, buildingType:%s", roleId, buildingId));
+                    }
+                    buildingId = staticMinBuildingId;
+                } else {
+                    buildingId = maxMillId + 1;
+                }
+            } else {
+                // 非资源建筑, 建筑id同建筑类型相等
+            }
+
             // 0->1是建造
             LogUtil.debug("建造了建筑  buildingId:", buildingId, ", roleId:", roleId);
             // 新手指引的记录
             updateBuidingGuide(player, buildingId, true);
+
+            if (foundationId <= 0) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("建造建筑时, 传入的地基id非法, roleId:%s, buildingId:%s, foundationId:%s", roleId, buildingId, foundationId));
+            }
+            List<Integer> foundationData = player.getFoundationData();
+            if (!foundationData.contains(foundationId)) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("建造建筑时, 该地基未解锁, roleId:%s, buildingId:%s, foundationId:%s", roleId, buildingId, foundationId));
+            }
+
+            Map<Integer, BuildingState> buildingData = player.getBuildingData();
+            int finalFoundationId = foundationId;
+            boolean foundationExistBuilding = buildingData.values().stream().anyMatch(tmp -> tmp.getFoundationId() == finalFoundationId);
+            if (foundationExistBuilding) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("建造建筑时, 该地基上已有建筑, roleId:%s, buildingId:%s, foundationId:%s", roleId, buildingId, foundationId));
+            }
         } else {
             // 1->+是升级
+            BuildingState buildingState = player.getBuildingData().get(buildingId);
+            foundationId = buildingState == null ? foundationId : buildingState.getFoundationId();
         }
 
         UpBuildingRs.Builder builder = UpBuildingRs.newBuilder();
@@ -716,6 +858,7 @@ public class BuildingService implements DelayInvokeEnvironment {
             for (int i = 1; i <= queCnt; i++) {
                 if (!buildQue.containsKey(i)) {
                     BuildQue que = createQue(player, i, buildingType, buildingId, haust, now + haust);
+                    que.setFoundationId(foundationId);
                     buildQue.put(i, que);
                     builder.setQueue(PbHelper.createBuildQuePb(que));
                     break;
@@ -1460,6 +1603,34 @@ public class BuildingService implements DelayInvokeEnvironment {
             if (sGuide != null && BuildingDataManager.isResType(buildingType)) {
                 // 给一次征收
                 giveOnceGains(player, buildingId);
+            }
+
+            // 更新建筑状态
+            Map<Integer, BuildingState> buildingData = player.getBuildingData();
+            BuildingState buildingState = new BuildingState(buildingId, buildQue.getFoundationId());
+            buildingData.put(buildingId, buildingState);
+
+            boolean resType = BuildingDataManager.isResType(buildingType);
+            StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMap().get(buildingId);
+            if (resType) {
+                Mill mill = player.mills.get(buildingId);
+                if (mill == null) {
+                    mill = new Mill(sBuildingInit.getBuildingId(), sBuildingInit.getBuildingType(), sBuildingInit.getInitLv(), 0);
+                    mill.setUnlock(true);
+                    player.mills.put(buildingId, mill);
+                }
+            } else {
+                BuildingExt buildingExt = player.buildingExts.get(buildingId);
+                if (buildingExt == null) {
+                    buildingExt = new BuildingExt(buildingId, buildingType, true);
+                    buildingExt.setUnLockTime(TimeHelper.getCurrentSecond());
+                    player.buildingExts.put(buildingId, buildingExt);
+                }
+            }
+
+            // 集市解锁时开始刷新经济订单, 最多只刷新两个
+            if (buildingId == BuildingType.CLUB) {
+                DataResource.ac.getBean(EconomicOrderService.class).randomNewPreOrder(player, 2);
             }
         }
         // 发送应用外推送消息，建筑队列建造完成机会销毁，所以不用记录是否推送的状态
@@ -2649,6 +2820,53 @@ public class BuildingService implements DelayInvokeEnvironment {
         }
     }
 
+
+    /**
+     * 建筑摆放(交换建筑位置)
+     *
+     * @param roleId
+     * @param rq
+     * @return
+     */
+    public GamePb1.SwapBuildingPosRs swapBuildingLocation(long roleId, GamePb1.SwapBuildingPosRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        int sourceBuildingId = rq.getBuildingId();
+        int targetFoundationId = rq.getTargetFoundationId();
+        // 校验建筑是否已建造
+        buildingDataManager.checkBuildingIsCreate(sourceBuildingId, player);
+        // 校验目标地基是否已解锁
+        List<Integer> foundationData = player.getFoundationData();
+        if (!foundationData.contains(targetFoundationId)) {
+            throw new MwException(GameError.FOUNDATION_NOT_UNLOCK, String.format("交换建筑位置时, 目标地基未解锁, roleId:%s, targetFoundationId:%s", roleId, targetFoundationId));
+        }
+        // 校验原建筑地基信息
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        BuildingState sourceBuildingState = buildingData.get(sourceBuildingId);
+        int sourceFoundationId = sourceBuildingState.getFoundationId();
+        if (sourceBuildingState.getFoundationId() <= 0) {
+            throw new MwException(GameError.FOUNDATION_DATA_OF_BUILDING_IS_ERROR, String.format("交换建筑位置时, 未获取到原建筑的地基信息, roleId:%s, sourceBuildingId:%s", roleId, sourceBuildingId));
+        }
+        // 目标地基是否已有建筑
+        int targetBuildingId = buildingData.values().stream()
+                .filter(tmp -> tmp.getFoundationId() == targetFoundationId)
+                .map(BuildingState::getBuildingId)
+                .findFirst()
+                .orElse(0);
+        // 交换位置
+        GamePb1.SwapBuildingPosRs.Builder builder = GamePb1.SwapBuildingPosRs.newBuilder();
+        sourceBuildingState.setFoundationId(targetFoundationId);
+        buildingData.put(sourceBuildingId, sourceBuildingState);
+        builder.addBuildingState(sourceBuildingState.creatPb());
+        if (targetBuildingId > 0) {
+            BuildingState targetBuildingState = buildingData.get(targetBuildingId);
+            targetBuildingState.setFoundationId(sourceFoundationId);
+            buildingData.put(targetBuildingId, targetBuildingState);
+            builder.addBuildingState(targetBuildingState.creatPb());
+        }
+        return builder.build();
+    }
+
+
     private DelayQueue<GainEconomicCropDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
 
     @Override
@@ -2666,8 +2884,9 @@ public class BuildingService implements DelayInvokeEnvironment {
     public GamePb1.AssignEconomicCropRs assignEconomicCropToResBuilding(long roleId, GamePb1.AssignEconomicCropRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         int buildingId = rq.getBuildingId();
+        int buildingType = BuildingDataManager.getBuildingTypeById(buildingId);
         List<Integer> economicCropIdList = rq.getEconomicCropIdList();
-        boolean isResType = BuildingDataManager.isResType(buildingId);
+        boolean isResType = BuildingDataManager.isResType(buildingType);
         if (!isResType) {
             throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 不能选择非资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
         }
@@ -2677,9 +2896,9 @@ public class BuildingService implements DelayInvokeEnvironment {
             throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家未解锁对应的资源建筑, roleId:%s, buildingId:%s", roleId, buildingId));
         }
         int buildingLv = mill.getLv();
-        int buildingType = BuildingDataManager.getBuildingTypeById(buildingId);
         BuildingState buildingState = player.getBuildingData().get(buildingId);
         List<Integer> economicCropData = buildingState.getEconomicCropData();
+        List<Integer> curProductCrop = buildingState.getCurProductCrop();
         for (Integer economicCropId : economicCropIdList) {
             // 获取经济作物配置
             StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(economicCropId);
@@ -2705,19 +2924,31 @@ public class BuildingService implements DelayInvokeEnvironment {
                 throw new MwException(GameError.PARAM_ERROR, String.format("分配经济作物时, 玩家拥有的经济作物数量已达上限, roleId:%s, economicCropId:%s", roleId, economicCropId));
             }
             if (!economicCropData.contains(economicCropId)) {
-                int now = TimeHelper.getCurrentSecond();
-                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
-                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, now, sEconomicCrop, buildingId));
                 economicCropData.add(economicCropId);
             }
         }
 
         // 移除建筑上不再绑定的经济作物
         economicCropData.removeIf(e -> !economicCropIdList.contains(e));
+        if (CheckNull.nonEmpty(curProductCrop) && !economicCropIdList.contains(curProductCrop.get(0))) {
+            // 如果被移除的是正在产出的经济作物，则重新选择产出的经济作物
+            curProductCrop.clear();
+            if (CheckNull.nonEmpty(economicCropData)) {
+                int cropId = economicCropData.get(0);
+                StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
+                curProductCrop = new ArrayList<>(3);
+                int now = TimeHelper.getCurrentSecond();
+                curProductCrop.add(cropId);
+                curProductCrop.add(now);
+                curProductCrop.add(now + sEconomicCrop.getProductTime());
+                buildingState.setCurProductCrop(curProductCrop);
+                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
+                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
+            }
+        }
 
-        // TODO 移除已分配的收取经济作物延时队列
-
-        // TODO 同步建筑状态信息
+        // 向客户端同步建筑状态变化
+        synPlayerBuildingState(player, buildingId);
 
         GamePb1.AssignEconomicCropRs.Builder builder = GamePb1.AssignEconomicCropRs.newBuilder();
         return builder.build();
@@ -2727,22 +2958,106 @@ public class BuildingService implements DelayInvokeEnvironment {
      * 采集经济作物
      *
      * @param player
-     * @param staticEconomicCrop
+     * @param curProductCrop
      * @param buildingId
      */
-    public void gainEconomicCrop(Player player, StaticEconomicCrop staticEconomicCrop, int buildingId) {
+    public void gainEconomicCrop(Player player, List<Integer> curProductCrop, int buildingId) {
         BuildingState buildingState = player.getBuildingData().get(buildingId);
         if (buildingState == null) {
             return;
         }
-        // 如果经济作物中途从建筑上移除了, 则不予采集了
-        if(!buildingState.getEconomicCropData().contains(staticEconomicCrop.getPropId())) {
-            return;
+
+        List<Integer> economicCropData = buildingState.getEconomicCropData();
+        Integer cropId = curProductCrop.get(0);
+        if(economicCropData.contains(cropId)) {
+            StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
+            Prop prop = player.props.get(cropId);
+            if (prop == null || prop.getCount() < sEconomicCrop.getMaxCnt()) {
+                // 获取经济作物道具并向客户端同步
+                rewardDataManager.sendRewardSignle(player, AwardType.PROP, cropId, sEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
+            }
+            economicCropData.remove(cropId);
+            buildingState.getCurProductCrop().clear();
+        } else {
+            // 如果经济作物中途从建筑上移除了, 则不予奖励
+            // 如果该建筑还有绑定的经济作物，则继续生产下一个
+            if (CheckNull.nonEmpty(economicCropData)) {
+                cropId = economicCropData.get(0);
+                StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
+                curProductCrop = new ArrayList<>(3);
+                int now = TimeHelper.getCurrentSecond();
+                curProductCrop.add(cropId);
+                curProductCrop.add(now);
+                curProductCrop.add(now + sEconomicCrop.getProductTime());
+                buildingState.setCurProductCrop(curProductCrop);
+                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
+                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
+            }
         }
-        Prop prop = player.props.get(staticEconomicCrop.getPropId());
-        if (prop == null || prop.getCount() < staticEconomicCrop.getMaxCnt()) {
-            // 获取经济作物道具并向客户端同步
-            rewardDataManager.sendRewardSignle(player, AwardType.PROP, staticEconomicCrop.getPropId(), staticEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
+
+        // 向客户端同步建筑状态变化
+        synPlayerBuildingState(player, buildingId);
+    }
+
+    /**
+     * 向客户端同步玩家建筑信息变化
+     *
+     * @param player
+     * @param buildingId
+     */
+    public void synPlayerBuildingState(Player player, int buildingId) {
+        if (player != null && player.isLogin && player.ctx != null && player.getBuildingData().get(buildingId) != null) {
+            GamePb1.SynBuildingStateRs.Builder builder = GamePb1.SynBuildingStateRs.newBuilder();
+            BuildingState buildingState = player.getBuildingData().get(buildingId);
+            builder.addBuildingState(buildingState.creatPb());
+            BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynBuildingStateRs.EXT_FIELD_NUMBER, GamePb1.SynBuildingStateRs.ext, builder.build());
+            MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
         }
+    }
+
+    /**
+     * 派遣居民
+     *
+     * @param roleId
+     * @param rq
+     * @return
+     */
+    public GamePb1.DispatchResidentRs dispatchResident(long roleId, GamePb1.DispatchResidentRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+
+        GamePb1.DispatchResidentRs.Builder builder = GamePb1.DispatchResidentRs.newBuilder();
+        boolean autoDispatch = rq.getAutoDispatch();
+        if (autoDispatch) {
+            // 一键派遣
+        } else {
+            int buildingId = rq.getBuildingId();
+            int residentCnt = rq.getResidentCnt();
+        }
+
+
+        return builder.build();
+    }
+
+    /**
+     * 委任武将
+     *
+     * @param roleId
+     * @param rq
+     * @return
+     */
+    public GamePb1.DispatchHeroRs dispatchHero(long roleId, GamePb1.DispatchHeroRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+
+        GamePb1.DispatchHeroRs.Builder builder = GamePb1.DispatchHeroRs.newBuilder();
+        boolean autoDispatch = rq.getAutoDispatch();
+        if (autoDispatch) {
+            // 一键委任
+        } else {
+            int buildingId = rq.getBuildingId();
+            List<Integer> heroIdList = rq.getHeroIdList();
+        }
+
+
+        return builder.build();
     }
 }
