@@ -77,15 +77,18 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         List<StaticSimCity> canRandomSimCityList = new ArrayList<>();
         for (StaticSimCity staticSimCity : staticSimCityList) {
             int needLordLv = staticSimCity.getLordLv();
+            // 领主等级不满足，则不随机该事件
             if (player.lord.getLevel() < needLordLv) {
                 continue;
             }
             List<List<Integer>> needBuildLvList = staticSimCity.getBuildLv();
-            boolean checkBuildLv = needBuildLvList.stream().anyMatch(tmp -> DataResource.ac.getBean(BuildingDataManager.class).checkBuildingLv(player, tmp));
-            if (checkBuildLv) {
+            // 城镇事件要求的所有建筑等级任一不满足，则不随机该事件
+            boolean checkBuildLv = needBuildLvList.stream().allMatch(tmp -> DataResource.ac.getBean(BuildingDataManager.class).checkBuildingLv(player, tmp));
+            if (!checkBuildLv) {
                 continue;
             }
             List<Integer> open = staticSimCity.getOpen();
+            // 如果已有的城镇事件已经绑定过对应的建筑或NPC，则不随机该事件
             boolean checkBuildOrNpcHasBind = lifeSimulatorInfoList.stream().anyMatch(tmp -> tmp.getBindType() == open.get(0) && tmp.getBindId() == open.get(1));
             if (checkBuildOrNpcHasBind) {
                 continue;

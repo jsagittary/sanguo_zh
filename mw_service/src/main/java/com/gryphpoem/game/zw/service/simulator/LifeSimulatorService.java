@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.simulator;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
@@ -270,7 +271,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
 
         // 随机城镇事件
         List<StaticSimCity> staticSimCityList = StaticBuildCityDataMgr.getCanRandomSimCityList(player);
-        if (staticSimCityList.size() > 0) {
+        if (CheckNull.nonEmpty(staticSimCityList)) {
             int random = RandomHelper.randomInSize(staticSimCityList.size());
             if (random > 1) {
                 StaticSimCity staticSimCity = staticSimCityList.get(random - 1);
@@ -280,9 +281,11 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 lifeSimulatorInfo.setPauseTime(0);
                 lifeSimulatorInfo.setDelay(0);
                 lifeSimulatorInfoList.add(lifeSimulatorInfo);
+                LogUtil.common(String.format("转点刷新玩家城镇事件成功, roleId:%s, simulatorType:%s", player.roleId, staticSimCity.getType()));
                 cityEvent.setTotalCountCurPeriod(totalCountCurPeriod + 1);
                 // 向客户端同步新增的模拟器
                 SyncNewSimulatorToPlayer(player, lifeSimulatorInfo, 3);
+                LogUtil.common(String.format("向客户端同步新增可玩的模拟器成功, roleId:%s, simulatorType:%s", player.roleId, lifeSimulatorInfo.getType()));
             }
         }
     }
@@ -300,7 +303,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
     }*/
 
     /**
-     * 模拟器延时结束后向客户端同步
+     * 向客户端同步新增可玩的模拟器
      *
      * @param player
      */
