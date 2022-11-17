@@ -545,7 +545,7 @@ public class GlobalWarFire {
         addPlayerScore(pwf, speedMin, AwardFrom.WAR_FIRE_SCORE_MINE_MINUTE_OUTPUT, wfMine.getRemainRes());
         updateMine(wfMine, speedMin);
         Army army = wfMine.getGuard() != null ? wfMine.getGuard().getArmy() : null;
-        int heroId = army != null ? army.getHero().get(0).getV1() : 0;
+        int heroId = army != null ? army.getHero().get(0).getPrincipleHeroId() : 0;
         if (heroId > 0) {
             pwf.addWarFireEvent(WarFireEvent.ETY_MINE_OUTPUT, wfMine.getCfgMine().getMineId(), wfMine.getPos(), heroId, speedMin);
         }
@@ -1070,7 +1070,7 @@ public class GlobalWarFire {
             LogUtil.world(String.format("战火燎原 --- 玩家 :%d, 据点 :%d, 获得首杀积分 :%d, 当前累计首杀积分 :%d", lordId, cityId, playerFirstBloodScore, pwf.getFirstOccupyScore()));
             //记录首杀奖励Log
             AttackWFCityArmy army = CheckNull.isEmpty(armys) ? null : armys.get(0);
-            int heroId = army != null ? army.getArmy().getHero().get(0).getV1() : 0;
+            int heroId = army != null ? army.getArmy().getHero().get(0).getPrincipleHeroId() : 0;
             if (heroId > 0) {
                 pwf.addWarFireEvent(WarFireEvent.ETY_CITY_FIRST_BLOOD, cityId, wfCity.getPos(), heroId, playerFirstBloodScore);
             }
@@ -1117,7 +1117,7 @@ public class GlobalWarFire {
                     PlayerWarFire pwf = getPlayerWarFire(lordId);
                     addPlayerScore(pwf, addPlayerScore, AwardFrom.WAR_FIRE_SCORE_CITY_MINUTE_OUTPUT, cityId);
                     AttackWFCityArmy army = CheckNull.isEmpty(armys) ? null : armys.get(0);
-                    int heroId = army != null ? army.getArmy().getHero().get(0).getV1() : 0;
+                    int heroId = army != null ? army.getArmy().getHero().get(0).getPrincipleHeroId() : 0;
                     if (heroId > 0) {
                         pwf.addWarFireEvent(WarFireEvent.ETY_CITY_OUTPUT, cityId, wfCity.getPos(), heroId, staticWarFire.getPersonContinue());
                     }

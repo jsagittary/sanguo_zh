@@ -72,7 +72,7 @@ public class BerlinForce extends Force {
                 + ", maxLine=" + maxLine + ", count=" + count + ", killed=" + killed + ", lost=" + lost + ", totalLost="
                 + totalLost + ", attrData=" + attrData + ", fighter=" + fighter + ", addExp=" + addExp + ", ownerId="
                 + ownerId + ", nick='" + nick + '\'' + ", hasFight=" + hasFight + ", camp=" + camp + ", roleType="
-                + roleType + ", skillId=" + skillId + '}';
+                + roleType + '}';
     }
 
     /**

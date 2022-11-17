@@ -68,14 +68,13 @@ public class AirshipArmy extends BaseArmy {
             mapMarchArmy.getCrossWorldMap().publishMapEvent(createMapEvent(MapCurdEvent.UPDATE));
             return;
         }
-        List<Integer> heroIdList = getArmy().getHero().stream().map(twi -> twi.getV1()).collect(Collectors.toList());
         AirshipMapEntity airshipMapEntity = (AirshipMapEntity) baseEntity;
         AirshipWorldData airship = airshipMapEntity.getAirshipWorldData();
         List<BattleRole> battleRoles = airship.getJoinRoles().computeIfAbsent(player.lord.getCamp(),
                 k -> new ArrayList<>());
         // 加入玩家的信息
         battleRoles.add(CommonPb.BattleRole.newBuilder().setKeyId(army.getKeyId()).setRoleId(player.roleId)
-                .addAllHeroId(heroIdList).build());
+                .addAllPartnerHeroId(getArmy().getHero()).build());
         if (battleRoles.stream().mapToLong(role -> role.getRoleId()).distinct()
                 .count() >= Constant.AIRSHIP_JOIN_MEMBER_CNT) { // 达成条件, 开启战斗
             fightAirShip(cMap, airshipMapEntity, battleRoles, player.lord.getCamp());

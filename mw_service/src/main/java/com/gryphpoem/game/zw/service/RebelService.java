@@ -18,7 +18,6 @@ import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Report.Builder;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb4.*;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
@@ -953,13 +952,8 @@ public class RebelService extends BaseAwkwardDataManager {
         Battle battle = warDataManager.getBattleMap().get(battleId);
         if (battle != null && target != null) {
             army.setState(ArmyConstant.ARMY_STATE_REBEL_BATTLE);
-            List<Integer> heroIdList = new ArrayList<>();
-            for (TwoInt twoInt : army.getHero()) {
-                Hero hero = player.heros.get(twoInt.getV1());
-                hero.setState(ArmyConstant.ARMY_STATE_REBEL_BATTLE);
-                heroIdList.add(hero.getHeroId());
-            }
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), false);
+            army.setHeroState(player, ArmyConstant.ARMY_STATE_REBEL_BATTLE);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), false);
         } else {
             // 目标丢失
             Turple<Integer, Integer> xy = MapHelper.reducePos(pos);

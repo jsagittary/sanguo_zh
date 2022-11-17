@@ -1,6 +1,5 @@
 package com.gryphpoem.game.zw.service;
 
-import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
@@ -19,11 +18,9 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +65,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.setRemainingForPlayer(challengePlayer.getRemainingForPlayer());
         builder.setRemainingRefreshTime(challengePlayer.getRemainingRefreshTime());
         builder.setNeedRefreshChallengePlayer(challengePlayer.isNeedRefreshChallengePlayer());
-        List<Integer> battlePos = player.heroBattlePos.get(HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE);
+        List<Integer> battlePos = player.getPlayerFormation().getHeroBattlePos().get(HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE);
         if (Objects.nonNull(battlePos))
             builder.addAllBattleHero(battlePos);
         return builder.build();
@@ -184,11 +181,10 @@ public class TreasureChallengePlayerService implements GmCmdService {
 
             Player player = playerDataManager.getPlayer(lordId);
             if (player != null) {
-                for (int heroId : player.heroBattle) {
-                    if (heroId > 0) {
-                        result.add(lordId);
-                        break;
-                    }
+                for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+                    if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                    result.add(lordId);
+                    break;
                 }
             }
         }
@@ -209,20 +205,21 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.setCamp(challengingPlayer.lord.getCamp());
         builder.setIcon(challengingPlayer.lord.getPortrait());
         builder.setPortraitFrame(challengingPlayer.getDressUp().getCurPortraitFrame());
-        challengingPlayer.getAllOnBattleHeros().forEach(h -> builder.addHero(createChallengeHero(h)));
+        challengingPlayer.getAllOnBattleHeroList().forEach(h -> builder.addHero(h.createPb(false)));
         return builder.build();
     }
 
-    private CommonPb.ChallengeHero createChallengeHero(Hero hero) {
-        CommonPb.ChallengeHero.Builder builder = CommonPb.ChallengeHero.newBuilder();
-        builder.setHeroId(hero.getHeroId());
-        builder.setLevel(hero.getLevel());
-        builder.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
-        builder.setPos(hero.getPos());
-        builder.setGradeKeyId(hero.getGradeKeyId());
-        builder.setDecorated(hero.getDecorated());
-        return builder.build();
-    }
+//    private CommonPb.ChallengeHero createChallengeHero(PartnerHero partnerHero) {
+//        CommonPb.ChallengeHero.Builder builder = CommonPb.ChallengeHero.newBuilder();
+//
+//        builder.setHeroId(hero.getHeroId());
+//        builder.setLevel(hero.getLevel());
+//        builder.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
+//        builder.setPos(hero.getPos());
+//        builder.setGradeKeyId(hero.getGradeKeyId());
+//        builder.setDecorated(hero.getDecorated());
+//        return builder.build();
+//    }
 
     /**
      * 挑战玩家
@@ -239,10 +236,9 @@ public class TreasureChallengePlayerService implements GmCmdService {
      */
     private void checkChallengePlayer(Player player, List<Integer> heroIdList, TreasureChallengePlayer challengePlayer) {
         // 检测上阵英雄
-        List<Integer> battleHeroId = Arrays.stream(player.heroBattle)
-                .filter(i -> i > 0)
-                .boxed()
-                .collect(Collectors.toList());
+        List<Integer> battleHeroId = Arrays.stream(player.getPlayerFormation().getHeroBattle())
+                .filter(i -> !HeroUtil.isEmptyPartner(i))
+                .map(i -> i.getPrincipalHero().getHeroId()).collect(Collectors.toList());
 
         List<Integer> heroList = heroIdList.stream()
                 .filter(id -> id > 0)
@@ -276,7 +272,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
         Player challengingPlayer = playerDataManager.checkPlayerIsExist(challengePlayerId);
 
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIdList);
-        Fighter defender = fightService.createCombatPlayerFighter(challengingPlayer, challengingPlayer.getAllOnBattleHeros().stream().map(Hero::getHeroId).collect(Collectors.toList()));
+        Fighter defender = fightService.createCombatPlayerFighterByPartnerHero(challengingPlayer, challengingPlayer.getAllOnBattleHeroList());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
         fightLogic.start();
 

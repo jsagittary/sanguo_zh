@@ -138,7 +138,7 @@ public class MapMarch implements DelayInvokeEnvironment {
                 it.remove();
                 continue;
             }
-            int heroId = baseArmy.getArmy().getHero().get(0).getV1();
+            int heroId = baseArmy.getArmy().getHero().get(0).getPrincipleHeroId();
             Hero hero = amryPlayer.heros.get(heroId);
             int armCount = 0;
             if (hero != null) {

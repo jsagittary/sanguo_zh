@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4.FixWallRs;
@@ -110,8 +111,8 @@ public class WallService {
                     rmArmy.add(army);
                     continue;
                 }
-                int armyCnt = army.getHero().get(0).getV2();
-                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getV1());
+                int armyCnt = army.getHero().get(0).getCount();
+                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getPrincipleHeroId());
                 if (hero != null) {
                     armyCnt = hero.getCount();
                 }
@@ -627,7 +628,7 @@ public class WallService {
         worldService.synRetreatArmy(tarPlayer, army, now);
         worldDataManager.removePlayerGuard(army.getTarget(), army);
         // 给派兵驻防的玩家发遣返邮件
-        int heroId = army.getHero().get(0).getV1();
+        int heroId = army.getHero().get(0).getPrincipleHeroId();
         mailDataManager
                 .sendNormalMail(tarPlayer, MailConstant.MOLD_GARRISON_REPATRIATE, now, player.lord.getNick(), heroId,
                         player.lord.getNick(), heroId);
@@ -665,16 +666,14 @@ public class WallService {
                 worldService.synWallCallBackRs(0, army);
                 worldService.synRetreatArmy(player, army, now);
                 // 驻防被杀发邮件
-                int heroId = army.getHero().get(0).getV1();
-                    /* mailDataManager.sendNormalMail(player, MailConstant.DECISIVE_BATTLE_GARRISON_CANCEL, now, targetNick,xyInArea.getA(),xyInArea.getB(),heroId,
-                             targetNick,xyInArea.getA(),xyInArea.getB(),heroId);*/
+                int heroId = army.getHero().get(0).getPrincipleHeroId();
                 mailDataManager
                         .sendNormalMail(player, MailConstant.WALL_HELP_KILLED, now, targetNick, heroId, targetNick,
                                 heroId);
                 armys.remove(army); // 此处因为使用的armys CopyOnWriteArrayList,读写分离 所以可以边遍历边删除
             } else {
-                for (TwoInt twoInt : army.getHero()) {
-                    hero = player.heros.get(twoInt.getV1());
+                for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+                    hero = player.heros.get(twoInt.getPrincipleHeroId());
                     if (hero != null && hero.getCount() <= 0) {
                         worldService.retreatArmyByDistance(player, army, now);
                         worldService.synWallCallBackRs(0, army);
@@ -684,7 +683,6 @@ public class WallService {
                         int heroId = hero.getHeroId();
                         mailDataManager.sendNormalMail(player, MailConstant.WALL_HELP_KILLED, now, targetNick, heroId,
                                 targetNick, heroId);
-                        // worldDataManager.removePlayerGuard(pos, army);
                         armys.remove(army);
                     }
                 }
@@ -848,8 +846,8 @@ public class WallService {
                     continue;
                 }
                 // 重新获取兵力信息
-                int armyCnt = army.getHero().get(0).getV2();
-                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getV1());
+                int armyCnt = army.getHero().get(0).getCount();
+                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getPrincipleHeroId());
                 if (hero != null) {
                     armyCnt = hero.getCount();
                 }

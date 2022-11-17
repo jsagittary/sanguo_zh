@@ -175,8 +175,8 @@ public class RelicService extends AbsGameService implements GmCmdService, MergeS
             Player p = playerDataManager.getPlayer(turple.getA());
             Army army = p.armys.get(turple.getB());
             if (Objects.nonNull(army)) {
-                int armCount = army.getHero().stream().mapToInt(CommonPb.TwoInt::getV2).sum();
-                List<Integer> heroIds = army.getHero().stream().map(o -> o.getV1()).collect(Collectors.toList());
+                int armCount = army.getHero().stream().mapToInt(CommonPb.PartnerHeroIdPb::getCount).sum();
+                List<Integer> heroIds = army.getHero().stream().map(o -> o.getPrincipleHeroId()).collect(Collectors.toList());
                 CommonPb.RelicProbArmy.Builder builder = CommonPb.RelicProbArmy.newBuilder();
                 builder.addAllHeroId(heroIds);
                 builder.setLordLv(p.lord.getLevel());

@@ -29,6 +29,7 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -164,11 +165,12 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood,
                 AwardFrom.ATK_POS);
 
-        List<CommonPb.TwoInt> form = new ArrayList<>();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
         for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            form.add(partnerHero.convertTo());
         }
 
         // 添加兵力到进攻方
@@ -309,15 +311,9 @@ public class CounterAtkService extends BaseAwkwardDataManager {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_DEF);
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_COUNTER_BOSS_DEF);
 
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_DEF);
-            heroIdList.add(hero.getHeroId());
-        }
-        worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+        worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
     }
 
     /**
@@ -335,13 +331,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         Battle battle = warDataManager.getSpecialBattleMap().get(battleId);
         if (battle != null && target != null) {
             army.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_ATK_HELP);
-            List<Integer> heroIdList = new ArrayList<>();
-            for (CommonPb.TwoInt twoInt : army.getHero()) {
-                Hero hero = player.heros.get(twoInt.getV1());
-                hero.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_ATK_HELP);
-                heroIdList.add(hero.getHeroId());
-            }
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), false);
+            army.setHeroState(player, ArmyConstant.ARMY_STATE_COUNTER_BOSS_ATK_HELP);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), false);
         } else {
             // 目标丢失
             Turple<Integer, Integer> xy = MapHelper.reducePos(pos);
@@ -744,8 +735,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
             // 对方开启自动补兵
             playerDataManager.autoAddArmy(player);
             int defArm = 0;
-            for (Hero hero : player.getAllOnBattleHeros()) {
-                defArm += hero.getCount();
+            for (PartnerHero hero : player.getAllOnBattleHeroList()) {
+                defArm += hero.getPrincipalHero().getCount();
             }
             if (!CheckNull.isNull(player)) {
                 Battle battle = new Battle();

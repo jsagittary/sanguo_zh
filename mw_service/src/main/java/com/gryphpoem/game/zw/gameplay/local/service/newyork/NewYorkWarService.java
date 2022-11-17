@@ -491,9 +491,9 @@ public class NewYorkWarService {
                                 }
                                 // 自动补兵
                                 warService.autoFillArmy(player);
-                                List<Integer> heroes = player.getAllOnBattleHeros().stream()
-                                        .filter(hero -> hero.isIdle() && hero.getCount() > 0)
-                                        .map(hero -> hero.getHeroId())
+                                List<Integer> heroes = player.getAllOnBattleHeroList().stream()
+                                        .filter(hero -> hero.getPrincipalHero().isIdle() && hero.getPrincipalHero().getCount() > 0)
+                                        .map(hero -> hero.getPrincipalHero().getHeroId())
                                         .collect(Collectors.toList());
                                 int battleId = baseMapBattle.getBattleId();
                                 JoinBattleCrossRq.Builder builder = JoinBattleCrossRq.newBuilder();

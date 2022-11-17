@@ -23,10 +23,12 @@ import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -112,33 +114,30 @@ public class CrossEntity2Dto {
 
     public static Map<Integer, CrossHero> createCrossHero(Player player) {
         Map<Integer, CrossHero> map = new HashMap<>();
-        Optional.ofNullable(player.heroBattle).ifPresent(heroes -> {
+        Optional.ofNullable(player.getPlayerFormation().getHeroBattle()).ifPresent(heroes -> {
             int index = 0;
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
-                map.put(heroId, createCrossHero(player, hero, index++, true));
+                map.put(partnerHero.getPrincipalHero().getHeroId(), createCrossHero(player, partnerHero.getPrincipalHero(), index++, true));
             }
         });
 
-        Optional.ofNullable(player.heroWall).ifPresent(heroes -> {
+        Optional.ofNullable(player.getPlayerFormation().getHeroWall()).ifPresent(heroes -> {
             int index = 0;
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
-                map.put(heroId, createCrossHero(player, hero, index++, true));
+                map.put(partnerHero.getPrincipalHero().getHeroId(), createCrossHero(player, partnerHero.getPrincipalHero(), index++, true));
             }
         });
 
-        Optional.ofNullable(player.heroAcq).ifPresent(heroes -> {
+        Optional.ofNullable(player.getPlayerFormation().getHeroWall()).ifPresent(heroes -> {
             int index = 0;
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
-                map.put(heroId, createCrossHero(player, hero, index++, true));
+                map.put(partnerHero.getPrincipalHero().getHeroId(), createCrossHero(player, partnerHero.getPrincipalHero(), index++, true));
             }
         });
         return map;

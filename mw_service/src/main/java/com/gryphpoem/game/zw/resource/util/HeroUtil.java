@@ -2,8 +2,11 @@ package com.gryphpoem.game.zw.resource.util;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+
+import java.util.Objects;
 
 /**
  * Description:
@@ -44,5 +47,20 @@ public class HeroUtil {
             onePb.setAcqPos(hero.getAcqPos());
         }
         return onePb;
+    }
+
+    public static void setHeroState(CommonPb.PartnerHeroIdPb partnerHeroIdPb, Player player, int state) {
+        Hero hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
+        if (Objects.nonNull(hero)) {
+            hero.setState(state);
+        }
+        if (CheckNull.nonEmpty(partnerHeroIdPb.getDeputyHeroIdList())) {
+            partnerHeroIdPb.getDeputyHeroIdList().forEach(heroId -> {
+                Hero hero_ = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
+                if (Objects.nonNull(hero_)) {
+                    hero_.setState(state);
+                }
+            });
+        }
     }
 }

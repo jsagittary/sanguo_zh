@@ -31,6 +31,7 @@ public class PartnerHero implements GamePb<CommonPb.PartnerHeroPb> {
     }
 
     public void setState(int state) {
+        this.principalHero.setState(state);
         if (CheckNull.isEmpty(deputyHeroList)) return;
         deputyHeroList.forEach(hero -> {
             if (CheckNull.isNull(hero)) return;
@@ -64,4 +65,15 @@ public class PartnerHero implements GamePb<CommonPb.PartnerHeroPb> {
 
         return builder.build();
     }
+
+    public CommonPb.PartnerHeroIdPb convertTo() {
+        CommonPb.PartnerHeroIdPb.Builder builder = CommonPb.PartnerHeroIdPb.newBuilder();
+        builder.setPrincipleHeroId(this.principalHero.getHeroId());
+        if (CheckNull.nonEmpty(this.getDeputyHeroList())) {
+            this.getDeputyHeroList().forEach(hero -> builder.addDeputyHeroId(hero.getHeroId()));
+        }
+        builder.setCount(this.principalHero.getCount());
+        return builder.build();
+    }
+
 }

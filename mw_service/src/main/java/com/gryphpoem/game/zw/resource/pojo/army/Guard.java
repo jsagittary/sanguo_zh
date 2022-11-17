@@ -4,17 +4,16 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * @author TanDonghai
  * @ClassName Guard.java
  * @Description 矿点驻军信息
- * @author TanDonghai
  * @date 创建时间：2017年4月11日 上午11:26:27
- *
  */
 public class Guard {
     private Player player;
@@ -52,15 +51,22 @@ public class Guard {
         return army.getTarget();
     }
 
-    public List<CommonPb.TwoInt> getForm() {
+    public List<CommonPb.PartnerHeroIdPb> getForm() {
         // 因为部队的兵力可变,需要获取最新兵力情况
-        List<CommonPb.TwoInt> form = new ArrayList<>();
-        for (CommonPb.TwoInt twonInt : army.getHero()) {
-            int heroId = twonInt.getV1();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
+        CommonPb.PartnerHeroIdPb.Builder builder = CommonPb.PartnerHeroIdPb.newBuilder();
+        for (CommonPb.PartnerHeroIdPb pb : army.getHero()) {
+            int heroId = pb.getPrincipleHeroId();
             Hero hero = player.heros.get(heroId);
             if (hero == null) continue;
             int cnt = hero.getCount();
-            form.add(PbHelper.createTwoIntPb(heroId, cnt));
+            builder.setPrincipleHeroId(heroId);
+            if (CheckNull.nonEmpty(pb.getDeputyHeroIdList())) {
+                builder.addAllDeputyHeroId(pb.getDeputyHeroIdList());
+            }
+            builder.setCount(cnt);
+            form.add(builder.build());
+            builder.clear();
         }
         return form;
     }
@@ -82,7 +88,7 @@ public class Guard {
     }
 
     public int getHeroId() {
-        return army.getHero().get(0).getV1();
+        return army.getHero().get(0).getPrincipleHeroId();
     }
 
     public int getHeroLv() {

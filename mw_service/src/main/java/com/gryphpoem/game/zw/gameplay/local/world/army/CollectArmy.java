@@ -215,7 +215,7 @@ public class CollectArmy extends BaseArmy {
             return;
         }
         MineMapEntity mineMapEntity = (MineMapEntity) baseWorldEntity;
-        int heroId = getArmy().getHero().get(0).getV1();
+        int heroId = getArmy().getHero().get(0).getPrincipleHeroId();
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
         int collectMaxTime = mineMapEntity.canCollectMaxTime(cMap, staticHero);
         Player armyPlayer = checkAndGetAmryHasPlayer(mapMarchArmy);

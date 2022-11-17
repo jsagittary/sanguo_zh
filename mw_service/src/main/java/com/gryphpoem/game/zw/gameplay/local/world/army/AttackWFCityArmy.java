@@ -235,7 +235,7 @@ public class AttackWFCityArmy extends AttackCityArmy {
                             int retreatMarch = cMap.marchTime(cMap, defP, defP.lord.getPos(), targetPos);
                             defWFArmy
                                     .stream()
-                                    .filter(wfArmy -> wfArmy.getLordId() == ownerId && wfArmy.getArmy().getHero().get(0).getV1() == heroId)
+                                    .filter(wfArmy -> wfArmy.getLordId() == ownerId && wfArmy.getArmy().getHero().get(0).getPrincipleHeroId() == heroId)
                                     .forEach(wfArmy -> {
                                         // 部队返回
                                         wfArmy.retreatArmy(mapMarchArmy, retreatMarch, retreatMarch);

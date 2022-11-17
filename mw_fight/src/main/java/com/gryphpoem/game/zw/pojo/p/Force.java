@@ -544,7 +544,6 @@ public class Force {
                 ", hasFight=" + hasFight +
                 ", camp=" + camp +
                 ", roleType=" + roleType +
-                ", skillId=" + skillId +
                 ", intensifyLv=" + intensifyLv +
                 ", effect=" + effect +
                 ", isBcs=" + isBcs +
@@ -573,7 +572,6 @@ public class Force {
                 ", hasFight=" + hasFight +
                 ", camp=" + camp +
                 ", roleType=" + roleType +
-                ", skillId=" + skillId +
                 ", intensifyLv=" + intensifyLv +
                 ", effect=" + effect +
                 ", isBcs=" + isBcs +

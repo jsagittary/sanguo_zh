@@ -304,11 +304,7 @@ public class ArmyService {
         March march = new March(player, army);
         worldDataManager.addMarch(march);
         // 改变行军状态
-        for (TwoInt h : army.getHero()) {
-            int heroId = h.getV1();
-            Hero hero = player.heros.get(heroId);
-            if (hero != null) hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_MARCH);
         // 区域变化推送
         List<Integer> posList = new ArrayList<>();
         posList.add(pos);

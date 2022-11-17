@@ -397,16 +397,16 @@ public class RelicsFightService {
             recoverHpMap.put(force.id, recoveryHp);
         });
         //分离死亡部队和存活部队. 死亡将领回家, 存活将领继续战斗.
-        List<CommonPb.TwoInt> deadHero = null, survivorHero = null;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            Hero hero = player.heros.get(twoInt.getV1());
+        List<CommonPb.PartnerHeroIdPb> deadHero = null, survivorHero = null;
+        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+            Hero hero = player.heros.get(twoInt.getPrincipleHeroId());
             if (Objects.isNull(hero)) return;
             if (hero.getCount() <= 0) {
                 if (Objects.isNull(deadHero)) deadHero = new ArrayList<>();
-                deadHero.add(PbHelper.createTwoIntPb(twoInt.getV1(), 0));
+                deadHero.add(twoInt);
             } else {
                 if (Objects.isNull(survivorHero)) survivorHero = new ArrayList<>();
-                survivorHero.add(PbHelper.createTwoIntPb(twoInt.getV1(), hero.getCount()));
+                survivorHero.add(twoInt);
             }
         }
         if (CheckNull.nonEmpty(survivorHero)) {
@@ -418,9 +418,9 @@ public class RelicsFightService {
                 player.armys.put(deadArmy.getKeyId(), deadArmy);
                 deadArmy.setHero(deadHero);
                 Map<Integer, Integer> deadArmyRecoverMap = deadArmy.getAndCreateIfAbsentRecoverMap();
-                for (CommonPb.TwoInt twoInt : deadHero) {
-                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getV1(), 0);
-                    if (recoverHp > 0) deadArmyRecoverMap.put(twoInt.getV1(), recoverHp);
+                for (CommonPb.PartnerHeroIdPb twoInt : deadHero) {
+                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getPrincipleHeroId(), 0);
+                    if (recoverHp > 0) deadArmyRecoverMap.put(twoInt.getPrincipleHeroId(), recoverHp);
                     recoverMap.merge(player.roleId, recoverHp, Integer::sum);
                 }
                 //返回死亡将领
@@ -430,8 +430,8 @@ public class RelicsFightService {
             //整个部队全部死亡
             army.setHero(deadHero);
             if (CheckNull.nonEmpty(deadHero)) {
-                for (CommonPb.TwoInt twoInt : deadHero) {
-                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getV1(), 0);
+                for (CommonPb.PartnerHeroIdPb twoInt : deadHero) {
+                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getPrincipleHeroId(), 0);
                     recoverMap.merge(player.roleId, recoverHp, Integer::sum);
                 }
             }
@@ -464,8 +464,8 @@ public class RelicsFightService {
     }
 
     private void doRecoverArmy(Player player, Army retreatArmy, Map<Integer, Integer> recoverMap, Map<Long, ChangeInfo> changeMap) {
-        for (CommonPb.TwoInt twoInt : retreatArmy.getHero()) {
-            Hero hero = player.heros.get(twoInt.getV1());
+        for (CommonPb.PartnerHeroIdPb twoInt : retreatArmy.getHero()) {
+            Hero hero = player.heros.get(twoInt.getPrincipleHeroId());
             Integer recoverHp = recoverMap.remove(hero.getHeroId());
             if (Objects.isNull(recoverHp) || recoverHp <= 0) continue;
             hero.addArm(recoverHp);
@@ -504,7 +504,7 @@ public class RelicsFightService {
     private String armyHeroString(Army army) {
         if (CheckNull.isEmpty(army.getHero())) return "";
         return army.getHero().stream()
-                .map(twoInt -> new StringBuilder().append(twoInt.getV1()).append("_").append(twoInt.getV2()))
+                .map(twoInt -> new StringBuilder().append(twoInt.getPrincipleHeroId()).append("_").append(twoInt.getCount()))
                 .collect(Collectors.joining(","));
     }
 }

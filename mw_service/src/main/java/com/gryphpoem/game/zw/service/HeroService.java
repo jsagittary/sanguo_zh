@@ -12,6 +12,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
@@ -219,8 +220,8 @@ public class HeroService implements GmCmdService {
                 if (!army.isGuard()) {
                     continue;
                 }
-                TwoInt twoInt = Optional.ofNullable(army.getHero().stream().
-                        filter(ar -> ar.getV1() == hero.getHeroId()).findFirst()).get().orElse(null);
+                CommonPb.PartnerHeroIdPb twoInt = Optional.ofNullable(army.getHero().stream().
+                        filter(ar -> army.inArmy(hero.getHeroId())).findFirst()).get().orElse(null);
                 if (CheckNull.isNull(twoInt)) {
                     continue;
                 }

@@ -20,6 +20,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.CrossFunctionData;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.CounterAttack;
 import com.gryphpoem.game.zw.resource.pojo.world.GlobalRebellion;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -379,10 +380,11 @@ public class GameLocal2CrossMapService implements GmCmdService {
                                         return flag;
                                     }).limit(count)
                                     .forEach(p -> {
-                                        List<Hero> heroes = p.getAllOnBattleHeros();
-                                        heroes.stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE)
-                                                .forEach(hero -> {
+                                        List<PartnerHero> heroes = p.getAllOnBattleHeroList();
+                                        heroes.stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE)
+                                                .forEach(ph -> {
                                                     try {
+                                                        Hero hero = ph.getPrincipalHero();
                                                         hero.setCount(hero.getAttr()[HeroConstant.ATTR_LEAD]);
                                                         GamePb6.CrossWarFireAttackPosRq.Builder req = GamePb6.CrossWarFireAttackPosRq.newBuilder();
                                                         req.setPos(GameLocal2CrossMapService.xyToPos(Integer.parseInt(cityPos[0]), Integer.parseInt(cityPos[1])));

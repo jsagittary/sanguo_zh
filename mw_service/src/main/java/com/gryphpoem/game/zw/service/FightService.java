@@ -9,7 +9,6 @@ import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -39,8 +38,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author TanDonghai
@@ -86,25 +83,19 @@ public class FightService {
      * @param holdTime
      * @return
      */
-    public Fighter createRelicFighter(Player player, int armyKeyId, List<TwoInt> form, long holdTime) {
+    public Fighter createRelicFighter(Player player, int armyKeyId, List<CommonPb.PartnerHeroIdPb> form, long holdTime) {
         if (CheckNull.isEmpty(form)) {
             throw new IllegalArgumentException(String.format("roleId :%d, armyKeyId :%d, heroMap isEmpty", player.roleId, armyKeyId));
         }
         Fighter fighter = createFighter();
         Force force;
-        for (TwoInt twoInt : form) {
-            Hero hero = player.heros.get(twoInt.getV1());
-            int hpCount = Objects.nonNull(hero) ? hero.getCount() : 0;
-            if (hpCount <= 0) {//死亡的将领不进入战斗
-                LogUtil.debug(String.format("roleId :%d, armyKeyId :%d, hero count :%d", player.roleId, armyKeyId, hpCount));
-                continue;
-            }
-            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
-            force = createRelicForce(player, staticHero, twoInt.getV1(), hpCount, holdTime);
+        for (CommonPb.PartnerHeroIdPb partnerHero : form) {
+            Hero hero = player.heros.get(partnerHero.getPrincipleHeroId());
+            if (CheckNull.isNull(hero)) continue;
+            force = createRelicForce(player, partnerHero, holdTime);
             force.roleType = Constant.Role.PLAYER;
             force.ownerId = player.roleId;
             force.camp = player.lord.getCamp();
-            force.skillId = staticHero.getSkillId();
             fighter.addForce(force);
             // 加入光环技能
             addMedalAuraSkill(fighter, hero, player);
@@ -113,33 +104,32 @@ public class FightService {
         return fighter;
     }
 
-    public Fighter createFighter(Player player, List<TwoInt> form) {
+    public Fighter createFighter(Player player, List<CommonPb.PartnerHeroIdPb> form) {
         if (null == form) {
             return null;
         }
         Fighter fighter = createFighter();
         StaticHero staticHero = null;
         Force force;
-        for (TwoInt twoInt : form) {
-            staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+        for (CommonPb.PartnerHeroIdPb partnerHero : form) {
+            if (CheckNull.isNull(partnerHero)) continue;
+            staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHero.getPrincipleHeroId());
             if (null == staticHero) {
-                LogUtil.error("创建Fighter，heroId未配置, heroId:", twoInt.getV1());
+                LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHero.getPrincipleHeroId());
                 continue;
             }
-            Hero hero = player.heros.get(twoInt.getV1());
+            Hero hero = player.heros.get(partnerHero.getPrincipleHeroId());
             if (hero == null) {
-                LogUtil.error("创建Fighter将领为找到, heroId:", twoInt.getV1(), " roleId:", player.roleId);
+                LogUtil.error("创建Fighter将领为找到, heroId:", partnerHero.getPrincipleHeroId(), " roleId:", player.roleId);
                 continue;
             }
-            force = createForce(player, staticHero, twoInt.getV1(), hero.getCount());
+            force = createForce(player, partnerHero);
             force.roleType = Constant.Role.PLAYER;
             force.ownerId = player.roleId;
             force.camp = player.lord.getCamp();
-            force.skillId = staticHero.getSkillId();
             fighter.addForce(force);
             // 加入光环技能
             addMedalAuraSkill(fighter, hero, player);
-            // fighter.addForce(createForce(player, staticHero, twoInt.getV1(), twoInt.getV2()));
         }
         fighter.roleType = Constant.Role.PLAYER;
         return fighter;
@@ -199,7 +189,7 @@ public class FightService {
     public Fighter createFighterByBattleRole(List<BattleRole> battleRoles) {
         Fighter fighter = createFighter();
         long roleId;
-        List<Integer> heroIdList;
+        List<CommonPb.PartnerHeroIdPb> heroList;
         StaticHero staticHero;
         Hero hero;
         Force force;
@@ -210,26 +200,25 @@ public class FightService {
                 LogUtil.debug("创建阵营战守方Fighter对象,player is null=" + roleId);
                 continue;
             }
-            heroIdList = battleRole.getHeroIdList();
-            if (!CheckNull.isEmpty(heroIdList)) {
-                for (Integer heroId : heroIdList) {
-                    staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+            heroList = battleRole.getPartnerHeroIdList();
+            if (!CheckNull.isEmpty(heroList)) {
+                for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : heroList) {
+                    staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHeroIdPb.getPrincipleHeroId());
                     if (null == staticHero) {
-                        LogUtil.error("创建Fighter，heroId未配置, heroId:", heroId, ", roleId:", player.roleId);
+                        LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                         continue;
                     }
 
-                    hero = player.heros.get(heroId);
+                    hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
                     if (null == hero) {
-                        LogUtil.error("玩家没有这个将领，不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                        LogUtil.error("玩家没有这个将领，不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                         continue;
                     }
 
-                    force = createForce(player, staticHero, heroId, hero.getCount());
+                    force = createForce(player, partnerHeroIdPb);
                     force.roleType = Constant.Role.PLAYER;
                     force.ownerId = player.roleId;
                     force.camp = player.lord.getCamp();
-                    force.skillId = staticHero.getSkillId();
                     fighter.addForce(force);
                     // 加入光环技能
                     addMedalAuraSkill(fighter, hero, player);
@@ -254,22 +243,21 @@ public class FightService {
                 LogUtil.error("根据army 创建Fighter时 玩家不存在 ", army.getLordId());
                 continue;
             }
-            for (TwoInt twoInt : army.getHero()) {
-                staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+            for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : army.getHero()) {
+                staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHeroIdPb.getPrincipleHeroId());
                 if (null == staticHero) {
-                    LogUtil.error("创建Fighter，heroId未配置, heroId:", twoInt.getV1());
+                    LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHeroIdPb.getPrincipleHeroId());
                     continue;
                 }
-                Hero hero = player.heros.get(twoInt.getV1());
+                Hero hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
                 if (hero == null) {
-                    LogUtil.error("创建Fighter将领为找到, heroId:", twoInt.getV1(), " roleId:", player.roleId);
+                    LogUtil.error("创建Fighter将领为找到, heroId:", partnerHeroIdPb.getPrincipleHeroId(), " roleId:", player.roleId);
                     continue;
                 }
-                Force force = createForce(player, staticHero, twoInt.getV1(), hero.getCount());
+                Force force = createForce(player, partnerHeroIdPb);
                 force.roleType = Constant.Role.PLAYER;
                 force.ownerId = player.roleId;
                 force.camp = player.lord.getCamp();
-                force.skillId = staticHero.getSkillId();
                 fighter.addForce(force);
                 // 加入光环技能
                 addMedalAuraSkill(fighter, hero, player);
@@ -293,7 +281,7 @@ public class FightService {
 
         Hero hero;
         Force force;
-        List<Integer> heroIdList;
+        List<CommonPb.PartnerHeroIdPb> heroIdList;
         StaticHero staticHero = null;
 
         // NPC阵容
@@ -314,27 +302,25 @@ public class FightService {
                 LogUtil.debug("创建阵营战守方Fighter对象,player is null=" + roleId);
                 continue;
             }
-            heroIdList = battleRole.getHeroIdList();
+            heroIdList = battleRole.getPartnerHeroIdList();
             if (!CheckNull.isEmpty(heroIdList)) {
-                for (Integer heroId : heroIdList) {
-                    staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : heroIdList) {
+                    staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHeroIdPb.getPrincipleHeroId());
                     if (null == staticHero) {
-                        LogUtil.error("创建Fighter，heroId未配置, heroId:", heroId, ", roleId:", player.roleId);
+                        LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                         continue;
                     }
 
-                    hero = player.heros.get(heroId);
+                    hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
                     if (null == hero) {
-                        LogUtil.error("玩家没有这个将领，不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                        LogUtil.error("玩家没有这个将领，不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                         continue;
                     }
 
-                    force = createForce(player, staticHero, heroId, hero.getCount());
+                    force = createForce(player, partnerHeroIdPb);
                     force.roleType = Constant.Role.PLAYER;
                     force.ownerId = player.roleId;
                     force.camp = player.lord.getCamp();
-                    force.skillId = staticHero.getSkillId();
-//                    force.player = player;
                     fighter.addForce(force);
                     // 加入光环技能
                     addMedalAuraSkill(fighter, hero, player);
@@ -440,7 +426,7 @@ public class FightService {
         fighter.roleType = Constant.Role.PLAYER;
         Hero hero;
         Force force;
-        List<Integer> heroIdList;
+        List<CommonPb.PartnerHeroIdPb> heroIdList;
         // 防守方夜间属性加成
         Map<Integer, Integer> nightEffect = solarTermsDataManager.getNightEffect();
         long roleId;
@@ -453,46 +439,42 @@ public class FightService {
             }
             if (map.getKeyId() == WorldConstant.ARMY_TYPE_WALL_NPC) {
                 // 城防NPC
-                WallNpc wallNpc = player.wallNpc.get(map.getHeroId(0));
+                WallNpc wallNpc = player.wallNpc.get(map.getPartnerHeroId(0).getPrincipleHeroId());
                 StaticWallHeroLv staticWallHeroLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(), wallNpc.getLevel());
                 force = createWallNpcForce(wallNpc, staticWallHeroLv);
                 force.roleType = Constant.Role.WALL;
                 force.camp = player.lord.getCamp();
                 force.ownerId = player.roleId;
                 force.attrData.addValue(nightEffect);
-//                //赛季天赋优化 (城墙npc属性加成)
-//                DataResource.getBean(SeasonTalentService.class).
-//                        getSeasonTalentAttrDataEffect(player, battle.getDefencer(), force.attrData, SeasonConst.TALENT_EFFECT_619);
                 fighter.addForce(force);
             } else {
                 // 正常的hero
-                heroIdList = map.getHeroIdList();
+                heroIdList = map.getPartnerHeroIdList();
                 if (!CheckNull.isEmpty(heroIdList)) {
                     StaticHero staticHero = null;
-                    for (Integer heroId : heroIdList) {
-                        staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                    for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : heroIdList) {
+                        staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHeroIdPb.getPrincipleHeroId());
                         if (null == staticHero) {
-                            LogUtil.error("创建Fighter，heroId未配置, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
-                        hero = player.heros.get(heroId);
+                        hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
                         if (null == hero) {
-                            LogUtil.error("玩家没有这个将领， 不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("玩家没有这个将领， 不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
                         if (hero.getCount() <= 0) {
-                            LogUtil.error("玩家将领兵力不足，不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("玩家将领兵力不足，不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
-                        force = createForce(player, staticHero, heroId, hero.getCount());
+                        force = createForce(player, partnerHeroIdPb);
                         force.roleType = Constant.Role.PLAYER;
                         force.ownerId = player.roleId;
                         force.camp = player.lord.getCamp();
                         force.attrData.addValue(nightEffect);
-                        force.skillId = staticHero.getSkillId();
                         //战斗添加额外属性
                         DataResource.getBean(WarService.class).
                                 fightForceBuff(battle, force, hero, player, map);
@@ -528,7 +510,7 @@ public class FightService {
         fighter.roleType = Constant.Role.PLAYER;
         Hero hero;
         Force force;
-        List<Integer> heroIdList;
+        List<CommonPb.PartnerHeroIdPb> heroIdList;
         // 防守方夜间属性加成
         Map<Integer, Integer> nightEffect = solarTermsDataManager.getNightEffect();
         // 城池NPC守军
@@ -552,7 +534,7 @@ public class FightService {
             }
             if (map.getKeyId() == WorldConstant.ARMY_TYPE_WALL_NPC) {
                 // 城防NPC
-                WallNpc wallNpc = player.wallNpc.get(map.getHeroId(0));
+                WallNpc wallNpc = player.wallNpc.get(map.getPartnerHeroId(0).getPrincipleHeroId());
                 StaticWallHeroLv staticWallHeroLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                         wallNpc.getLevel());
                 force = createWallNpcForce(wallNpc, staticWallHeroLv);
@@ -560,39 +542,35 @@ public class FightService {
                 force.ownerId = player.roleId;
                 force.camp = player.lord.getCamp();
                 force.attrData.addValue(nightEffect);
-//                //赛季天赋优化 (城墙npc属性加成)
-//                DataResource.getBean(SeasonTalentService.class).
-//                        getSeasonTalentAttrDataEffect(player, battle.getDefencer(), force.attrData, SeasonConst.TALENT_EFFECT_619);
                 fighter.addForce(force);
             } else {
                 // 正常的hero
-                heroIdList = map.getHeroIdList();
+                heroIdList = map.getPartnerHeroIdList();
                 if (!CheckNull.isEmpty(heroIdList)) {
                     StaticHero staticHero = null;
-                    for (Integer heroId : heroIdList) {
-                        staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                    for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : heroIdList) {
+                        staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHeroIdPb.getPrincipleHeroId());
                         if (null == staticHero) {
-                            LogUtil.error("创建Fighter，heroId未配置,  heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("创建Fighter，heroId未配置,  heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
-                        hero = player.heros.get(heroId);
+                        hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
                         if (null == hero) {
-                            LogUtil.error("玩家没有这个将领，不能创建Force,  heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("玩家没有这个将领，不能创建Force,  heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
                         if (hero.getCount() <= 0) {
-                            LogUtil.error("玩家将领兵力不足，不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("玩家将领兵力不足，不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
-                        force = createForce(player, staticHero, heroId, hero.getCount());
+                        force = createForce(player, partnerHeroIdPb);
                         force.roleType = Constant.Role.PLAYER;
                         force.ownerId = player.roleId;
                         force.camp = player.lord.getCamp();
                         force.attrData.addValue(nightEffect);
-                        force.skillId = staticHero.getSkillId();
                         //战斗添加额外属性
                         DataResource.getBean(WarService.class).
                                 fightForceBuff(battle, force, hero, player, map);
@@ -614,13 +592,12 @@ public class FightService {
      * @return
      */
     public Fighter createCampBattleDefencer(Battle battle, List<CityHero> npcForm) {
-        // List<Player> playerList, Map<Long, List<Integer>> heroMap,
         Fighter fighter = createFighter();
         fighter.roleType = Constant.Role.PLAYER;
 
         Hero hero;
         Force force;
-        List<Integer> heroIdList;
+        List<CommonPb.PartnerHeroIdPb> heroIdList;
         // 防守方夜间属性加成
         Map<Integer, Integer> nightEffect = solarTermsDataManager.getNightEffect();
         // 城池NPC守军(地图据点NPC守城-配表)
@@ -644,7 +621,7 @@ public class FightService {
             }
             if (map.getKeyId() == WorldConstant.ARMY_TYPE_WALL_NPC) {
                 // 城防NPC
-                WallNpc wallNpc = player.wallNpc.get(map.getHeroId(0));
+                WallNpc wallNpc = player.wallNpc.get(map.getPartnerHeroId(0).getPrincipleHeroId());
                 StaticWallHeroLv staticWallHeroLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                         wallNpc.getLevel());
                 force = createWallNpcForce(wallNpc, staticWallHeroLv);
@@ -659,33 +636,32 @@ public class FightService {
                 fighter.addForce(force);
             } else {
                 // 正常的hero
-                heroIdList = map.getHeroIdList();
+                heroIdList = map.getPartnerHeroIdList();
                 if (!CheckNull.isEmpty(heroIdList)) {
                     StaticHero staticHero = null;
-                    for (Integer heroId : heroIdList) {
-                        staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                    for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : heroIdList) {
+                        staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHeroIdPb.getPrincipleHeroId());
                         if (null == staticHero) {
-                            LogUtil.error("创建Fighter，heroId未配置, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
-                        hero = player.heros.get(heroId);
+                        hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
                         if (null == hero) {
-                            LogUtil.error("玩家没有这个将领，不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("玩家没有这个将领，不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
                         if (hero.getCount() <= 0) {
-                            LogUtil.error("玩家将领兵力不足，不能创建Force, heroId:", heroId, ", roleId:", player.roleId);
+                            LogUtil.error("玩家将领兵力不足，不能创建Force, heroId:", partnerHeroIdPb.getPrincipleHeroId(), ", roleId:", player.roleId);
                             continue;
                         }
 
-                        force = createForce(player, staticHero, heroId, hero.getCount());
+                        force = createForce(player, partnerHeroIdPb);
                         force.roleType = Constant.Role.PLAYER;
                         force.ownerId = player.roleId;
                         force.camp = player.lord.getCamp();
                         force.attrData.addValue(nightEffect);
-                        force.skillId = staticHero.getSkillId();
                         //战斗添加额外属性
                         DataResource.getBean(WarService.class).
                                 fightForceBuff(battle, force, hero, player, map);
@@ -719,75 +695,38 @@ public class FightService {
                 LogUtil.error("创建Fighter，heroId未配置, heroId:", hero.getHeroId());
                 continue;
             }
-            force = createForce(player, staticHero, hero.getHeroId(), hero.getAttr()[HeroConstant.ATTR_LEAD]);
+            PartnerHero partnerHero = player.getBattleHeroByHeroId(heroId);
+            if (CheckNull.isNull(partnerHero)) continue;
+            force = createPartnerForce(player, partnerHero, staticHero);
             force.roleType = Constant.Role.PLAYER;
             force.ownerId = player.roleId;
             force.camp = player.lord.getCamp();
             fighter.addForce(force);
-            force.skillId = staticHero.getSkillId();
-            // fighter.addForce(createForce(player, staticHero, hero.getHeroId(),
-            // hero.getAttr()[HeroConstant.ATTR_LEAD]));
             addMedalAuraSkill(fighter, hero, player);
         }
         fighter.roleType = Constant.Role.PLAYER;
         return fighter;
     }
 
-    /**
-     * 创建玩家宝具副本战斗对象
-     *
-     * @param player 玩家
-     * @param ids    参战的将领
-     * @return Fighter
-     */
-    public Fighter createTreasureCombatFighter(Player player, List<Integer> ids) {
+    public Fighter createCombatPlayerFighterByPartnerHero(Player player, List<PartnerHero> partnerHeroList) {
         Fighter fighter = createFighter();
-        Map<Integer, StaticHero> heroConfList = ids.stream().filter(id -> id > 0 && Objects.nonNull(player.heros.get(id)))
-                .map(id -> StaticHeroDataMgr.getHeroMap().get(id))
-                .collect(Collectors.toMap(StaticHero::getHeroId, Function.identity()));
-
-        Map<Integer, Long> armyCount = heroConfList.values().stream()
-                .map(StaticHero::getType)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-
-        // 宝具副本增益
-        Map<Integer, Integer> extAttr = new HashMap<>();
-        if (CheckNull.nonEmpty(armyCount)) {
-            List<Map<Integer, Integer>> confList = armyCount.entrySet().stream()
-                    .map(en -> StaticTreasureWareDataMgr.getTreasureCombatBuff(en.getKey(), en.getValue()))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            for (Map<Integer, Integer> map : confList) {
-                map.forEach((k, v) -> extAttr.merge(k, v, Integer::sum));
-            }
-        }
         StaticHero staticHero;
         Force force;
-        for (int heroId : ids) {
-            if (heroId == 0)
+        for (PartnerHero partnerHero : partnerHeroList) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) {
                 continue;
-            Hero hero = player.heros.get(heroId);
-            staticHero = heroConfList.get(hero.getHeroId());
-            force = createForce0(player, staticHero, hero.getHeroId(), hero.getAttr()[HeroConstant.ATTR_LEAD]);
-            AttrData attrData = force.getAttrData();
-            if (CheckNull.nonEmpty(extAttr)) {
-                // 添加额外增益, 只用于计算, 不上面板
-                attrData.addValue(extAttr);
             }
+            staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHero.getPrincipalHero().getHeroId());
+            if (null == staticHero) {
+                LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHero.getPrincipalHero().getHeroId());
+                continue;
+            }
+            force = createPartnerForce(player, partnerHero, staticHero);
             force.roleType = Constant.Role.PLAYER;
             force.ownerId = player.roleId;
             force.camp = player.lord.getCamp();
-            //重新计算兵力
-            force.maxHp = attrData.lead;
-            force.hp = force.maxHp;
-            force.lead = (int) Math.ceil(attrData.lead * 1.0 / force.maxLine);
-            force.count = force.maxHp % force.lead;
-            if (force.count == 0) {
-                force.count = force.lead;
-            }
             fighter.addForce(force);
-            force.skillId = staticHero.getSkillId();
-            addMedalAuraSkill(fighter, hero, player);
+            addMedalAuraSkill(fighter, partnerHero.getPrincipalHero(), player);
         }
         fighter.roleType = Constant.Role.PLAYER;
         return fighter;
@@ -807,7 +746,6 @@ public class FightService {
             force.ownerId = player.roleId;
             force.camp = player.lord.getCamp();
             fighter.addForce(force);
-            force.skillId = staticHero.getSkillId();
             addMedalAuraSkill(fighter, hero, player);
         }
         fighter.roleType = Constant.Role.PLAYER;
@@ -830,8 +768,14 @@ public class FightService {
                 if (HeroUtil.isEmptyPartner(partnerHero)) {
                     continue;
                 }
+                Hero hero = partnerHero.getPrincipalHero();
+                StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHero.getPrincipalHero().getHeroId());
+                if (CheckNull.isNull(staticHero)) {
+                    LogUtil.error("创建Fighter，heroId未配置, heroId:", hero.getHeroId());
+                    continue;
+                }
 
-                Force force = createPartnerForce(p, partnerHero);
+                Force force = createPartnerForce(p, partnerHero, staticHero);
                 if (CheckNull.isNull(force)) continue;
 
                 force.roleType = Constant.Role.PLAYER;
@@ -841,6 +785,7 @@ public class FightService {
                 addMedalAuraSkill(fighter, hero, p);
             }
         }
+
         fighter.roleType = Constant.Role.PLAYER;
         return fighter;
     }
@@ -906,31 +851,26 @@ public class FightService {
      * @return
      */
     public Fighter createWorldBossPlayerFighter(Player player) {
-        if (null == player.heroBattle) {
-            return null;
-        }
-
         Fighter fighter = createFighter();
         StaticHero staticHero = null;
         Force force;
-        for (int i = 0; i < player.heroBattle.length; i++) {
-            Hero hero = player.getBattleHeroByPos(i);
-            if (hero == null) {
+        for (int i = 0; i < player.getPlayerFormation().getHeroBattle().length; i++) {
+            PartnerHero partnerHero = player.getBattleHeroByPos(i);
+            if (HeroUtil.isEmptyPartner(partnerHero)) {
                 continue;
             }
+
+            Hero hero = partnerHero.getPrincipalHero();
             staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
             if (null == staticHero) {
                 LogUtil.error("创建Fighter，heroId未配置, heroId:", hero.getHeroId());
                 continue;
             }
-            force = createForce(player, staticHero, hero.getHeroId(), hero.getAttr()[HeroConstant.ATTR_LEAD]);
+            force = createPartnerForce(player, partnerHero, staticHero);
             force.roleType = Constant.Role.PLAYER;
             force.ownerId = player.roleId;
             force.camp = player.lord.getCamp();
             fighter.addForce(force);
-            force.skillId = staticHero.getSkillId();
-            // fighter.addForce(createForce(player, staticHero, hero.getHeroId(),
-            // hero.getAttr()[HeroConstant.ATTR_LEAD]));
             addMedalAuraSkill(fighter, hero, player);
         }
         fighter.roleType = Constant.Role.PLAYER;
@@ -1057,14 +997,20 @@ public class FightService {
      * 创建王朝遗迹战斗对象
      *
      * @param player
-     * @param staticHero
-     * @param heroId
-     * @param count
      * @param holdTime
      * @return
      */
-    public Force createRelicForce(Player player, StaticHero staticHero, int heroId, int count, long holdTime) {
-        Hero hero = player.heros.get(heroId);
+    public Force createRelicForce(Player player, CommonPb.PartnerHeroIdPb partnerHero, long holdTime) {
+        if (CheckNull.isNull(partnerHero))
+            return null;
+
+        Hero hero = player.heros.get(partnerHero.getPrincipleHeroId());
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        if (null == staticHero) {
+            LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHero.getPrincipleHeroId());
+            return null;
+        }
+
         Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
         AttrData attrData = new AttrData(attrMap);
         // 王朝遗迹防守玩家deBuff
@@ -1092,7 +1038,7 @@ public class FightService {
         int lead = (int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / line);// 当兵力不能被整除时，向上取整
         int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
         int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
-        Force force = new Force(attrData, staticHero.getType(), count, lead, heroId, player.roleId);
+        Force force = new Force(attrData, staticHero.getType(), hero.getCount(), lead, hero.getHeroId(), player.roleId);
 
         // 添加战机详情
         addPlaneInfo(player, hero, force);
@@ -1101,6 +1047,18 @@ public class FightService {
         loadHeroSkill(force, hero);
         force.setIntensifyLv(heroLv);
         force.setEffect(restrain);
+
+        if (CheckNull.nonEmpty(partnerHero.getDeputyHeroIdList())) {
+            // 添加所有副将
+            partnerHero.getDeputyHeroIdList().forEach(heroId -> {
+                Hero hero_ = player.heros.get(heroId);
+                if (CheckNull.isNull(hero_)) return;
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
+                force.assistantHeroList.add(fightAssistantHero);
+            });
+        }
         return force;
     }
 
@@ -1111,17 +1069,8 @@ public class FightService {
      * @param partnerHero
      * @return
      */
-    public Force createPartnerForce(Player player, PartnerHero partnerHero) {
-        if (HeroUtil.isEmptyPartner(partnerHero) || CheckNull.isNull(partnerHero.getPrincipalHero()))
-            return null;
-
+    public Force createPartnerForce(Player player, PartnerHero partnerHero, StaticHero staticHero) {
         Hero hero = partnerHero.getPrincipalHero();
-        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-        if (null == staticHero) {
-            LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHero.getPrincipalHero().getHeroId());
-            return null;
-        }
-
         Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
         AttrData attrData = new AttrData(attrMap);
         int line = calcHeroLine(player, hero, staticHero.getLine());
@@ -1151,30 +1100,52 @@ public class FightService {
         return force;
     }
 
+
     /**
      * @param player
-     * @param staticHero
-     * @param heroId     将领id
-     * @param count
      * @return Force
      * @Title: createForce
      * @Description: 创建玩家 force
      */
-    public Force createForce(Player player, StaticHero staticHero, int heroId, int count) {
-        Hero hero = player.heros.get(heroId);
+    public Force createForce(Player player, CommonPb.PartnerHeroIdPb partnerHero) {
+        if (CheckNull.isNull(partnerHero))
+            return null;
+
+        Hero hero = player.heros.get(partnerHero.getPrincipleHeroId());
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+        if (null == staticHero) {
+            LogUtil.error("创建Fighter，heroId未配置, heroId:", partnerHero.getPrincipleHeroId());
+            return null;
+        }
+
         Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
         AttrData attrData = new AttrData(attrMap);
+
         int line = calcHeroLine(player, hero, staticHero.getLine());
         int lead = (int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / line);// 当兵力不能被整除时，向上取整
         int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
         int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
-        Force force = new Force(attrData, staticHero.getType(), count, lead, heroId, player.roleId);
+        Force force = new Force(attrData, staticHero.getType(), hero.getCount(), lead, hero.getHeroId(), player.roleId);
+
         // 添加战机详情
         addPlaneInfo(player, hero, force);
+
         //设置英雄战斗技能
         loadHeroSkill(force, hero);
         force.setIntensifyLv(heroLv);
         force.setEffect(restrain);
+
+        if (CheckNull.nonEmpty(partnerHero.getDeputyHeroIdList())) {
+            // 添加所有副将
+            partnerHero.getDeputyHeroIdList().forEach(heroId -> {
+                Hero hero_ = player.heros.get(heroId);
+                if (CheckNull.isNull(hero_)) return;
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
+                force.assistantHeroList.add(fightAssistantHero);
+            });
+        }
         return force;
     }
 
@@ -1336,8 +1307,6 @@ public class FightService {
     /**
      * @param player
      * @param staticHero
-     * @param heroId
-     * @param count
      * @param atkOrDef
      * @param addMode
      * @param addTime
@@ -1346,9 +1315,9 @@ public class FightService {
      * @Title: createBerlinForce
      * @Description: 柏林会战 创建 玩家force
      */
-    public BerlinForce createBerlinForce(Player player, StaticHero staticHero, int heroId, int count, int atkOrDef,
+    public BerlinForce createBerlinForce(Player player, StaticHero staticHero, CommonPb.PartnerHeroIdPb partnerHeroIdPb, int atkOrDef,
                                          int addMode, long addTime, int camp) {
-        Hero hero = player.heros.get(heroId);
+        Hero hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
         Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
         int line = calcHeroLine(player, hero, staticHero.getLine());
         int lead = (int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / line);// 当兵力不能被整除时，向上取整
@@ -1357,13 +1326,25 @@ public class FightService {
         int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
         int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
 
-        BerlinForce force = new BerlinForce(attrData, staticHero.getType(), count, lead, heroId, atkOrDef, addMode,
+        BerlinForce force = new BerlinForce(attrData, staticHero.getType(), partnerHeroIdPb.getCount(), lead, hero.getHeroId(), atkOrDef, addMode,
                 addTime, camp, player.roleId, heroLv, restrain, 0);
         force.roleType = Constant.Role.PLAYER;
         // 添加战机详情
         addPlaneInfo(player, hero, force);
         //设置英雄战斗技能
         loadHeroSkill(force, hero);
+
+        if (CheckNull.nonEmpty(partnerHeroIdPb.getDeputyHeroIdList())) {
+            // 添加所有副将
+            partnerHeroIdPb.getDeputyHeroIdList().forEach(heroId -> {
+                Hero hero_ = player.heros.get(heroId);
+                if (CheckNull.isNull(hero_)) return;
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
+                force.assistantHeroList.add(fightAssistantHero);
+            });
+        }
         return force;
     }
 

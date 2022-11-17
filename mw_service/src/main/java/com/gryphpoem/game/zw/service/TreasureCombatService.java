@@ -267,10 +267,9 @@ public class TreasureCombatService implements GmCmdService {
      */
     private void checkHeroCombat(Player player, List<Integer> heroIds) throws MwException {
         // 检测上阵英雄
-        List<Integer> battleHeroId = Arrays.stream(player.heroBattle)
-                .filter(i -> i > 0)
-                .boxed()
-                .collect(Collectors.toList());
+        List<Integer> battleHeroId = Arrays.stream(player.getPlayerFormation().getHeroBattle())
+                .filter(i -> !HeroUtil.isEmptyPartner(i))
+                .map(i -> i.getPrincipalHero().getHeroId()).collect(Collectors.toList());
 
         List<Integer> heroList = heroIds.stream()
                 .filter(id -> id > 0)
@@ -280,8 +279,6 @@ public class TreasureCombatService implements GmCmdService {
             throw new MwException(GameError.PARAM_ERROR, "宝具副本挑战关卡 - 上阵英雄错误; roleId = " + player.getLordId() + "heroIdList = " + heroIds);
         }
 
-//        TreasureChallengePlayer treasureChallengePlayer = treasureChallengePlayerService.getAndRefreshChallengePlayerData(player);
-//        treasureChallengePlayer.setBattleHeroList(heroList);
     }
 
     /**

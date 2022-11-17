@@ -4,7 +4,9 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.*;
@@ -36,7 +38,7 @@ public class Army {
     /**
      * 记录将领id, v1为将领id, v2为兵力不可信任   【chenqi:只会有一个将领】
      */
-    private List<TwoInt> hero;
+    private List<CommonPb.PartnerHeroIdPb> hero;
     /**
      * 预计耗时
      */
@@ -109,7 +111,7 @@ public class Army {
     public Army() {
     }
 
-    public Army(int keyId, int type, int target, int state, List<TwoInt> hero, int duration, int endTime, DressUp dressUp) {
+    public Army(int keyId, int type, int target, int state, List<CommonPb.PartnerHeroIdPb> hero, int duration, int endTime, DressUp dressUp) {
         setKeyId(keyId);
         setType(type);
         setTarget(target);
@@ -130,7 +132,7 @@ public class Army {
         setState(army.getState());
         setDuration(army.getDuration());
         setEndTime(army.getEndTime());
-        setHero(army.getHeroList());
+//        setHero(army.getHeroList());
         setGrab(army.getGrabList());
         setLordId(army.getLordId());
         setBattleTime(army.getBattleTime());
@@ -151,9 +153,6 @@ public class Army {
             seasonTalentAttr = army.getSeasonTalentAttrList();
         }
         subType = army.getSubType();
-        // if (!CheckNull.isEmpty(army.getMedalList())) {
-        //     setHeroMedals(army.getMedalList());
-        // }
         marchLineId = army.getMarchLine();
     }
 
@@ -216,11 +215,11 @@ public class Army {
         this.state = state;
     }
 
-    public List<TwoInt> getHero() {
+    public List<CommonPb.PartnerHeroIdPb> getHero() {
         return hero;
     }
 
-    public void setHero(List<TwoInt> hero) {
+    public void setHero(List<CommonPb.PartnerHeroIdPb> hero) {
         this.hero = hero;
     }
 
@@ -331,8 +330,8 @@ public class Army {
      */
     public int getArmCount() {
         int count = 0;
-        for (TwoInt twoInt : hero) {
-            count += twoInt.getV2();
+        for (CommonPb.PartnerHeroIdPb twoInt : hero) {
+            count += twoInt.getCount();
         }
         return count;
     }
@@ -360,7 +359,7 @@ public class Army {
     public int getHeroLeadCount() {
         if (CheckNull.isEmpty(hero))
             return 0;
-        return hero.stream().mapToInt(TwoInt::getV2).sum();
+        return hero.stream().mapToInt(CommonPb.PartnerHeroIdPb::getCount).sum();
     }
 
     public Map<Integer, Integer> getAndCreateIfAbsentTotalLostHpMap() {
@@ -379,6 +378,36 @@ public class Army {
 
     public void setRecoverMap(Map<Integer, Integer> recoverMap) {
         this.recoverMap = recoverMap;
+    }
+
+    public void setHeroState(Player player, int state) {
+        if (CheckNull.isEmpty(this.getHero())) return;
+        for (CommonPb.PartnerHeroIdPb twoInt : this.getHero()) {
+            Hero hero = player.heros.get(twoInt.getPrincipleHeroId());
+            hero.setState(state);
+            if (!CheckNull.isEmpty(twoInt.getDeputyHeroIdList())) {
+                twoInt.getDeputyHeroIdList().forEach(id -> {
+                    Hero hero_ = player.heros.get(twoInt.getPrincipleHeroId());
+                    hero_.setState(state);
+                });
+            }
+        }
+    }
+
+    public boolean inArmy(int heroId) {
+        if (CheckNull.isEmpty(this.getHero())) return false;
+        for (CommonPb.PartnerHeroIdPb twoInt : this.getHero()) {
+            if (CheckNull.isNull(twoInt)) continue;
+            if (heroId == twoInt.getPrincipleHeroId()) return true;
+            if (CheckNull.nonEmpty(twoInt.getDeputyHeroIdList())) {
+                if (Objects.nonNull(twoInt.getDeputyHeroIdList().stream().filter(
+                        heroId_ -> heroId_ == heroId).findFirst().orElse(null))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override

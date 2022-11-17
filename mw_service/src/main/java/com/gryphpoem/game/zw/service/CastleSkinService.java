@@ -132,7 +132,7 @@ public class CastleSkinService {
 
         } else if (upStar) {
             LogUtil.common("皮肤升星, 触发调整上阵hero属性 roleId: ", player.roleId);
-            player.getAllOnBattleHeros().forEach(h -> CalculateUtil.processAttr(player, h));
+            player.getAllOnBattleHeroList().forEach(h -> CalculateUtil.processAttr(player, h.getPrincipalHero()));
         }
     }
 

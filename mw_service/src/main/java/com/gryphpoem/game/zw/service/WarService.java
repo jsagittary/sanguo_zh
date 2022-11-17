@@ -19,7 +19,6 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.SyncRoleMoveRs;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pojo.p.*;
@@ -35,6 +34,7 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -1113,18 +1113,18 @@ public class WarService {
     public Award checkPlaneChipAward(Player player) throws MwException {
         Award award = null;
         if (CheckNull.isNull(player)) {
-            return award;
+            return null;
         }
         final boolean[] flag = new boolean[1];
         // 所有上阵将领
-        List<Hero> battleHeros = player.getAllOnBattleHeros();
-        if (CheckNull.isEmpty(battleHeros)) {
-            return award;
+        List<PartnerHero> battleHeroList = player.getAllOnBattleHeroList();
+        if (CheckNull.isEmpty(battleHeroList)) {
+            return null;
         }
         // 所有上阵战机并出战的战机
-        List<Integer> battlePlane = battleHeros.stream()
-                .filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_BATTLE)
-                .flatMap(hero -> hero.getWarPlanes().stream()).collect(Collectors.toList());
+        List<Integer> battlePlane = battleHeroList.stream()
+                .filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_BATTLE)
+                .flatMap(hero -> hero.getPrincipalHero().getWarPlanes().stream()).collect(Collectors.toList());
         if (CheckNull.isEmpty(battlePlane)) {
             return award;
         }
@@ -1643,32 +1643,23 @@ public class WarService {
         }
 
         Player defencer = battle.getDefencer();
-        // Map<Long, Map<Integer, List<Integer>>> map;
-        // Map<Integer, List<Integer>> armyMap;
 
-        List<Integer> heroIdList;
+        List<CommonPb.PartnerHeroIdPb> heroIdList;
 
         // 自己的城防军
         // battle.getDefRoleList().add(defencer);
         autoFillArmy(defencer);
-        // try {
-        // playerDataManager.autoAddArmy(defencer);
-        // wallService.processAutoAddArmy(defencer);
-        // } catch (Exception e) {
-        // LogUtil.error("战斗前补兵", e);
-        // }
-        List<Hero> heroList = defencer.getDefendHeros();
-        // List<Integer> heroIdList =
-        // battle.getDefHeroIdMap().get(defencer.roleId);
+        List<PartnerHero> heroList = defencer.getDefendHeroList();
         heroIdList = new ArrayList<>();
-        for (Hero hero : heroList) {
-            if (hero.getCount() <= 0) {
+        for (PartnerHero hero : heroList) {
+            if (HeroUtil.isEmptyPartner(hero)) continue;
+            if (hero.getPrincipalHero().getCount() <= 0) {
                 continue;
             }
-            heroIdList.add(hero.getHeroId());
+            heroIdList.add(hero.convertTo());
         }
         battle.getDefList().add(BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_HLEP)
-                .setRoleId(defencer.roleId).addAllHeroId(heroIdList).build());
+                .setRoleId(defencer.roleId).addAllPartnerHeroId(heroIdList).build());
         LogUtil.debug(defencer.lord.getPos() + "自己部队驻防信息=" + heroList + ",防守方Defs=" + battle.getDefList());
 
         int now = TimeHelper.getCurrentSecond();
@@ -1684,8 +1675,10 @@ public class WarService {
                     continue;
                 }
                 wallNpc.setAddTime(now); // 刷新一下补兵的时间
+                CommonPb.PartnerHeroIdPb.Builder builder = CommonPb.PartnerHeroIdPb.newBuilder();
+                builder.setPrincipleHeroId(ks.getKey());
                 battle.getDefList().add(BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_WALL_NPC)
-                        .setRoleId(defencer.roleId).addHeroId(ks.getKey()).build());
+                        .setRoleId(defencer.roleId).addPartnerHeroId(builder.build()).build());
             }
         }
 
@@ -1706,13 +1699,9 @@ public class WarService {
                             battle.getBattleId(), battle.getPos(), defencer.getCamp(), defencer.lord.getPos(), defencer.getLordId(), tarPlayer.getCamp(), tarPlayer.getLordId()));
                     continue;
                 }
-                heroIdList = new ArrayList<>();
-                for (TwoInt twoInt : army.getHero()) {
-                    heroIdList.add(twoInt.getV1());
-                }
                 // armyMap.put(army.getKeyId(), heroIdList);
                 // 防止防守成功,守军被撤回(撤回时会判断有部队ID的)
-                BattleRole.Builder battleRoleBuilder = BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_HLEP).setRoleId(tarPlayer.roleId).addAllHeroId(heroIdList);
+                BattleRole.Builder battleRoleBuilder = BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_HLEP).setRoleId(tarPlayer.roleId).addAllPartnerHeroId(army.getHero());
                 if (!ObjectUtils.isEmpty(army.getSeasonTalentAttr())) {
                     battleRoleBuilder.addAllSeasonTalentAdd(army.getSeasonTalentAttr());
                 }
@@ -2704,7 +2693,7 @@ public class WarService {
     public GamePb4.CompareNotesRs compareNotesFightLogic(Player mPlayer, Player tPlayer, List<Integer> heroIds) {
         // 进攻方将领和防守方将领
         Fighter attacker = fightService.createCombatPlayerFighter(mPlayer, heroIds);
-        Fighter defender = fightService.createCombatPlayerFighter(tPlayer, tPlayer.getAllOnBattleHeros().stream().map(Hero::getHeroId).collect(Collectors.toList()));
+        Fighter defender = fightService.createCombatPlayerFighterByPartnerHero(tPlayer, tPlayer.getAllOnBattleHeroList());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
         fightLogic.start();
         GamePb4.CompareNotesRs.Builder builder = GamePb4.CompareNotesRs.newBuilder();

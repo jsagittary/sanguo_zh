@@ -24,10 +24,8 @@ import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.StaticScoutCost;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.HonorDailyService;
 import com.gryphpoem.game.zw.service.WorldService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,15 +180,15 @@ public class CrossAttackService {
                         ", heroIdList.size:", heroIdList.size());
             }
             int stateAcqCount = 0; // 有多少个将领正在采集
-            for (int heroId : player.heroAcq) {
-                Hero h = player.heros.get(heroId);
-                if (null != h && h.getState() == HeroConstant.HERO_STATE_COLLECT) {
+            for (PartnerHero partnerHero : player.getPlayerFormation().getHeroAcq()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (partnerHero.getPrincipalHero().getState() == HeroConstant.HERO_STATE_COLLECT) {
                     stateAcqCount++;
                 }
             }
-            for (int heroId : player.heroBattle) {
-                Hero h = player.heros.get(heroId);
-                if (null != h && h.getState() == HeroConstant.HERO_STATE_COLLECT) {
+            for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (partnerHero.getPrincipalHero().getState() == HeroConstant.HERO_STATE_COLLECT) {
                     stateAcqCount++;
                 }
             }
@@ -296,14 +294,14 @@ public class CrossAttackService {
                     city = PbHelper.createScoutCityPb(target.building.getWall(), tarLord.getFight(),
                             (int) res.getArm1(), (int) res.getArm2(), (int) res.getArm3());
                     if (ret >= WorldConstant.SCOUT_RET_SUCC3) {// 获取资源、城池、将领信息
-                        List<Hero> defheros = target.getAllOnBattleHeros();// 玩家所有上阵将领信息
+                        List<PartnerHero> defheros = target.getAllOnBattleHeroList();// 玩家所有上阵将领信息
                         sHeroList = new ArrayList<>();
                         int state;
                         int source;
-                        for (Hero hero : defheros) {
+                        for (PartnerHero partnerHero : defheros) {
                             source = WorldConstant.HERO_SOURCE_BATTLE;
-                            state = worldService.getScoutHeroState(source, hero.getState());
-                            sHeroList.add(PbHelper.createScoutHeroPb(hero, source, state, target));
+                            state = worldService.getScoutHeroState(source, partnerHero.getPrincipalHero().getState());
+                            sHeroList.add(PbHelper.createScoutHeroPb(partnerHero.getPrincipalHero(), source, state, target));
                         }
                     }
                 }

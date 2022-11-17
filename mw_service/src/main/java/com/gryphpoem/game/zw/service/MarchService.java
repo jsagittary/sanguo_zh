@@ -270,10 +270,17 @@ public class MarchService {
 
         // 将领返回
         Hero hero;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
+        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+            hero = player.heros.get(twoInt.getPrincipleHeroId());
             if (Objects.nonNull(hero)) {
                 hero.setState(ArmyConstant.ARMY_STATE_IDLE);
+            }
+            if (CheckNull.nonEmpty(twoInt.getDeputyHeroIdList())) {
+                twoInt.getDeputyHeroIdList().forEach(heroId -> {
+                    Hero hero_ = player.heros.get(heroId);
+                    if (CheckNull.isNull(hero_)) return;
+                    hero_.setState(ArmyConstant.ARMY_STATE_IDLE);
+                });
             }
         }
 
@@ -358,23 +365,17 @@ public class MarchService {
 
         Hero hero;
         // int armCount = 0;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
+        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+            hero = player.heros.get(twoInt.getPrincipleHeroId());
             hero.setState(ArmyConstant.ARMY_STATE_BATTLE);
-            heroIdList.add(hero.getHeroId());
-            // armCount += hero.getCount();
         }
-        // 去掉只有城战才能加入的限制， 打玩家打城都可以加入
-        // if (!battle.isCityBattle() || player.roleId !=
-        // battle.getSponsor().roleId) {
+
         int camp = player.lord.getCamp();
         if (camp == battle.getAtkCamp()) {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
         } else {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), false);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), false);
         }
-        // }
 
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
     }
@@ -1058,9 +1059,17 @@ public class MarchService {
         army.setEndTime(now + marchTime);
 
         Hero hero;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
+        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+            hero = player.heros.get(twoInt.getPrincipleHeroId());
             hero.setState(ArmyConstant.ARMY_STATE_RETREAT);
+            if (CheckNull.nonEmpty(twoInt.getDeputyHeroIdList())) {
+                twoInt.getDeputyHeroIdList().forEach(heroId -> {
+                    Hero hero_ = player.heros.get(heroId);
+                    if (Objects.nonNull(hero_)) {
+                        hero_.setState(ArmyConstant.ARMY_STATE_RETREAT);
+                    }
+                });
+            }
         }
     }
 
@@ -1121,7 +1130,7 @@ public class MarchService {
         Turple<Integer, Integer> xyInArea = MapHelper.reducePos(pos);
         int heroId = 0;
         if (!CheckNull.isEmpty(army.getHero())) {
-            heroId = army.getHero().get(0).getV1();
+            heroId = army.getHero().get(0).getPrincipleHeroId();
         }
 
         // 对方已被击飞了, 发送驻防部队返回邮件
@@ -1165,12 +1174,7 @@ public class MarchService {
 
         worldDataManager.addPlayerGuard(pos, army);
 
-        Hero hero;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_GUARD);
-        }
-
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_GUARD);
         worldService.synWallCallBackRs(1, army);
     }
 
@@ -1199,17 +1203,11 @@ public class MarchService {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_GESTAPO_BATTLE);
+        army.setHeroState(player, ArmyConstant.ARMY_GESTAPO_BATTLE);
 
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_GESTAPO_BATTLE);
-            heroIdList.add(hero.getHeroId());
-        }
         int camp = player.lord.getCamp();
         if (camp == battle.getAtkCamp()) {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
         }
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
     }
@@ -1239,17 +1237,10 @@ public class MarchService {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_LIGHTNING_WAR);
-
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_LIGHTNING_WAR);
-            heroIdList.add(hero.getHeroId());
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_LIGHTNING_WAR);
         int camp = player.lord.getCamp();
         if (camp != battle.getDefCamp()) {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
         }
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
     }
@@ -1470,12 +1461,12 @@ public class MarchService {
         army.setState(ArmyConstant.ARMY_BERLIN_WAR);
 
         // 创建BerlinForce对象
-        CommonPb.TwoInt twoInt = army.getHero().get(0);
-        Hero hero = player.heros.get(twoInt.getV1());
-        hero.setState(ArmyConstant.ARMY_BERLIN_WAR);
-        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+        CommonPb.PartnerHeroIdPb twoInt = army.getHero().get(0);
+        HeroUtil.setHeroState(twoInt, player, ArmyConstant.ARMY_BERLIN_WAR);
+
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getPrincipleHeroId());
         if (null == staticHero) {
-            LogUtil.error("创建Fighter，heroId未配置, heroId:", twoInt.getV1());
+            LogUtil.error("创建Fighter，heroId未配置, heroId:", twoInt.getPrincipleHeroId());
             // 据点对象未找到，部队返回
             worldService.retreatArmy(player, army, now);
             worldService.synRetreatArmy(player, army, now);
@@ -1483,7 +1474,7 @@ public class MarchService {
         }
         int atkOrDef = cityInfo.getCamp() == player.lord.getCamp() ? WorldConstant.BERLIN_DEF
                 : WorldConstant.BERLIN_ATK;
-        BerlinForce berlinForce = fightService.createBerlinForce(player, staticHero, twoInt.getV1(), twoInt.getV2(),
+        BerlinForce berlinForce = fightService.createBerlinForce(player, staticHero, twoInt,
                 atkOrDef, atkType, now, player.lord.getCamp());
         cityInfo.getRoleQueue().add(berlinForce);
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", berlinForce:", berlinForce);
@@ -1517,15 +1508,7 @@ public class MarchService {
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_STATE_BATTLE);
 
-        Hero hero;
-        // int armCount = 0;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_BATTLE);
-            heroIdList.add(hero.getHeroId());
-        }
-
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_BATTLE);
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
 
     }
@@ -1561,18 +1544,8 @@ public class MarchService {
         }
 
         // 修改hero状态
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_ATTACK_AIRSHIP_WAIT);
-            heroIdList.add(hero.getHeroId());
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_ATTACK_AIRSHIP_WAIT);
 
-        // long belongRoleId = airShip.getBelongRoleId();
-        // if (belongRoleId == 0) { // 飞艇还没有归属
-        // fightAirBelongLogic(player, army, airShip);
-        // } else{}
         int camp = player.lord.getCamp();
         List<CommonPb.BattleRole> battleRoles = airShip.getJoinRoles().get(camp);
         if (CheckNull.isNull(battleRoles)) {
@@ -1585,7 +1558,7 @@ public class MarchService {
 
         // 加入玩家的信息
         battleRoles.add(CommonPb.BattleRole.newBuilder().setKeyId(army.getKeyId()).setRoleId(player.roleId)
-                .addAllHeroId(heroIdList).build());
+                .addAllPartnerHeroId(army.getHero()).build());
 
         // 这里参与人数不走通用配置
         long joinRoleCnt = battleRoles.stream().mapToLong(CommonPb.BattleRole::getRoleId).distinct().count();

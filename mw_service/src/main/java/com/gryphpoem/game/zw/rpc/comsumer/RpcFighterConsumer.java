@@ -126,7 +126,7 @@ public class RpcFighterConsumer {
     private WallNpcForce createWallNpcForce(CommonPb.BattleRole battleRole) {
         long lordId = battleRole.getRoleId();
         Player player = playerDataManager.getPlayer(lordId);
-        WallNpc wallNpc = player.wallNpc.get(battleRole.getHeroId(0));
+        WallNpc wallNpc = player.wallNpc.get(battleRole.getPartnerHeroId(0).getPrincipleHeroId());
         WallNpcForce force = new WallNpcForce();
         force.setForceType(Constant.Role.WALL);
         StaticWallHeroLv wallHeroLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(), wallNpc.getLevel());

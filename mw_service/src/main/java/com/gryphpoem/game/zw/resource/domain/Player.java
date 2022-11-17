@@ -1334,6 +1334,13 @@ public class Player {
         return heroBattle[pos];
     }
 
+    public PartnerHero getBattleHeroByHeroId(int heroId) {
+        PartnerHero[] heroBattle = playerFormation.getHeroBattle();
+        if (ObjectUtils.isEmpty(heroBattle)) return null;
+        return Arrays.stream(heroBattle).filter(a -> !HeroUtil.isEmptyPartner(a) &&
+                a.getPrincipalHero().getHeroId() == heroId).findFirst().orElse(null);
+    }
+
     /**
      * 获取城墙将领信息
      *

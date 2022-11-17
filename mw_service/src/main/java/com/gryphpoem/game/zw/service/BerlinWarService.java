@@ -222,16 +222,16 @@ public class BerlinWarService {
     private void getHeroBattleOrder(Long roleId, Player player, BerlinCityInfoRs.Builder builder,
                                     BerlinCityInfo cityInfo, BerlinRoleInfo roleInfo) {
         // 上阵将领的状态在柏林会战
-        player.getAllOnBattleHeros().stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_BERLIN_WAR)
+        player.getAllOnBattleHeroList().stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_BERLIN_WAR)
                 .forEach(hero -> {
                     CommonPb.BerlinHeroInfo.Builder info = CommonPb.BerlinHeroInfo.newBuilder();
                     BerlinForce force = cityInfo.getRoleQueue().stream().filter(Force::alive)
-                            .filter(f -> f.ownerId == roleId && f.id == hero.getHeroId()).findFirst().orElse(null);
+                            .filter(f -> f.ownerId == roleId && f.id == hero.getPrincipalHero().getHeroId()).findFirst().orElse(null);
                     if (CheckNull.isNull(force)) {
                         return;
                     }
-                    info.setHeroId(hero.getHeroId());
-                    info.setCnt(roleInfo.getCntByType(hero.getHeroId()));
+                    info.setHeroId(hero.getPrincipalHero().getHeroId());
+                    info.setCnt(roleInfo.getCntByType(hero.getPrincipalHero().getHeroId()));
                     int atkOrDef = player.lord.getCamp() == cityInfo.getCamp() ?
                             WorldConstant.BERLIN_DEF :
                             WorldConstant.BERLIN_ATK;
@@ -1326,10 +1326,10 @@ public class BerlinWarService {
             }
 
             // 将领信息
-            CommonPb.TwoInt twoInt = army.getHero().get(0);
+            CommonPb.PartnerHeroIdPb twoInt = army.getHero().get(0);
 
             // 将领返回, 并重新计算攻防兵力
-            if (cityInfo.retreatArmy(player.roleId, twoInt.getV1())) {
+            if (cityInfo.retreatArmy(player.roleId, twoInt.getPrincipleHeroId())) {
                 // 主动召回
                 worldService.retreatArmy(player, army, TimeHelper.getCurrentSecond(), type);
                 // 重新计算攻防兵力
@@ -2276,7 +2276,7 @@ public class BerlinWarService {
         }
         for (Map.Entry<Integer, Army> kv : player.armys.entrySet()) {
             Army army = kv.getValue();
-            if (army == null || army.getHero().get(0).getV1() != heroId) {
+            if (army == null || army.getHero().get(0).getPrincipleHeroId() != heroId) {
                 continue;
             }
             if (army.getState() == ArmyConstant.ARMY_STATE_RETREAT) {
