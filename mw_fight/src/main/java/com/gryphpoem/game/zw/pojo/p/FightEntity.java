@@ -26,6 +26,6 @@ public class FightEntity implements Comparable<FightEntity> {
 
     @Override
     public int compareTo(FightEntity o) {
-        return o.getSpeed() > this.speed ? -1 : 1;
+        return o.getSpeed() > this.speed ? 1 : (o.getSpeed() == this.speed ? 0 : -1);
     }
 }
