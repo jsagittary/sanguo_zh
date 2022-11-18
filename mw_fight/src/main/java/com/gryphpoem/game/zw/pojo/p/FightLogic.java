@@ -120,7 +120,6 @@ public class FightLogic {
                 skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
             skillList.stream().forEach(skill -> {
-                contextHolder.getActionDirection().setSkill(skill);
                 skill.releaseSkill(contextHolder);
                 contextHolder.clearCurSkillActionPb();
             });
@@ -135,7 +134,6 @@ public class FightLogic {
                 if (CheckNull.isEmpty(skills)) return;
                 contextHolder.setCurAtkHeroId(ass.getHeroId());
                 skills.forEach(skill -> {
-                    contextHolder.getActionDirection().setSkill(skill);
                     skill.releaseSkill(contextHolder);
                     contextHolder.clearCurSkillActionPb();
                 });

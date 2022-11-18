@@ -163,7 +163,6 @@ public class BattleLogic {
             skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> skill.getCurEnergy() >= skill.getS_skill().getReleaseNeedEnergy()).collect(Collectors.toList());
             if (!CheckNull.isEmpty(skillList)) {
                 skillList.forEach(skill -> {
-                    contextHolder.getActionDirection().setSkill(skill);
                     skill.releaseSkill(contextHolder);
                 });
             }
@@ -304,17 +303,15 @@ public class BattleLogic {
         }
 
         BattlePb.ActionResult.Builder builder = BattlePb.ActionResult.newBuilder();
-        if (Objects.nonNull(builder)) {
-            builder.setAtk(FightPbUtil.getActingSize(actionDirection.getAtk(), actionDirection.getCurAtkHeroId()));
-            builder.setDef(FightPbUtil.getActingSize(actionDirection.getDef(), actionDirection.getCurDefHeroId()));
-            builder.setLost(damage);
-            builder.setRemainArms(actionDirection.getDef().hp);
-            if (Objects.nonNull(actionDirection.getSkill())) {
-                builder.setSkillId(actionDirection.getSkill().getS_skill().getSkillId());
-            }
-
-            FightPbUtil.setActionResult(contextHolder, builder.build());
+        builder.setAtk(FightPbUtil.getActingSize(actionDirection.getAtk(), actionDirection.getCurAtkHeroId()));
+        builder.setDef(FightPbUtil.getActingSize(actionDirection.getDef(), actionDirection.getCurDefHeroId()));
+        builder.setLost(damage);
+        builder.setRemainArms(actionDirection.getDef().hp);
+        if (Objects.nonNull(actionDirection.getSkill())) {
+            builder.setSkillId(actionDirection.getSkill().getS_skill().getSkillId());
         }
+
+        FightPbUtil.setActionResult(contextHolder, builder.build());
     }
 
     /**
