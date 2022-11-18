@@ -3024,7 +3024,7 @@ public class Player {
 
     private void dserHeros(SerHero ser) {
         Hero hero;
-        Comparator<Hero> comparator = (o1, o2) -> o1.getPartnerPosIndex() < o2.getPartnerPosIndex() ? 1 : -1;
+        Comparator<Hero> comparator = (o1, o2) -> o1.getPartnerPosIndex() < o2.getPartnerPosIndex() ? -1 : 1;
         for (CommonPb.Hero h : ser.getHeroList()) {
             hero = new Hero(h);
             heros.put(hero.getHeroId(), hero);
