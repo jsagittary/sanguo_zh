@@ -167,20 +167,20 @@ public class RobotEquipService {
      */
     private int canForgeEquipCompare(Player player, StaticEquip e1, StaticEquip e2) {
         // 计算上阵将领的装备拥有率
-        int compare = compareHeroEquips(player, e1, e2, player.heroBattle);
-        // 如果上阵将领穿戴的装备比较不出两件装备的优先级（将领都已穿戴装备），再比较采集将领
-        if (compare == 0) {
-            compare = compareHeroEquips(player, e1, e2, player.heroAcq);
-            // 最后比较防守将领
-            if (compare == 0) {
-                compare = compareHeroEquips(player, e1, e2, player.heroWall);
-                // 比较完所有出战的将领，没有得出结果（即所有将领都已全身穿戴装备），优先品质高的
-                if (compare == 0) {
-                    return compareNum(e2.getQuality(), e1.getQuality());
-                }
-            }
-        }
-        return compare;
+//        int compare = compareHeroEquips(player, e1, e2, player.heroBattle);
+//        // 如果上阵将领穿戴的装备比较不出两件装备的优先级（将领都已穿戴装备），再比较采集将领
+//        if (compare == 0) {
+//            compare = compareHeroEquips(player, e1, e2, player.heroAcq);
+//            // 最后比较防守将领
+//            if (compare == 0) {
+//                compare = compareHeroEquips(player, e1, e2, player.heroWall);
+//                // 比较完所有出战的将领，没有得出结果（即所有将领都已全身穿戴装备），优先品质高的
+//                if (compare == 0) {
+//                    return compareNum(e2.getQuality(), e1.getQuality());
+//                }
+//            }
+//        }
+        return 1;
     }
 
     /**
@@ -385,11 +385,11 @@ public class RobotEquipService {
      */
     private boolean dressEquip(Player player, Equip unusedEquip) {
         // 先给上阵将领试穿戴，如果上阵将领不需要，再给采集将领试穿戴
-        if (!dressToHeros(player, player.heroBattle, unusedEquip)
-                && !dressToHeros(player, player.heroAcq, unusedEquip)) {
-            // 如果采集将领也不需要，最后给城防将领试穿戴
-            return dressToHeros(player, player.heroWall, unusedEquip);
-        }
+//        if (!dressToHeros(player, player.heroBattle, unusedEquip)
+//                && !dressToHeros(player, player.heroAcq, unusedEquip)) {
+//            // 如果采集将领也不需要，最后给城防将领试穿戴
+//            return dressToHeros(player, player.heroWall, unusedEquip);
+//        }
         return true;
     }
 

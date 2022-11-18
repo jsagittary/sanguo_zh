@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo.hero;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
@@ -301,6 +302,10 @@ public class Hero {
     }
 
     public void setCount(int count) {
+        if (this.count > 0 && this.roleType == HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            LogUtil.error("副将不可补兵, heroId: ", heroId);
+            return;
+        }
         // 兵力是否有变动
         boolean isChange = count != this.count;
         this.count = count;

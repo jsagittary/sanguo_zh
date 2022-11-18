@@ -3,25 +3,27 @@ package com.gryphpoem.game.zw.gameplay.local.world.map;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.army.AttackBanditArmy;
-import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.MapForce.Builder;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBandit;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -83,12 +85,14 @@ public class BanditMapEntity extends BaseWorldEntity {
                 param.getNeedFood(), AwardFrom.ATK_POS);
 
         // 部队逻辑
-        List<CommonPb.TwoInt> form = param.getHeroIdList().stream().map(heroId -> {
-            Hero hero = player.heros.get(heroId);
+        List<CommonPb.PartnerHeroIdPb> form = param.getHeroIdList().stream().map(heroId -> {
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) return null;
             // 改变行军状态
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            return PbHelper.createTwoIntPb(heroId, hero.getCount());
-        }).collect(Collectors.toList());
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            return partnerHero.convertTo();
+        }).filter(pb -> Objects.nonNull(pb)).collect(Collectors.toList());
+
         int marchTime = param.getMarchTime();
         int endTime = now + marchTime;
         Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_ATK_BANDIT, pos, ArmyConstant.ARMY_STATE_MARCH,

@@ -112,12 +112,12 @@ public class RpcFighterConsumer {
         long lordId = battleRole.getRoleId();
         Player player = playerDataManager.getPlayer(lordId);
         List<HeroForce> forceList = new ArrayList<>();
-        for (Integer heroId : battleRole.getHeroIdList()) {
-            Hero hero = player.heros.get(heroId);
+        for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : battleRole.getPartnerHeroIdList()) {
+            Hero hero = player.heros.get(partnerHeroIdPb.getPrincipleHeroId());
             TwoInt.Builder twoInt = TwoInt.newBuilder();
-            twoInt.setV1(heroId);
+            twoInt.setV1(partnerHeroIdPb.getPrincipleHeroId());
             twoInt.setV2(hero.getCount());
-            HeroForce heroForce = createCrossFightForce(player, twoInt.build());
+            HeroForce heroForce = createCrossFightForce(player, partnerHeroIdPb);
             forceList.add(heroForce);
         }
         return forceList;
@@ -136,9 +136,9 @@ public class RpcFighterConsumer {
         return force;
     }
 
-    public CrossFighter createFighter(Player player, List<TwoInt> form) {
+    public CrossFighter createFighter(Player player, List<CommonPb.PartnerHeroIdPb> form) {
         CrossFighter fighter = new CrossFighter();
-        for (TwoInt twoInt : form) {
+        for (CommonPb.PartnerHeroIdPb twoInt : form) {
             HeroForce heroForce = createCrossFightForce(player, twoInt);
             fighter.getForces().add(heroForce);
         }
@@ -156,15 +156,15 @@ public class RpcFighterConsumer {
     }
 
 
-    private HeroForce createCrossFightForce(Player player, TwoInt twoInt) {
-        Hero hero = player.heros.get(twoInt.getV1());
+    private HeroForce createCrossFightForce(Player player, CommonPb.PartnerHeroIdPb twoInt) {
+        Hero hero = player.heros.get(twoInt.getPrincipleHeroId());
         CrossHero crossHero = DtoParser.buildCrossFightHero(player, hero);
         HeroForce force = new HeroForce();
         force.setLordId(crossHero.getLordId());
         force.setForceId(crossHero.getHeroId());
         force.setAttrMap(crossHero.getAttrMap());
         force.setIntensifyLv(crossHero.getIntensifyLv());
-        force.setHp(twoInt.getV2());
+        force.setHp(twoInt.getCount());
         force.setLead(crossHero.getLead());
         force.setMaxLine(crossHero.getMaxLine());
         force.setMedal(crossHero.getMedal());
@@ -186,7 +186,7 @@ public class RpcFighterConsumer {
         Map<Long, FighterPlayer> playerMap = fighter.getPlayerMap();
         for (Army army : armyList) {
             Player player = playerDataManager.getPlayer(army.getLordId());
-            for (TwoInt twoInt : army.getHero()) {
+            for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
                 HeroForce heroForce = createCrossFightForce(player, twoInt);
                 fighter.getForces().add(heroForce);
                 FighterPlayer fighterPlayer = playerMap.computeIfAbsent(player.getLordId(), t -> new FighterPlayer());

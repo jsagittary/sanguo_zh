@@ -588,7 +588,6 @@ public class PbHelper {
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
         builder.setHeroRoleType(hero.getRoleType());
-        builder.setDeputyPos(hero.getDeputyPos());
         return builder.build();
     }
 
@@ -1174,7 +1173,7 @@ public class PbHelper {
         builder.setArmyState(march.getArmy().getState());
         builder.setArmyType(march.getArmy().getType());
         if (!CheckNull.isEmpty(march.getArmy().getHero())) {
-            builder.addAllHeroId(march.getArmy().getHero().stream().map(ti -> ti.getV1()).collect(Collectors.toList()));
+            builder.addAllHeroId(march.getArmy().getHero().stream().map(ti -> ti.getPrincipleHeroId()).collect(Collectors.toList()));
         }
         builder.setBattleType(battleType);
         builder.setLordId(march.getPlayer().roleId);
@@ -1693,15 +1692,15 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.BattleRole createBattleRolePb(long roleId, int keyId, List<Integer> heroIdList) {
-        CommonPb.BattleRole.Builder builder = CommonPb.BattleRole.newBuilder();
-        builder.setRoleId(roleId);
-        builder.setKeyId(keyId);
-        if (null != heroIdList) {
-            builder.addAllHeroId(heroIdList);
-        }
-        return builder.build();
-    }
+//    public static CommonPb.BattleRole createBattleRolePb(long roleId, int keyId, List<Integer> heroIdList) {
+//        CommonPb.BattleRole.Builder builder = CommonPb.BattleRole.newBuilder();
+//        builder.setRoleId(roleId);
+//        builder.setKeyId(keyId);
+//        if (null != heroIdList) {
+//            builder.addAllHeroId(heroIdList);
+//        }
+//        return builder.build();
+//    }
 
     public static CommonPb.BattlePO createBattlePOPb(Battle battle) {
         CommonPb.BattlePO.Builder builder = CommonPb.BattlePO.newBuilder();
@@ -1755,7 +1754,7 @@ public class PbHelper {
         CommonPb.WallHero.Builder builder = CommonPb.WallHero.newBuilder();
         builder.setKeyId(army.getKeyId());
         builder.setLordId(army.getLordId());
-        builder.setHeroId(army.getHero().get(0).getV1());
+        builder.setHero(CommonPb.PartnerHeroIdPb.newBuilder(army.getHero().get(0)));
         builder.setLevel(level);
         builder.setCount(armyCnt);
         builder.setName(name);
@@ -2693,14 +2692,13 @@ public class PbHelper {
 
     private static List<CommonPb.WallHero> createWallHeroPbBySuperMine(Player player, Army army) {
         List<CommonPb.WallHero> list = new ArrayList<>(army.getHero().size());
-        for (TwoInt heroIdCnt : army.getHero()) {
+        for (CommonPb.PartnerHeroIdPb heroIdCnt : army.getHero()) {
             CommonPb.WallHero.Builder wallBuilder = CommonPb.WallHero.newBuilder();
             wallBuilder.setKeyId(army.getKeyId());
             wallBuilder.setLordId(army.getLordId());
             wallBuilder.setLevel(player.lord.getLevel());
             wallBuilder.setName(player.lord.getNick());
-            wallBuilder.setHeroId(heroIdCnt.getV1());
-            wallBuilder.setCount(heroIdCnt.getV2());
+            wallBuilder.setHero(CommonPb.PartnerHeroIdPb.newBuilder(heroIdCnt));
             list.add(wallBuilder.build());
         }
         return list;
@@ -2712,7 +2710,7 @@ public class PbHelper {
         builder.setLv(player.lord.getLevel());
         builder.setRoleId(player.roleId);
         builder.setName(player.lord.getNick());
-        int heroId = sg.getArmy().getHero().get(0).getV1();
+        int heroId = sg.getArmy().getHero().get(0).getPrincipleHeroId();
         Hero hero = player.heros.get(heroId);
         builder.setHeroLv(hero.getLevel());
         builder.setHeroId(hero.getHeroId());
@@ -3032,11 +3030,11 @@ public class PbHelper {
                             if (joinP != null) {
                                 int attackCnt = joinRole.stream()
                                         .filter(jr -> jr.getRoleId() == roleId)
-                                        .map(BattleRole::getHeroIdList)
+                                        .map(BattleRole::getPartnerHeroIdList)
                                         // 获取进攻将领的上阵兵力
                                         .flatMapToInt(list ->
                                                 list.stream()
-                                                        .map(heroId -> joinP.heros.get(heroId))
+                                                        .map(partnerHeroIdPb -> joinP.heros.get(partnerHeroIdPb.getPrincipleHeroId()))
                                                         .filter(Objects::nonNull)
                                                         .mapToInt(Hero::getCount))
                                         .sum();

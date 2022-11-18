@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.gameplay.local.world.map;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
@@ -12,11 +13,9 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.army.WFCollectArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -26,7 +25,9 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.HeroService;
@@ -83,11 +84,12 @@ public class WFMineMapEntity extends MineMapEntity {
         List<List<Integer>> needCost = worldService.combineAttackMineCost(param.getNeedFood(), false);
         // 检测并扣除资源
         rewardDataManager.checkAndSubPlayerRes(invokePlayer, needCost, AwardFrom.ATK_POS);
-        // 部队添加
-        List<CommonPb.TwoInt> form = param.getHeroIdList().stream().map(heroId -> {
-            Hero hero = invokePlayer.heros.get(heroId);
-            return PbHelper.createTwoIntPb(heroId, hero.getCount());
-        }).collect(Collectors.toList());
+        // 部队逻辑
+        List<CommonPb.PartnerHeroIdPb> form = param.getHeroIdList().stream().map(heroId -> {
+            PartnerHero partnerHero = invokePlayer.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) return null;
+            return partnerHero.convertTo();
+        }).filter(pb -> Objects.nonNull(pb)).collect(Collectors.toList());
 
         int now = TimeHelper.getCurrentSecond();
         int marchTime = cMap.marchTime(cMap, invokePlayer, invokePlayer.lord.getPos(), pos);
@@ -169,6 +171,7 @@ public class WFMineMapEntity extends MineMapEntity {
 
     /**
      * 计算当前矿点已经产出的资源
+     *
      * @param now 当前时间
      * @return 矿点已经产出的资源
      */

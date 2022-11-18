@@ -1076,4 +1076,8 @@ public class StaticDataDao extends BaseDao {
     public Map<Integer, StaticEffectRule> selectEffectRule() {
         return getSqlSession().selectMap("StaticDao.selectEffectRule", "effectId");
     }
+
+    public Map<Integer, StaticAttribute> selectStaticAttribute() {
+        return getSqlSession().selectMap("StaticDao.selectStaticAttribute", "attributeId");
+    }
 }

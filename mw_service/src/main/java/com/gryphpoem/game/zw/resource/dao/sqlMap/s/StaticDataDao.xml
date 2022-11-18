@@ -2824,4 +2824,8 @@
     <select id="selectEffectRule" resultMap="StaticEffectRule">
         SELECT * FROM s_battle_effect
     </select>
+
+    <select id="selectStaticAttribute" resultType="StaticAttribute">
+        SELECT * FROM s_attribute
+    </select>
 </mapper>

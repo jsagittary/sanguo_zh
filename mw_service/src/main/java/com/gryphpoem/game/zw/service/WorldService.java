@@ -679,20 +679,18 @@ public class WorldService {
             throw new MwException(GameError.EMPTY_POS.getCode(), "该坐标为空闲坐标，不能攻击或采集, roleId:", roleId, ", pos:", pos);
         }
 
-        List<Integer> heroIdList = new ArrayList<>();
-        heroIdList.addAll(req.getHeroIdList());
-        heroIdList = heroIdList.stream().distinct().collect(Collectors.toList());
+        List<PartnerHero> heroIdList = new ArrayList<>();
+        heroIdList.addAll(req.getHeroIdList().stream().distinct().map(heroId ->
+                player.getPlayerFormation().getPartnerHero(heroId)).filter(pa -> !HeroUtil.isEmptyPartner(pa)).collect(Collectors.toList()));
 
         // 检查出征将领信息
-        // checkFormHero(player, heroIdList);
         checkFormHeroSupport(player, heroIdList, pos);
 
         Hero hero;
         int armCount = 0;
         int defArmCount = 0;
         List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
-        for (Integer heroId : heroIdList) {
-            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+        for (PartnerHero partnerHero : heroIdList) {
             if (HeroUtil.isEmptyPartner(partnerHero)) continue;
             form.add(partnerHero.convertTo());
             armCount += partnerHero.getPrincipalHero().getCount();
@@ -967,7 +965,7 @@ public class WorldService {
         // 名城buffer记录
         army.setOriginCity(worldDataManager.checkCityBuffer(player.lord.getPos()));
         army.setHeroMedals(heroIdList.stream()
-                .map(heroId -> medalDataManager.getHeroMedalByHeroIdAndIndex(player, heroId, MedalConst.HERO_MEDAL_INDEX_0))
+                .map(pa -> medalDataManager.getHeroMedalByHeroIdAndIndex(player, pa.getPrincipalHero().getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
                 .filter(Objects::nonNull)
                 .map(PbHelper::createMedalPb)
                 .collect(Collectors.toList()));
@@ -985,9 +983,8 @@ public class WorldService {
         worldDataManager.addMarch(march);
 
         // 改变行军状态
-        for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+        for (PartnerHero pa : heroIdList) {
+            pa.setState(ArmyConstant.ARMY_STATE_MARCH);
         }
 
         // 返回协议
@@ -1173,7 +1170,11 @@ public class WorldService {
         // 是否有任务流寇
         // 检查出征将领信息
         // checkFormHero(player, heroIdList);
-        checkFormHeroSupport(player, heroIdList, pos);
+        List<PartnerHero> heroIdList_ = new ArrayList<>();
+        heroIdList_.addAll(heroIdList.stream().distinct().map(heroId ->
+                player.getPlayerFormation().getPartnerHero(heroId)).filter(pa -> !HeroUtil.isEmptyPartner(pa)).collect(Collectors.toList()));
+
+        checkFormHeroSupport(player, heroIdList_, pos);
         if (player.getBanditCnt() >= Constant.ATTACK_BANDIT_MAX) {
             throw new MwException(GameError.BANDIT_OVER_MAX_CNT.getCode(), "攻打流寇已超过上限:", roleId, ", BanditCnt:",
                     player.getBanditCnt());
@@ -1202,8 +1203,7 @@ public class WorldService {
         Hero hero;
         int armCount = 0;
         List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
-        for (Integer heroId : heroIdList) {
-            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+        for (PartnerHero partnerHero : heroIdList_) {
             if (HeroUtil.isEmptyPartner(partnerHero)) continue;
             form.add(partnerHero.convertTo());
             armCount += partnerHero.getPrincipalHero().getCount();
@@ -1414,7 +1414,7 @@ public class WorldService {
      * @param heroIdList
      * @throws MwException
      */
-    public void checkFormHeroSupport(Player player, List<Integer> heroIdList, int pos) throws MwException {
+    public void checkFormHeroSupport(Player player, List<PartnerHero> heroIdList, int pos) throws MwException {
         long roleId = player.roleId;
         playerDataManager.autoAddArmy(player);
         if (CheckNull.isEmpty(heroIdList)) {
@@ -1427,13 +1427,14 @@ public class WorldService {
             isMinePos = false;
         }
         Hero hero;
-        for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            if (null == hero) {
+        for (PartnerHero partnerHero : heroIdList) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) {
                 throw new MwException(GameError.HERO_NOT_FOUND.getCode(), "AttackPos，玩家没有这个将领, roleId:", roleId,
-                        ", heroId:", heroId);
+                        ", heroId:", 0);
             }
 
+            hero = partnerHero.getPrincipalHero();
+            int heroId = hero.getHeroId();
             if (!player.isOnBattleHero(heroId) && !player.isOnAcqHero(heroId) && !player.isOnCommandoHero(heroId)) {
                 throw new MwException(GameError.HERO_NOT_BATTLE.getCode(), "AttackPos，将领未上阵,又未在采集队列中上阵 roleId:", roleId,
                         ", heroId:", heroId);
@@ -1545,9 +1546,10 @@ public class WorldService {
         }
 
         Hero hero;
+        PartnerHero partnerHero;
         for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            if (null == hero) {
+            partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) {
                 throw new MwException(GameError.HERO_NOT_FOUND.getCode(), "AttackPos，玩家没有这个将领, roleId:", roleId,
                         ", heroId:", heroId);
             }
@@ -1557,6 +1559,7 @@ public class WorldService {
                         ", heroId:", heroId);
             }
 
+            hero = partnerHero.getPrincipalHero();
             if (!hero.isIdle()) {
                 throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "AttackPos，将领不在空闲中, roleId:", roleId,
                         ", heroId:", heroId, ", state:", hero.getState());
@@ -1897,10 +1900,11 @@ public class WorldService {
             int addExp = (int) Math.ceil(time * 1.0 / Constant.MINUTE) * 20;// 将领采集经验
             addExp = heroService.adaptHeroAddExp(player, addExp);
             // 给将领加经验
-            addExp = addHeroExp(hero, addExp, army.getHero().get(0), player);
+            int addExp_ = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+            addDeputyHeroExp(addExp, army.getHero().get(0), player);
 
 
-            CommonPb.MailCollect collect = PbHelper.createMailCollectPb(time, hero, addExp, grab, effect);
+            CommonPb.MailCollect collect = PbHelper.createMailCollectPb(time, hero, addExp_, grab, effect);
 
             // 发送邮件通知
             mailDataManager.sendCollectMail(player, null, MailConstant.MOLD_COLLECT_RETREAT, collect, now,
@@ -1917,17 +1921,21 @@ public class WorldService {
         }
     }
 
-    public int addHeroExp(Hero hero, int addExp, CommonPb.PartnerHeroIdPb partnerHeroIdPb, Player player) {
-        addExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+    /**
+     * 给副将增加经验
+     *
+     * @param addExp
+     * @param partnerHeroIdPb
+     * @param player
+     */
+    public void addDeputyHeroExp(int addExp, CommonPb.PartnerHeroIdPb partnerHeroIdPb, Player player) {
         if (CheckNull.nonEmpty(partnerHeroIdPb.getDeputyHeroIdList())) {
             for (Integer heroId : partnerHeroIdPb.getDeputyHeroIdList()) {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) continue;
-                addExp = heroService.addHeroExp(hero_, addExp, player.lord.getLevel(), player);
+                heroService.addHeroExp(hero_, addExp, player.lord.getLevel(), player);
             }
         }
-
-        return addExp;
     }
 
     /**

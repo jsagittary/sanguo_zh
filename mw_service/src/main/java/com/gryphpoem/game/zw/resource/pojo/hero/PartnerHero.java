@@ -39,6 +39,43 @@ public class PartnerHero implements GamePb<CommonPb.PartnerHeroPb> {
         });
     }
 
+    public void setStatus(int status) {
+        this.principalHero.setStatus(status);
+        if (CheckNull.isEmpty(deputyHeroList)) return;
+        deputyHeroList.forEach(hero -> {
+            if (CheckNull.isNull(hero)) return;
+            hero.setStatus(status);
+        });
+    }
+
+    public Hero getCurHero(int heroId) {
+        if (this.principalHero.getHeroId() == heroId)
+            return this.principalHero;
+        if (CheckNull.nonEmpty(this.deputyHeroList)) {
+            return this.deputyHeroList.stream().filter(deputyHero -> deputyHero.getHeroId() == heroId).findFirst().orElse(null);
+        }
+
+        return null;
+    }
+
+    public void onBattle(int pos) {
+        this.principalHero.onBattle(pos);
+        if (CheckNull.isEmpty(deputyHeroList)) return;
+        deputyHeroList.forEach(hero -> {
+            if (CheckNull.isNull(hero)) return;
+            hero.onBattle(pos);
+        });
+    }
+
+    public void onDef(int pos) {
+        this.principalHero.onDef(pos);
+        if (CheckNull.isEmpty(deputyHeroList)) return;
+        deputyHeroList.forEach(hero -> {
+            if (CheckNull.isNull(hero)) return;
+            hero.onDef(pos);
+        });
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

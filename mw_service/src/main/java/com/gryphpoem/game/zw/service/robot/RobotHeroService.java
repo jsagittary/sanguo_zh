@@ -1,20 +1,15 @@
 package com.gryphpoem.game.zw.service.robot;
 
-import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Common;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.service.ArmyService;
 import com.gryphpoem.game.zw.service.HeroService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,67 +81,67 @@ public class RobotHeroService {
      * @param player
      */
     private void checkAndAppointBetterBattleHero(Player player) {
-        Turple<Integer, Integer> maxQualityHero = getMaxQualityFaineantHero(player.heros);
-        if (maxQualityHero.getA() > 0) {
-            Turple<Integer, Integer> minBattleHero = getMinQualityBattleHero(player);
-            // 没有将领上阵，或上阵将领中品质最低的将领不如闲置将领，换上限制将领
-            if (minBattleHero.getA() <= 0 || minBattleHero.getB() < maxQualityHero.getB()) {
-                int pos = HeroConstant.HERO_BATTLE_1;
-                Hero hero = player.heros.get(maxQualityHero.getA());
-                if (minBattleHero.getA() > 0) {
-                    int battleHeroId = player.heroBattle[minBattleHero.getA()];
-                    Hero battleHero = player.heros.get(battleHeroId);
-                    heroService.swapHeroEquip(player, hero, battleHero);
-
-                    pos = maxQualityHero.getA();
-                    // 将领下阵，pos设置为0
-                    battleHero.onBattle(0);
-
-                    // 士兵回营
-                    int sub = battleHero.getCount();
-                    battleHero.setCount(0);
-                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
-//                    if (Objects.nonNull(staticHero)) {
-                    // 获取武将对应类型的兵力
-//                        int armType = staticHero.getType();
-                    // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
-                    //         battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
-
-                    // 上报玩家兵力变化
-//                        LogLordHelper.playerArm(
-//                                AwardFrom.HERO_DOWN,
-//                                player,
-//                                armType,
-//                                Constant.ACTION_ADD,
-//                                -sub,
-//                                playerDataManager.getArmCount(player.resource, armType)
-//                        );
-//                    }
-                    rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
-
-                    // 重新计算并更新将领属性
-                    CalculateUtil.processAttr(player, battleHero);
-                }
-
-                // 将领上阵
-                hero.onBattle(pos);
-                // 更新已上阵将领队列信息
-                player.heroBattle[pos] = hero.getHeroId();
-
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, hero);
-                // 上阵将领自动补兵
-                try {
-                    armyService.autoAddArmySingle(player, hero);
-                } catch (MwException e) {
-                    LogUtil.robot(e, "机器人将领补兵出错, robot:", player.roleId, ", heroId:", hero.getHeroId());
-                }
-
-                taskDataManager.updTask(player, TaskType.COND_HERO_UP, 1, hero.getHeroId());
-                CalculateUtil.reCalcFight(player);
-                taskDataManager.updTask(player, TaskType.COND_28, 1, hero.getType());
-            }
-        }
+//        Turple<Integer, Integer> maxQualityHero = getMaxQualityFaineantHero(player.heros);
+//        if (maxQualityHero.getA() > 0) {
+//            Turple<Integer, Integer> minBattleHero = getMinQualityBattleHero(player);
+//            // 没有将领上阵，或上阵将领中品质最低的将领不如闲置将领，换上限制将领
+//            if (minBattleHero.getA() <= 0 || minBattleHero.getB() < maxQualityHero.getB()) {
+//                int pos = HeroConstant.HERO_BATTLE_1;
+//                Hero hero = player.heros.get(maxQualityHero.getA());
+//                if (minBattleHero.getA() > 0) {
+//                    int battleHeroId = player.heroBattle[minBattleHero.getA()];
+//                    Hero battleHero = player.heros.get(battleHeroId);
+//                    heroService.swapHeroEquip(player, hero, battleHero);
+//
+//                    pos = maxQualityHero.getA();
+//                    // 将领下阵，pos设置为0
+//                    battleHero.onBattle(0);
+//
+//                    // 士兵回营
+//                    int sub = battleHero.getCount();
+//                    battleHero.setCount(0);
+//                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(battleHero.getHeroId());
+////                    if (Objects.nonNull(staticHero)) {
+//                    // 获取武将对应类型的兵力
+////                        int armType = staticHero.getType();
+//                    // LogLordHelper.heroArm(AwardFrom.HERO_DOWN, player.account, player.lord, battleHeroId,
+//                    //         battleHero.getCount(), -sub, staticHero.getType(), Constant.ACTION_ADD);
+//
+//                    // 上报玩家兵力变化
+////                        LogLordHelper.playerArm(
+////                                AwardFrom.HERO_DOWN,
+////                                player,
+////                                armType,
+////                                Constant.ACTION_ADD,
+////                                -sub,
+////                                playerDataManager.getArmCount(player.resource, armType)
+////                        );
+////                    }
+//                    rewardDataManager.modifyArmyResource(player, staticHero.getType(), sub, 0, AwardFrom.HERO_DOWN);
+//
+//                    // 重新计算并更新将领属性
+//                    CalculateUtil.processAttr(player, battleHero);
+//                }
+//
+//                // 将领上阵
+//                hero.onBattle(pos);
+//                // 更新已上阵将领队列信息
+//                player.heroBattle[pos] = hero.getHeroId();
+//
+//                // 重新计算并更新将领属性
+//                CalculateUtil.processAttr(player, hero);
+//                // 上阵将领自动补兵
+//                try {
+//                    armyService.autoAddArmySingle(player, hero);
+//                } catch (MwException e) {
+//                    LogUtil.robot(e, "机器人将领补兵出错, robot:", player.roleId, ", heroId:", hero.getHeroId());
+//                }
+//
+//                taskDataManager.updTask(player, TaskType.COND_HERO_UP, 1, hero.getHeroId());
+//                CalculateUtil.reCalcFight(player);
+//                taskDataManager.updTask(player, TaskType.COND_28, 1, hero.getType());
+//            }
+//        }
     }
 
     /**
@@ -156,22 +151,22 @@ public class RobotHeroService {
      * @return 返回将领的上阵位置和将领的品质，如果当前还没有设置过上阵将领，这两个值将会是-1
      */
     private Turple<Integer, Integer> getMinQualityBattleHero(Player player) {
-        Hero hero;
-        int pos = -1;
-        StaticHero staticHero;
-        int minQuality = Integer.MAX_VALUE;
-        for (int heroId : player.heroBattle) {
-            hero = player.heros.get(heroId);
-            // 只处理当前处于闲置的上阵将领
-            if (null != hero && hero.isIdle()) {
-                staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-                if (null != staticHero && staticHero.getQuality() < minQuality) {
-                    minQuality = staticHero.getQuality();
-                    pos = hero.getPos();
-                }
-            }
-        }
-        return new Turple<>(pos, minQuality);
+//        Hero hero;
+//        int pos = -1;
+//        StaticHero staticHero;
+//        int minQuality = Integer.MAX_VALUE;
+//        for (int heroId : player.heroBattle) {
+//            hero = player.heros.get(heroId);
+//            // 只处理当前处于闲置的上阵将领
+//            if (null != hero && hero.isIdle()) {
+//                staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+//                if (null != staticHero && staticHero.getQuality() < minQuality) {
+//                    minQuality = staticHero.getQuality();
+//                    pos = hero.getPos();
+//                }
+//            }
+//        }
+//        return new Turple<>(pos, minQuality);
     }
 
     /**

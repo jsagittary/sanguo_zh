@@ -8,7 +8,7 @@ import com.gryphpoem.game.zw.manager.MedalDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1.AutoAddArmyRs;
 import com.gryphpoem.game.zw.pb.GamePb2.GetArmyRs;
 import com.gryphpoem.game.zw.pb.GamePb2.ReplenishRq;
@@ -266,11 +266,12 @@ public class ArmyService {
     public Army checkAndcreateArmy(Player player, int pos, List<Integer> heroIdList, int now, int armyType)
             throws MwException {
         int armCount = 0;
-        List<TwoInt> form = new ArrayList<>();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
         for (Integer heroId : heroIdList) {
-            Hero hero = player.heros.get(heroId);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
-            armCount += hero.getCount();
+            PartnerHero pa = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(pa)) continue;
+            form.add(pa.convertTo());
+            armCount += pa.getPrincipalHero().getCount();
         }
         int marchTime = worldService.marchTime(player, pos, armyType == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP);
         marchTime = airshipService.getAirShipMarchTime(player, marchTime);

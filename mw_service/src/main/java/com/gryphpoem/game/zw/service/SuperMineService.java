@@ -574,7 +574,7 @@ public class SuperMineService {
             Hero hero = player.heros.get(sg.getArmy().getHero().get(0).getPrincipleHeroId());
             int addExp = (int) Math.ceil(collectTime * 1.0 / Constant.MINUTE) * 20;// 将领采集经验
             addExp = heroService.adaptHeroAddExp(player, addExp);
-            addExp = worldService.addHeroExp(hero, addExp, sg.getArmy().getHero().get(0), player);
+//            addExp = worldService.addDeputyHeroExp(hero, addExp, sg.getArmy().getHero().get(0), player);
 
             CommonPb.MailCollect collect = PbHelper.createMailCollectPb(collectTime, hero, addExp, grab, effect);
             // 采集邮件

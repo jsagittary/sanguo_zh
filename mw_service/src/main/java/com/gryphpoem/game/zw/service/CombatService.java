@@ -25,9 +25,9 @@ import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
-import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -1103,22 +1103,38 @@ public class CombatService {
         int roleLv = player.lord.getLevel();
         if (addExp > 0) {
             int addHeroExp = 0;
-            for (int pos = 0; pos < player.heroBattle.length; pos++) {
-                Hero hero = player.heros.get(player.heroBattle[pos]);
+            CommonPb.RptHero.Builder atkHeroPb = CommonPb.RptHero.newBuilder();
+            for (int pos = 0; pos < player.getPlayerFormation().getHeroBattle().length; pos++) {
+                PartnerHero partnerHero = player.getPlayerFormation().getHeroBattle()[pos];
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                Hero hero = partnerHero.getPrincipalHero();
                 if (hero != null) {
                     addHeroExp = 0;
                     if (hero.getLevel() < roleLv) {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
-//                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-//                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
+                    atkHeroPb.addEntity(PbHelper.createChiefBattleEntity(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
+                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
+                if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                    for (Hero deputyHero : partnerHero.getDeputyHeroList()) {
+                        if (CheckNull.isNull(deputyHero)) continue;
+                        addHeroExp = 0;
+                        if (deputyHero.getLevel() < roleLv) {
+                            addHeroExp = heroService.addHeroExp(deputyHero, addExp, player.lord.getLevel(), player);
+                        }
+                        atkHeroPb.addEntity(PbHelper.createAssBattleEntity(Constant.Role.PLAYER, hero.getHeroId(),
+                                player.lord.getNick(), hero.getLevel(), addHeroExp, hero));
+                    }
+                }
+                builder.addAtkHero(atkHeroPb.build());
+                atkHeroPb.clear();
             }
         }
 
         // 给战机加经验
-        addPlaneExp(player, staticCombat, cnt, builder,
-                Arrays.stream(player.heroBattle).boxed().collect(Collectors.toList()));
+//        addPlaneExp(player, staticCombat, cnt, builder,
+//                Arrays.stream(player.get).boxed().collect(Collectors.toList()));
 
         // 勋章掉落
         for (int i = 0; i < cnt; i++) {
@@ -1150,42 +1166,42 @@ public class CombatService {
     private List<TwoInt> addPlaneExp(Player player, StaticCombat staticCombat, int cnt, DoCombatRs.Builder builder,
                                      List<Integer> heroIds) {
         List<TwoInt> planeExp = new ArrayList<>();
-        int addExp;// 给战机加经验
-        if (CheckNull.isNull(player) || CheckNull.isNull(staticCombat)) {
-            return planeExp;
-        }
-        int roleLv = player.lord.getLevel();
-        int maxLv = PlaneConstant.PLANE_LEVEL_MAX;
-        if (roleLv < maxLv) {
-            maxLv = roleLv;
-        }
-        addExp = cnt * staticCombat.getPlaneExp();
-        if (addExp > 0) {
-            int addPlaneExp = 0;
-            for (int pos = 0; pos < player.heroBattle.length; pos++) {
-                Hero hero = player.heros.get(player.heroBattle[pos]);
-                if (hero != null && !CheckNull.isEmpty(hero.getWarPlanes()) && heroIds.contains(hero.getHeroId())) {
-                    for (Integer planeId : hero.getWarPlanes()) {
-                        StaticPlaneUpgrade sPlaneUpgrade = StaticWarPlaneDataMgr.getPlaneUpgradeById(planeId);
-                        if (CheckNull.isNull(sPlaneUpgrade)) {
-                            continue;
-                        }
-                        WarPlane plane = player.warPlanes.get(sPlaneUpgrade.getPlaneType());
-                        if (CheckNull.isNull(plane)) {
-                            continue;
-                        }
-                        if (plane.getLevel() < maxLv) {
-                            addPlaneExp = warPlaneDataManager.addPlaneExp(plane, addExp, maxLv, player, sPlaneUpgrade);
-                        }
-                        TwoInt twoIntPb = PbHelper.createTwoIntPb(planeId, addPlaneExp);
-                        planeExp.add(twoIntPb);
-                        if (!CheckNull.isNull(builder)) {
-                            builder.addPlaneExp(twoIntPb);
-                        }
-                    }
-                }
-            }
-        }
+//        int addExp;// 给战机加经验
+//        if (CheckNull.isNull(player) || CheckNull.isNull(staticCombat)) {
+//            return planeExp;
+//        }
+//        int roleLv = player.lord.getLevel();
+//        int maxLv = PlaneConstant.PLANE_LEVEL_MAX;
+//        if (roleLv < maxLv) {
+//            maxLv = roleLv;
+//        }
+//        addExp = cnt * staticCombat.getPlaneExp();
+//        if (addExp > 0) {
+//            int addPlaneExp = 0;
+//            for (int pos = 0; pos < player.heroBattle.length; pos++) {
+//                Hero hero = player.heros.get(player.heroBattle[pos]);
+//                if (hero != null && !CheckNull.isEmpty(hero.getWarPlanes()) && heroIds.contains(hero.getHeroId())) {
+//                    for (Integer planeId : hero.getWarPlanes()) {
+//                        StaticPlaneUpgrade sPlaneUpgrade = StaticWarPlaneDataMgr.getPlaneUpgradeById(planeId);
+//                        if (CheckNull.isNull(sPlaneUpgrade)) {
+//                            continue;
+//                        }
+//                        WarPlane plane = player.warPlanes.get(sPlaneUpgrade.getPlaneType());
+//                        if (CheckNull.isNull(plane)) {
+//                            continue;
+//                        }
+//                        if (plane.getLevel() < maxLv) {
+//                            addPlaneExp = warPlaneDataManager.addPlaneExp(plane, addExp, maxLv, player, sPlaneUpgrade);
+//                        }
+//                        TwoInt twoIntPb = PbHelper.createTwoIntPb(planeId, addPlaneExp);
+//                        planeExp.add(twoIntPb);
+//                        if (!CheckNull.isNull(builder)) {
+//                            builder.addPlaneExp(twoIntPb);
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return planeExp;
     }
 
@@ -1451,8 +1467,10 @@ public class CombatService {
                 throw new MwException(GameError.COMMANDO_HERO_NOT_ATK.getCode(), "挑战关卡时,选择的将领不能进攻, roleId:", roleId,
                         ", heroId:", heroId);
             }
-            for (int i = 1; i < player.heroBattle.length; i++) {
-                if (player.heroBattle[i] == heroId) {
+            for (int i = 1; i < player.getPlayerFormation().getHeroBattle().length; i++) {
+                PartnerHero partnerHero = player.getPlayerFormation().getHeroBattle()[i];
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (partnerHero.getPrincipalHero().getHeroId() == heroId) {
                     combatPos.add(i);
                     break;
                 }

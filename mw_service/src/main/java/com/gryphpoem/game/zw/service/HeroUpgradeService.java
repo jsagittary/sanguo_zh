@@ -5,49 +5,25 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.manager.WarDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.GamePb5;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.ChatConst;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.HeroUpgradeConstant;
-import com.gryphpoem.game.zw.resource.constant.LogParamConstant;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -664,22 +640,23 @@ public class HeroUpgradeService implements GmCmdService {
             }
         }
 
-        for (int i = 1; i < p.heroBattle.length; i++) {
-            int heroId = p.heroBattle[i];
-            Hero hero = p.heros.get(heroId);
-            if (hero != null) {
-                hero.setState(HeroConstant.HERO_STATE_IDLE);
+        Optional.ofNullable(p.getPlayerFormation().getHeroBattle()).ifPresent(heroes -> {
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
+                    continue;
+
+                partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
             }
-            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-        }
-        for (int i = 1; i < p.heroAcq.length; i++) {
-            int heroId = p.heroAcq[i];
-            Hero hero = p.heros.get(heroId);
-            if (hero != null) {
-                hero.setState(HeroConstant.HERO_STATE_IDLE);
+        });
+
+        Optional.ofNullable(p.getPlayerFormation().getHeroAcq()).ifPresent(heroes -> {
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
+                    continue;
+
+                partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
             }
-            LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-        }
+        });
         LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", p.roleId);
 
         // 计算返还碎片

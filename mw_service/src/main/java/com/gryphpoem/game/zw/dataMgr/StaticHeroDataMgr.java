@@ -50,12 +50,15 @@ public class StaticHeroDataMgr {
     private static Map<Integer, StaticHeroSeason> seasonHeroMap = new HashMap<>();
     // 将领寻访额外奖励
     private static Map<Integer, StaticHeroSearchExtAward> searchHeroExtAward = new HashMap<>();
-    /** 英雄升品阶配置表 map<<<heroId, map<grade, map<level, data>>>*/
+    /**
+     * 英雄升品阶配置表 map<<<heroId, map<grade, map<level, data>>>
+     */
     private static Map<Integer, TreeMap<Integer, TreeMap<Integer, StaticHeroUpgrade>>> heroUpgradeMap = new HashMap<>();
     private static Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap = new TreeMap<>();
     // 武将初始等级自适应配置， key：heroId
     private static Map<Integer, StaticHeroAppoint> staticHeroAppointMap = new HashMap<>();
-
+    // 屬性配置表 (戰鬥力係數)
+    private static Map<Integer, StaticAttribute> attributeMap = new HashMap<>();
 
     public static void init() {
         Map<Integer, StaticHero> heroMap = staticDataDao.selectHeroMap();
@@ -85,6 +88,7 @@ public class StaticHeroDataMgr {
         initHeroUpgrade();
         //初始化武将初始等级自适应配置
         initHeroAppoint();
+        initAttribute();
     }
 
     /**
@@ -98,8 +102,18 @@ public class StaticHeroDataMgr {
         }
     }
 
+    private static void initAttribute() {
+        attributeMap = staticDataDao.selectStaticAttribute();
+    }
+
+    public static int getStaticAttribute(int attrId) {
+        StaticAttribute staticAttribute = attributeMap.get(attrId);
+        return CheckNull.isNull(staticAttribute) ? 0 : staticAttribute.getFight();
+    }
+
     /**
      * 获取指定武将初始等级自适应配置
+     *
      * @param heroId 武将id
      * @return
      */
@@ -455,7 +469,7 @@ public class StaticHeroDataMgr {
         return lvMap != null ? lvMap.get(lv) : null;
     }
 
-    public static Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> getHeroSkill(int heroId){
+    public static Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> getHeroSkill(int heroId) {
         return heroSkillMap.get(heroId);
     }
 }

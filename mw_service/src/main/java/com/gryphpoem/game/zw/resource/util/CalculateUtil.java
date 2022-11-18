@@ -28,6 +28,7 @@ import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.TitleEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
@@ -123,14 +124,19 @@ public class CalculateUtil {
         if (null == player) {
             return;
         }
-        int[] heroIds = new int[player.heroBattle.length + player.heroCommando.length];
-        System.arraycopy(player.heroBattle, 0, heroIds, 0, player.heroBattle.length);
-        System.arraycopy(player.heroCommando, 0, heroIds, player.heroBattle.length, player.heroCommando.length);
-        for (int i = 1; i < heroIds.length; i++) {
-            int heroId = heroIds[i];
-            Hero hero = player.heros.get(heroId);
+        PartnerHero[] partnerHeroes = player.getPlayerFormation().getHeroBattle();
+        for (int i = 1; i < partnerHeroes.length; i++) {
+            PartnerHero partnerHero = partnerHeroes[i];
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            Hero hero = partnerHero.getPrincipalHero();
             if (hero != null) {
                 processAttr(player, hero, false);
+            }
+            if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                partnerHero.getDeputyHeroList().forEach(hero_ -> {
+                    if (CheckNull.isNull(hero_)) return;
+                    processAttr(player, hero_, false);
+                });
             }
         }
         reCalcFight(player);
@@ -222,10 +228,6 @@ public class CalculateUtil {
      * 线上 1服 2服的系数
      */
     private static Map<Integer, Integer> FIGHT_K1;
-    /**
-     * 新的战斗力系数
-     */
-    private static Map<Integer, Integer> FIGHT_K2;
 
     static {
         FIGHT_K1 = new HashMap<>();
@@ -238,15 +240,15 @@ public class CalculateUtil {
         FIGHT_K1.put(AttrId.DEFEND_EXT, 3);
         FIGHT_K1.put(AttrId.FIGHT, 1);
 
-        FIGHT_K2 = new HashMap<>();
-        FIGHT_K2.put(AttrId.ATTACK, 3);
-        FIGHT_K2.put(AttrId.DEFEND, 4);
-        FIGHT_K2.put(AttrId.LEAD, 1);
-        FIGHT_K2.put(AttrId.ATTACK_TOWN, 4);
-        FIGHT_K2.put(AttrId.DEFEND_TOWN, 4);
-        FIGHT_K2.put(AttrId.ATTACK_EXT, 4);
-        FIGHT_K2.put(AttrId.DEFEND_EXT, 4);
-        FIGHT_K2.put(AttrId.FIGHT, 1);
+//        FIGHT_K2 = new HashMap<>();
+//        FIGHT_K2.put(AttrId.ATTACK, 3);
+//        FIGHT_K2.put(AttrId.DEFEND, 4);
+//        FIGHT_K2.put(AttrId.LEAD, 1);
+//        FIGHT_K2.put(AttrId.ATTACK_TOWN, 4);
+//        FIGHT_K2.put(AttrId.DEFEND_TOWN, 4);
+//        FIGHT_K2.put(AttrId.ATTACK_EXT, 4);
+//        FIGHT_K2.put(AttrId.DEFEND_EXT, 4);
+//        FIGHT_K2.put(AttrId.FIGHT, 1);
     }
 
     /**
@@ -255,39 +257,20 @@ public class CalculateUtil {
      * @param player
      */
     public static void reCalcFight(Player player) {
-        // ServerSetting serverSetting = DataResource.ac.getBean(ServerSetting.class);
-        // String environment = serverSetting.getEnvironment();
-        // int serverID = serverSetting.getServerID();
-        // Map<Integer, Integer> keyMap = null;
-        // if ((serverID == 1 || serverID == 2) && "release".equals(environment)) {
-        // // FIGHT_K1 的公式
-        // keyMap = FIGHT_K1;
-        // } else {
-        // keyMap = FIGHT_K2;
-        // }
-        Map<Integer, Integer> keyMap = FIGHT_K2;
-
-        Hero hero = null;
+        Hero hero;
         int fight = 0;
-        int[] heroIds = new int[player.heroBattle.length + player.heroCommando.length];
-        System.arraycopy(player.heroBattle, 0, heroIds, 0, player.heroBattle.length);
-        System.arraycopy(player.heroCommando, 0, heroIds, player.heroBattle.length, player.heroCommando.length);
-        for (int heroId : heroIds) {
-            hero = player.heros.get(heroId);
+        int staticAttribute;
+
+        PartnerHero[] partnerHeroes = player.getPlayerFormation().getHeroBattle();
+        for (PartnerHero partnerHero : partnerHeroes) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            hero = partnerHero.getPrincipalHero();
             if (hero != null) {
                 if (hero.getAttr() != null) {
                     for (int i = 1; i < hero.getAttr().length; i++) { // 基本攻防兵
                         int attrVal = hero.getAttr()[i];
-                        // if (i == HeroConstant.ATTR_ATTACK) {
-                        // fight += attrVal * 3;
-                        // } else if (i == HeroConstant.ATTR_DEFEND) {
-                        // fight += attrVal * 3;
-                        // } else if (i == HeroConstant.ATTR_LEAD) {
-                        // fight += attrVal * 3;
-                        // }
-                        Integer k = keyMap.get(i);
-                        k = k == null ? k = 0 : k;
-                        fight += attrVal * k;
+                        staticAttribute = StaticHeroDataMgr.getStaticAttribute(i);
+                        fight += attrVal * staticAttribute;
                     }
                 }
                 if (hero.getExtAttrs() != null) {
@@ -296,18 +279,8 @@ public class CalculateUtil {
                         i = i == null ? 0 : i;
                         Integer attrVal = kv.getValue();
                         attrVal = attrVal == null ? 0 : attrVal;
-                        // if (i == AttrId.ATTACK_TOWN) {
-                        // fight += attrVal * 3;
-                        // } else if (i == AttrId.DEFEND_TOWN) {
-                        // fight += attrVal * 3;
-                        // } else if (i == AttrId.ATTACK_EXT) {
-                        // fight += attrVal * 3;
-                        // } else if (i == AttrId.DEFEND_EXT) {
-                        // fight += attrVal * 3;
-                        // }
-                        Integer k = keyMap.get(i);
-                        k = k == null ? k = 0 : k;
-                        fight += attrVal * k;
+                        staticAttribute = StaticHeroDataMgr.getStaticAttribute(i);
+                        fight += attrVal * staticAttribute;
                     }
                 }
                 //英雄技能战力
@@ -359,7 +332,8 @@ public class CalculateUtil {
         Map<Integer, Integer> attrMap = calcHeroAttr(player, hero, staticHero);
 
         // 重新计算战斗力
-        if (reCalcFight && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
+        if (reCalcFight && hero.getRoleType() != HeroConstant.HERO_ROLE_TYPE_DEPUTY
+                && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
             CalculateUtil.reCalcFight(player);
         }
         // 兵力属性改变时返还兵力
@@ -1226,9 +1200,6 @@ public class CalculateUtil {
      */
     public static int reCalcFight(Map<Integer, Integer> attrMap) {
         ServerSetting serverSetting = DataResource.ac.getBean(ServerSetting.class);
-        String environment = serverSetting.getEnvironment();
-        int serverID = serverSetting.getServerID();
-        Map<Integer, Integer> keyMap = FIGHT_K2;
 
         int fight = 0;
         if (!CheckNull.isNull(attrMap)) {
@@ -1237,7 +1208,7 @@ public class CalculateUtil {
                 key = CheckNull.isNull(key) ? 0 : key;
                 Integer val = entry.getValue();
                 val = CheckNull.isNull(val) ? 0 : val;
-                Integer radio = keyMap.get(key);
+                int radio = StaticHeroDataMgr.getStaticAttribute(key);
                 radio = CheckNull.isNull(radio) ? 0 : radio;
                 fight += radio * val;
             }

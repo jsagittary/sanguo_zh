@@ -107,9 +107,9 @@ public class DecisiveBattleService {
             }
         }
 
-        List<Integer> heroIdList = new ArrayList<>();
-        heroIdList.addAll(req.getHeroIdList());
-        heroIdList = heroIdList.stream().distinct().collect(Collectors.toList());
+        List<PartnerHero> heroIdList = new ArrayList<>();
+        heroIdList.addAll(req.getHeroIdList().stream().distinct().map(heroId ->
+                atkP.getPlayerFormation().getPartnerHero(heroId)).filter(pa -> !HeroUtil.isEmptyPartner(pa)).collect(Collectors.toList()));
         // 检查出征将领信息
         worldService.checkFormHeroSupport(atkP, heroIdList, defPos);
 
@@ -117,8 +117,7 @@ public class DecisiveBattleService {
         int armCount = 0;
         int defArmCount = 0;
         List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
-        for (Integer heroId : heroIdList) {
-            PartnerHero partnerHero = atkP.getPlayerFormation().getPartnerHero(heroId);
+        for (PartnerHero partnerHero : heroIdList) {
             if (HeroUtil.isEmptyPartner(partnerHero)) continue;
             form.add(partnerHero.convertTo());
             armCount += partnerHero.getPrincipalHero().getCount();
@@ -233,7 +232,7 @@ public class DecisiveBattleService {
         army.setBattleTime(battle != null ? battle.getBattleTime() : 0);
         army.setOriginPos(atkP.lord.getPos());
         army.setHeroMedals(heroIdList.stream()
-                .map(heroId -> medalDataManager.getHeroMedalByHeroIdAndIndex(atkP, heroId, MedalConst.HERO_MEDAL_INDEX_0))
+                .map(partnerHero -> medalDataManager.getHeroMedalByHeroIdAndIndex(atkP, partnerHero.getPrincipalHero().getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
                 .filter(Objects::nonNull)
                 .map(PbHelper::createMedalPb)
                 .collect(Collectors.toList()));
@@ -248,9 +247,8 @@ public class DecisiveBattleService {
         March march = new March(atkP, army);
         worldDataManager.addMarch(march);
         // 改变行军状态
-        for (Integer heroId : heroIdList) {
-            hero = atkP.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+        for (PartnerHero partnerHero : heroIdList) {
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
         }
 
         // 返回协议

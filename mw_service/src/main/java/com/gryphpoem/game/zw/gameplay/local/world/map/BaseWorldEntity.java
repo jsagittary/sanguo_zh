@@ -9,17 +9,17 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BaseMapEntiyPb;
 import com.gryphpoem.game.zw.pb.CommonPb.MapEntityPb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -104,10 +104,11 @@ public abstract class BaseWorldEntity {
         rewardDataManager.checkAndSubPlayerResHasSync(invokePlayer, AwardType.RESOURCE, AwardType.Resource.FOOD,
                 param.getNeedFood(), AwardFrom.ATK_POS);
         // 部队添加
-        List<TwoInt> form = heroIdList.stream().map(heroId -> {
-            Hero hero = invokePlayer.heros.get(heroId);
-            return PbHelper.createTwoIntPb(heroId, hero.getCount());
-        }).collect(Collectors.toList());
+        List<CommonPb.PartnerHeroIdPb> form = heroIdList.stream().map(heroId -> {
+            PartnerHero partnerHero = invokePlayer.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) return null;
+            return partnerHero.convertTo();
+        }).filter(pb -> Objects.nonNull(pb)).collect(Collectors.toList());
 
         int now = TimeHelper.getCurrentSecond();
         int marchTime = cMap.marchTime(cMap, invokePlayer, invokePlayer.lord.getPos(), pos);

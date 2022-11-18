@@ -9,7 +9,6 @@ import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4.FixWallRs;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -344,26 +343,26 @@ public class WallService {
      * @param heroIds
      * @param heros
      */
-    public void reAdjustHeroPos(int[] heroIds, Map<Integer, Hero> heros) {
-        // 重新调整位置
-        List<Integer> heroList = new ArrayList<>();
-        for (int i = 1; i < heroIds.length; i++) {
-            int hid = heroIds[i];
-            if (heros.get(hid) != null) {
-                heroList.add(hid);
-            }
-        }
-        for (int i = 0; i < heroIds.length - 1; i++) {
-            int pos = i + 1;
-            if (i < heroList.size()) {
-                int hId = heroList.get(i);
-                heroIds[pos] = hId;
-                heros.get(hId).onWall(pos);
-            } else {
-                // 尾部 清空
-                heroIds[pos] = 0;
-            }
-        }
+    public void reAdjustHeroPos(PartnerHero[] heroIds, Map<Integer, Hero> heros) {
+//        // 重新调整位置
+//        List<Integer> heroList = new ArrayList<>();
+//        for (int i = 1; i < heroIds.length; i++) {
+//            int hid = heroIds[i];
+//            if (heros.get(hid) != null) {
+//                heroList.add(hid);
+//            }
+//        }
+//        for (int i = 0; i < heroIds.length - 1; i++) {
+//            int pos = i + 1;
+//            if (i < heroList.size()) {
+//                int hId = heroList.get(i);
+//                heroIds[pos] = hId;
+//                heros.get(hId).onWall(pos);
+//            } else {
+//                // 尾部 清空
+//                heroIds[pos] = 0;
+//            }
+//        }
     }
 
     /**
@@ -550,23 +549,24 @@ public class WallService {
         Hero hero;
         WallHelpRs.Builder builder = WallHelpRs.newBuilder();
         for (Integer heroId : heroIdList) {
-            List<TwoInt> form = new ArrayList<>();
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+            List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            form.add(partnerHero.convertTo());
 
             Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_GUARD, pos, ArmyConstant.ARMY_STATE_MARCH,
                     form, marchTime, now + marchTime, player.getDressUp());
             army.setLordId(roleId);
             army.setTarLordId(target.roleId);
             army.setOriginPos(player.lord.getPos());
-            Optional.ofNullable(medalDataManager.getHeroMedalByHeroIdAndIndex(player, hero.getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
+            Optional.ofNullable(medalDataManager.getHeroMedalByHeroIdAndIndex(player, partnerHero.getPrincipalHero().getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
                     .ifPresent(medal -> {
                         army.setHeroMedals(Collections.singletonList(PbHelper.createMedalPb(medal)));
                     });
             //天赋优化， 驻军属性加成,从被驻防人身上取天赋
             army.setSeasonTalentAttr(DataResource.getBean(SeasonTalentService.class).
-                    getSeasonTalentEffectTwoInt(worldDataManager.getPosData(pos), hero, SeasonConst.TALENT_EFFECT_612));
+                    getSeasonTalentEffectTwoInt(worldDataManager.getPosData(pos), partnerHero.getPrincipalHero(), SeasonConst.TALENT_EFFECT_612));
 
             player.armys.put(army.getKeyId(), army);
 

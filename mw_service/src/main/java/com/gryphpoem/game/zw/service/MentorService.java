@@ -16,9 +16,10 @@ import com.gryphpoem.game.zw.resource.domain.p.MentorSkill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMentor;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMentorEquip;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMentorSkill;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,18 +35,18 @@ import java.util.stream.Collectors;
 @Service
 public class MentorService {
 
-	@Autowired
-	private PlayerDataManager playerDataManager;
-	@Autowired
-	private RewardDataManager rewardDataManager;
-	@Autowired
-	private MentorDataManager mentorDataManager;
-	@Autowired
-	private TaskDataManager taskDataManager;
-	@Autowired
-	private WorldDataManager worldDataManager;
-	@Autowired
-	private WorldScheduleService worldScheduleService;
+    @Autowired
+    private PlayerDataManager playerDataManager;
+    @Autowired
+    private RewardDataManager rewardDataManager;
+    @Autowired
+    private MentorDataManager mentorDataManager;
+    @Autowired
+    private TaskDataManager taskDataManager;
+    @Autowired
+    private WorldDataManager worldDataManager;
+    @Autowired
+    private WorldScheduleService worldScheduleService;
 
     /**
      * 获取教官信息
@@ -59,8 +60,8 @@ public class MentorService {
 
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-		// 检测并解锁教官
-		checkAndOpenMentor(player);
+        // 检测并解锁教官
+        checkAndOpenMentor(player);
 
         List<Integer> types = req.getTypeList();
         MentorInfo mentorInfo = player.getMentorInfo();
@@ -94,8 +95,8 @@ public class MentorService {
 
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-		// 检测并解锁教官
-		checkAndOpenMentor(player);
+        // 检测并解锁教官
+        checkAndOpenMentor(player);
 
         MentorInfo mentorInfo = player.getMentorInfo();
 
@@ -246,9 +247,9 @@ public class MentorService {
             CalculateUtil.reCalcBattleHeroAttr(player);
         } else {
             // 重新计算该将领的属性值
-            Hero hero = player.getBattleHeroByPos(skill.getPos());
-            if (!CheckNull.isNull(hero)) {
-                CalculateUtil.processAttr(player, hero);
+            PartnerHero partnerHero = player.getBattleHeroByPos(skill.getPos());
+            if (!HeroUtil.isEmptyPartner(partnerHero)) {
+                CalculateUtil.processAttr(player, partnerHero.getPrincipalHero());
             }
         }
 
@@ -329,46 +330,46 @@ public class MentorService {
         if (type == MentorConstant.MENTOR_SELL_EQUIP_TYPE_2) { // 贩卖50个
             int need = MentorConstant.MENTOR_SELL_EQUIP_CNT - ids.size();
 
-			Map<String, MentorEquip> equipMap = info.getMentors().values().stream()
-					.flatMap( // 所有教官穿戴的装备(未穿戴位置不能贩卖)
-							mentor -> Arrays.stream(mentor.getEquips())
-									.mapToObj(keyId -> info.getEquipMap().getOrDefault(keyId, null)))
-					.filter(equip -> !CheckNull.isNull(equip)).distinct()
-					.collect(Collectors.toMap((e) -> e.getMentorType() + "_" + e.getType(), e -> e));
+            Map<String, MentorEquip> equipMap = info.getMentors().values().stream()
+                    .flatMap( // 所有教官穿戴的装备(未穿戴位置不能贩卖)
+                            mentor -> Arrays.stream(mentor.getEquips())
+                                    .mapToObj(keyId -> info.getEquipMap().getOrDefault(keyId, null)))
+                    .filter(equip -> !CheckNull.isNull(equip)).distinct()
+                    .collect(Collectors.toMap((e) -> e.getMentorType() + "_" + e.getType(), e -> e));
 
-			List<Integer> addKeys = info.getEquipMap().values().stream()
-					.filter(equip -> !ids.contains(equip.getKeyId())).filter(e -> { // 战力力低于穿戴装备的战斗力
-						MentorEquip equip = equipMap.get(e.getMentorType() + "_" + e.getType());
-						if (!CheckNull.isNull(equip) && e.getFight() <= equip.getFight()
-								&& e.getKeyId() != equip.getKeyId()) {
-							return true;
-						}
-						return false;
-					}).sorted((e1, e2) -> e1.getFight() - e2.getFight()).limit(need).map(MentorEquip::getKeyId)
-					.collect(Collectors.toList());
-			if (!CheckNull.isEmpty(addKeys)) {
-				ids.addAll(addKeys);
-			}
+            List<Integer> addKeys = info.getEquipMap().values().stream()
+                    .filter(equip -> !ids.contains(equip.getKeyId())).filter(e -> { // 战力力低于穿戴装备的战斗力
+                        MentorEquip equip = equipMap.get(e.getMentorType() + "_" + e.getType());
+                        if (!CheckNull.isNull(equip) && e.getFight() <= equip.getFight()
+                                && e.getKeyId() != equip.getKeyId()) {
+                            return true;
+                        }
+                        return false;
+                    }).sorted((e1, e2) -> e1.getFight() - e2.getFight()).limit(need).map(MentorEquip::getKeyId)
+                    .collect(Collectors.toList());
+            if (!CheckNull.isEmpty(addKeys)) {
+                ids.addAll(addKeys);
+            }
 
-		} else if (type == MentorConstant.MENTOR_SELL_EQUIP_TYPE_3) { // 强制卖出全部,
-																		// 未穿戴的装备
-			List<Integer> addKeys = info.getEquipMap().values().stream()
-					.filter(equip -> !ids.contains(equip.getKeyId())).filter(equip -> equip.getMentorId() == 0)
-					.map(MentorEquip::getKeyId).collect(Collectors.toList());
-			if (!CheckNull.isEmpty(addKeys)) {
-				ids.addAll(addKeys);
-			}
-		}
-		List<CommonPb.Award> showAward = new ArrayList<>();
-		for (int key : ids) {
-			MentorEquip equip = info.getEquipMap().remove(key);
-			if (!CheckNull.isNull(equip)) {
-				StaticMentorEquip sEquip = StaticMentorDataMgr.getsMentorEquipIdMap(equip.getEquipId());
-				if (!CheckNull.isNull(sEquip)) {
-					List<Integer> vendorPrice = sEquip.getVendorPrice();
-					if (!CheckNull.isEmpty(vendorPrice)) {
-						showAward.add(rewardDataManager.addAwardSignle(player, vendorPrice,
-								AwardFrom.MENTOR_SELL_EQUIP_AWARD));
+        } else if (type == MentorConstant.MENTOR_SELL_EQUIP_TYPE_3) { // 强制卖出全部,
+            // 未穿戴的装备
+            List<Integer> addKeys = info.getEquipMap().values().stream()
+                    .filter(equip -> !ids.contains(equip.getKeyId())).filter(equip -> equip.getMentorId() == 0)
+                    .map(MentorEquip::getKeyId).collect(Collectors.toList());
+            if (!CheckNull.isEmpty(addKeys)) {
+                ids.addAll(addKeys);
+            }
+        }
+        List<CommonPb.Award> showAward = new ArrayList<>();
+        for (int key : ids) {
+            MentorEquip equip = info.getEquipMap().remove(key);
+            if (!CheckNull.isNull(equip)) {
+                StaticMentorEquip sEquip = StaticMentorDataMgr.getsMentorEquipIdMap(equip.getEquipId());
+                if (!CheckNull.isNull(sEquip)) {
+                    List<Integer> vendorPrice = sEquip.getVendorPrice();
+                    if (!CheckNull.isEmpty(vendorPrice)) {
+                        showAward.add(rewardDataManager.addAwardSignle(player, vendorPrice,
+                                AwardFrom.MENTOR_SELL_EQUIP_AWARD));
 
                         LogUtil.debug("贩卖装备成功: roleId:", roleId, ", 贩卖类型type:", type, ", equip:", equip,
                                 ", 获得奖励AwardType:", vendorPrice.get(0), ", awardId:", vendorPrice.get(1), ", count:",
@@ -456,7 +457,6 @@ public class MentorService {
      * 教官专业技能激活
      *
      * @param roleId
-     * @param planeId
      * @return
      * @throws MwException
      */
@@ -505,9 +505,9 @@ public class MentorService {
             CalculateUtil.reCalcBattleHeroAttr(player);
         } else {
             // 重新计算该将领的属性值
-            Hero hero = player.getBattleHeroByPos(skill.getPos());
-            if (!CheckNull.isNull(hero)) {
-                CalculateUtil.processAttr(player, hero);
+            PartnerHero partnerHero = player.getBattleHeroByPos(skill.getPos());
+            if (!HeroUtil.isEmptyPartner(partnerHero)) {
+                CalculateUtil.processAttr(player, partnerHero.getPrincipalHero());
             }
         }
 
@@ -545,6 +545,7 @@ public class MentorService {
 
     /**
      * 增加教官经验
+     *
      * @param mentor
      * @param addExp
      * @param maxLv
@@ -637,24 +638,24 @@ public class MentorService {
         }
     }
 
-	/**
-	 * 检测教官功能解锁
-	 *
-	 * @param player
-	 * @param type
-	 * @throws MwException
-	 */
-	public void checkFunctionIsOpen(Player player, int type) throws MwException {
-		if (!StaticFunctionDataMgr.funcitonIsOpen(player, MentorConstant.functionIdByType(type))) {
-			throw new MwException(GameError.MENTOR_IS_UNLOCK.getCode(), "教官功能未解锁, roleId:", player.roleId,
-					", mentorType:", type);
-		} else {
-			int worldTaskId = worldScheduleService.getCurrentSchduleId();
-			if (type == MentorConstant.MENTOR_TYPE_3 && worldTaskId < 6) {
-				throw new MwException(GameError.MENTOR_IS_UNLOCK.getCode(), "教官功能未解锁, roleId:", player.roleId,
-						", mentorType:", type, ", WorldTaskId:", worldTaskId);
-			}
-		}
-	}
+    /**
+     * 检测教官功能解锁
+     *
+     * @param player
+     * @param type
+     * @throws MwException
+     */
+    public void checkFunctionIsOpen(Player player, int type) throws MwException {
+        if (!StaticFunctionDataMgr.funcitonIsOpen(player, MentorConstant.functionIdByType(type))) {
+            throw new MwException(GameError.MENTOR_IS_UNLOCK.getCode(), "教官功能未解锁, roleId:", player.roleId,
+                    ", mentorType:", type);
+        } else {
+            int worldTaskId = worldScheduleService.getCurrentSchduleId();
+            if (type == MentorConstant.MENTOR_TYPE_3 && worldTaskId < 6) {
+                throw new MwException(GameError.MENTOR_IS_UNLOCK.getCode(), "教官功能未解锁, roleId:", player.roleId,
+                        ", mentorType:", type, ", WorldTaskId:", worldTaskId);
+            }
+        }
+    }
 
 }

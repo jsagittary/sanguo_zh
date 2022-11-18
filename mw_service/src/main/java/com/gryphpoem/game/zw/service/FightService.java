@@ -1054,7 +1054,7 @@ public class FightService {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) return;
                 FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
-                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
             });
@@ -1091,7 +1091,7 @@ public class FightService {
             partnerHero.getDeputyHeroList().forEach(hero_ -> {
                 if (CheckNull.isNull(hero_)) return;
                 FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
-                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
             });
@@ -1141,7 +1141,7 @@ public class FightService {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) return;
                 FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
-                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
             });
@@ -1340,7 +1340,7 @@ public class FightService {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) return;
                 FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
-                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero);
+                Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
             });

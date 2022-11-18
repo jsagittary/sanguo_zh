@@ -1,37 +1,30 @@
 package com.gryphpoem.game.zw.service.robot;
 
-import com.gryphpoem.game.zw.core.eventbus.EventBus;
-import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.resource.constant.*;
-import com.gryphpoem.game.zw.resource.domain.Events;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TrophyConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.ArmyService;
 import com.gryphpoem.game.zw.service.WorldService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * @Description 机器人战争相关服务类
  * @author TanDonghai
+ * @Description 机器人战争相关服务类
  * @date 创建时间：2017年10月20日 下午6:00:27
- *
  */
 @Service
 public class RobotWarService {
@@ -49,85 +42,85 @@ public class RobotWarService {
 
     /**
      * 自动攻击流寇
-     * 
+     *
      * @param player
      */
     public void autoAttackBandit(Player player) {
-        int pos = getBandit(player);
-        if (pos <= 0) {
-            return;
-        }
-
-        Hero hero;
-        int armCount = 0;
-        boolean noHero = true;
-        List<TwoInt> form = new ArrayList<>();
-        for (int heroId : player.heroBattle) {
-            hero = player.heros.get(heroId);
-            if (null != hero) {
-                noHero = false;
-                if (hero.getCount() == 0) {
-                    // 没有兵力，补兵
-                    try {
-                        armyService.autoAddArmySingle(player, hero);
-                    } catch (MwException e) {
-                        LogUtil.robot(e, "机器人将领自动补兵出错, roleId:", player.roleId, ", heroId:", hero.getHeroId());
-                    }
-                }
-
-                form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
-                armCount += hero.getCount();
-            }
-        }
-
-        if (noHero || armCount == 0) {
-            // 没有将领，或没有兵力，不能出击
-            return;
-        }
-
-        int now = TimeHelper.getCurrentSecond();
-        int marchTime = worldService.marchTime(player, pos);
-        int banditId = worldDataManager.getBanditIdByPos(pos);
-
-        // 检查补给
-        int needFood = worldService.getNeedFood(marchTime, armCount);
-        try {
-            rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood,
-                    AwardFrom.ATK_POS);
-        } catch (MwException e) {
-            return;
-        }
-
-        Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_ATK_BANDIT, pos, ArmyConstant.ARMY_STATE_MARCH,
-                form, marchTime - 1, now + marchTime - 1, player.getDressUp());
-        army.setTargetId(banditId);
-        army.setLordId(player.roleId);
-        army.setOriginPos(player.lord.getPos());
-        
-        player.armys.put(army.getKeyId(), army);
-
-        // 添加行军路线
-        March march = new March(player, army);
-        worldDataManager.addMarch(march);
-        // 改变行军状态
-        for (TwoInt twoInt : form) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-        }
-
-        LogUtil.robot("机器人攻击流寇, robot:" + player.roleId + ", begin:" + player.lord.getPos() + ", target:" + pos);
-
-        // 区域变化推送
-        List<Integer> posList = new ArrayList<>();
-        posList.add(pos);
-        posList.add(player.lord.getPos());
-        EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, player.roleId,
-                Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
+//        int pos = getBandit(player);
+//        if (pos <= 0) {
+//            return;
+//        }
+//
+//        Hero hero;
+//        int armCount = 0;
+//        boolean noHero = true;
+//        List<TwoInt> form = new ArrayList<>();
+//        for (int heroId : player.heroBattle) {
+//            hero = player.heros.get(heroId);
+//            if (null != hero) {
+//                noHero = false;
+//                if (hero.getCount() == 0) {
+//                    // 没有兵力，补兵
+//                    try {
+//                        armyService.autoAddArmySingle(player, hero);
+//                    } catch (MwException e) {
+//                        LogUtil.robot(e, "机器人将领自动补兵出错, roleId:", player.roleId, ", heroId:", hero.getHeroId());
+//                    }
+//                }
+//
+//                form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+//                armCount += hero.getCount();
+//            }
+//        }
+//
+//        if (noHero || armCount == 0) {
+//            // 没有将领，或没有兵力，不能出击
+//            return;
+//        }
+//
+//        int now = TimeHelper.getCurrentSecond();
+//        int marchTime = worldService.marchTime(player, pos);
+//        int banditId = worldDataManager.getBanditIdByPos(pos);
+//
+//        // 检查补给
+//        int needFood = worldService.getNeedFood(marchTime, armCount);
+//        try {
+//            rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood,
+//                    AwardFrom.ATK_POS);
+//        } catch (MwException e) {
+//            return;
+//        }
+//
+//        Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_ATK_BANDIT, pos, ArmyConstant.ARMY_STATE_MARCH,
+//                form, marchTime - 1, now + marchTime - 1, player.getDressUp());
+//        army.setTargetId(banditId);
+//        army.setLordId(player.roleId);
+//        army.setOriginPos(player.lord.getPos());
+//
+//        player.armys.put(army.getKeyId(), army);
+//
+//        // 添加行军路线
+//        March march = new March(player, army);
+//        worldDataManager.addMarch(march);
+//        // 改变行军状态
+//        for (TwoInt twoInt : form) {
+//            hero = player.heros.get(twoInt.getV1());
+//            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+//        }
+//
+//        LogUtil.robot("机器人攻击流寇, robot:" + player.roleId + ", begin:" + player.lord.getPos() + ", target:" + pos);
+//
+//        // 区域变化推送
+//        List<Integer> posList = new ArrayList<>();
+//        posList.add(pos);
+//        posList.add(player.lord.getPos());
+//        EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, player.roleId,
+//                Events.AreaChangeNoticeEvent.MAP_AND_LINE_TYPE));
     }
 
     /**
      * 获取玩家周围的流寇
-     * 
+     *
      * @param player
      * @return 返回流寇的坐标，如果未找到，返回-1
      */
@@ -166,7 +159,7 @@ public class RobotWarService {
 
     /**
      * 获取玩家当前需要完成的流寇任务的流寇等级
-     * 
+     *
      * @param player
      * @return 返回任务需要攻打的流寇等级，如果未找到，返回-1
      */
@@ -179,7 +172,7 @@ public class RobotWarService {
 
     /**
      * 是否是指定任务等级的流寇
-     * 
+     *
      * @param banditPos
      * @param taskLv
      * @return
@@ -191,7 +184,7 @@ public class RobotWarService {
 
     /**
      * 判断该流寇玩家是否可以攻击
-     * 
+     *
      * @param banditPos
      * @param maxLv
      * @return
@@ -203,7 +196,7 @@ public class RobotWarService {
 
     /**
      * 流寇优先级比较器
-     * 
+     *
      * @param player
      * @param p1
      * @param p2

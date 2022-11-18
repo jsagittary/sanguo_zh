@@ -132,7 +132,7 @@ public class Army {
         setState(army.getState());
         setDuration(army.getDuration());
         setEndTime(army.getEndTime());
-//        setHero(army.getHeroList());
+        setHero(army.getHeroList());
         setGrab(army.getGrabList());
         setLordId(army.getLordId());
         setBattleTime(army.getBattleTime());

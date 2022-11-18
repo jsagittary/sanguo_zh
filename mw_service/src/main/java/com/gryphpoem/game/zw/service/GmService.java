@@ -52,6 +52,7 @@ import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.sandtable.HisCampRank;
@@ -549,7 +550,7 @@ public class GmService {
                 } else if (type.contains("enrollself")) {//
                     String[] strArr = type.split("-");
                     List<Integer> heroIds = new ArrayList<>();
-                    player.getAllOnBattleHeros().stream().forEach(o -> heroIds.add(o.getHeroId()));
+                    player.getAllOnBattleHeroList().stream().forEach(o -> heroIds.add(o.getPrincipalHero().getHeroId()));
                     sandTableContestService.enroll(player.roleId, Integer.parseInt(strArr[1]), heroIds);
                 } else if (type.equalsIgnoreCase("getHisContest")) {
                     sandTableContestService.getHisContest(player.roleId);
@@ -568,7 +569,7 @@ public class GmService {
                                 tmpLine = 1;
                             }
                             try {
-                                sandTableContestService.enroll(p.roleId, tmpLine, p.getAllOnBattleHeros().stream().map(hero -> hero.getHeroId()).collect(Collectors.toList()));
+                                sandTableContestService.enroll(p.roleId, tmpLine, p.getAllOnBattleHeroList().stream().map(hero -> hero.getPrincipalHero().getHeroId()).collect(Collectors.toList()));
                                 tmpLine++;
                             } catch (Exception e) {
 
@@ -577,7 +578,7 @@ public class GmService {
                     } else {
                         for (Player p : campPlayers.values()) {
                             try {
-                                sandTableContestService.enroll(p.roleId, line, p.getAllOnBattleHeros().stream().map(hero -> hero.getHeroId()).collect(Collectors.toList()));
+                                sandTableContestService.enroll(p.roleId, line, p.getAllOnBattleHeroList().stream().map(hero -> hero.getPrincipalHero().getHeroId()).collect(Collectors.toList()));
                             } catch (Exception e) {
 
                             }
@@ -954,8 +955,8 @@ public class GmService {
             }).limit(Integer.valueOf(count)).forEach(p -> {
                 // 对方开启自动补兵
                 playerDataManager.autoAddArmy(p);
-                List<Integer> heros = p.getAllOnBattleHeros().stream()
-                        .filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE).map(hero -> hero.getHeroId())
+                List<Integer> heros = p.getAllOnBattleHeroList().stream()
+                        .filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE).map(hero -> hero.getPrincipalHero().getHeroId())
                         .collect(Collectors.toList());
                 GamePb4.AttackCounterBossRq.Builder builder = GamePb4.AttackCounterBossRq.newBuilder();
                 builder.addAllHeroId(heros);
@@ -1055,11 +1056,11 @@ public class GmService {
                 }
                 return flag;
             }).limit(Integer.valueOf(count)).forEach(p -> {
-                List<Hero> heros = p.getAllOnBattleHeros();
-                heros.stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE).forEach(hero -> {
+                List<PartnerHero> heros = p.getAllOnBattleHeroList();
+                heros.stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE).forEach(hero -> {
                     try {
                         berlinWarService.attackBerlinWar(p.roleId, PbHelper.createAttackBerlinWarRq(cityId,
-                                hero.getHeroId(), WorldConstant.BERLIN_ATTACK_TYPE_COMMON));
+                                hero.getPrincipalHero().getHeroId(), WorldConstant.BERLIN_ATTACK_TYPE_COMMON));
                     } catch (MwException e) {
                         LogUtil.error(e, "自动参加柏林会战");
                     }
@@ -1301,22 +1302,23 @@ public class GmService {
                     e.printStackTrace();
                 }
             }
-            for (int i = 1; i < player.heroBattle.length; i++) {
-                int heroId = player.heroBattle[i];
-                Hero hero = player.heros.get(heroId);
-                if (hero != null) {
-                    hero.setState(HeroConstant.HERO_STATE_IDLE);
+            Optional.ofNullable(player.getPlayerFormation().getHeroBattle()).ifPresent(heroes -> {
+                for (PartnerHero partnerHero : heroes) {
+                    if (HeroUtil.isEmptyPartner(partnerHero))
+                        continue;
+
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
                 }
-                LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-            }
-            for (int i = 1; i < player.heroAcq.length; i++) {
-                int heroId = player.heroAcq[i];
-                Hero hero = player.heros.get(heroId);
-                if (hero != null) {
-                    hero.setState(HeroConstant.HERO_STATE_IDLE);
+            });
+
+            Optional.ofNullable(player.getPlayerFormation().getHeroAcq()).ifPresent(heroes -> {
+                for (PartnerHero partnerHero : heroes) {
+                    if (HeroUtil.isEmptyPartner(partnerHero))
+                        continue;
+
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
                 }
-                LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-            }
+            });
             LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", player.roleId);
         } else if (str.equalsIgnoreCase("gestapaoRank")) { // 修复盖世太保个人排行进度
             GlobalActivityData actData = activityDataManager.getActivityMap().get(ActivityConst.ACT_GESTAPO_RANK);
@@ -1376,15 +1378,15 @@ public class GmService {
         } else if (str.equalsIgnoreCase("famousGeneralRank")) { // 名将转盘活动修复
             fixFamousGeneralRank();
         } else if (str.equalsIgnoreCase("planeStatus")) {
-            playerDataManager.getPlayers().forEach((lordId, p) -> {
-                player.getAllOnBattleHeros().forEach(e -> e.getWarPlanes().clear());
-                player.warPlanes.values().forEach(e -> {
-                    e.setHeroId(0);
-                    e.setPos(0);
-                    e.setBattlePos(0);
-                    e.setState(PlaneConstant.PLANE_STATE_IDLE);
-                });
-            });
+//            playerDataManager.getPlayers().forEach((lordId, p) -> {
+//                player.getAllOnBattleHeros().forEach(e -> e.getWarPlanes().clear());
+//                player.warPlanes.values().forEach(e -> {
+//                    e.setHeroId(0);
+//                    e.setPos(0);
+//                    e.setBattlePos(0);
+//                    e.setState(PlaneConstant.PLANE_STATE_IDLE);
+//                });
+//            });
         } else if (str.equalsIgnoreCase("mentorEquip")) {
             playerDataManager.getPlayers().values().forEach(p -> {
                 p.getMentorInfo().getMentors().values()
@@ -1961,10 +1963,10 @@ public class GmService {
             } else if (str.equalsIgnoreCase("allEquipsAndHeros")) {
                 player.equips.clear();
                 player.heros.clear();
-                Arrays.fill(player.heroBattle, 0);
-                Arrays.fill(player.heroWall, 0);
-                Arrays.fill(player.heroAcq, 0);
-                Arrays.fill(player.heroDef, 0);
+//                Arrays.fill(player.heroBattle, 0);
+//                Arrays.fill(player.heroWall, 0);
+//                Arrays.fill(player.heroAcq, 0);
+//                Arrays.fill(player.heroDef, 0);
             } else if (str.equalsIgnoreCase("hero")) {
                 Hero hero = player.heros.get(count);
                 if (hero != null) {
@@ -2151,15 +2153,15 @@ public class GmService {
                                         return flag;
                                     }).limit(count)
                                     .forEach(p -> {
-                                        List<Hero> heros = p.getAllOnBattleHeros();
-                                        heros.stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE)
+                                        List<PartnerHero> heros = p.getAllOnBattleHeroList();
+                                        heros.stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE)
                                                 .forEach(hero -> {
                                                     try {
                                                         AttackCrossPosRq.Builder builder = AttackCrossPosRq.newBuilder();
                                                         int pos = cme.getPos();
                                                         builder.setPos(pos);
                                                         builder.setMapId(CrossWorldMapConstant.CROSS_MAP_ID);
-                                                        builder.addHeroId(hero.getHeroId());
+                                                        builder.addHeroId(hero.getPrincipalHero().getHeroId());
                                                         crossAttackService.attackCrossPos(p.roleId, builder.build());
                                                     } catch (MwException e) {
                                                         LogUtil.error(e, "自动进攻战火燎原城池");
@@ -2197,15 +2199,15 @@ public class GmService {
                                     .forEach(p -> {
                                         // 对方开启自动补兵
                                         playerDataManager.autoAddArmy(p);
-                                        p.getAllOnBattleHeros()
+                                        p.getAllOnBattleHeroList()
                                                 .stream()
-                                                .filter(Hero::isIdle)
-                                                .peek(hero -> hero.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]))
+                                                .filter(p_ -> p_.getPrincipalHero().isIdle())
+                                                .peek(hero -> hero.getPrincipalHero().setCount(hero.getPrincipalHero().getAttr()[FightCommonConstant.AttrId.LEAD]))
                                                 .findAny()
                                                 .ifPresent(hero -> {
                                                     GamePb2.AttackPosRq.Builder builder = GamePb2.AttackPosRq.newBuilder();
                                                     builder.setPos(pos);
-                                                    builder.addHeroId(hero.getHeroId());
+                                                    builder.addHeroId(hero.getPrincipalHero().getHeroId());
                                                     builder.setType(id);
                                                     try {
                                                         worldService.attackPos(p.roleId, builder.build());
@@ -2629,11 +2631,11 @@ public class GmService {
         } else if (str.equalsIgnoreCase("chip")) { // 清除所有碎片
             player.palneChips.clear();
         } else if (str.equalsIgnoreCase("planeData")) { // 清除所有战机相关数据
-            playerDataManager.getPlayers().values().stream().forEach(p -> {
-                p.getAllOnBattleHeros().stream().forEach(hero -> hero.getWarPlanes().clear());
-                p.warPlanes.clear();
-                p.palneChips.clear();
-            });
+//            playerDataManager.getPlayers().values().stream().forEach(p -> {
+//                p.getAllOnBattleHeros().stream().forEach(hero -> hero.getWarPlanes().clear());
+//                p.warPlanes.clear();
+//                p.palneChips.clear();
+//            });
         } else if (str.equalsIgnoreCase("actGiftPacket")) { // 清除全服玩家特价礼包进度
             playerDataManager.getPlayers().values().stream().forEach(p -> {
                 Activity activity = p.activitys.get(ActivityConst.ACT_VIP_BAG);

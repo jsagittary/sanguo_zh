@@ -19,10 +19,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * @Description 机器人自动进攻副本服务类
  * @author TanDonghai
+ * @Description 机器人自动进攻副本服务类
  * @date 创建时间：2017年10月20日 下午3:46:43
- *
  */
 @Service
 public class RobotCombatService {
@@ -32,7 +31,7 @@ public class RobotCombatService {
 
     /**
      * 自动攻打副本，返回本次攻打是否成功
-     * 
+     *
      * @param player
      * @return
      */
@@ -71,23 +70,23 @@ public class RobotCombatService {
 
     /**
      * 获取玩家所有上阵将领的id
-     * 
+     *
      * @param player
      * @return
      */
     private List<Integer> getPlayerAllOnBattleHeroIds(Player player) {
         List<Integer> list = new ArrayList<>();
-        for (int heroId : player.heroBattle) {
-            if (heroId > 0 && player.heros.get(heroId) != null) {
-                list.add(heroId);
-            }
-        }
+//        for (int heroId : player.heroBattle) {
+//            if (heroId > 0 && player.heros.get(heroId) != null) {
+//                list.add(heroId);
+//            }
+//        }
         return list;
     }
 
     /**
      * 获取下一个可以攻打的副本
-     * 
+     *
      * @param player
      * @return
      */
@@ -99,7 +98,7 @@ public class RobotCombatService {
 
     /**
      * 判断副本是否可以攻打
-     * 
+     *
      * @param player
      * @param combat
      * @return
@@ -126,7 +125,7 @@ public class RobotCombatService {
 
     /**
      * 判断高级副本是否可以免费攻打
-     * 
+     *
      * @param combatFb
      * @param combatType
      * @return
