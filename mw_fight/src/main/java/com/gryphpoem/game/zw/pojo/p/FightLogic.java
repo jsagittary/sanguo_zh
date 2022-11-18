@@ -121,7 +121,6 @@ public class FightLogic {
         if (!CheckNull.isEmpty(skillList)) {
             skillList.stream().forEach(skill -> {
                 skill.releaseSkill(contextHolder);
-                contextHolder.clearCurSkillActionPb();
             });
         }
         // 副将释放登场技能
@@ -135,7 +134,6 @@ public class FightLogic {
                 contextHolder.setCurAtkHeroId(ass.getHeroId());
                 skills.forEach(skill -> {
                     skill.releaseSkill(contextHolder);
-                    contextHolder.clearCurSkillActionPb();
                 });
             });
         }
@@ -267,7 +265,6 @@ public class FightLogic {
                 // 释放技能
                 contextHolder.getInitSkillActionPb();
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
-                contextHolder.clearCurSkillActionPb();
 
                 // 清除没有作用次数的buff
                 contextHolder.getBattleLogic().clearBothForceBuffEffectTimes(force, target, contextHolder);

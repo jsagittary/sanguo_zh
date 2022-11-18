@@ -174,6 +174,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
 
         this.setReleaseCount(this.getReleaseCount() + 1);
         contextHolder.getActionDirection().setSkill(null);
+        contextHolder.clearCurSkillActionPb();
     }
 
     @Override
