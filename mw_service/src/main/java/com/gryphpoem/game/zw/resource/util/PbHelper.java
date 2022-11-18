@@ -588,6 +588,9 @@ public class PbHelper {
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
         builder.setHeroRoleType(hero.getRoleType());
+        if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            builder.setPartnerPosIndex(hero.getPartnerPosIndex());
+        }
         return builder.build();
     }
 
@@ -700,6 +703,10 @@ public class PbHelper {
         }
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
+        builder.setHeroRoleType(hero.getRoleType());
+        if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            builder.setPartnerPosIndex(hero.getPartnerPosIndex());
+        }
         return builder.build();
     }
 

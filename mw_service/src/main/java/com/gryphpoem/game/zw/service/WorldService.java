@@ -1260,9 +1260,8 @@ public class WorldService {
         worldDataManager.addMarch(march);
 
         // 改变行军状态
-        for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+        for (PartnerHero partnerHero : heroIdList_) {
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
         }
 
         // 返回协议
@@ -3823,14 +3822,15 @@ public class WorldService {
             addExp = heroService.adaptHeroAddExp(defPlayer, addExp);
             // 给将领加经验
             Hero hero = defPlayer.heros.get(guard.getHeroId());
-            addExp = heroService.addHeroExp(hero, addExp, defLord.getLevel(), defPlayer);
+            int chiefAddExp = heroService.addHeroExp(hero, addExp, defLord.getLevel(), defPlayer);
+            DataResource.ac.getBean(WorldService.class).addDeputyHeroExp(addExp, guard.getArmy().getHero().get(0), defPlayer);
 
-            LogUtil.error("roleId:", defPlayer.roleId, ", ===采集时间:", time, ", 将领经验:", addExp,
+            LogUtil.error("roleId:", defPlayer.roleId, ", ===采集时间:", time, ", 将领经验:", chiefAddExp,
                     ", 采集物质:" + guard.getGrab());
             boolean effect = mineService.hasCollectEffect(defPlayer, guard.getGrab().get(0).getId(),
                     new Date(guard.getBeginTime() * 1000L), guard.getArmy());// 采集加成;
 
-            CommonPb.MailCollect collect = PbHelper.createMailCollectPb(time, hero, addExp, guard.getGrab(), effect);
+            CommonPb.MailCollect collect = PbHelper.createMailCollectPb(time, hero, chiefAddExp, guard.getGrab(), effect);
             //战报邮件
             mailDataManager.sendCollectMail(defPlayer, report, MailConstant.MOLD_COLLECT_DEF_FAIL, null, now,
                     recoverArmyAwardMap, defLord.getNick(), atkLord.getNick(), atkLord.getNick(), atkPos.getA(),
@@ -4115,9 +4115,11 @@ public class WorldService {
             int addExp = (int) Math.ceil(time * 1.0 / Constant.MINUTE) * 20;// 将领采集经验
             addExp = heroService.adaptHeroAddExp(player, addExp);
             // 给将领加经验
-            addExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+            int chiefAddExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+            // 给副将加经验
+            DataResource.ac.getBean(WorldService.class).addDeputyHeroExp(addExp, guard.getArmy().getHero().get(0), player);
 
-            CommonPb.MailCollect collect = PbHelper.createMailCollectPb(time, hero, addExp, grab, effect);
+            CommonPb.MailCollect collect = PbHelper.createMailCollectPb(time, hero, chiefAddExp, grab, effect);
 
             // 记录玩家采集铀矿时间
             WorldWarSeasonDailyRestrictTaskService restrictTaskService = DataResource.ac

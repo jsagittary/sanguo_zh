@@ -166,7 +166,7 @@ public class RobotHeroService {
 //                }
 //            }
 //        }
-//        return new Turple<>(pos, minQuality);
+        return new Turple<>(0, 0);
     }
 
     /**

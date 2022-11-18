@@ -373,6 +373,7 @@ public class WallService {
      */
     public void downWallHeroAndBackRes(Player player, Hero downHero) {
         downHero.onWall(0);// 将领下阵，pos设置为0
+        downHero.setPartnerPosIndex(0);
         // 返还资源
         int sub = downHero.getCount();
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());

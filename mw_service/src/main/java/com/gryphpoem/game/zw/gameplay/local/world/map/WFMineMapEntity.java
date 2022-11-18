@@ -228,8 +228,10 @@ public class WFMineMapEntity extends MineMapEntity {
         Hero hero = player.heros.get(guard.getHeroId());
         int addExp = (int) Math.ceil(collectTime * 1.0 / Constant.MINUTE) * 20;
         addExp = heroService.adaptHeroAddExp(player, addExp);
-        addExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
-        CommonPb.MailCollect collect = PbHelper.createMailCollectPb(collectTime, hero, addExp, guard.getGrab(), false);
+        int chiefAddExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+        // 给副将加经验
+        DataResource.ac.getBean(WorldService.class).addDeputyHeroExp(addExp, guard.getArmy().getHero().get(0), player);
+        CommonPb.MailCollect collect = PbHelper.createMailCollectPb(collectTime, hero, chiefAddExp, guard.getGrab(), false);
         // 清空驻军
         setGuard(null);
         return collect;

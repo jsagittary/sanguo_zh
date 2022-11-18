@@ -443,7 +443,7 @@ public class MineService {
             worldDataManager.addMarch(march);
 
             // 改变行军状态
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            army.setHeroState(player, ArmyConstant.ARMY_STATE_MARCH);
 
             // 区域变化推送
             List<Integer> posList = new ArrayList<>();

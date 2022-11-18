@@ -69,6 +69,7 @@ public class HeroOnBattleService implements GmCmdService {
         int heroId = req.getHeroId();
         int pos = req.getPos();
         int heroRoleType = req.getRoleType();
+        int deputyPos = req.getDeputyPos();
         boolean swap = false;
         if (req.hasSwap()) {
             swap = req.getSwap();
@@ -116,8 +117,7 @@ public class HeroOnBattleService implements GmCmdService {
         Hero hero = heroService.checkHeroIsExist(player, heroId);
         StaticHero onBattleHero = StaticHeroDataMgr.getHeroMap().get(heroId);
         // 判断该将领是否已经上阵
-        if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId) ||
-                player.isOnCommandoHero(heroId) || player.isOnDeputyHero(heroId)) {
+        if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId)) {
             throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), String.format("roleId :%d, heroId :%d, status :%d, pos :%d, wallPos :%d, acqPos :%d",
                     roleId, heroId, hero.getStatus(), hero.getPos(), hero.getWallPos(), hero.getAcqPos()));
         }
@@ -147,6 +147,10 @@ public class HeroOnBattleService implements GmCmdService {
             if (!battleHero.isIdle()) {
                 throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
             }
+            if (heroRoleType == HeroConstant.HERO_ROLE_TYPE_DEPUTY && battleHero.getPartnerPosIndex() != deputyPos) {
+                throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, curPos:%d, changePos:%d, 替换的副将阵位与传参阵位不匹配",
+                        roleId, battleHero.getPartnerPosIndex(), deputyPos));
+            }
 
             if (swap) {// 如果需要交换装备，执行交换装备的逻辑
                 heroService.swapHeroEquip(player, hero, battleHero);
@@ -165,6 +169,7 @@ public class HeroOnBattleService implements GmCmdService {
             }
             battleHero.onBattle(0);// 将领下阵，pos设置为0
             battleHero.onDef(0);// 防守将领下阵, pos设置为0
+            battleHero.setPartnerPosIndex(0);// 将领下阵, 副将阵位索引为0
             // 告诉客户端武将兵书是否有更新
             builder.setUpdateMedal(sysClientUpdateMedal);
 
@@ -188,12 +193,13 @@ public class HeroOnBattleService implements GmCmdService {
             player.getPlayerFormation().getHeroBattle()[pos] = partnerHero;
         }
         // 处理副将
-        handlePartnerHero(battleHero, hero, partnerHero, onBattleHero, heroRoleType, (ass) -> {
+        handlePartnerHero(battleHero, hero, partnerHero, onBattleHero, heroRoleType, req.getDeputyPos(), (ass) -> {
             if (CheckNull.isNull(ass)) return;
             // 将副将置为无类型 (与上阵主将兵种冲突的副将下阵)
             ass.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
             ass.onBattle(0);
             ass.onDef(0);
+            ass.setPartnerPosIndex(0);
             CalculateUtil.processAttr(player, ass);
             builder.addDownHero(PbHelper.createHeroPb(ass, player));
         });
@@ -251,6 +257,7 @@ public class HeroOnBattleService implements GmCmdService {
         int pos = req.getPos();
         int type = req.getType();
         int heroId = req.getHeroId();
+        int deputyPos = req.getDeputyPos();
         int heroRoleType = req.getRoleType();
         boolean swap = req.hasSwap() && req.getSwap();
         boolean swapMedal = req.hasSwapMedal() && req.getSwapMedal();
@@ -325,6 +332,10 @@ public class HeroOnBattleService implements GmCmdService {
                     throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作  roleId:", roleId, " state:",
                             downHero.getState());
                 }
+                if (heroRoleType == HeroConstant.HERO_ROLE_TYPE_DEPUTY && downHero.getPartnerPosIndex() != deputyPos) {
+                    throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, curPos:%d, changePos:%d, 替换的副将阵位与传参阵位不匹配",
+                            roleId, downHero.getPartnerPosIndex(), deputyPos));
+                }
 
                 // 检验如果替换下来的是副将, 校验换上去的武将是否与主将兵种匹配
                 checkDeputyMatch(heroRoleType, heroId, roleId, partnerHero, staticHero);
@@ -351,8 +362,9 @@ public class HeroOnBattleService implements GmCmdService {
                 player.getPlayerFormation().getHeroAcq()[pos] = partnerHero;
             }
             // 处理副将相关
-            handlePartnerHero(downHero, hero, partnerHero, staticHero, heroRoleType, (ass) -> {
+            handlePartnerHero(downHero, hero, partnerHero, staticHero, heroRoleType, deputyPos, (ass) -> {
                 ass.onAcq(0); // 将领下阵，pos设置为0
+                ass.setPartnerPosIndex(0);
                 ass.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
                 CalculateUtil.processAttr(player, ass);
                 builder.addDownHero(PbHelper.createHeroPb(ass, player));
@@ -404,6 +416,7 @@ public class HeroOnBattleService implements GmCmdService {
                 downHero(downHero, partnerHero, ass -> {
                     ass.onAcq(0); // 将领下阵，pos设置为0
                     ass.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                    ass.setPartnerPosIndex(0);
                     CalculateUtil.processAttr(player, ass);
                     builder.addDownHero(PbHelper.createHeroPb(ass, player));
                 });
@@ -447,6 +460,7 @@ public class HeroOnBattleService implements GmCmdService {
         int pos = req.getPos();
         int type = req.getType();
         int heroId = req.getHeroId();
+        int deputyPos = req.getDeputyPos();
         int heroRoleType = req.getRoleType();
         boolean swap = req.hasSwap() && req.getSwap();
         boolean swapMedal = req.hasSwapMedal() && req.getSwapMedal();
@@ -513,6 +527,10 @@ public class HeroOnBattleService implements GmCmdService {
                 if (!battleHero.isIdle()) {
                     throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
                 }
+                if (heroRoleType == HeroConstant.HERO_ROLE_TYPE_DEPUTY && battleHero.getPartnerPosIndex() != deputyPos) {
+                    throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("roleId:%d, curPos:%d, changePos:%d, 替换的副将阵位与传参阵位不匹配",
+                            roleId, battleHero.getPartnerPosIndex(), deputyPos));
+                }
                 // 检验如果替换下来的是副将, 校验换上去的武将是否与主将兵种匹配
                 checkDeputyMatch(heroRoleType, heroId, roleId, partnerHero, staticHero);
 
@@ -540,8 +558,9 @@ public class HeroOnBattleService implements GmCmdService {
                 player.getPlayerFormation().getHeroWall()[pos] = partnerHero;
             }
             // 处理副将相关
-            handlePartnerHero(battleHero, hero, partnerHero, staticHero, heroRoleType, (ass) -> {
+            handlePartnerHero(battleHero, hero, partnerHero, staticHero, heroRoleType, deputyPos, (ass) -> {
                 ass.onWall(0); // 将领下阵，pos设置为0
+                ass.setPartnerPosIndex(0);
                 ass.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
                 CalculateUtil.processAttr(player, ass);
                 builder.addDownHero(PbHelper.createHeroPb(ass, player));
@@ -591,6 +610,7 @@ public class HeroOnBattleService implements GmCmdService {
                 wallService.reAdjustHeroPos(player.getPlayerFormation().getHeroWall(), player.heros);
                 downHero(battleHero, partnerHero, ass -> {
                     ass.onAcq(0); // 将领下阵，pos设置为0
+                    ass.setPartnerPosIndex(0);
                     ass.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
                     CalculateUtil.processAttr(player, ass);
                     builder.addDownHero(PbHelper.createHeroPb(ass, player));
@@ -716,7 +736,7 @@ public class HeroOnBattleService implements GmCmdService {
      * @param heroRoleType 主将或副将类型
      */
     private void handlePartnerHero(Hero battleHero, Hero hero, PartnerHero partnerHero,
-                                   StaticHero onBattleHero, int heroRoleType, Consumer<Hero> consumer) {
+                                   StaticHero onBattleHero, int heroRoleType, int deputyPosIndex, Consumer<Hero> consumer) {
         // 副将处理
         if (Objects.nonNull(partnerHero)) {
             if (Objects.nonNull(battleHero)) {
@@ -751,6 +771,7 @@ public class HeroOnBattleService implements GmCmdService {
                     if (CheckNull.nonEmpty(deputyHeroList = partnerHero.getDeputyHeroList()) && Objects.nonNull(battleHero)) {
                         deputyHeroList.remove(battleHero);
                     }
+                    hero.setPartnerPosIndex(deputyPosIndex);
                     deputyHeroList.add(hero);
                     break;
             }

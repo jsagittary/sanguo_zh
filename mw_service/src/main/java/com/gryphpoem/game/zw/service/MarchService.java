@@ -27,7 +27,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionTrigger;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -269,20 +268,7 @@ public class MarchService {
         // 部队返回
 
         // 将领返回
-        Hero hero;
-        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getPrincipleHeroId());
-            if (Objects.nonNull(hero)) {
-                hero.setState(ArmyConstant.ARMY_STATE_IDLE);
-            }
-            if (CheckNull.nonEmpty(twoInt.getDeputyHeroIdList())) {
-                twoInt.getDeputyHeroIdList().forEach(heroId -> {
-                    Hero hero_ = player.heros.get(heroId);
-                    if (CheckNull.isNull(hero_)) return;
-                    hero_.setState(ArmyConstant.ARMY_STATE_IDLE);
-                });
-            }
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_IDLE);
 
         // 加资源
         if (!CheckNull.isEmpty(army.getGrab())) {
@@ -362,13 +348,7 @@ public class MarchService {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_STATE_BATTLE);
-
-        Hero hero;
-        // int armCount = 0;
-        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getPrincipleHeroId());
-            hero.setState(ArmyConstant.ARMY_STATE_BATTLE);
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_BATTLE);
 
         int camp = player.lord.getCamp();
         if (camp == battle.getAtkCamp()) {
@@ -1058,19 +1038,7 @@ public class MarchService {
         army.setDuration(marchTime);
         army.setEndTime(now + marchTime);
 
-        Hero hero;
-        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getPrincipleHeroId());
-            hero.setState(ArmyConstant.ARMY_STATE_RETREAT);
-            if (CheckNull.nonEmpty(twoInt.getDeputyHeroIdList())) {
-                twoInt.getDeputyHeroIdList().forEach(heroId -> {
-                    Hero hero_ = player.heros.get(heroId);
-                    if (Objects.nonNull(hero_)) {
-                        hero_.setState(ArmyConstant.ARMY_STATE_RETREAT);
-                    }
-                });
-            }
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_RETREAT);
     }
 
     /**

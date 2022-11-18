@@ -3024,34 +3024,55 @@ public class Player {
 
     private void dserHeros(SerHero ser) {
         Hero hero;
+        Comparator<Hero> comparator = (o1, o2) -> o1.getPartnerPosIndex() < o2.getPartnerPosIndex() ? 1 : -1;
         for (CommonPb.Hero h : ser.getHeroList()) {
             hero = new Hero(h);
             heros.put(hero.getHeroId(), hero);
-//            if (hero.isOnBattle()) {
-//                if (hero.getPos() >= HeroConstant.HERO_BATTLE_1 && hero.getPos() <= HeroConstant.HERO_BATTLE_4) {
-//                    heroBattle[hero.getPos()] = hero.getHeroId();
-//                }
-//                if (hero.getDefPos() >= HeroConstant.HERO_BATTLE_1 && hero.getDefPos() <= HeroConstant.HERO_BATTLE_4) {
-//                    heroDef[hero.getDefPos()] = hero.getHeroId();
-//                }
-//            }
-//            if (hero.isOnWall()) {
-//                if (hero.getWallPos() >= HeroConstant.HERO_BATTLE_1
-//                        && hero.getWallPos() <= HeroConstant.HERO_BATTLE_4) {
-//                    heroWall[hero.getWallPos()] = hero.getHeroId();
-//                }
-//            }
-//            if (hero.isOnAcq()) {
-//                if (hero.getAcqPos() >= HeroConstant.HERO_BATTLE_1 && hero.getAcqPos() <= HeroConstant.HERO_BATTLE_4) {
-//                    heroAcq[hero.getAcqPos()] = hero.getHeroId();
-//                }
-//            }
-//            if (hero.isCommando()) {
-//                if (hero.getCommandoPos() >= HeroConstant.HERO_BATTLE_1
-//                        && hero.getCommandoPos() <= Constant.COMMANDO_HERO_REQUIRE.size()) {
-//                    heroCommando[hero.getCommandoPos()] = hero.getHeroId();
-//                }
-//            }
+            if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_NOTHING)
+                continue;
+
+            PartnerHero partnerHero = null;
+            if (hero.isOnBattle()) {
+                if (hero.getPos() >= HeroConstant.HERO_BATTLE_1 && hero.getPos() <= HeroConstant.HERO_BATTLE_4) {
+                    if (playerFormation.getHeroBattle()[hero.getPos()] == null) {
+                        playerFormation.getHeroBattle()[hero.getPos()] = new PartnerHero();
+                    }
+                    if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
+                        partnerHero.setPrincipalHero(hero);
+                    } else {
+                        partnerHero.getDeputyHeroList().add(hero);
+                    }
+                }
+                if (hero.getDefPos() >= HeroConstant.HERO_BATTLE_1 && hero.getDefPos() <= HeroConstant.HERO_BATTLE_4) {
+                    playerFormation.getHeroDef()[hero.getDefPos()] = partnerHero;
+                }
+            }
+            if (hero.isOnWall()) {
+                if (hero.getWallPos() >= HeroConstant.HERO_BATTLE_1
+                        && hero.getWallPos() <= HeroConstant.HERO_BATTLE_4) {
+                    if (playerFormation.getHeroWall()[hero.getPos()] == null) {
+                        playerFormation.getHeroWall()[hero.getPos()] = new PartnerHero();
+                    }
+                    if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
+                        partnerHero.setPrincipalHero(hero);
+                    } else {
+                        partnerHero.getDeputyHeroList().add(hero);
+                    }
+                }
+            }
+            if (hero.isOnAcq()) {
+                if (playerFormation.getHeroAcq()[hero.getPos()] == null) {
+                    playerFormation.getHeroAcq()[hero.getPos()] = new PartnerHero();
+                }
+                if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
+                    partnerHero.setPrincipalHero(hero);
+                } else {
+                    partnerHero.getDeputyHeroList().add(hero);
+                }
+            }
+            if (Objects.nonNull(partnerHero)) {
+                Collections.sort(partnerHero.getDeputyHeroList(), comparator);
+            }
         }
 
         if (ser.hasCia()) {

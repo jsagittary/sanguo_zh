@@ -42,6 +42,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * @author TanDonghai
@@ -1804,13 +1805,19 @@ public class HeroService implements GmCmdService {
             }
 
             //检查出战队列英雄列表是否与防守英雄列表相同
-//            String battleString = Arrays.stream(player.getPlayerFormation().getHeroBattle()).sorted().mapToObj(String::valueOf).collect(Collectors.joining(",", "{", "}"));
-//            String defString = Arrays.stream(player.heroDef).sorted().mapToObj(String::valueOf).collect(Collectors.joining(",", "{", "}"));
-//            if (!battleString.equals(defString)) {
-//                LogUtil.error(String.format("roleId :%d, 出战英雄列表 :%s, 防守英雄列表 :%s, 2个队列英雄ID不一致", player.roleId, battleString, defString));
-//                isOk = false;
-//            }
-//            if (!isOk) LogUtil.sentry(String.format("roleId :%d 英雄状态异常, 请复查 error log !!!", player.getLordId()));
+            String battleString = Arrays.stream(player.getPlayerFormation().getHeroBattle()).map(pt -> {
+                if (HeroUtil.isEmptyPartner(pt)) return 0;
+                return pt.getPrincipalHero().getHeroId();
+            }).sorted().map(String::valueOf).collect(Collectors.joining(",", "{", "}"));
+            String defString = Arrays.stream(player.getPlayerFormation().getHeroDef()).map(pt -> {
+                if (HeroUtil.isEmptyPartner(pt)) return 0;
+                return pt.getPrincipalHero().getHeroId();
+            }).sorted().map(String::valueOf).collect(Collectors.joining(",", "{", "}"));
+            if (!battleString.equals(defString)) {
+                LogUtil.error(String.format("roleId :%d, 出战英雄列表 :%s, 防守英雄列表 :%s, 2个队列英雄ID不一致", player.roleId, battleString, defString));
+                isOk = false;
+            }
+            if (!isOk) LogUtil.sentry(String.format("roleId :%d 英雄状态异常, 请复查 error log !!!", player.getLordId()));
             return isOk;
         } catch (Exception e) {
             LogUtil.error("roleId : " + player.getLordId(), e);

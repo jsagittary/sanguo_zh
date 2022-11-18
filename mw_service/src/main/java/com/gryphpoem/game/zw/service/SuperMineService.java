@@ -396,7 +396,7 @@ public class SuperMineService {
 
             List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
             Hero hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
             form.add(partnerHero.convertTo());
             Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_HELP_SUPERMINE, pos,
                     ArmyConstant.ARMY_STATE_MARCH, form, marchTime, now + marchTime, player.getDressUp());
@@ -408,7 +408,7 @@ public class SuperMineService {
                     });
 
             player.armys.put(army.getKeyId(), army);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            army.setHeroState(player, ArmyConstant.ARMY_STATE_MARCH);
             // 添加行军路线
             March march = new March(player, army);
             worldDataManager.addMarch(march);

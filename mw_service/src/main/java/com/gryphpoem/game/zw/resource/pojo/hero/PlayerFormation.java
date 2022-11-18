@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo.hero;
 
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
@@ -57,5 +58,48 @@ public class PlayerFormation {
             if (Objects.nonNull(partnerHero)) return partnerHero;
         }
         return null;
+    }
+
+    public int getDeputyIndexOf(Hero hero) {
+        Hero tmp;
+        if (hero.isOnBattle()) {
+            for (PartnerHero partnerHero : heroBattle) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (CheckNull.isEmpty(partnerHero.getDeputyHeroList())) continue;
+                for (int i = 1; i <= partnerHero.getDeputyHeroList().size(); i++) {
+                    if ((tmp = partnerHero.getDeputyHeroList().get(i - 1)) != null && tmp.getHeroId() == hero.getHeroId())
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+        if (hero.isOnAcq()) {
+            for (PartnerHero partnerHero : heroAcq) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (CheckNull.isEmpty(partnerHero.getDeputyHeroList())) continue;
+                for (int i = 1; i <= partnerHero.getDeputyHeroList().size(); i++) {
+                    if ((tmp = partnerHero.getDeputyHeroList().get(i - 1)) != null && tmp.getHeroId() == hero.getHeroId())
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        if (hero.isOnWall()) {
+            for (PartnerHero partnerHero : heroWall) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (CheckNull.isEmpty(partnerHero.getDeputyHeroList())) continue;
+                for (int i = 1; i <= partnerHero.getDeputyHeroList().size(); i++) {
+                    if ((tmp = partnerHero.getDeputyHeroList().get(i - 1)) != null && tmp.getHeroId() == hero.getHeroId())
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        return -1;
     }
 }

@@ -226,6 +226,7 @@ public class WarFactoryService {
      */
     public ChangeInfo downAcqHeroAndBackRes(Player player, Hero downHero) {
         downHero.onAcq(0); // 将领下阵，pos设置为0
+        downHero.setPartnerPosIndex(0);
         // 士兵回营
         int sub = downHero.getCount();
         if (sub > 0) {

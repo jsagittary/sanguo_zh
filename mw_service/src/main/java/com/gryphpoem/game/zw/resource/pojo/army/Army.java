@@ -387,7 +387,7 @@ public class Army {
             hero.setState(state);
             if (!CheckNull.isEmpty(twoInt.getDeputyHeroIdList())) {
                 twoInt.getDeputyHeroIdList().forEach(id -> {
-                    Hero hero_ = player.heros.get(twoInt.getPrincipleHeroId());
+                    Hero hero_ = player.heros.get(id);
                     hero_.setState(state);
                 });
             }

@@ -68,6 +68,10 @@ public class Hero {
      * 是否在主界面显示英雄奖励
      */
     private boolean showClient;
+    /**
+     * 作为副将是阵位索引
+     */
+    private int partnerPosIndex;
 
     public Hero() {
         attr = new int[4];// 三种属性，对应1-3位，0位为补位，不用
@@ -165,9 +169,6 @@ public class Hero {
             equip[two.getV1()] = two.getV2();
         }
         setDecorated(hero.getDecorated());
-//        for (TwoInt twoInt : hero.getWarPlaneList()) {
-//            warPlanes.add(twoInt.getV1());
-//        }
         for (TwoInt two : hero.getShowFightList()) {
             showFight.put(two.getV1(), two.getV2());
         }
@@ -218,6 +219,10 @@ public class Hero {
         }
         setGradeKeyId(hero.getGrade());
         this.setShowClient(hero.getShowClient());
+        this.setRoleType(hero.getHeroRoleType());
+        if (hero.getPartnerPosIndex() > 0) {
+            this.partnerPosIndex = hero.getPartnerPosIndex();
+        }
     }
 
     public int getHeroType() {
@@ -313,6 +318,14 @@ public class Hero {
         if (isOnWall() && isChange) {
             setWallArmyTime(TimeHelper.getCurrentSecond());
         }
+    }
+
+    public int getPartnerPosIndex() {
+        return partnerPosIndex;
+    }
+
+    public void setPartnerPosIndex(int partnerPosIndex) {
+        this.partnerPosIndex = partnerPosIndex;
     }
 
     public int getPos() {
