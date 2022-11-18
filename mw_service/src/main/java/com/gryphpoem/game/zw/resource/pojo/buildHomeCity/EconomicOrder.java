@@ -2,8 +2,11 @@ package com.gryphpoem.game.zw.resource.pojo.buildHomeCity;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.domain.p.AwardItem;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,13 +58,13 @@ public class EconomicOrder {
     /**
      * 订单需求  [[经济产物的道具id, 数量], [经济产物的道具id, 数量], [经济产物的道具id, 数量]]
      */
-    private Map<Integer, Integer> orderDemand;
+    private Map<Integer, Integer> orderDemand = new HashMap<>();
 
     /**
      * 订单奖励  [[rewardType, subType, count], [rewardType, subType, count], [rewardType, subType, count]] <br>
      * 第1个放特殊奖励
      */
-    private List<AwardItem> reward;
+    private List<AwardItem> reward = new ArrayList<>();
 
     public int getKeyId() {
         return keyId;
@@ -143,6 +146,9 @@ public class EconomicOrder {
         this.reward = reward;
     }
 
+    public EconomicOrder() {
+    }
+
     public CommonPb.EconomicOrder createPb() {
         CommonPb.EconomicOrder.Builder builder = CommonPb.EconomicOrder.newBuilder();
         builder.setKeyId(this.keyId);
@@ -156,5 +162,22 @@ public class EconomicOrder {
         builder.addAllReward(PbHelper.createAwards(this.reward));
         builder.setPlaceCamp(this.placeCamp);
         return builder.build();
+    }
+
+    public EconomicOrder(CommonPb.EconomicOrder pb) {
+        this.keyId = pb.getKeyId();
+        this.orderId = pb.getOrderId();
+        this.quantity = pb.getQuantity();
+        this.place = pb.getPlace();
+        this.placeCamp = pb.getPlace();
+        this.startTime = pb.getStartTime();
+        this.endTime = pb.getEndTime();
+        this.preDisplay = pb.getPreDisplay();
+        if (CheckNull.nonEmpty(pb.getOrderDemandList())) {
+            pb.getOrderDemandList().forEach(tmp -> this.orderDemand.put(tmp.getV1(), tmp.getV2()));
+        }
+        if (CheckNull.nonEmpty(pb.getRewardList())) {
+            pb.getRewardList().forEach(tmp -> this.reward.add(new AwardItem(tmp.getType(), tmp.getId(), tmp.getCount())));
+        }
     }
 }

@@ -152,7 +152,10 @@ import com.gryphpoem.game.zw.handler.client.buildHomeCity.SwapBuildingPosHandler
 import com.gryphpoem.game.zw.handler.client.building.AssignEconomicCropHandler;
 import com.gryphpoem.game.zw.handler.client.building.BuildingHanlder;
 import com.gryphpoem.game.zw.handler.client.building.CommandAddHandler;
+import com.gryphpoem.game.zw.handler.client.building.CreateBuildingHandler;
 import com.gryphpoem.game.zw.handler.client.building.DesBuildingHanlder;
+import com.gryphpoem.game.zw.handler.client.building.DispatchHeroHandler;
+import com.gryphpoem.game.zw.handler.client.building.DispatchResidentHandler;
 import com.gryphpoem.game.zw.handler.client.building.EquipFactoryRecruitHandler;
 import com.gryphpoem.game.zw.handler.client.building.GainResHandler;
 import com.gryphpoem.game.zw.handler.client.building.GetCommandHandler;
@@ -1296,6 +1299,12 @@ public class MessagePool implements IMessagePool {
         registerC(OnOffAutoBuildRq.EXT_FIELD_NUMBER, OnOffAutoBuildRs.EXT_FIELD_NUMBER, OnOffAutoBuildHandler.class);
 
         registerC(QuickBuyArmyRq.EXT_FIELD_NUMBER, QuickBuyArmyRs.EXT_FIELD_NUMBER, QuickBuyArmyHandler.class);
+        // 建造建筑
+        registerC(CreateBuildingRq.EXT_FIELD_NUMBER, CreateBuildingRs.EXT_FIELD_NUMBER, CreateBuildingHandler.class);
+        // 派遣居民
+        registerC(DispatchResidentRq.EXT_FIELD_NUMBER, DispatchResidentRs.EXT_FIELD_NUMBER, DispatchResidentHandler.class);
+        // 委任武将
+        registerC(DispatchHeroRq.EXT_FIELD_NUMBER, DispatchHeroRs.EXT_FIELD_NUMBER, DispatchHeroHandler.class);
 
         // 城墙相关协议
 

@@ -223,7 +223,7 @@ public class RobotBuildingService {
         }
 
         // 检测化工厂是否正在生产
-        if (buildingType == BuildingType.CHEMICAL_PLANT && player.chemical != null
+        if (buildingType == BuildingType.FERRY && player.chemical != null
                 && !CheckNull.isEmpty(player.chemical.getPosQue())) {
             LogUtil.robot("化工厂是否正在生产,不能升级  roleId:" + roleId + ", buildingType:" + buildingType);
             return false;

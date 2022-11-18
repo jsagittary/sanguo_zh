@@ -27,17 +27,17 @@ public class StaticEconomicOrder {
     private List<Integer> place;
 
     /**
-     * 订单需求1  [[经济产物的道具id下限，经济产物的道具id上限],[数量下限，数量上限]]
+     * 订单需求1  [[作物档位1, 作物档位1],[数量下限，数量上限]]
      */
     private List<List<Integer>> orderDemand1;
 
     /**
-     * 订单需求2  [[经济产物的道具id下限，经济产物的道具id上限],[数量下限，数量上限]]
+     * 订单需求2  [[作物档位1, 作物档位1],[数量下限，数量上限]]
      */
     private List<List<Integer>> orderDemand2;
 
     /**
-     * 订单需求3  [[经济产物的道具id下限，经济产物的道具id上限],[数量下限，数量上限]]
+     * 订单需求3  [[作物档位1, 作物档位1],[数量下限，数量上限]]
      */
     private List<List<Integer>> orderDemand3;
 

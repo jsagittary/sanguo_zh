@@ -397,7 +397,7 @@ public class WallService {
     public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         // 检测是否满足开启天策府
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(1)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(1)) {
             // 内阁等级小于3级禁止开发
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
         }

@@ -9,13 +9,16 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.PlayerService;
@@ -131,17 +134,17 @@ public class BuildHomeCityService implements GmCmdService {
     public GamePb1.ReclaimFoundationRs reclaimFoundation(long roleId, GamePb1.ReclaimFoundationRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         int cellId = rq.getCellId();
-        // int farmerCount = rq.getFarmerCount();
         // 获取目标格子配置
         StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
         if (staticHomeCityCell == null) {
             throw new MwException(GameError.NO_CONFIG, String.format("开垦地基时, 未找到主城地图格配置, roleId:%s, cellId:%s", roleId, cellId));
         }
         // 开垦格子前, 需要先探索
-        if (!player.getMapCellData().containsKey(cellId)) {
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        if (!mapCellData.containsKey(cellId)) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("开垦地基时, 该格子还未解锁, roleId:%s, cellId:%s", roleId, cellId));
         }
-        if (player.getMapCellData().get(cellId).get(0) == 1) {
+        if (mapCellData.get(cellId).get(0) == 1) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("开垦地基时, 该格子已被开垦, roleId:%s, cellId:%s", roleId, cellId));
         }
         /*// 校验是否有空闲农民
@@ -161,21 +164,19 @@ public class BuildHomeCityService implements GmCmdService {
         DELAY_QUEUE.add(new BuildHomeCityDelayRun(2, endTime, cellId, 0, farmerCount, player));*/
         GamePb1.ReclaimFoundationRs.Builder builder = GamePb1.ReclaimFoundationRs.newBuilder();
         // 更新格子开垦状态
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
         List<Integer> cellState = new ArrayList<>(mapCellData.get(cellId));
         cellState.set(0, 1);
         mapCellData.put(cellId, cellState);
-        // 返回被开垦格子的信息
         CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
         mapCell.setCellId(cellId);
         mapCell.addAllState(cellState);
-        builder.addMapCellData(mapCell.build());
+        builder.addMapCellData(mapCell.build());// 返回被开垦格子的信息
         // 获取玩家新增解锁的地基id, 解锁地基需要该地基所占的格子全部被开垦完成
         List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
         List<Integer> unlockFoundationIdList = new ArrayList<>();
         // 获取玩家已开垦的格子
         List<Integer> reclaimedCellIdList = new ArrayList<>();
-        player.getMapCellData().forEach((key, value) -> {
+        mapCellData.forEach((key, value) -> {
             if (value.get(0) == 1) {
                 reclaimedCellIdList.add(key);
             }
@@ -189,6 +190,26 @@ public class BuildHomeCityService implements GmCmdService {
         }
         // 玩家新增解锁的地基
         player.getFoundationData().addAll(unlockFoundationIdList);
+
+        // 如果开垦的格子满足城墙解锁条件
+        if (player.getFoundationData().containsAll(Constant.WALL_UNLOCK_CONDITION)) {
+            BuildingState buildingState = new BuildingState();
+            buildingState.setBuildingId(BuildingType.WALL);
+            buildingState.setBuildingLv(1);
+            player.getBuildingData().put(BuildingType.WALL, buildingState);
+            player.building.setWall(1);
+            BuildingExt buildingExt = player.buildingExts.get(BuildingType.WALL);
+            int now = TimeHelper.getCurrentSecond();
+            if (buildingExt == null) {
+                buildingExt = new BuildingExt(BuildingType.WALL, BuildingType.WALL, true);
+                buildingExt.setUnLockTime(now);
+                player.buildingExts.put(BuildingType.WALL, buildingExt);
+            } else {
+                buildingExt.setUnLockTime(now);
+                buildingExt.setUnlock(true);
+            }
+        }
+
         // 返回解锁的地基信息
         builder.addAllFoundationData(unlockFoundationIdList);
         return builder.build();

@@ -2809,7 +2809,7 @@ public class RewardDataManager {
                 break;
             case AwardType.Resource.HUMAN:
                 // 只有化工厂解锁开启了才能有人口
-                if (buildingDataManager.checkBuildingLock(player, BuildingType.CHEMICAL_PLANT)) {
+                if (buildingDataManager.checkBuildingLock(player, BuildingType.FERRY)) {
                     resource.setHuman(resource.getHuman() + add);
                     resource.setHumanTime(TimeHelper.getCurrentSecond());
                 }

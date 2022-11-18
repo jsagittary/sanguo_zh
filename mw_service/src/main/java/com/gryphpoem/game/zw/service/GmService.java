@@ -1243,25 +1243,25 @@ public class GmService {
                 building.setTech(lv);
                 break;
             case BuildingType.STOREHOUSE:
-                building.setWare(lv);
+                building.setStoreHouse(lv);
                 break;
             case BuildingType.WALL:
                 building.setWall(lv);
                 break;
             case BuildingType.WAR_COLLEGE:
-                building.setCollege(lv);
+                building.setWarCollege(lv);
                 break;
             case BuildingType.WAR_FACTORY:
-                building.setWar(lv);
+                building.setWarFactory(lv);
                 break;
-            case BuildingType.REMAKE:
-                building.setRefit(lv);
+            case BuildingType.REMAKE_WEAPON_HOUSE:
+                building.setRemakeWeaponHouse(lv);
                 break;
-            case BuildingType.ORDNANCE_FACTORY:
-                building.setMunition(lv);
+            case BuildingType.MAKE_WEAPON_HOUSE:
+                building.setMakeWeaponHouse(lv);
                 break;
-            case BuildingType.CHEMICAL_PLANT:
-                building.setChemical(lv);
+            case BuildingType.FERRY:
+                building.setFerry(lv);
                 break;
             case BuildingType.FACTORY_1:
                 building.setFactory1(lv);
@@ -1273,19 +1273,19 @@ public class GmService {
                 building.setFactory3(lv);
                 break;
             case BuildingType.TRAIN_FACTORY_1:
-                building.setTrain(lv);
+                building.setTrainFactory1(lv);
                 break;
             case BuildingType.TRAIN_FACTORY_2:
                 building.setTrain2(lv);
                 break;
             case BuildingType.TRADE_CENTRE:
-                building.setTrade(lv);
+                building.setTradeCentre(lv);
                 break;
-            case BuildingType.CLUB:
-                building.setClub(lv);
+            case BuildingType.MALL:
+                building.setMall(lv);
                 break;
             case BuildingType.AIR_BASE:
-                building.setAir(lv);
+                building.setAirBase(lv);
                 break;
             case BuildingType.RES_OIL:
             case BuildingType.RES_ELE:

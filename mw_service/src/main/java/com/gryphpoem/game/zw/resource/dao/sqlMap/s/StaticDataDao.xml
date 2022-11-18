@@ -352,6 +352,8 @@
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
 		<result column="activateFight" property="activateFight"
 				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler" />
+		<result column="interior" property="interior"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler" />
 	</resultMap>
 
 	<select id="selectHeroMap" resultMap="heroMap">

@@ -103,9 +103,9 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
             delay = staticSimulatorStep.getDelay();
             if (CheckNull.nonEmpty(delay)) {
                 LifeSimulatorInfo delaySimulator = new LifeSimulatorInfo();
-                delaySimulator.setType(delay.get(1));
+                delaySimulator.setType(delay.get(1));// 延时后执行哪一个模拟器
                 delaySimulator.setPauseTime(TimeHelper.getCurrentDay());
-                delaySimulator.setDelay(delay.get(0));
+                delaySimulator.setDelay(delay.get(0));// 延时时间
                 DELAY_QUEUE.add(new LifeSimulatorDelayRun(delaySimulator, player));
             }
         }

@@ -120,7 +120,7 @@ public class EquipService implements GmCmdService {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-        buildingDataManager.checkBuildingIsCreate(BuildingType.ORDNANCE_FACTORY, player);
+        buildingDataManager.checkBuildingIsCreate(BuildingType.MAKE_WEAPON_HOUSE, player);
 
         // 检查装备id是否存在
         StaticEquip staticEquip = checkEquipConfig(roleId, equipId);
@@ -233,7 +233,7 @@ public class EquipService implements GmCmdService {
                     AwardFrom.EQUIP_SPEED, equipQue.getEquipId());
         } else {
             // 判断是否可以免费加速
-            Gains gains = player.gains.get(BuildingType.ORDNANCE_FACTORY);
+            Gains gains = player.gains.get(BuildingType.MAKE_WEAPON_HOUSE);
             if (gains == null || gains.getEndTime() < TimeHelper.getCurrentSecond() || equipQue.getFreeCnt() > 0
                     || gains.getId() == equipQue.getEmployeId()) {
                 throw new MwException(GameError.PARAM_ERROR.getCode(),
@@ -568,7 +568,7 @@ public class EquipService implements GmCmdService {
      */
     public EquipBaptizeRs equipBaptize(Long roleId, int keyId, boolean useGold, boolean superGold) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        buildingDataManager.checkBuildingIsCreate(BuildingType.REMAKE, player);
+        buildingDataManager.checkBuildingIsCreate(BuildingType.REMAKE_WEAPON_HOUSE, player);
         Equip equip = player.equips.get(keyId);
         if (equip == null) {
             throw new MwException(GameError.EQUIP_NOT_FOUND.getCode(), "没有这个装备, roleId:", roleId, ", keyId:", keyId);

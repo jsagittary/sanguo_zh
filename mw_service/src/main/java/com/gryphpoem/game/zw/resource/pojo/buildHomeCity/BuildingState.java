@@ -44,6 +44,12 @@ public class BuildingState {
      */
     private List<Integer> curProductCrop = new ArrayList<>();
 
+    private int buildingLv;
+
+    private int buildingType;
+
+    private int residentTopLimit;
+
     public int getBuildingId() {
         return buildingId;
     }
@@ -92,6 +98,30 @@ public class BuildingState {
         this.curProductCrop = curProductCrop;
     }
 
+    public int getBuildingLv() {
+        return buildingLv;
+    }
+
+    public void setBuildingLv(int buildingLv) {
+        this.buildingLv = buildingLv;
+    }
+
+    public int getBuildingType() {
+        return buildingType;
+    }
+
+    public void setBuildingType(int buildingType) {
+        this.buildingType = buildingType;
+    }
+
+    public int getResidentTopLimit() {
+        return residentTopLimit;
+    }
+
+    public void setResidentTopLimit(int residentTopLimit) {
+        this.residentTopLimit = residentTopLimit;
+    }
+
     public BuildingState() {
     }
 
@@ -111,6 +141,8 @@ public class BuildingState {
         this.curProductCrop.add(economicCropInfo.getCropId());
         this.curProductCrop.add(economicCropInfo.getStartTime());
         this.curProductCrop.add(economicCropInfo.getEndTime());
+        this.buildingLv = pb.getBuildingLv();
+        this.buildingType = pb.getBuildingType();
     }
 
     public CommonPb.BuildingState creatPb() {
@@ -126,6 +158,8 @@ public class BuildingState {
             economicCropInfo.setStartTime(this.curProductCrop.get(1));
             economicCropInfo.setEndTime(this.curProductCrop.get(2));
         }
+        pb.setBuildingLv(this.buildingLv);
+        pb.setBuildingType(this.buildingType);
 
         return pb.build();
     }

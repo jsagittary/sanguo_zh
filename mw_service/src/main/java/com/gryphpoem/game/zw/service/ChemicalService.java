@@ -73,7 +73,7 @@ public class ChemicalService {
     public GetChemicalRs getChemical(long roleId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if (player.building.getChemical() < 1) {
+        if (player.building.getFerry() < 1) {
             throw new MwException(GameError.BUILDING_NOT_CREATE.getCode(), "roleId:", roleId, "化工厂还未建造");
         }
         GetChemicalRs.Builder builder = GetChemicalRs.newBuilder();
@@ -129,9 +129,9 @@ public class ChemicalService {
     public ChemicalRecruitRs chemicalRecruit(long roleId, int pos, int id, int itemId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        buildingDataManager.checkBuildingIsCreate(BuildingType.CHEMICAL_PLANT, player);
+        buildingDataManager.checkBuildingIsCreate(BuildingType.FERRY, player);
         // 检查建筑是否在升级
-        if (buildingDataManager.checkBuildIsUpping(player, BuildingType.CHEMICAL_PLANT)) {
+        if (buildingDataManager.checkBuildIsUpping(player, BuildingType.FERRY)) {
             throw new MwException(GameError.BUILD_IS_UPPING.getCode(), "roleId:", roleId, " 当前建筑正在升级");
         }
         Chemical chemical = player.chemical;
@@ -250,9 +250,9 @@ public class ChemicalService {
      * @return
      */
     private int getMaxPos(Player player, StaticChemicalExpand chemicalExpand) {
-        StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(BuildingType.CHEMICAL_PLANT);
+        StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(BuildingType.FERRY);
         int maxNum = StaticBuildingDataMgr.getMaxChemicalNum() + sBuildingInit.getMaxLv();
-        int seasonTalentBuff = chemicalExpand.getNum() + player.building.getChemical() + DataResource.getBean(SeasonTalentService.class).
+        int seasonTalentBuff = chemicalExpand.getNum() + player.building.getFerry() + DataResource.getBean(SeasonTalentService.class).
                 getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_618);
         return seasonTalentBuff >= maxNum ? maxNum : seasonTalentBuff;
     }
@@ -390,7 +390,7 @@ public class ChemicalService {
     public ChemicalExpandRs chemicalExpand(long roleId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        buildingDataManager.checkBuildingIsCreate(BuildingType.CHEMICAL_PLANT, player);
+        buildingDataManager.checkBuildingIsCreate(BuildingType.FERRY, player);
         Chemical chemical = player.chemical;
         if (chemical == null) {
             chemical = new Chemical();

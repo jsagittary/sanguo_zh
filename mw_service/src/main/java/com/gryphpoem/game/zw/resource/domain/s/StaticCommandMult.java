@@ -144,7 +144,7 @@ public class StaticCommandMult {
                 int techSpeedTime = (speedTime + (DataResource.getBean(SeasonTalentService.class).
                         getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_616)));
                 return techSpeedTime;
-            case BuildingType.ORDNANCE_FACTORY:
+            case BuildingType.MAKE_WEAPON_HOUSE:
                 int factorySpeedTime = (speedTime + (DataResource.getBean(SeasonTalentService.class).
                         getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_617)));
                 // VIP特权减少打造时间

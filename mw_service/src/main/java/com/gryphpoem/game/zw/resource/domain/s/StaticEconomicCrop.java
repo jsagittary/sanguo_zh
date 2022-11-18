@@ -40,6 +40,16 @@ public class StaticEconomicCrop {
      */
     private int maxCnt;
 
+    /**
+     * 作物品质，仅用于订单判断
+     */
+    private int quality;
+
+    /**
+     * 可解锁的玩家等级，仅用于订单判断
+     */
+    private int lordLv;
+
     public int getId() {
         return id;
     }
@@ -94,5 +104,21 @@ public class StaticEconomicCrop {
 
     public void setMaxCnt(int maxCnt) {
         this.maxCnt = maxCnt;
+    }
+
+    public int getQuality() {
+        return quality;
+    }
+
+    public void setQuality(int quality) {
+        this.quality = quality;
+    }
+
+    public int getLordLv() {
+        return lordLv;
+    }
+
+    public void setLordLv(int lordLv) {
+        this.lordLv = lordLv;
     }
 }

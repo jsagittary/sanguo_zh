@@ -31,6 +31,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticFishShop;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishattribute;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishing;
 import com.gryphpoem.game.zw.resource.domain.s.StaticFishingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFoundationBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticGeneration;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyAttr;
@@ -483,4 +484,11 @@ public interface StaticIniMapper {
             @Result(column = "effective", property = "effective", typeHandler = ListListTypeHandler.class)
     })
     List<StaticHappiness> selectStaticHappinessList();
+
+    @Select("select * from s_foundation_buff")
+    @Results({
+            @Result(column = "buildType", property = "buildType", typeHandler = ListIntTypeHandler.class)
+    })
+    @MapKey("landType")
+    Map<Integer, StaticFoundationBuff> selectStaticFoundationBuffMap();
 }

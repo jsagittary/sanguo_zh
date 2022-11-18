@@ -66,16 +66,27 @@ public class BuildingDataManager {
             buildingState.setBuildingId(buildingInit.getBuildingId());
             buildingData.put(buildingInit.getBuildingId(), buildingState);
             if (isResType(buildingInit.getBuildingType())) {
-                // Map<Integer, Mill> millMap = new HashMap<>();
-                // millMap.put(buildingInit.getBuildingType(),
-                // new Mill(buildingInit.getBuildingId(), buildingInit.getBuildingType(),
-                // buildingInit.getInitLv()));
                 player.mills.put(buildingInit.getBuildingId(), new Mill(buildingInit.getBuildingId(),
                         buildingInit.getBuildingType(), buildingInit.getInitLv(), 0));
             } else {
                 switch (buildingInit.getBuildingType()) {
                     case BuildingType.COMMAND:
                         building.setCommand(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.WALL:
+                        building.setWall(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.TECH:
+                        building.setTech(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.STOREHOUSE:
+                        building.setStoreHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.MALL:
+                        building.setMall(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.REMAKE_WEAPON_HOUSE:
+                        building.setRemakeWeaponHouse(buildingInit.getInitLv());
                         break;
                     case BuildingType.FACTORY_1:
                         building.setFactory1(buildingInit.getInitLv());
@@ -86,44 +97,50 @@ public class BuildingDataManager {
                     case BuildingType.FACTORY_3:
                         building.setFactory3(buildingInit.getInitLv());
                         break;
-                    case BuildingType.TECH:
-                        building.setTech(buildingInit.getInitLv());
+                    case BuildingType.FERRY:
+                        building.setFerry(buildingInit.getInitLv());
                         break;
-                    case BuildingType.WAR_FACTORY:
-                        building.setWar(buildingInit.getInitLv());
-                        break;
-                    case BuildingType.STOREHOUSE:
-                        building.setWare(buildingInit.getInitLv());
+                    case BuildingType.MAKE_WEAPON_HOUSE:
+                        building.setMakeWeaponHouse(buildingInit.getInitLv());
                         break;
                     case BuildingType.WAR_COLLEGE:
-                        building.setCollege(buildingInit.getInitLv());
-                        break;
-                    case BuildingType.REMAKE:
-                        building.setRefit(buildingInit.getInitLv());
-                        break;
-                    case BuildingType.ORDNANCE_FACTORY:
-                        building.setMunition(buildingInit.getInitLv());
-                        break;
-                    case BuildingType.CHEMICAL_PLANT:
-                        building.setChemical(buildingInit.getInitLv());
-                        break;
-                    case BuildingType.WALL:
-                        building.setWall(buildingInit.getInitLv());
+                        building.setWarCollege(buildingInit.getInitLv());
                         break;
                     case BuildingType.TRADE_CENTRE:
-                        building.setTrade(buildingInit.getInitLv());
+                        building.setTradeCentre(buildingInit.getInitLv());
                         break;
-                    case BuildingType.CLUB:
-                        building.setClub(buildingInit.getInitLv());
+                    case BuildingType.WAR_FACTORY:
+                        building.setWarFactory(buildingInit.getInitLv());
                         break;
                     case BuildingType.TRAIN_FACTORY_1:
-                        building.setTrain(buildingInit.getInitLv());
+                        building.setTrainFactory1(buildingInit.getInitLv());
                         break;
                     case BuildingType.TRAIN_FACTORY_2:
                         building.setTrain2(buildingInit.getInitLv());
                         break;
                     case BuildingType.AIR_BASE:
-                        building.setAir(buildingInit.getInitLv());
+                        building.setAirBase(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.SEASON_TREASURY:
+                        building.setSeasonTreasury(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.CIA:
+                        building.setCia(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.SMALL_GAME_HOUSE:
+                        building.setSmallGameHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.DRAW_HERO_HOUSE:
+                        building.setDrawHeroHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.SUPER_EQUIP_HOUSE:
+                        building.setSuperEquipHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.STATUTE:
+                        building.setSuperEquipHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.MEDAL_HOUSE:
+                        building.setSuperEquipHouse(buildingInit.getInitLv());
                         break;
                     default:
                         break;
@@ -167,40 +184,40 @@ public class BuildingDataManager {
                     building.setTech(buildingInit.getInitLv());
                     break;
                 case BuildingType.WAR_FACTORY:
-                    building.setWar(buildingInit.getInitLv());
+                    building.setWarFactory(buildingInit.getInitLv());
                     break;
                 case BuildingType.STOREHOUSE:
-                    building.setWare(buildingInit.getInitLv());
+                    building.setStoreHouse(buildingInit.getInitLv());
                     break;
                 case BuildingType.WAR_COLLEGE:
-                    building.setCollege(buildingInit.getInitLv());
+                    building.setWarCollege(buildingInit.getInitLv());
                     break;
-                case BuildingType.REMAKE:
-                    building.setRefit(buildingInit.getInitLv());
+                case BuildingType.REMAKE_WEAPON_HOUSE:
+                    building.setRemakeWeaponHouse(buildingInit.getInitLv());
                     break;
-                case BuildingType.ORDNANCE_FACTORY:
-                    building.setMunition(buildingInit.getInitLv());
+                case BuildingType.MAKE_WEAPON_HOUSE:
+                    building.setMakeWeaponHouse(buildingInit.getInitLv());
                     break;
-                case BuildingType.CHEMICAL_PLANT:
-                    building.setChemical(buildingInit.getInitLv());
+                case BuildingType.FERRY:
+                    building.setFerry(buildingInit.getInitLv());
                     break;
                 case BuildingType.WALL:
                     building.setWall(buildingInit.getInitLv());
                     break;
                 case BuildingType.TRADE_CENTRE:
-                    building.setTrade(buildingInit.getInitLv());
+                    building.setTradeCentre(buildingInit.getInitLv());
                     break;
-                case BuildingType.CLUB:
-                    building.setClub(buildingInit.getInitLv());
+                case BuildingType.MALL:
+                    building.setMall(buildingInit.getInitLv());
                     break;
                 case BuildingType.TRAIN_FACTORY_1:
-                    building.setTrain(buildingInit.getInitLv());
+                    building.setTrainFactory1(buildingInit.getInitLv());
                     break;
                 case BuildingType.TRAIN_FACTORY_2:
                     building.setTrain2(buildingInit.getInitLv());
                     break;
                 case BuildingType.AIR_BASE:
-                    building.setAir(buildingInit.getInitLv());
+                    building.setAirBase(buildingInit.getInitLv());
                     break;
                 default:
                     break;
@@ -295,25 +312,25 @@ public class BuildingDataManager {
             case BuildingType.TECH:
                 return building.getTech();
             case BuildingType.WAR_FACTORY:
-                return building.getWar();
+                return building.getWarFactory();
             case BuildingType.STOREHOUSE:
-                return building.getWare();
-            case BuildingType.REMAKE:
-                return building.getRefit();
-            case BuildingType.ORDNANCE_FACTORY:
-                return building.getMunition();
-            case BuildingType.CHEMICAL_PLANT:
-                return building.getChemical();
+                return building.getStoreHouse();
+            case BuildingType.REMAKE_WEAPON_HOUSE:
+                return building.getRemakeWeaponHouse();
+            case BuildingType.MAKE_WEAPON_HOUSE:
+                return building.getMakeWeaponHouse();
+            case BuildingType.FERRY:
+                return building.getFerry();
             case BuildingType.WAR_COLLEGE:
-                return building.getCollege();
+                return building.getWarCollege();
             case BuildingType.WALL:
                 return building.getWall();
             case BuildingType.TRAIN_FACTORY_1:
-                return building.getTrain();
+                return building.getTrainFactory1();
             case BuildingType.TRAIN_FACTORY_2:
                 return building.getTrain2();
             case BuildingType.TRADE_CENTRE:
-                return building.getTrade();
+                return building.getTradeCentre();
             case BuildingType.FACTORY_1:
                 return building.getFactory1();
             case BuildingType.FACTORY_2:
@@ -321,7 +338,7 @@ public class BuildingDataManager {
             case BuildingType.FACTORY_3:
                 return building.getFactory3();
             case BuildingType.AIR_BASE:
-                return building.getAir();
+                return building.getAirBase();
             default:
                 return 0;
         }
@@ -388,17 +405,17 @@ public class BuildingDataManager {
                 case BuildingType.TECH:
                     return building.getTech() < needBuildingLv.get(2).intValue();
                 case BuildingType.WAR_FACTORY:
-                    return building.getWar() < needBuildingLv.get(2).intValue();
+                    return building.getWarFactory() < needBuildingLv.get(2).intValue();
                 case BuildingType.STOREHOUSE:
-                    return building.getWare() < needBuildingLv.get(2).intValue();
+                    return building.getStoreHouse() < needBuildingLv.get(2).intValue();
                 case BuildingType.WAR_COLLEGE:
-                    return building.getCollege() < needBuildingLv.get(2).intValue();
-                case BuildingType.REMAKE:
-                    return building.getRefit() < needBuildingLv.get(2).intValue();
-                case BuildingType.ORDNANCE_FACTORY:
-                    return building.getMunition() < needBuildingLv.get(2).intValue();
-                case BuildingType.CHEMICAL_PLANT:
-                    return building.getChemical() < needBuildingLv.get(2).intValue();
+                    return building.getWarCollege() < needBuildingLv.get(2).intValue();
+                case BuildingType.REMAKE_WEAPON_HOUSE:
+                    return building.getRemakeWeaponHouse() < needBuildingLv.get(2).intValue();
+                case BuildingType.MAKE_WEAPON_HOUSE:
+                    return building.getMakeWeaponHouse() < needBuildingLv.get(2).intValue();
+                case BuildingType.FERRY:
+                    return building.getFerry() < needBuildingLv.get(2).intValue();
                 case BuildingType.WALL:
                     return building.getWall() < needBuildingLv.get(2).intValue();
                 case BuildingType.FACTORY_1:
@@ -408,13 +425,13 @@ public class BuildingDataManager {
                 case BuildingType.FACTORY_3:
                     return building.getFactory3() < needBuildingLv.get(2).intValue();
                 case BuildingType.TRAIN_FACTORY_1:
-                    return building.getTrain() < needBuildingLv.get(2).intValue();
+                    return building.getTrainFactory1() < needBuildingLv.get(2).intValue();
                 case BuildingType.TRAIN_FACTORY_2:
                     return building.getTrain2() < needBuildingLv.get(2).intValue();
-                case BuildingType.CLUB:
-                    return building.getClub() < needBuildingLv.get(2).intValue();
+                case BuildingType.MALL:
+                    return building.getMall() < needBuildingLv.get(2).intValue();
                 case BuildingType.AIR_BASE:
-                    return building.getAir() < needBuildingLv.get(2).intValue();
+                    return building.getAirBase() < needBuildingLv.get(2).intValue();
                 default:
                     break;
             }
@@ -737,7 +754,7 @@ public class BuildingDataManager {
      * @param player
      */
     public void addHumanPerSecond(Player player) {
-        if (checkBuildingLock(player, BuildingType.CHEMICAL_PLANT)) {// 化工厂开启才生效
+        if (checkBuildingLock(player, BuildingType.FERRY)) {// 化工厂开启才生效
             Resource resource = player.resource;
             StaticBuildingLv buildingLv = StaticBuildingDataMgr.getStaticBuildingLevel(BuildingType.COMMAND,
                     player.building.getCommand());
@@ -1050,12 +1067,12 @@ public class BuildingDataManager {
         // 人口（损失总数的一半，对方只获得三分之一）
         long human = defRes.getHuman();
         int loseHuman = (int) (human / 2);
-        if (loseHuman > 0 && checkBuildingLock(def, BuildingType.CHEMICAL_PLANT)) {// 检测防守方的化工厂是否解锁
+        if (loseHuman > 0 && checkBuildingLock(def, BuildingType.FERRY)) {// 检测防守方的化工厂是否解锁
             rewardDataManager.subResource(def, AwardType.Resource.HUMAN, loseHuman, AwardFrom.FIGHT_DEF);// , "被掠夺"
             loseList.add(Award.newBuilder().setType(AwardType.RESOURCE).setId(AwardType.Resource.HUMAN)
                     .setCount(loseHuman).build());
             int gain = (int) (human / 3);
-            if (gain > 0 && checkBuildingLock(atk, BuildingType.CHEMICAL_PLANT)) {// 判断攻击方是否开启化工厂
+            if (gain > 0 && checkBuildingLock(atk, BuildingType.FERRY)) {// 判断攻击方是否开启化工厂
                 list.add(Award.newBuilder().setType(AwardType.RESOURCE).setId(AwardType.Resource.HUMAN).setCount(gain)
                         .build());
             }
@@ -1143,7 +1160,7 @@ public class BuildingDataManager {
         // 人口（损失总数的一半，对方只获得三分之一）
         long human = defRes.getHuman();
         int loseHuman = (int) (human / 2);
-        if (loseHuman > 0 && checkBuildingLock(def, BuildingType.CHEMICAL_PLANT)) {// 检测防守方的化工厂是否解锁
+        if (loseHuman > 0 && checkBuildingLock(def, BuildingType.FERRY)) {// 检测防守方的化工厂是否解锁
             rewardDataManager.subResource(def, AwardType.Resource.HUMAN, loseHuman, AwardFrom.FIGHT_DEF);// , "被掠夺"
             int gain = (int) (human / 3);
             if (gain > 0 && unlockChemicalPlant) {// 判断攻击方是否开启化工厂

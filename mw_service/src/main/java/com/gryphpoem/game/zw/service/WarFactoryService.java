@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
 
     public ComandoHeroSetRs commandoHeroSet(long roleId, int pos, int heroId, int type, boolean swap, boolean swapPlane) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(3)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(3)) {
             // 内阁等级小于1级禁止开放
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
         }
@@ -250,7 +250,7 @@ import java.util.stream.Collectors;
      */
     public AcqHeroSetRs acqHeroSet(long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(0)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(0)) {
             // 内阁等级小于1级禁止开放
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
         }
@@ -459,10 +459,10 @@ import java.util.stream.Collectors;
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
         // 检测是否满足开启天策府
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(2)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(2)) {
             // 内阁等级小于3级禁止开发
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够  roleId:", roleId, " 等级:",
-                    player.building.getWar());
+                    player.building.getWarFactory());
         }
         if (null == player.cabinet) {
             // 进行初始化
@@ -507,10 +507,10 @@ import java.util.stream.Collectors;
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
         // 检测是否满足开启天策府
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(2)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(2)) {
             // 内阁等级小于3级禁止开放
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够 roleId:", roleId, " 等级:",
-                    player.building.getWar());
+                    player.building.getWarFactory());
         }
         if (null == player.cabinet) {
             throw new MwException(GameError.CABINET_PLAN_NOT_INIT.getCode(), "内阁天策府未初始化数据 roleId:", roleId);
@@ -616,7 +616,7 @@ import java.util.stream.Collectors;
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
         // 检测是否满足开启天策府
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(2)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(2)) {
             // 内阁等级小于3级禁止开放
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够 roleId:", roleId);
         }

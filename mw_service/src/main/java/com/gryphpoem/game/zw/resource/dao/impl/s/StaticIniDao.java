@@ -246,4 +246,8 @@ public class StaticIniDao extends BaseDao {
     public List<StaticHappiness> selectStaticHappinessList() {
         return getMapper(StaticIniMapper.class).selectStaticHappinessList();
     }
+
+    public Map<Integer, StaticFoundationBuff> selectStaticFoundationBuffMap() {
+        return getMapper(StaticIniMapper.class).selectStaticFoundationBuffMap();
+    }
 }

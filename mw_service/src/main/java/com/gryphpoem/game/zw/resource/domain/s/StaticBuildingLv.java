@@ -21,6 +21,7 @@ public class StaticBuildingLv {
     private List<Integer> resourceOut;// 本级一次征收的资源产量
     private List<List<Integer>> capacity;// 该级的容量或资源的每小时产出
     private List<List<Integer>> fixCost;// 修复消耗
+    private int resident; // 等级对应的居民上限
 
     public int getBuildingType() {
         return buildingType;
@@ -110,4 +111,11 @@ public class StaticBuildingLv {
         this.fixCost = fixCost;
     }
 
+    public int getResident() {
+        return resident;
+    }
+
+    public void setResident(int resident) {
+        this.resident = resident;
+    }
 }

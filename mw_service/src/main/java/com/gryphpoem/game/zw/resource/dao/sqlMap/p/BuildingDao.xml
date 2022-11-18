@@ -5,38 +5,47 @@
 <mapper namespace="BuildingDao">
 	<select id="selectBuilding" parameterType="Long" resultType="Building">
 		select
-		lordId,command,wall,tech,ware,club,refit,factory1,factory2,factory3,chemical,munition,college,trade,war,train,air,train2
+		lordId,command,wall,tech,storeHouse,mall,remakeWeaponHouse,factory1,factory2,factory3,ferry,makeWeaponHouse,warCollege,tradeCentre,
+		warFactory,trainFactory1,train2,airBase,seasonTreasury,cia,smallGameHouse,drawHeroHouse,superEquipHouse,statute,medalHouse
 		from p_building where lordId=#{lordId}
 	</select>
 
 	<update id="updateBuilding" parameterType="Building">
-		update p_building set
-		command=#{command},wall=#{wall},tech=#{tech},ware=#{ware},club=#{club},refit=#{refit},factory1=#{factory1},
-		factory2=#{factory2},factory3=#{factory3},chemical=#{chemical},munition=#{munition},college=#{college},trade=#{trade}
-		,war=#{war},train=#{train},air=#{air},train2=#{train2}
+		update p_building set		command=#{command},wall=#{wall},tech=#{tech},storeHouse=#{storeHouse},mall=#{mall},remakeWeaponHouse=#{remakeWeaponHouse},
+		factory1=#{factory1},factory2=#{factory2},factory3=#{factory3},ferry=#{ferry},makeWeaponHouse=#{makeWeaponHouse},
+		warCollege=#{warCollege},tradeCentre=#{tradeCentre},warFactory=#{warFactory},trainFactory1=#{trainFactory1},train2=#{train2},
+	    airBase=#{airBase},seasonTreasury=#{seasonTreasury},cia=#{cia},smallGameHouse=#{smallGameHouse},drawHeroHouse=#{drawHeroHouse},
+		superEquipHouse=#{superEquipHouse},statute=#{statute},medalHouse=#{medalHouse}
 		where lordId=#{lordId}
 	</update>
 	
 	<insert id="replaceBuilding" parameterType="Building">
 		replace into p_building set
-		lordId=#{lordId},command=#{command},wall=#{wall},tech=#{tech},ware=#{ware},club=#{club},refit=#{refit},factory1=#{factory1},
-		factory2=#{factory2},factory3=#{factory3},chemical=#{chemical},munition=#{munition},college=#{college},trade=#{trade}
-		,war=#{war},train=#{train},air=#{air},train2=#{train2}
-		  
+		lordId=#{lordId},command=#{command},wall=#{wall},tech=#{tech},storeHouse=#{storeHouse},mall=#{mall},remakeWeaponHouse=#{remakeWeaponHouse},
+		factory1=#{factory1},factory2=#{factory2},factory3=#{factory3},ferry=#{ferry},makeWeaponHouse=#{makeWeaponHouse},
+		warCollege=#{warCollege},tradeCentre=#{tradeCentre},warFactory=#{warFactory},trainFactory1=#{trainFactory1},train2=#{train2},
+		airBase=#{airBase},seasonTreasury=#{seasonTreasury},cia=#{cia},smallGameHouse=#{smallGameHouse},drawHeroHouse=#{drawHeroHouse},
+		superEquipHouse=#{superEquipHouse},statute=#{statute},medalHouse=#{medalHouse}
 	</insert>
 
 	<insert id="insertBuilding" parameterType="Building">
-		insert into
-		p_building(lordId,command,wall,tech,ware,club,refit,factory1,factory2,factory3,chemical,munition,college,trade,war,train,air,train2)
-		values(#{lordId},#{command},#{wall},#{tech},#{ware},#{club},#{refit},#{factory1},#{factory2},#{factory3},#{chemical},#{munition},#{college},
-		#{trade},#{war},#{train},#{air},#{train2})
+		insert into p_building
+		    (lordId,command,wall,tech,storeHouse,mall,remakeWeaponHouse,factory1,factory2,factory3,ferry,makeWeaponHouse,warCollege,tradeCentre,
+			 warFactory,trainFactory1,train2,airBase,seasonTreasury,cia,smallGameHouse,drawHeroHouse,superEquipHouse,statute,medalHouse)
+		values
+		    (#{lordId},#{command},#{wall},#{tech},#{storeHouse},#{mall},#{remakeWeaponHouse}, #{factory1},#{factory2},#{factory3},
+		     #{ferry},#{makeWeaponHouse},#{warCollege},#{tradeCentre},#{warFactory},#{trainFactory1},#{train2},#{airBase},#{seasonTreasury},
+		     #{cia},#{smallGameHouse},#{drawHeroHouse},#{superEquipHouse},#{statute},#{medalHouse})
 	</insert>
 
 	<select id="load" parameterType="Map" resultType="Building">
 		select
-		lordId,command,wall,tech,ware,club,refit,factory1,factory2,factory3,chemical,munition,college,trade,war,train,air,train2
+			lordId,command,wall,tech,storeHouse,mall,remakeWeaponHouse,factory1,factory2,factory3,ferry,makeWeaponHouse,warCollege,tradeCentre,
+			warFactory,trainFactory1,train2,airBase,seasonTreasury,cia,smallGameHouse,drawHeroHouse,superEquipHouse,statute,medalHouse
 		from
-		p_building where lordId > #{curIndex} order by lordId limit 0,#{count}
+			p_building
+		where lordId > #{curIndex}
+		order by lordId limit 0,#{count}
 	</select>
 
 </mapper>

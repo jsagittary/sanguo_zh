@@ -197,7 +197,7 @@ public class StaticBuildingDataMgr {
      */
     public static List<Integer> getBobmConf() {
         List<Integer> propConf = null;
-        StaticBuildingLv sl = StaticBuildingDataMgr.getStaticBuildingLevel(BuildingType.NUCLEAR_BOMB, 1);
+        StaticBuildingLv sl = StaticBuildingDataMgr.getStaticBuildingLevel(BuildingType.SMALL_GAME_HOUSE, 1);
         List<List<Integer>> capacity = sl.getCapacity();
         if (!CheckNull.isEmpty(capacity)) {
             propConf = capacity.get(0);

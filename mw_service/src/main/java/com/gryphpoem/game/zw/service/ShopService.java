@@ -132,7 +132,7 @@ public class ShopService {
         if (staticShop == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(), "商品购买时，找不到配置, roleId:" + roleId + ",id=" + id);
         }
-        if (id == ShopId.shop_id_7 && player.building.getChemical() < 1) {// 有化工厂才能买人口
+        if (id == ShopId.shop_id_7 && player.building.getFerry() < 1) {// 有化工厂才能买人口
             throw new MwException(GameError.BUILDING_NOT_CREATE.getCode(), "roleId:", roleId, "化工厂还未建造");
         }
         refreshShop(player);

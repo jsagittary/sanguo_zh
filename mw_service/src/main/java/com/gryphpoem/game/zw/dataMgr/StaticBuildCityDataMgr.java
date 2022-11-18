@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicCrop;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicOrder;
+import com.gryphpoem.game.zw.resource.domain.s.StaticFoundationBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 城建开荒配置
@@ -42,7 +44,9 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
     private static Map<Integer, List<Integer>> cellFoundationMap; // 格子对应可解锁的地基
     private static List<StaticEconomicOrder> staticEconomicOrderList; // 经济订单
     private static List<StaticEconomicCrop> staticEconomicCropList; // 经济作物
+    private static Map<Integer, List<Integer>> staticEconomicCropMapByQuality; // 经济作物, key-作物档位, value-作物的propId
     private static List<StaticHappiness> staticHappinessList; // 幸福度
+    private static Map<Integer, StaticFoundationBuff> staticFoundationBuffMap; // 地貌buff, key-地貌类型，对应s_foundation_buff的landType
 
     @Override
     public void load() {
@@ -69,7 +73,13 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         }
         staticEconomicOrderList = staticIniDao.selectStaticEconomicOrderList();
         staticEconomicCropList = staticIniDao.selectStaticEconomicCropList();
+        staticEconomicCropMapByQuality = new HashMap<>();
+        for (StaticEconomicCrop sEconomicCrop : staticEconomicCropList) {
+            List<Integer> bmap = staticEconomicCropMapByQuality.computeIfAbsent(sEconomicCrop.getQuality(), k -> new ArrayList<>());
+            bmap.add(sEconomicCrop.getPropId());
+        }
         staticHappinessList = staticIniDao.selectStaticHappinessList();
+        staticFoundationBuffMap = staticIniDao.selectStaticFoundationBuffMap();
     }
 
     @Override
@@ -87,6 +97,23 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
 
     public static StaticEconomicCrop getStaticEconomicCropByPropId(int propId) {
         return staticEconomicCropList.stream().filter(p -> Objects.equals(p.getPropId(), propId)).findFirst().orElse(null);
+    }
+
+    /**
+     * 获取玩家可解锁但不一定解锁了的经济作物
+     *
+     * @param lordLv
+     * @return
+     */
+    public static List<Integer> getCanUnlockEconomicCropIds(int lordLv) {
+        return staticEconomicCropList.stream()
+                .filter(p -> p.getLordLv() <= lordLv)
+                .map(StaticEconomicCrop::getPropId)
+                .collect(Collectors.toList());
+    }
+
+    public static List<Integer> getEconomicCropIdsByQuality(int quality) {
+        return staticEconomicCropMapByQuality.get(quality);
     }
 
     public static List<StaticHomeCityFoundation> getStaticHomeCityFoundationList() {

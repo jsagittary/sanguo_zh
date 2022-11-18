@@ -55,8 +55,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
     private WorldDataManager worldDataManager;
 
     /**
-     * 获取玩家经济订单信息 <br>
-     * TODO 理论上不需要此协议, 集市一旦解锁, 就会开始刷新经济订单, 并向客户端同步
+     * 获取玩家经济订单信息
      *
      * @param roleId
      * @return
@@ -65,10 +64,17 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         // 校验玩家集市是否解锁
 
-        randomNewPreOrder(player, 2);
-        synEconomicOrderChange(player);
-
+        randomNewPreOrder(player);
         GamePb1.GetEconomicOrderRs.Builder builder = GamePb1.GetEconomicOrderRs.newBuilder();
+        Map<Integer, EconomicOrder> canSubmitOrderData = player.getCanSubmitOrderData();
+        Map<Integer, EconomicOrder> preDisplayOrderData = player.getPreDisplayOrderData();
+        for (EconomicOrder economicOrder : canSubmitOrderData.values()) {
+            builder.addCanSubmitOrder(economicOrder.createPb());
+        }
+        for (EconomicOrder economicOrder : preDisplayOrderData.values()) {
+            builder.addPreDisPlayOrder(economicOrder.createPb());
+        }
+
         return builder.build();
     }
 
@@ -90,7 +96,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
 
         EconomicOrder economicOrder = canSubmitOrderData.get(keyId);
         int endTime = economicOrder.getEndTime();
-        if (TimeHelper.getCurrentSecond() < endTime) {
+        if (TimeHelper.getCurrentSecond() > endTime) {
             throw new MwException(GameError.PARAM_ERROR, String.format("提交经济订单时, 该订单已过期, roleId:%s, orderKeyId:%s", roleId, keyId));
         }
         // 除集市外，来自别的城池的订单，如果被本国势力占领，会有额外加成
@@ -125,12 +131,8 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
 
         // 向玩家同步订单信息
         canSubmitOrderData.remove(keyId);
-        GamePb1.SynEconomicOrderRs.Builder synBuilder = GamePb1.SynEconomicOrderRs.newBuilder();
-        for (EconomicOrder tmp : canSubmitOrderData.values()) {
-            synBuilder.addCanSubmitOrder(tmp.createPb());
-        }
-        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynEconomicOrderRs.EXT_FIELD_NUMBER, GamePb1.SynEconomicOrderRs.ext, synBuilder.build());
-        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
+        randomNewPreOrder(player);
+        synEconomicOrderChange(player);
 
         return builder.build();
     }
@@ -140,20 +142,26 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
      *
      * @param player
      */
-    public void randomNewPreOrder(Player player, int randomCnt) {
+    public void randomNewPreOrder(Player player) {
         /**
          * 如果有预显示订单, 预显示时间结束后, 刷为可提交订单;
          * 如果没有预显示订单, 且有空余订单栏位置, 则随机新的预显示订单, 不论空余订单栏位置有多少, 最多刷新两个
          */
         Map<Integer, EconomicOrder> canSubmitOrderData = player.getCanSubmitOrderData();
-        Map<Integer, EconomicOrder> preDisplayOrder = player.getPreDisplayOrderData();
         int economicOrderMaxCnt = player.getEconomicOrderMaxCnt();
         int lordLv = player.lord.getLevel();
-        if (canSubmitOrderData.size() >= economicOrderMaxCnt || preDisplayOrder.size() >= 2) {
-            // 如果可提交的经济订单已达上限, 或者预显示订单已经有2个了, 则不随机新的订单
+        // 如果可提交的经济订单已达上限, 则不随机新的订单
+        if (canSubmitOrderData.size() >= economicOrderMaxCnt) {
+            return;
+        }
+        // 预显示订单已经有2个了, 则不随机新的订单
+        Map<Integer, EconomicOrder> preDisplayOrder = player.getPreDisplayOrderData();
+        if (preDisplayOrder.size() >= 2) {
             return;
         }
 
+        int randomCnt = 2 - preDisplayOrder.size();
+        List<Integer> canUnlockEconomicCropIds = StaticBuildCityDataMgr.getCanUnlockEconomicCropIds(player.lord.getLevel());
         // 随机新的预显示订单
         List<StaticEconomicOrder> staticEconomicOrderList = StaticBuildCityDataMgr.getStaticEconomicOrderList().stream()
                 .filter(tmp -> lordLv >= tmp.getNeedLordLv().get(0) && lordLv <= tmp.getNeedLordLv().get(1))
@@ -173,12 +181,12 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                 boolean hit = RandomHelper.isHitRangeIn10000(weight);
                 if (hit) {
                     Map<Integer, Integer> demandList = new HashMap<>(3);
-                    List<List<Integer>> orderDemand1 = sEconomicOrder.getOrderDemand1();// [[经济产物的道具id1，经济产物的道具id2],[数量下限，数量上限]]
-                    getEconomicOrderDemand(orderDemand1, orderId, demandList);
+                    List<List<Integer>> orderDemand1 = sEconomicOrder.getOrderDemand1();// [[作物档位1, 作物档位1],[数量下限，数量上限]]
+                    getEconomicOrderDemand(orderDemand1, orderId, demandList, canUnlockEconomicCropIds);
                     List<List<Integer>> orderDemand2 = sEconomicOrder.getOrderDemand2();
-                    getEconomicOrderDemand(orderDemand2, orderId, demandList);
+                    getEconomicOrderDemand(orderDemand2, orderId, demandList, canUnlockEconomicCropIds);
                     List<List<Integer>> orderDemand3 = sEconomicOrder.getOrderDemand3();
-                    getEconomicOrderDemand(orderDemand3, orderId, demandList);
+                    getEconomicOrderDemand(orderDemand3, orderId, demandList, canUnlockEconomicCropIds);
 
                     List<AwardItem> rewardList = new ArrayList<>();
                     List<List<Integer>> specialReward = sEconomicOrder.getSpecialReward();
@@ -206,26 +214,27 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                     economicOrder.setKeyId(keyId);
                     economicOrder.setOrderId(orderId);
                     economicOrder.setQuantity(sEconomicOrder.getQuantity());
-                    List<Integer> placeRange = sEconomicOrder.getPlace();
+                    List<Integer> placeRange = sEconomicOrder.getPlace(); // 订单来源处 [城池id]
                     if (CheckNull.isEmpty(placeRange)) {
                         throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 订单出处配置格式错误, orderId:%s", orderId));
                     }
                     Collections.shuffle(placeRange);
                     int place = 0;
                     List<Integer> openArea = worldDataManager.getOpenArea().stream().map(Area::getArea).collect(Collectors.toList());
-                    for (Integer areaId : placeRange) {
-                        // 如果订单来源处玩家未解锁, 则不可随机
-                        if (areaId != BuildingType.CLUB && !openArea.contains(areaId)) {
+                    for (Integer placeId : placeRange) {
+                        // TODO 如果订单来源城池所在区域未解锁, 则不可随机
+                        StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(placeId);
+                        if (placeId != BuildingType.MALL && !openArea.contains(staticCity.getArea())) {
                             continue;
                         }
-                        place = areaId;
+                        place = placeId;
                         break;
                     }
                     if (place == 0) {
                         throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 获取不到合法订单来源处, orderId:%s", orderId));
                     }
                     economicOrder.setPlace(place);
-                    if (place != BuildingType.CLUB) {
+                    if (place != BuildingType.MALL) {
                         // 来源非集市时, 判断其占领势力
                         StaticCity staticCity = StaticWorldDataMgr.getMaxTypeCityByArea(place);
                         City city = worldDataManager.getCityById(staticCity.getCityId());
@@ -239,8 +248,6 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                     economicOrder.setEndTime(now + sEconomicOrder.getPreDisplayTime() + sEconomicOrder.getDurationTime());
                     economicOrder.setOrderDemand(demandList);
                     economicOrder.setReward(rewardList);
-
-                    preDisplayOrder.put(keyId, economicOrder);
 
                     preDisplayOrder.put(keyId, economicOrder);
                     // 创建延时任务：检查玩家的预显示订单预显示时间是否结束, 如果结束, 则将其跟改为可提交的订单
@@ -268,7 +275,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
             DELAY_QUEUE.add(new RefreshEconomicOrderDelayRun(player, 2, keyId, economicOrder.getEndTime()));
 
             // 随机新的预显示订单
-            randomNewPreOrder(player, 1);
+            randomNewPreOrder(player);
         }
 
         if (type == 2) {
@@ -307,12 +314,13 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
      */
     public void getEconomicOrderDemand(List<List<Integer>> orderDemandConfig,
                                        int orderId,
-                                       Map<Integer, Integer> finalDemand) {
+                                       Map<Integer, Integer> finalDemand,
+                                       List<Integer> canUnlockEconomicCropIds) {
         if (CheckNull.isEmpty(orderDemandConfig) || orderDemandConfig.size() != 2) {
             throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 订单需求格式错误, orderId:%s", orderId));
         }
-        List<Integer> economicCropIdRange = orderDemandConfig.get(0);
-        if (CheckNull.isEmpty(economicCropIdRange)) {
+        List<Integer> cropQualityRange = orderDemandConfig.get(0);
+        if (CheckNull.isEmpty(cropQualityRange)) {
             throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 订单需求的经济作物id格式错误, orderId:%s", orderId));
         }
         List<Integer> economicCropNumRange = orderDemandConfig.get(1);
@@ -321,16 +329,24 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
         }
         // 获取需要的经济作物Id(不能重复)
         int finalEconomicCropId = 0;
-        Collections.shuffle(economicCropIdRange);
-        for (Integer economicId : economicCropIdRange) {
+        /*Collections.shuffle(cropQualityRange);
+        for (Integer economicId : cropQualityRange) {
             if (finalDemand.containsKey(economicId)) {
                 continue;
             }
             finalEconomicCropId = economicId;
+        }*/
+        Collections.shuffle(cropQualityRange);
+        List<Integer> cropIdsByQuality = StaticBuildCityDataMgr.getEconomicCropIdsByQuality(cropQualityRange.get(0));
+        List<Integer> intersection = canUnlockEconomicCropIds.stream().filter(cropIdsByQuality::contains).collect(Collectors.toList());
+        intersection.removeAll(finalDemand.keySet());
+        Collections.shuffle(intersection);
+        if (CheckNull.nonEmpty(intersection)) {
+            finalEconomicCropId = intersection.get(0);
         }
 
         if (finalEconomicCropId == 0) {
-            throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 订单需求的经济作物id格式错误, orderId:%s", orderId));
+            throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 未随机到合适的作物id, orderId:%s", orderId));
         }
 
         int economicCropNum = RandomHelper.randomInArea(economicCropNumRange.get(0), economicCropNumRange.get(1) + 1);

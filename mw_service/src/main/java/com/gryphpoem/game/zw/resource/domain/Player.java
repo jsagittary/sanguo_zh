@@ -985,6 +985,14 @@ public class Player {
         return residentData.get(0);
     }
 
+    public int getResidentTopLimit() {
+        return residentData.get(2);
+    }
+
+    public void addResidentTopLimit(int count) {
+        this.residentData.set(2, getResidentTopLimit() + count);
+    }
+
     public void addResidentTotalCnt(int count) {
         this.residentData.set(0, getResidentTotalCnt() + count);
     }
@@ -2448,6 +2456,22 @@ public class Player {
         if (CheckNull.nonEmpty(residentData)) {
             ser.addAllResidentData(residentData);
         }
+        // 幸福度
+        ser.setHappiness(happiness);
+        // 订单上限
+        ser.setEconomicOrderMaxCnt(economicOrderMaxCnt);
+        // 可提交订单信息
+        for (EconomicOrder order : canSubmitOrderData.values()) {
+            ser.addCanSubmitOrder(order.createPb());
+        }
+        // 预显示订单信息
+        for (EconomicOrder order : preDisplayOrderData.values()) {
+            ser.addPreDisPlayOrder(order.createPb());
+        }
+        // 安民济物记录
+        for (Entry<Integer, Long> e : peaceAndWelfareRecord.entrySet()) {
+            ser.addPeaceAndWelfareRecord(PbHelper.createIntLongPc(e.getKey(), e.getValue()));
+        }
 
         return ser.build().toByteArray();
     }
@@ -3102,14 +3126,41 @@ public class Player {
         // 居民信息
         if (CheckNull.nonEmpty(ser.getResidentDataList())) {
             this.residentData.clear();
-            this.residentData.add(0, ser.getResidentData(0));
-            this.residentData.add(1, ser.getResidentData(1));
-            this.residentData.add(2, ser.getResidentData(2));
+            this.residentData.add(0, ser.getResidentData(0));// 居民总数
+            this.residentData.add(1, ser.getResidentData(1));// 居民空闲数
+            this.residentData.add(2, ser.getResidentData(2));// 居民上限
         }
-        // // 探索对列
-        // Optional.ofNullable(ser.getExploreQueList()).ifPresent(tmp -> tmp.forEach(o -> this.exploreQue.put(o.getScoutIndex(), new ExploreQue(o))));
-        // // 开垦队列
-        // Optional.ofNullable(ser.getReclaimQueList()).ifPresent(tmp -> tmp.forEach(o -> this.reclaimQue.put(o.getIndex(), new ReclaimQue(o))));
+        // 幸福度
+        if (ser.hasHappiness()) {
+            this.happiness = ser.getHappiness();
+        } else {
+            // 兼容旧帐号
+            this.happiness = 50;
+        }
+        // 经济订单上限数
+        if (ser.hasEconomicOrderMaxCnt()) {
+            this.economicOrderMaxCnt = ser.getEconomicOrderMaxCnt();
+        } else {
+            // 兼容旧帐号
+            this.economicOrderMaxCnt = Constant.ORDER_INI_TOP_LIMIT;
+            for (Integer lordLv : Constant.ORDER_TOP_LIMIT_INCREASE_CONFIG) {
+                if (this.lord.getLevel() >= lordLv) {
+                    this.economicOrderMaxCnt++;
+                }
+            }
+        }
+        // 可提交订单信息
+        if (CheckNull.nonEmpty(ser.getCanSubmitOrderList())) {
+            ser.getCanSubmitOrderList().forEach(tmp -> this.canSubmitOrderData.put(tmp.getKeyId(), new EconomicOrder(tmp)));
+        }
+        // 预显示的订单信息
+        if (CheckNull.nonEmpty(ser.getPreDisPlayOrderList())) {
+            ser.getPreDisPlayOrderList().forEach(tmp -> this.preDisplayOrderData.put(tmp.getKeyId(), new EconomicOrder(tmp)));
+        }
+        // 安民济物记录
+        if (CheckNull.nonEmpty(ser.getPeaceAndWelfareRecordList())) {
+            ser.getPeaceAndWelfareRecordList().forEach(tmp -> this.peaceAndWelfareRecord.put(tmp.getV1(), tmp.getV2()));
+        }
     }
 
     private void dserTrophy(SerTrophy ser) {
