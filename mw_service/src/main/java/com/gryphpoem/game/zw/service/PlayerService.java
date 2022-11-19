@@ -487,6 +487,10 @@ public class PlayerService implements GmCmdService {
                         List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
                         finalCharacterFixList.addAll(characterFix);
                         List<List<Integer>> rewardList = sSimulatorChoose.getRewardList();
+                        boolean chooseRewardCheck = rewardList.stream().anyMatch(tmp -> tmp.size() != 4);
+                        if (chooseRewardCheck) {
+                            throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("模拟器选项奖励格式配置错误, roleId:%s, chooseId:%s", roleId, chooseId));
+                        }
                         List<Integer> portraitAward = rewardList.stream().filter(tmp -> tmp.size() == 4 && tmp.get(0) == AwardType.PORTRAIT).findFirst().orElse(null);
                         if (portraitAward != null) {
                             portrait = portraitAward.get(1); // 头像类型的奖励, 小类即其具体id, 对应s_portrait的id
@@ -583,10 +587,10 @@ public class PlayerService implements GmCmdService {
                         // 更新对应奖励变化
                         if (CheckNull.nonEmpty(finalRewardList)) {
                             for (List<Integer> reward : finalRewardList) {
-                                Integer awardType = reward.get(0);
-                                Integer awardId = reward.get(1);
-                                Integer awardCount = reward.get(2);
-                                Integer addOrSub = reward.get(3);
+                                int awardType = reward.get(0);
+                                int awardId = reward.get(1);
+                                int awardCount = reward.get(2);
+                                int addOrSub = reward.get(3);
                                 switch (addOrSub) {
                                     case 1:
                                         rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");

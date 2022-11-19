@@ -2,9 +2,8 @@ package com.gryphpoem.game.zw.resource.domain.p;
 
 /**
  * 建造队列
- * 
- * @author tyler
  *
+ * @author tyler
  */
 public class BuildQue {
     private int keyId;
@@ -18,10 +17,11 @@ public class BuildQue {
     private int fromType;// 队列的来源类型, 0 手动队列 , 1 自动建造队列  2 改建
     private int newType;// 改建后的type   fromType为2的时候才有值
     private int foundationId; // 初次建造时选择的地基id
+    private boolean isCreate; // 是否是建造
 
     /**
      * 是否有免费加速没有使用
-     * 
+     *
      * @return
      */
     public boolean haveFreeSpeed() {
@@ -120,12 +120,12 @@ public class BuildQue {
     }
 
     public int getNewType() {
-		return newType;
-	}
+        return newType;
+    }
 
-	public void setNewType(int newType) {
-		this.newType = newType;
-	}
+    public void setNewType(int newType) {
+        this.newType = newType;
+    }
 
     public int getFoundationId() {
         return foundationId;
@@ -135,9 +135,18 @@ public class BuildQue {
         this.foundationId = foundationId;
     }
 
+    public boolean getIsCreate() {
+        return isCreate;
+    }
+
+    public void setIsCreate(boolean create) {
+        isCreate = create;
+    }
+
     /**
      * @param keyId
-     * @param buildingId
+     * @param index
+     * @param buildingType
      * @param pos
      * @param period
      * @param endTime
@@ -154,9 +163,19 @@ public class BuildQue {
 
     @Override
     public String toString() {
-        return "BuildQue [keyId=" + keyId + ", index=" + index + ", buildingType=" + buildingType + ", pos=" + pos
-                + ", period=" + period + ", endTime=" + endTime + ", free=" + free + ", param=" + param + ", fromType="
-                + fromType + "]";
+        return "BuildQue{" +
+                "keyId=" + keyId +
+                ", index=" + index +
+                ", buildingType=" + buildingType +
+                ", pos=" + pos +
+                ", period=" + period +
+                ", endTime=" + endTime +
+                ", free=" + free +
+                ", param=" + param +
+                ", fromType=" + fromType +
+                ", newType=" + newType +
+                ", foundationId=" + foundationId +
+                ", isCreate=" + isCreate +
+                '}';
     }
-
 }

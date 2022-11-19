@@ -236,7 +236,7 @@ public class Player {
     public Common common;
 
     /**
-     * 建筑
+     * 非资源建筑等级信息
      */
     public Building building;
 
@@ -1024,6 +1024,11 @@ public class Player {
         return happiness;
     }
 
+    /**
+     * 记录玩家幸福度处于哪个档位, 方便幸福度值发生变化时, 判断是否需要更新对应的buff加成
+     */
+    public Map<Integer, List<Integer>> happinessRange;
+
     public void setHappiness(int happiness) {
         this.happiness = happiness;
     }
@@ -1045,7 +1050,7 @@ public class Player {
     }
 
     /**
-     * 建筑状态信息, key-建筑id
+     * 三国3新增建筑信息的统一存放地方, 不区分是不是资源建筑, key-建筑id
      */
     private Map<Integer, BuildingState> buildingData = new HashMap<>();
 
@@ -1112,7 +1117,15 @@ public class Player {
     /**
      * 安民济物记录, key-具体类型; value-最近一次记录时间(秒)
      */
-    private Map<Integer, Long> peaceAndWelfareRecord = new HashMap<>(2);
+    private Map<Integer, Integer> peaceAndWelfareRecord = new HashMap<Integer, Integer>(2);
+
+    public Map<Integer, Integer> getPeaceAndWelfareRecord() {
+        return peaceAndWelfareRecord;
+    }
+
+    public void setPeaceAndWelfareRecord(Map<Integer, Integer> peaceAndWelfareRecord) {
+        this.peaceAndWelfareRecord = peaceAndWelfareRecord;
+    }
 
     /**
      * 是否第一次打造宝具
@@ -2469,8 +2482,8 @@ public class Player {
             ser.addPreDisPlayOrder(order.createPb());
         }
         // 安民济物记录
-        for (Entry<Integer, Long> e : peaceAndWelfareRecord.entrySet()) {
-            ser.addPeaceAndWelfareRecord(PbHelper.createIntLongPc(e.getKey(), e.getValue()));
+        for (Entry<Integer, Integer> e : peaceAndWelfareRecord.entrySet()) {
+            ser.addPeaceAndWelfareRecord(PbHelper.createTwoIntPb(e.getKey(), e.getValue()));
         }
 
         return ser.build().toByteArray();

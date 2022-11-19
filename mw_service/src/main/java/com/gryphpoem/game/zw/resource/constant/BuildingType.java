@@ -16,11 +16,25 @@ public class BuildingType {
     // 铁匠铺
     public static final int MAKE_WEAPON_HOUSE = 16;
     // 渡口
-    public static final int FERRY = 17;
-    // 空军基地(没用)
-    public static final int AIR_BASE = 18;
+    public static final int FERRY = 17;;
     // 城墙
     public static final int WALL = 29;
+    // 戏台
+    public static final int SMALL_GAME_HOUSE = 35;
+    // 寻访台
+    public static final int DRAW_HERO_HOUSE = 60;
+    // 铸星台
+    public static final int SUPER_EQUIP_HOUSE = 62;
+    // 雕像
+    public static final int STATUTE = 63;
+    // 天录阁
+    public static final int MEDAL_HOUSE = 65;
+    // 军备堂
+    public static final int TRADE_CENTRE = 91;
+    // 市场
+    public static final int MALL = 92;
+    // 铜雀台
+    public static final int CIA = 99;
 
     // 铸币厂
     public static final int RES_OIL = 31;
@@ -33,10 +47,6 @@ public class BuildingType {
     // 民居
     public static final int RESIDENT_HOUSE = 36;
 
-
-    // 戏台
-    public static final int SMALL_GAME_HOUSE = 35;
-
     // 步兵营
     public static final int FACTORY_1 = 41;
     // 骑兵营
@@ -44,36 +54,18 @@ public class BuildingType {
     // 弓兵营
     public static final int FACTORY_3 = 43;
 
-    // 寻访台
-    public static final int DRAW_HERO_HOUSE = 60;
-    // 铸星台
-    public static final int SUPER_EQUIP_HOUSE = 62;
-    // 雕像
-    public static final int STATUTE = 63;
-    // 天录阁
-    public static final int MEDAL_HOUSE = 65;
-
     // 兵营(可改造)
     public static final int TRAIN_FACTORY_1 = 51;
-    //
     public static final int TRAIN_FACTORY_2 = 52;
-    //
     public static final int TRAIN_FACTORY_3 = 53;
 
+    // 空军基地(没用)
+    public static final int AIR_BASE = 18;
     // 赛季宝库建筑(没用)
     public static final int SEASON_TREASURY = 70;
-
-    // 军备堂
-    public static final int TRADE_CENTRE = 91;
-
-    // 市场
-    public static final int MALL = 92;
-
     // 码头(没用)
     public static final int WHARF = 97;
 
-    // 铜雀台
-    public static final int CIA = 99;
     // 大富翁解锁条件id
     public static final int MONOPOLY_LOCK_ID = 2004;
     /** 荣耀演习场解锁条件 */
@@ -94,7 +86,9 @@ public class BuildingType {
     public static final int[] TRAIN_ARRAY = new int[] { TRAIN_FACTORY_1, TRAIN_FACTORY_2, TRAIN_FACTORY_3 };
     public static final int[] FACTORY_ARRAY = new int[] { FACTORY_1, FACTORY_2, FACTORY_3 };
 
-    // 自动建造的顺序规则
+    /**
+     * 自动建造的顺序规则
+     */
     public static final int[] AUTO_BUILD_RULE = { TECH, RES_ORE, RES_FOOD, RES_ELE, RES_OIL, STOREHOUSE, WALL,
             FACTORY_1, FACTORY_2, FACTORY_3, TRAIN_FACTORY_1, TRAIN_FACTORY_2, TRAIN_FACTORY_3 };
 
@@ -102,7 +96,8 @@ public class BuildingType {
      * 功能建筑数组
      */
     public static final int[] FUNCTION_BUILDING = { COMMAND, TECH, WAR_FACTORY, STOREHOUSE, WAR_COLLEGE, REMAKE_WEAPON_HOUSE,
-            MAKE_WEAPON_HOUSE, FERRY, WALL, FACTORY_1, FACTORY_2, FACTORY_3, TRAIN_FACTORY_1, TRAIN_FACTORY_2 };
+            MAKE_WEAPON_HOUSE, FERRY, WALL, SMALL_GAME_HOUSE, DRAW_HERO_HOUSE, SUPER_EQUIP_HOUSE, STATUTE, MEDAL_HOUSE,
+            TRADE_CENTRE, MALL, CIA, FACTORY_1, FACTORY_2, FACTORY_3, TRAIN_FACTORY_1, TRAIN_FACTORY_2 };
 
     /**
      * 一键委任武将的建筑及顺序

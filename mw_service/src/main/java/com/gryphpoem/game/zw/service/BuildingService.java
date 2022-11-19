@@ -210,415 +210,518 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             // 先更新一下所有建筑的解锁状态
             buildingDataManager.updateBuildingLockState(player);
             buildingDataManager.refreshSourceData(player);
+
             Map<Integer, BuildingState> buildingData = player.getBuildingData();
-
             GetBuildingRs.Builder builder = GetBuildingRs.newBuilder();
-            BuildingBase.Builder buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.COMMAND)
-                    .setType(BuildingType.COMMAND)
-                    .setLv(building.getCommand())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.COMMAND));
-            if (buildingData != null && buildingData.get(BuildingType.COMMAND) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.COMMAND).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.COMMAND).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.COMMAND).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.COMMAND).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
 
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.TECH)
-                    .setType(BuildingType.TECH)
-                    .setLv(building.getTech())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.TECH));
-            if (buildingData != null && buildingData.get(BuildingType.TECH) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.TECH).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.TECH).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.TECH).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.TECH).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
+            /**
+             * 功能建筑
+             */
+            for (int buildingType : BuildingType.FUNCTION_BUILDING) {
+                BuildingBase.Builder buildingBase = BuildingBase.newBuilder();
+                if (buildingType == BuildingType.TRAIN_FACTORY_1) {
+                    BuildingExt train = player.buildingExts.get(BuildingType.TRAIN_FACTORY_1);
+                    if (!CheckNull.isNull(train)) {
+                        buildingBase = BuildingBase.newBuilder();
+                        buildingBase.setId(train.getId())
+                                .setType(train.getType())
+                                .setLv(building.getTrainFactory1())
+                                .setUnlock(buildingDataManager.checkBuildingLock(player, train.getId()));
+                        if (buildingData != null && buildingData.get(train.getId()) != null) {
+                            BuildingState buildingState = buildingData.get(train.getId());
+                            buildingBase
+                                    .addAllHeroId(buildingState.getHeroIds())
+                                    .setResidentCnt(buildingState.getResidentCnt())
+                                    .setFoundationId(buildingState.getFoundationId())
+                                    .setResidentTopLimit(buildingState.getResidentTopLimit());
+                        }
+                        builder.addBuildingBase(buildingBase);
+                    }
+                    continue;
+                }
 
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WAR_FACTORY)
-                    .setType(BuildingType.WAR_FACTORY)
-                    .setLv(building.getWarFactory())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WAR_FACTORY));
-            if (buildingData != null && buildingData.get(BuildingType.WAR_FACTORY) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.WAR_FACTORY).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.WAR_FACTORY).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WAR_FACTORY).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.WAR_FACTORY).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
+                if (buildingType == BuildingType.TRAIN_FACTORY_2) {
+                    BuildingExt train2 = player.buildingExts.get(BuildingType.TRAIN_FACTORY_2);
+                    if (building.getTrain2() <= 0) {
+                        StaticBuildingInit init = StaticBuildingDataMgr.getBuildingInitMap().get(BuildingType.TRAIN_FACTORY_2);
+                        if (init != null) {
+                            building.setTrain2(init.getInitLv());
+                        }
+                    }
+                    if (!CheckNull.isNull(train2)) {
+                        buildingBase = BuildingBase.newBuilder();
+                        buildingBase.setId(train2.getId())
+                                .setType(train2.getType())
+                                .setLv(building.getTrain2())
+                                .setUnlock(buildingDataManager.checkBuildingLock(player, train2.getId()));
+                        if (buildingData != null && buildingData.get(train2.getId()) != null) {
+                            BuildingState buildingState = buildingData.get(train2.getId());
+                            buildingBase
+                                    .addAllHeroId(buildingState.getHeroIds())
+                                    .setResidentCnt(buildingState.getResidentCnt())
+                                    .setFoundationId(buildingState.getFoundationId())
+                                    .setResidentTopLimit(buildingState.getResidentTopLimit());
+                        }
+                        builder.addBuildingBase(buildingBase);
+                    }
+                    continue;
+                }
 
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.STOREHOUSE)
-                    .setType(BuildingType.STOREHOUSE)
-                    .setLv(building.getStoreHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.STOREHOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.STOREHOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.STOREHOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.STOREHOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.STOREHOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.STOREHOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WAR_COLLEGE)
-                    .setType(BuildingType.WAR_COLLEGE)
-                    .setLv(building.getWarCollege())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WAR_COLLEGE));
-            if (buildingData != null && buildingData.get(BuildingType.WAR_COLLEGE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.WAR_COLLEGE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.WAR_COLLEGE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WAR_COLLEGE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.WAR_COLLEGE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.REMAKE_WEAPON_HOUSE)
-                    .setType(BuildingType.REMAKE_WEAPON_HOUSE)
-                    .setLv(building.getRemakeWeaponHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.REMAKE_WEAPON_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.MAKE_WEAPON_HOUSE)
-                    .setType(BuildingType.MAKE_WEAPON_HOUSE)
-                    .setLv(building.getMakeWeaponHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.MAKE_WEAPON_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.MAKE_WEAPON_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.MAKE_WEAPON_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.MAKE_WEAPON_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.MAKE_WEAPON_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.MAKE_WEAPON_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FERRY)
-                    .setType(BuildingType.FERRY)
-                    .setLv(building.getFerry())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FERRY));
-            if (buildingData != null && buildingData.get(BuildingType.FERRY) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.FERRY).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.FERRY).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FERRY).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.FERRY).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WALL)
-                    .setType(BuildingType.WALL)
-                    .setLv(building.getWall())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WALL));
-            if (buildingData != null && buildingData.get(BuildingType.WALL) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.WALL).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.WALL).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WALL).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.WALL).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.TRADE_CENTRE)
-                    .setType(BuildingType.TRADE_CENTRE)
-                    .setLv(building.getTradeCentre())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.TRADE_CENTRE));
-            if (buildingData != null && buildingData.get(BuildingType.TRADE_CENTRE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.TRADE_CENTRE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.TRADE_CENTRE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.TRADE_CENTRE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.TRADE_CENTRE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.MALL)
-                    .setType(BuildingType.MALL)
-                    .setLv(building.getMall())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.MALL));
-            if (buildingData != null && buildingData.get(BuildingType.MALL) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.MALL).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.MALL).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.MALL).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.MALL).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.CIA)
-                    .setType(BuildingType.CIA)
-                    .setLv(building.getCia())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.CIA));
-            if (buildingData != null && buildingData.get(BuildingType.CIA) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.CIA).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.CIA).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.CIA).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.CIA).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.SMALL_GAME_HOUSE)
-                    .setType(BuildingType.SMALL_GAME_HOUSE)
-                    .setLv(1)
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.SMALL_GAME_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.SMALL_GAME_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FACTORY_1)
-                    .setType(BuildingType.FACTORY_1)
-                    .setLv(building.getFactory1())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_1));
-            if (buildingData != null && buildingData.get(BuildingType.FACTORY_1) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.FACTORY_1).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_1).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_1).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.FACTORY_1).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FACTORY_2)
-                    .setType(BuildingType.FACTORY_2)
-                    .setLv(building.getFactory2())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_2));
-            if (buildingData != null && buildingData.get(BuildingType.FACTORY_2) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.FACTORY_2).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_2).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_2).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.FACTORY_2).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.FACTORY_3)
-                    .setType(BuildingType.FACTORY_3)
-                    .setLv(building.getFactory3())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_3));
-            if (buildingData != null && buildingData.get(BuildingType.FACTORY_3) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.FACTORY_3).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.FACTORY_3).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.FACTORY_3).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.FACTORY_3).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            /*buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.SEASON_TREASURY)
-                    .setType(BuildingType.SEASON_TREASURY)
-                    .setLv(building.getSeasonTreasury())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.SEASON_TREASURY));
-            if (buildingData != null && buildingData.get(BuildingType.SEASON_TREASURY) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.SEASON_TREASURY).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.SEASON_TREASURY).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.SEASON_TREASURY).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.SEASON_TREASURY).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);*/
-
-            /*// 码头
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.WHARF)
-                    .setType(BuildingType.WHARF)
-                    .setLv(1)
-                    .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.WHARF));
-            if (buildingData != null && buildingData.get(BuildingType.WHARF) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.WHARF).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.WHARF).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.WHARF).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.WHARF).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);*/
-
-            BuildingExt train = player.buildingExts.get(BuildingType.TRAIN_FACTORY_1);
-            if (!CheckNull.isNull(train)) {
-                buildingBase = BuildingBase.newBuilder();
-                buildingBase.setId(train.getId())
-                        .setType(train.getType())
-                        .setLv(building.getTrainFactory1())
-                        .setUnlock(buildingDataManager.checkBuildingLock(player, train.getId()));
-                if (buildingData != null && buildingData.get(train.getId()) != null) {
+                buildingBase.setUnlock(buildingDataManager.checkBuildingLock(player, buildingType));
+                if (buildingData != null && buildingData.get(buildingType) != null) {
+                    BuildingState buildingState = buildingData.get(buildingType);
                     buildingBase
-                            .addAllHeroId(buildingData.get(train.getId()).getHeroIds())
-                            .addAllEconomicCropId(buildingData.get(train.getId()).getEconomicCropData())
-                            .setResidentCnt(buildingData.get(train.getId()).getResidentCnt())
-                            .setFoundationId(buildingData.get(train.getId()).getFoundationId());
+                            .setId(buildingType)
+                            .setType(buildingState.getBuildingType())
+                            .setLv(buildingState.getBuildingLv())
+                            .addAllHeroId(buildingState.getHeroIds())
+                            .setResidentCnt(buildingState.getResidentCnt())
+                            .setFoundationId(buildingState.getFoundationId())
+                            .setResidentTopLimit(buildingState.getResidentTopLimit());
                 }
                 builder.addBuildingBase(buildingBase);
             }
 
-            BuildingExt train2 = player.buildingExts.get(BuildingType.TRAIN_FACTORY_2);
-            if (building.getTrain2() <= 0) {
-                StaticBuildingInit init = StaticBuildingDataMgr.getBuildingInitMap()
-                        .get(BuildingType.TRAIN_FACTORY_2);
-                if (init != null) {
-                    building.setTrain2(init.getInitLv());
+            // // 君王殿
+            // BuildingBase.Builder buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.COMMAND)
+            //         .setType(BuildingType.COMMAND)
+            //         .setLv(building.getCommand())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.COMMAND));
+            // if (buildingData != null && buildingData.get(BuildingType.COMMAND) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.COMMAND);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 太史院
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.TECH)
+            //         .setType(BuildingType.TECH)
+            //         .setLv(building.getTech())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.TECH));
+            // if (buildingData != null && buildingData.get(BuildingType.TECH) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.TECH);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 尚书台
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.WAR_FACTORY)
+            //         .setType(BuildingType.WAR_FACTORY)
+            //         .setLv(building.getWarFactory())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WAR_FACTORY));
+            // if (buildingData != null && buildingData.get(BuildingType.WAR_FACTORY) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.WAR_FACTORY);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 仓库
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.STOREHOUSE)
+            //         .setType(BuildingType.STOREHOUSE)
+            //         .setLv(building.getStoreHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.STOREHOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.STOREHOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.STOREHOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 群贤馆
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.WAR_COLLEGE)
+            //         .setType(BuildingType.WAR_COLLEGE)
+            //         .setLv(building.getWarCollege())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WAR_COLLEGE));
+            // if (buildingData != null && buildingData.get(BuildingType.WAR_COLLEGE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.WAR_COLLEGE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 冶炼铺
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.REMAKE_WEAPON_HOUSE)
+            //         .setType(BuildingType.REMAKE_WEAPON_HOUSE)
+            //         .setLv(building.getRemakeWeaponHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.REMAKE_WEAPON_HOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.REMAKE_WEAPON_HOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 铁匠铺
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.MAKE_WEAPON_HOUSE)
+            //         .setType(BuildingType.MAKE_WEAPON_HOUSE)
+            //         .setLv(building.getMakeWeaponHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.MAKE_WEAPON_HOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.MAKE_WEAPON_HOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.MAKE_WEAPON_HOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 渡口
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.FERRY)
+            //         .setType(BuildingType.FERRY)
+            //         .setLv(building.getFerry())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FERRY));
+            // if (buildingData != null && buildingData.get(BuildingType.FERRY) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.FERRY);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 城墙
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.WALL)
+            //         .setType(BuildingType.WALL)
+            //         .setLv(building.getWall())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.WALL));
+            // if (buildingData != null && buildingData.get(BuildingType.WALL) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.WALL);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 军备堂
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.TRADE_CENTRE)
+            //         .setType(BuildingType.TRADE_CENTRE)
+            //         .setLv(building.getTradeCentre())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.TRADE_CENTRE));
+            // if (buildingData != null && buildingData.get(BuildingType.TRADE_CENTRE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.TRADE_CENTRE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 市场
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.MALL)
+            //         .setType(BuildingType.MALL)
+            //         .setLv(building.getMall())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.MALL));
+            // if (buildingData != null && buildingData.get(BuildingType.MALL) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.MALL);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 铜雀台
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.CIA)
+            //         .setType(BuildingType.CIA)
+            //         .setLv(building.getCia())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.CIA));
+            // if (buildingData != null && buildingData.get(BuildingType.CIA) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.CIA);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 戏台
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.SMALL_GAME_HOUSE)
+            //         .setType(BuildingType.SMALL_GAME_HOUSE)
+            //         .setLv(building.getSmallGameHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.SMALL_GAME_HOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.SMALL_GAME_HOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.SMALL_GAME_HOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 步兵营
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.FACTORY_1)
+            //         .setType(BuildingType.FACTORY_1)
+            //         .setLv(building.getFactory1())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_1));
+            // if (buildingData != null && buildingData.get(BuildingType.FACTORY_1) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.FACTORY_1);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 骑兵营
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.FACTORY_2)
+            //         .setType(BuildingType.FACTORY_2)
+            //         .setLv(building.getFactory2())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_2));
+            // if (buildingData != null && buildingData.get(BuildingType.FACTORY_2) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.FACTORY_2);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 弓兵营
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.FACTORY_3)
+            //         .setType(BuildingType.FACTORY_3)
+            //         .setLv(building.getFactory3())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.FACTORY_3));
+            // if (buildingData != null && buildingData.get(BuildingType.FACTORY_3) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.FACTORY_3);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // /*buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.SEASON_TREASURY)
+            //         .setType(BuildingType.SEASON_TREASURY)
+            //         .setLv(building.getSeasonTreasury())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.SEASON_TREASURY));
+            // if (buildingData != null && buildingData.get(BuildingType.SEASON_TREASURY) != null) {
+            //     buildingBase
+            //             .addAllHeroId(buildingData.get(BuildingType.SEASON_TREASURY).getHeroIds())
+            //             .addAllEconomicCropId(buildingData.get(BuildingType.SEASON_TREASURY).getEconomicCropData())
+            //             .setResidentCnt(buildingData.get(BuildingType.SEASON_TREASURY).getResidentCnt())
+            //             .setFoundationId(buildingData.get(BuildingType.SEASON_TREASURY).getFoundationId());
+            // }
+            // builder.addBuildingBase(buildingBase);*/
+            //
+            // /*// 码头
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.WHARF)
+            //         .setType(BuildingType.WHARF)
+            //         .setLv(1)
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player,BuildingType.WHARF));
+            // if (buildingData != null && buildingData.get(BuildingType.WHARF) != null) {
+            //     buildingBase
+            //             .addAllHeroId(buildingData.get(BuildingType.WHARF).getHeroIds())
+            //             .addAllEconomicCropId(buildingData.get(BuildingType.WHARF).getEconomicCropData())
+            //             .setResidentCnt(buildingData.get(BuildingType.WHARF).getResidentCnt())
+            //             .setFoundationId(buildingData.get(BuildingType.WHARF).getFoundationId());
+            // }
+            // builder.addBuildingBase(buildingBase);*/
+            //
+            // // 兵营(可改造)
+            // BuildingExt train = player.buildingExts.get(BuildingType.TRAIN_FACTORY_1);
+            // if (!CheckNull.isNull(train)) {
+            //     buildingBase = BuildingBase.newBuilder();
+            //     buildingBase.setId(train.getId())
+            //             .setType(train.getType())
+            //             .setLv(building.getTrainFactory1())
+            //             .setUnlock(buildingDataManager.checkBuildingLock(player, train.getId()));
+            //     if (buildingData != null && buildingData.get(train.getId()) != null) {
+            //         BuildingState buildingState = buildingData.get(train.getId());
+            //         buildingBase
+            //                 .addAllHeroId(buildingState.getHeroIds())
+            //                 .setResidentCnt(buildingState.getResidentCnt())
+            //                 .setFoundationId(buildingState.getFoundationId())
+            //                 .setResidentTopLimit(buildingState.getResidentTopLimit());
+            //     }
+            //     builder.addBuildingBase(buildingBase);
+            // }
+            //
+            // // 兵营(可改造)
+            // BuildingExt train2 = player.buildingExts.get(BuildingType.TRAIN_FACTORY_2);
+            // if (building.getTrain2() <= 0) {
+            //     StaticBuildingInit init = StaticBuildingDataMgr.getBuildingInitMap().get(BuildingType.TRAIN_FACTORY_2);
+            //     if (init != null) {
+            //         building.setTrain2(init.getInitLv());
+            //     }
+            // }
+            // if (!CheckNull.isNull(train2)) {
+            //     buildingBase = BuildingBase.newBuilder();
+            //     buildingBase.setId(train2.getId())
+            //             .setType(train2.getType())
+            //             .setLv(building.getTrain2())
+            //             .setUnlock(buildingDataManager.checkBuildingLock(player, train2.getId()));
+            //     if (buildingData != null && buildingData.get(train2.getId()) != null) {
+            //         BuildingState buildingState = buildingData.get(train2.getId());
+            //         buildingBase
+            //                 .addAllHeroId(buildingState.getHeroIds())
+            //                 .setResidentCnt(buildingState.getResidentCnt())
+            //                 .setFoundationId(buildingState.getFoundationId())
+            //                 .setResidentTopLimit(buildingState.getResidentTopLimit());
+            //     }
+            //     builder.addBuildingBase(buildingBase);
+            // }
+            //
+            // /*buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.AIR_BASE)
+            //         .setType(BuildingType.AIR_BASE)
+            //         .setLv(building.getAirBase())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.AIR_BASE));
+            // if (buildingData != null && buildingData.get(BuildingType.AIR_BASE) != null) {
+            //     buildingBase
+            //             .addAllHeroId(buildingData.get(BuildingType.AIR_BASE).getHeroIds())
+            //             .addAllEconomicCropId(buildingData.get(BuildingType.AIR_BASE).getEconomicCropData())
+            //             .setResidentCnt(buildingData.get(BuildingType.AIR_BASE).getResidentCnt())
+            //             .setFoundationId(buildingData.get(BuildingType.AIR_BASE).getFoundationId());
+            // }
+            // builder.addBuildingBase(buildingBase);*/
+            //
+            // // 寻访台
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.DRAW_HERO_HOUSE)
+            //         .setType(BuildingType.DRAW_HERO_HOUSE)
+            //         .setLv(building.getDrawHeroHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.DRAW_HERO_HOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.DRAW_HERO_HOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.DRAW_HERO_HOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 铸星台
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.SUPER_EQUIP_HOUSE)
+            //         .setType(BuildingType.SUPER_EQUIP_HOUSE)
+            //         .setLv(building.getSuperEquipHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.SUPER_EQUIP_HOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.SUPER_EQUIP_HOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.SUPER_EQUIP_HOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 雕像
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.STATUTE)
+            //         .setType(BuildingType.STATUTE)
+            //         .setLv(building.getStatute())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.STATUTE));
+            // if (buildingData != null && buildingData.get(BuildingType.STATUTE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.STATUTE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+            //
+            // // 天录阁
+            // buildingBase = BuildingBase.newBuilder();
+            // buildingBase.setId(BuildingType.MEDAL_HOUSE)
+            //         .setType(BuildingType.MEDAL_HOUSE)
+            //         .setLv(building.getMedalHouse())
+            //         .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.MEDAL_HOUSE));
+            // if (buildingData != null && buildingData.get(BuildingType.MEDAL_HOUSE) != null) {
+            //     BuildingState buildingState = buildingData.get(BuildingType.MEDAL_HOUSE);
+            //     buildingBase
+            //             .addAllHeroId(buildingState.getHeroIds())
+            //             .setResidentCnt(buildingState.getResidentCnt())
+            //             .setFoundationId(buildingState.getFoundationId())
+            //             .setResidentTopLimit(buildingState.getResidentTopLimit());
+            // }
+            // builder.addBuildingBase(buildingBase);
+
+            /**
+             * 资源建筑
+             */
+            Iterator<Mill> it2 = player.mills.values().iterator();
+            while (it2.hasNext()) {
+                CommonPb.Mill millPb = PbHelper.createMillPb(it2.next());
+                if (buildingData != null && buildingData.get(millPb.getId()) != null) {
+                    BuildingState buildingState = buildingData.get(millPb.getId());
+                    CommonPb.EconomicCropInfo.Builder curProductCrop = CommonPb.EconomicCropInfo.newBuilder();
+                    if (CheckNull.nonEmpty(buildingState.getCurProductCrop()) && buildingState.getCurProductCrop().size() >= 3) {
+                        curProductCrop.setCropId(buildingState.getCurProductCrop().get(0));
+                        curProductCrop.setStartTime(buildingState.getCurProductCrop().get(1));
+                        curProductCrop.setEndTime(buildingState.getCurProductCrop().get(2));
+                    }
+                    millPb.toBuilder()
+                            .addAllHeroId(buildingState.getHeroIds())
+                            .setResidentCnt(buildingState.getResidentCnt())
+                            .setFoundationId(buildingState.getFoundationId())
+                            .setResidentTopLimit(buildingState.getResidentTopLimit())
+                            .addAllEconomicCropId(buildingState.getEconomicCropData())
+                            .setEconomicCropInfo(curProductCrop);
                 }
+                builder.addMill(millPb);
             }
-            if (!CheckNull.isNull(train2)) {
-                buildingBase = BuildingBase.newBuilder();
-                buildingBase.setId(train2.getId())
-                        .setType(train2.getType())
-                        .setLv(building.getTrain2())
-                        .setUnlock(buildingDataManager.checkBuildingLock(player, train2.getId()));
-                if (buildingData != null && buildingData.get(train2.getId()) != null) {
-                    buildingBase
-                            .addAllHeroId(buildingData.get(train2.getId()).getHeroIds())
-                            .addAllEconomicCropId(buildingData.get(train2.getId()).getEconomicCropData())
-                            .setResidentCnt(buildingData.get(train2.getId()).getResidentCnt())
-                            .setFoundationId(buildingData.get(train2.getId()).getFoundationId());
-                }
-                builder.addBuildingBase(buildingBase);
-            }
-
-            /*buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.AIR_BASE)
-                    .setType(BuildingType.AIR_BASE)
-                    .setLv(building.getAirBase())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.AIR_BASE));
-            if (buildingData != null && buildingData.get(BuildingType.AIR_BASE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.AIR_BASE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.AIR_BASE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.AIR_BASE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.AIR_BASE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);*/
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.SMALL_GAME_HOUSE)
-                    .setType(BuildingType.SMALL_GAME_HOUSE)
-                    .setLv(building.getSmallGameHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.SMALL_GAME_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.SMALL_GAME_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.SMALL_GAME_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.DRAW_HERO_HOUSE)
-                    .setType(BuildingType.DRAW_HERO_HOUSE)
-                    .setLv(building.getDrawHeroHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.DRAW_HERO_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.DRAW_HERO_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.DRAW_HERO_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.DRAW_HERO_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.DRAW_HERO_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.DRAW_HERO_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.SUPER_EQUIP_HOUSE)
-                    .setType(BuildingType.SUPER_EQUIP_HOUSE)
-                    .setLv(building.getSuperEquipHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.SUPER_EQUIP_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.SUPER_EQUIP_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.SUPER_EQUIP_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.SUPER_EQUIP_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.SUPER_EQUIP_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.SUPER_EQUIP_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.STATUTE)
-                    .setType(BuildingType.STATUTE)
-                    .setLv(building.getStatute())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.STATUTE));
-            if (buildingData != null && buildingData.get(BuildingType.STATUTE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.STATUTE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.STATUTE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.STATUTE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.STATUTE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
-
-            buildingBase = BuildingBase.newBuilder();
-            buildingBase.setId(BuildingType.MEDAL_HOUSE)
-                    .setType(BuildingType.MEDAL_HOUSE)
-                    .setLv(building.getMedalHouse())
-                    .setUnlock(buildingDataManager.checkBuildingLock(player, BuildingType.MEDAL_HOUSE));
-            if (buildingData != null && buildingData.get(BuildingType.MEDAL_HOUSE) != null) {
-                buildingBase
-                        .addAllHeroId(buildingData.get(BuildingType.MEDAL_HOUSE).getHeroIds())
-                        .addAllEconomicCropId(buildingData.get(BuildingType.MEDAL_HOUSE).getEconomicCropData())
-                        .setResidentCnt(buildingData.get(BuildingType.MEDAL_HOUSE).getResidentCnt())
-                        .setFoundationId(buildingData.get(BuildingType.MEDAL_HOUSE).getFoundationId());
-            }
-            builder.addBuildingBase(buildingBase);
 
             Iterator<BuildQue> it1 = player.buildQue.values().iterator();
             while (it1.hasNext()) {
                 builder.addQueue(PbHelper.createBuildQuePb(it1.next()));
             }
 
-            Iterator<Mill> it2 = player.mills.values().iterator();
-            while (it2.hasNext()) {
-                CommonPb.Mill millPb = PbHelper.createMillPb(it2.next());
-                if (buildingData != null && buildingData.get(millPb.getId()) != null) {
-                    millPb.toBuilder()
-                            .addAllHeroId(buildingData.get(millPb.getId()).getHeroIds())
-                            .addAllEconomicCropId(buildingData.get(millPb.getId()).getEconomicCropData())
-                            .setResidentCnt(buildingData.get(millPb.getId()).getResidentCnt())
-                            .setFoundationId(buildingData.get(millPb.getId()).getFoundationId());
-                }
-                builder.addMill(millPb);
-            }
-
             builder.setResCnt(player.common.getResCnt());
             builder.setResTime(player.common.getResTime());
 
-            // Iterator<Map<Integer, Mill>> it = player.mills.values().iterator();
-            // while (it.hasNext()) {
-            // Iterator<Mill> it2 = it.next().values().iterator();
-            // while (it2.hasNext()) {
-            // builder.addMill(createMillPb(it2.next()));
-            // }
-            // }
             return builder.build();
         }
         return null;
@@ -1639,6 +1742,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 }*/
             } else if (buildingId == BuildingType.TECH) {
                 activityRobinHoodService.updateTaskSchedule(player, ActivityConst.ACT_TASK_UNIVERSITY_LV, 1, buildingLv);
+            } else if (buildingId == BuildingType.SMALL_GAME_HOUSE) {
+                // TODO 戏台解锁, 开始可以自然恢复幸福度
             }
             playerDataManager.createRoleOpt(player, Constant.OptId.id_1, String.valueOf(buildingLv),
                     String.valueOf(buildQue.getBuildingType()));
@@ -1677,8 +1782,12 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 giveOnceGains(player, buildingId);
             }
             // 更新建筑状态
-            buildingState = new BuildingState(buildingId, buildQue.getFoundationId());
-            player.getBuildingData().put(buildingId, buildingState);
+            if (buildingState == null) {
+                buildingState = new BuildingState();
+                buildingState.setBuildingId(buildingId);
+                buildingState.setBuildingType(buildingType);
+            }
+            buildingState.setFoundationId(buildQue.getFoundationId());
 
             boolean resType = BuildingDataManager.isResType(buildingType);
             StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMap().get(buildingId);
@@ -1698,13 +1807,15 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 }
             }
 
-            // 集市解锁时开始刷新经济订单, 最多只刷新两个
+            // 集市解锁时开始刷新经济订单
             if (buildingId == BuildingType.MALL) {
                 DataResource.ac.getBean(EconomicOrderService.class).randomNewPreOrder(player);
             }
         }
 
+        // 更新建筑等级
         buildingState.setBuildingLv(buildingLv);
+        // 获取升级后的建筑等级配置
         StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(buildingType, buildingLv);
         if (sBuildingLevel == null) {
             throw new MwException(GameError.NO_CONFIG, String.format("建造或升级民居时, 未获取到民居对应的等级配置, roleId:%s, buildingType:%s, buildingLv:%s", player.roleId, buildingType, buildingLv));
@@ -1720,7 +1831,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         }
 
         buildingDataManager.synBuildToPlayer(player, buildQue, 2);
-        synPlayerBuildingState(player, buildingId); // 向客户端同步建筑信息变化
 
         // 发送应用外推送消息，建筑队列建造完成机会销毁，所以不用记录是否推送的状态
         pushBuildFinish(player.account, buildingLv, newType == 0 ? buildQue.getBuildingType() : newType,
@@ -1817,21 +1927,17 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 lv = building.getTech() + 1;
                 building.setTech(lv);
                 break;
+            case BuildingType.WAR_FACTORY:
+                lv = building.getWarFactory() + 1;
+                building.setWarFactory(lv);
+                break;
             case BuildingType.STOREHOUSE:
                 lv = building.getStoreHouse() + 1;
                 building.setStoreHouse(lv);
                 break;
-            case BuildingType.WALL:
-                lv = building.getWall() + 1;
-                building.setWall(lv);
-                break;
             case BuildingType.WAR_COLLEGE:
                 lv = building.getWarCollege() + 1;
                 building.setWarCollege(lv);
-                break;
-            case BuildingType.WAR_FACTORY:
-                lv = building.getWarFactory() + 1;
-                building.setWarFactory(lv);
                 break;
             case BuildingType.REMAKE_WEAPON_HOUSE:
                 lv = building.getRemakeWeaponHouse() + 1;
@@ -1844,6 +1950,42 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             case BuildingType.FERRY:
                 lv = building.getFerry() + 1;
                 building.setFerry(lv);
+                break;
+            case BuildingType.WALL:
+                lv = building.getWall() + 1;
+                building.setWall(lv);
+                break;
+            case BuildingType.SMALL_GAME_HOUSE:
+                lv = building.getSmallGameHouse() + 1;
+                building.setSmallGameHouse(lv);
+                break;
+            case BuildingType.DRAW_HERO_HOUSE:
+                lv = building.getDrawHeroHouse() + 1;
+                building.setDrawHeroHouse(lv);
+                break;
+            case BuildingType.SUPER_EQUIP_HOUSE:
+                lv = building.getSuperEquipHouse() + 1;
+                building.setSuperEquipHouse(lv);
+                break;
+            case BuildingType.STATUTE:
+                lv = building.getStatute() + 1;
+                building.setStatute(lv);
+                break;
+            case BuildingType.MEDAL_HOUSE:
+                lv = building.getMedalHouse() + 1;
+                building.setMedalHouse(lv);
+                break;
+            case BuildingType.TRADE_CENTRE:
+                lv = building.getTradeCentre() + 1;
+                building.setTradeCentre(lv);
+                break;
+            case BuildingType.MALL:
+                lv = building.getMall() + 1;
+                building.setMall(lv);
+                break;
+            case BuildingType.CIA:
+                lv = building.getCia() + 1;
+                building.setCia(lv);
                 break;
             case BuildingType.FACTORY_1:
                 lv = building.getFactory1() + 1;
@@ -1865,14 +2007,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 lv = buildQue.getFromType() != 2 ? building.getTrain2() + 1 : building.getTrain2();
                 building.setTrain2(lv);
                 break;
-            case BuildingType.TRADE_CENTRE:
-                lv = building.getTradeCentre() + 1;
-                building.setTradeCentre(lv);
-                break;
-            case BuildingType.MALL:
-                lv = building.getMall() + 1;
-                building.setMall(lv);
-                break;
             case BuildingType.AIR_BASE:
                 lv = building.getAirBase() + 1;
                 building.setAirBase(lv);
@@ -1880,30 +2014,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             case BuildingType.SEASON_TREASURY:
                 lv = building.getSeasonTreasury() + 1;
                 building.setSeasonTreasury(lv);
-                break;
-            case BuildingType.CIA:
-                lv = building.getCia() + 1;
-                building.setCia(lv);
-                break;
-            case BuildingType.SMALL_GAME_HOUSE:
-                lv = building.getSmallGameHouse() + 1;
-                building.setSmallGameHouse(lv);
-                break;
-            case BuildingType.DRAW_HERO_HOUSE:
-                lv = building.getDrawHeroHouse() + 1;
-                building.setDrawHeroHouse(lv);
-                break;
-            case BuildingType.SUPER_EQUIP_HOUSE:
-                lv = building.getSuperEquipHouse() + 1;
-                building.setSuperEquipHouse(lv);
-                break;
-            case BuildingType.STATUTE:
-                lv = building.getStatute() + 1;
-                building.setStatute(lv);
-                break;
-            case BuildingType.MEDAL_HOUSE:
-                lv = building.getMedalHouse() + 1;
-                building.setMedalHouse(lv);
                 break;
         }
         return lv;
@@ -2115,8 +2225,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                     AwardFrom.BUILDING_SPEED, que.getPos());
         } else {
             StaticProp prop = StaticPropDataMgr.getPropMap(itemId);
-            if(Objects.isNull(prop))
-                throw new MwException(GameError.NO_CONFIG.getCode(),"招募加速，使用道具加速错误，道具不存在, itemId=" + itemId);
+            if (Objects.isNull(prop))
+                throw new MwException(GameError.NO_CONFIG.getCode(), "招募加速，使用道具加速错误，道具不存在, itemId=" + itemId);
             //计算实际需要几个道具
 //            int a_ = prop.getDuration() / second;
 //            int b_ = prop.getDuration() % second;
@@ -2512,7 +2622,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         }
         // 获取当前任务id
         // List<Integer> curTaskIds = taskDataManager.getCurTask(player);
-        List<StaticTask> buildTask =  player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
+        List<StaticTask> buildTask = player.chapterTask.getOpenTasks().keySet().stream().map(t -> StaticTaskDataMgr.getTaskById(t))
                 .filter(t -> Objects.nonNull(t) && (t.getCond() == TaskType.COND_BUILDING_TYPE_LV || t.getCond() == TaskType.COND_RES_FOOD_CNT
                         || t.getCond() == TaskType.COND_RES_OIL_CNT || t.getCond() == TaskType.COND_RES_ELE_CNT
                         || t.getCond() == TaskType.COND_RES_ORE_CNT))
@@ -2529,7 +2639,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                     }
                     // 拿最新的任务状态
                     Task currentTask = taskDataManager.currentMajorTask(player, task, sTask);
-                    return currentTask != null && currentTask.getStatus() == TaskType.TYPE_STATUS_UNFINISH  && currentTask.getSchedule() < sTask.getSchedule();
+                    return currentTask != null && currentTask.getStatus() == TaskType.TYPE_STATUS_UNFINISH && currentTask.getSchedule() < sTask.getSchedule();
                 })
                 .collect(Collectors.toList());
         if (CheckNull.isEmpty(buildTask)) {// 任务中没有建筑升级
@@ -2585,7 +2695,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      */
     private int getTaskAutoBuildId(Player player, List<StaticTask> buildTask) {
         // 过滤不能自动建造的建筑
-        buildTask = buildTask.stream().filter(st ->  getBuildType(st) != null)
+        buildTask = buildTask.stream().filter(st -> getBuildType(st) != null)
                 .filter(st -> {
                     Turple turple = getBuildType(st);
                     int buildType = (int) turple.getB();
@@ -3027,11 +3137,11 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         }
 
         float factor = 0;
-        int haust = calcBuildTime(player, staticBuildingLevel.getUpTime()); // 耗时
+        int needTime = calcBuildTime(player, staticBuildingLevel.getUpTime()); // 耗时
 
         if (immediate) { // 立即完成
             int freeTime = vipDataManager.getNum(player.lord.getVip(), VipConstant.FREE_BUILD_TIME, player);
-            int second = haust - freeTime; //
+            int second = needTime - freeTime;
             int needGold = (int) Math.ceil(second * 1.00 / 60);
             List<List<Integer>> costList = new ArrayList<>(staticBuildingLevel.getUpNeedResource());
             if (needGold > 0) {
@@ -3074,22 +3184,25 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         battlePassDataManager.updTaskSchedule(player.roleId, TaskType.COND_BUILDING_UP_43, 1);
 
         int now = TimeHelper.getCurrentSecond();
-        // 立即完成不添加进入队列
-        if (immediate) {
-            // 这里手动设置索引999, 并不存入队列
-            BuildQue que = createQue(player, 999, buildingType, buildingId, haust, now + haust);
+        if (immediate || needTime <= 0) {
+            // 立即完成, 不添加进入队列
+            // 这里手动设置索引999, 并不存入队列, 但使用处理队列的方式立即处理
+            BuildQue que = createQue(player, 999, buildingType, buildingId, needTime, now + needTime);
             // 设置结束时间
             que.setEndTime(now);
             que.setFoundationId(foundationId);
+            que.setIsCreate(true);
             // 清除免费加速
             que.clearFree();
             taskDataManager.updTask(player, TaskType.COND_FREE_CD, 1, que.getBuildingType()); // 任务进度
             dealOneQue(player, que);
         } else {
+            // 非立即完成, 放入队列开始处理
             for (int i = 1; i <= queCnt; i++) {
                 if (!buildQue.containsKey(i)) {
-                    BuildQue que = createQue(player, i, buildingType, buildingId, haust, now + haust);
+                    BuildQue que = createQue(player, i, buildingType, buildingId, needTime, now + needTime);
                     que.setFoundationId(foundationId);
+                    que.setIsCreate(true);
                     buildQue.put(i, que);
                     builder.setQueue(PbHelper.createBuildQuePb(que));
                     break;
@@ -3108,7 +3221,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      * @param rq
      * @return
      */
-    public GamePb1.SwapBuildingPosRs swapBuildingLocation(long roleId, GamePb1.SwapBuildingPosRq rq) {
+    public GamePb1.SwapBuildingPosRs swapBuildingPos(long roleId, GamePb1.SwapBuildingPosRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         int sourceBuildingId = rq.getBuildingId();
         int targetFoundationId = rq.getTargetFoundationId();
@@ -3143,6 +3256,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             buildingData.put(targetBuildingId, targetBuildingState);
             builder.addBuildingState(targetBuildingState.creatPb());
         }
+        // TODO 更新建筑的地貌buff
         return builder.build();
     }
 
@@ -3235,7 +3349,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
     }
 
     /**
-     * 采集经济作物
+     * 收取产出的经济作物
      *
      * @param player
      * @param curProductCrop
@@ -3249,7 +3363,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
 
         List<Integer> economicCropData = buildingState.getEconomicCropData();
         Integer cropId = curProductCrop.get(0);
-        if(economicCropData.contains(cropId)) {
+        if (economicCropData.contains(cropId)) {
             StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
             Prop prop = player.props.get(cropId);
             if (prop == null || prop.getCount() < sEconomicCrop.getMaxCnt()) {
@@ -3259,8 +3373,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             economicCropData.remove(cropId);
             buildingState.getCurProductCrop().clear();
         } else {
-            // 如果经济作物中途从建筑上移除了, 则不予奖励
-            // 如果该建筑还有绑定的经济作物，则继续生产下一个
+            // 如果经济作物中途从建筑上移除了, 则不予奖励; 如果该建筑还有绑定的经济作物，则继续生产下一个
             if (CheckNull.nonEmpty(economicCropData)) {
                 cropId = economicCropData.get(0);
                 StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
@@ -3287,10 +3400,10 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      */
     public void synPlayerBuildingState(Player player, int buildingId) {
         if (player != null && player.isLogin && player.ctx != null && player.getBuildingData().get(buildingId) != null) {
-            GamePb1.SynBuildingStateRs.Builder builder = GamePb1.SynBuildingStateRs.newBuilder();
+            GamePb1.SynBuildRs.Builder builder = GamePb1.SynBuildRs.newBuilder();
             BuildingState buildingState = player.getBuildingData().get(buildingId);
             builder.addBuildingState(buildingState.creatPb());
-            BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynBuildingStateRs.EXT_FIELD_NUMBER, GamePb1.SynBuildingStateRs.ext, builder.build());
+            BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynBuildRs.EXT_FIELD_NUMBER, GamePb1.SynBuildRs.ext, builder.build());
             MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
         }
     }
@@ -3314,21 +3427,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         boolean autoDispatch = rq.getAutoDispatch();
         if (autoDispatch) {
             // 一键派遣
-            List<BuildingState> buildingStateList = buildingData.values().stream()
-                    .sorted((o1, o2) -> o2.getResidentTopLimit() - o1.getResidentTopLimit())
-                    .collect(Collectors.toList());
-            for (BuildingState buildingState : buildingStateList) {
-                buildingData.put(buildingState.getBuildingId(), buildingState);
-                if (idleResidentCnt > 0) {
-                    int residentTopLimit = buildingState.getResidentTopLimit();
-                    int residentCnt = buildingState.getResidentCnt();
-                    buildingState.setResidentCnt(Math.min(residentTopLimit - residentCnt, idleResidentCnt));
-                    idleResidentCnt -= (residentTopLimit - residentCnt);
-                    // 有建筑被派遣新的居民, 则向客户端同步
-                    synPlayerBuildingState(player, buildingState.getBuildingId());
-                    // TODO 更新建筑产量或生产时间
-                }
-            }
+            autoDispatchResident(player);
         } else {
             int buildingId = rq.getBuildingId();
             int residentCnt = rq.getResidentCnt();
@@ -3348,10 +3447,25 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             int residentTopLimit = sBuildingLevel.getResident();
             BuildingState buildingState = buildingData.get(buildingId);
             buildingState.setResidentCnt(Math.min(buildingState.getResidentCnt() + residentCnt, residentTopLimit));
-            // TODO 更新建筑产量或生产时间
+            // TODO 根据居民数量, 更新对应资源或产出的计算
         }
 
         return builder.build();
+    }
+
+    /**
+     * 一键派遣居民
+     *
+     * @param player
+     */
+    private void autoDispatchResident(Player player) {
+        int idleResidentCnt = player.getIdleResidentCnt();
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
+
+
+        // 资源建筑有地貌buff加成, 优先派遣, 其余随机派遣
+
     }
 
     /**
@@ -3371,10 +3485,16 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             int[] autoDispatchHeroRule = BuildingType.AUTO_DISPATCH_HERO_RULE;
             for (int i = 0; i < autoDispatchHeroRule.length; i++) {
                 int buildingType = autoDispatchHeroRule[i];
+                // 根据建筑类型找对应内政属性最高的武将
+
                 if (BuildingDataManager.isResType(buildingType)) {
-                    // 资源建筑的一键委任, 优先委任有地貌buff加成的建筑
+                    // 资源建筑, 一类资源建筑内政
+
+                    // TODO 根据武将内政属性, 更新对应资源或产出的计算
                 } else {
-                    // 非资源建筑委任
+                    // 非资源建筑
+
+                    // TODO 根据武将内政属性, 更新对应资源或产出的计算
                 }
             }
         } else {
@@ -3385,7 +3505,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             for (Integer heroId : heroIdList) {
                 if (player.heros.containsKey(heroId) && !buildingState.getHeroIds().contains(heroId)) {
                     buildingState.getHeroIds().add(heroId);
-                    // TODO 更新建筑产量或生产时间
+                    // TODO 根据武将内政属性, 更新对应资源或产出的计算
                 }
             }
         }
@@ -3403,7 +3523,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
     private void autoDispatchHero(Player player, int buildingId, boolean dispatchResult) {
 
     }
-
 
     @GmCmd("building")
     @Override

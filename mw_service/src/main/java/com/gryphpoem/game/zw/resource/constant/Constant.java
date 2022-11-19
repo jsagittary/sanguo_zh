@@ -1542,7 +1542,17 @@ public final class Constant {
         int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
         int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
         int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
-
+        /*===========内政属性==========*/
+        int MORE_FOOD = 401; // 产粮, 提高农田生产效率, 绝对值
+        int MORE_WOOD = 402; // 伐木, 提高铸币厂生产效率, 绝对值
+        int MORE_SILVER = 403; // 铸币, 提高铸币厂生产效率, 绝对值
+        int MORE_ORE = 404; // 产矿, 提高矿石厂生产效率, 绝对值
+        int MORE_ARMY1 = 405; // 步兵训练, 增加步兵训练数量, 绝对值
+        int MORE_ARMY2 = 406; // 骑兵训练, 增加骑兵训练数量, 绝对值
+        int MORE_ARMY3 = 407; // 弓兵训练, 增加弓兵训练数量, 绝对值
+        int MORE_BETTER_ORDER_PROB = 408; // 商贸, 增加高品质订单获取的概率
+        int LESS_FERRY_PRODUCT_TIME = 409; // 海贸, 增加渡口材料获取速度
+        int LESS_HAPPINESS_RECOVERY_TIME = 410; // 文娱, 增加幸福度恢复速度
     }
 
     public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,

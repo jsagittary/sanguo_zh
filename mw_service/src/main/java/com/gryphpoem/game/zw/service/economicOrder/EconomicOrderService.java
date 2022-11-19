@@ -63,7 +63,11 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
     public GamePb1.GetEconomicOrderRs getEconomicOrder(long roleId) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         // 校验玩家集市是否解锁
+        if (player.building.getMall() <= 0) {
+            throw new MwException(GameError.FOUNDATION_NOT_UNLOCK, String.format("获取经济订单信息时, 集市建筑未解锁, roleId:%s", roleId));
+        }
 
+        // 刷新下玩家的订单(可能会有新的订单刷新)
         randomNewPreOrder(player);
         GamePb1.GetEconomicOrderRs.Builder builder = GamePb1.GetEconomicOrderRs.newBuilder();
         Map<Integer, EconomicOrder> canSubmitOrderData = player.getCanSubmitOrderData();
@@ -222,7 +226,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                     int place = 0;
                     List<Integer> openArea = worldDataManager.getOpenArea().stream().map(Area::getArea).collect(Collectors.toList());
                     for (Integer placeId : placeRange) {
-                        // TODO 如果订单来源城池所在区域未解锁, 则不可随机
+                        // 如果订单来源城池所在区域未解锁, 则不可随机
                         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(placeId);
                         if (placeId != BuildingType.MALL && !openArea.contains(staticCity.getArea())) {
                             continue;
@@ -236,8 +240,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                     economicOrder.setPlace(place);
                     if (place != BuildingType.MALL) {
                         // 来源非集市时, 判断其占领势力
-                        StaticCity staticCity = StaticWorldDataMgr.getMaxTypeCityByArea(place);
-                        City city = worldDataManager.getCityById(staticCity.getCityId());
+                        City city = worldDataManager.getCityById(place);
                         economicOrder.setPlaceCamp(city.getCamp());
                         // TODO 世界地图中各区块占领阵营发生变更时, 同步更新玩家订单中的出处阵营信息
                     } else {
@@ -271,7 +274,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
             economicOrder.setPreDisplay(0);
             canSubmitOrderData.put(keyId, economicOrder);
             preDisplayOrderData.remove(keyId);
-            // 创建可提交订单过期清除的延时任务
+            // 创建清除过期订单的延时任务
             DELAY_QUEUE.add(new RefreshEconomicOrderDelayRun(player, 2, keyId, economicOrder.getEndTime()));
 
             // 随机新的预显示订单

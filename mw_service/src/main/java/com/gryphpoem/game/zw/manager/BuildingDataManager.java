@@ -14,17 +14,43 @@ import com.gryphpoem.game.zw.pb.GamePb1.SynBuildRs;
 import com.gryphpoem.game.zw.pb.GamePb1.SynGainResRs;
 import com.gryphpoem.game.zw.pb.GamePb1.SyncRoleRebuildRs;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncAutoBuildRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BerlinWarConstant;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.CiaConstant;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.EffectConstant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HonorDailyConstant;
+import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.SolarTermsConstant;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.VipConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.dao.impl.p.ResourceDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.*;
-import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
+import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
+import com.gryphpoem.game.zw.resource.domain.p.Building;
+import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.p.Cia;
+import com.gryphpoem.game.zw.resource.domain.p.Common;
+import com.gryphpoem.game.zw.resource.domain.p.Effect;
+import com.gryphpoem.game.zw.resource.domain.p.Gains;
+import com.gryphpoem.game.zw.resource.domain.p.Mill;
+import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.p.ResourceMult;
+import com.gryphpoem.game.zw.resource.domain.s.StaticAgent;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCommandMult;
+import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -32,8 +58,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 @Component
 public class BuildingDataManager {
@@ -64,6 +96,8 @@ public class BuildingDataManager {
         for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
             BuildingState buildingState = new BuildingState();
             buildingState.setBuildingId(buildingInit.getBuildingId());
+            buildingState.setBuildingLv(buildingInit.getInitLv());
+            buildingState.setBuildingType(buildingInit.getBuildingType());
             buildingData.put(buildingInit.getBuildingId(), buildingState);
             if (isResType(buildingInit.getBuildingType())) {
                 player.mills.put(buildingInit.getBuildingId(), new Mill(buildingInit.getBuildingId(),
@@ -264,14 +298,25 @@ public class BuildingDataManager {
     }
 
     private static int getBuildingLv(int type, int pos, Player player) {
-        Building building = player.building;
-        if (CheckNull.isNull(building)) {
-            return 0;
-        }
-        if (isResType(type)) {
-            return getBuildingLv4Res(pos, player);
+        // Building building = player.building;
+        // if (CheckNull.isNull(building)) {
+        //     return 0;
+        // }
+        // if (isResType(type)) {
+        //     return getBuildingLv4Res(pos, player);
+        // } else {
+        //     return getBuildingLv(type, building);
+        // }
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        BuildingState buildingState = buildingData.get(pos);
+        if (buildingState != null) {
+            return buildingState.getBuildingLv();
         } else {
-            return getBuildingLv(type, building);
+            buildingState = new BuildingState();
+            buildingState.setBuildingId(pos);
+            buildingState.setBuildingLv(0);
+            buildingData.put(pos, buildingState);
+            return 0;
         }
 
     }
@@ -360,6 +405,10 @@ public class BuildingDataManager {
             builder.setState(state);
             builder.setRebuild(target.common.getReBuild());
             builder.addAllResAdd(listResAdd(target));
+            BuildingState buildingState = target.getBuildingData().get(buildQue.getPos());
+            if (buildingState != null) {
+                builder.addBuildingState(buildingState.creatPb());
+            }
 
             Base.Builder msg = PbHelper.createSynBase(SynBuildRs.EXT_FIELD_NUMBER, SynBuildRs.ext, builder.build());
             MsgDataManager.getIns().add(new Msg(target.ctx, msg.build(), target.roleId));
@@ -720,7 +769,8 @@ public class BuildingDataManager {
         if (isResType(type)) {
             return getMillTopLv(player, type);
         } else {
-            return getBuildingLv(type, building);
+            // return getBuildingLv(type, building);
+            return getBuildingLv(type, type, player);
         }
     }
 

@@ -2,22 +2,26 @@ package com.gryphpoem.game.zw.service.buildHomeCity;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
@@ -196,6 +200,13 @@ public class BuildHomeCityService implements GmCmdService {
             BuildingState buildingState = new BuildingState();
             buildingState.setBuildingId(BuildingType.WALL);
             buildingState.setBuildingLv(1);
+            buildingState.setBuildingType(BuildingType.WALL);
+            StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(BuildingType.WALL, 1);
+            if (sBuildingLevel == null) {
+                throw new MwException(GameError.NO_CONFIG, String.format("解锁城墙时, 未获取到城墙的等级配置, roleId:%s, buildingType:%s, buildingLv:%s", player.roleId, BuildingType.WALL, 1));
+            }
+            buildingState.setResidentCnt(0);
+            buildingState.setResidentTopLimit(sBuildingLevel.getResident());
             player.getBuildingData().put(BuildingType.WALL, buildingState);
             player.building.setWall(1);
             BuildingExt buildingExt = player.buildingExts.get(BuildingType.WALL);
@@ -223,16 +234,46 @@ public class BuildHomeCityService implements GmCmdService {
      * @return
      */
     public GamePb1.PeaceAndWelfareRs peaceAndWelfare(long roleId, GamePb1.PeaceAndWelfareRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        Map<Integer, Integer> peaceAndWelfareRecord = player.getPeaceAndWelfareRecord();
         int type = rq.getType();
-        if (type == 1) {
-            // 饮至策勋
-
+        Integer latestPlayTime = peaceAndWelfareRecord.get(type);
+        if (latestPlayTime > 0 && DateHelper.isToday(TimeHelper.getDate(latestPlayTime))) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("玩家今日已进行过安民济物, roleId:%s, type:%s, latestTime:%s", roleId, type, TimeHelper.getDate(latestPlayTime)));
+        }
+        List<List<Integer>> typeConfig = null;
+        switch (type) {
+            case 1:
+                typeConfig = Constant.PEACE_WELFARE_TYPE1_CONFIG;
+                break;
+            case 2:
+                typeConfig = Constant.PEACE_WELFARE_TYPE2_CONFIG;
+                break;
+        }
+        if (CheckNull.isEmpty(typeConfig) || typeConfig.size() < 3) {
+            throw new MwException(GameError.NO_CONFIG, String.format("玩家进行安民济物时, 配置错误, roleId:%S, type:%s", roleId, type));
+        }
+        List<Integer> consume = typeConfig.get(0); // 消耗
+        List<Integer> happinessAdd = typeConfig.get(1); // 增加的幸福度
+        List<Integer> residentAdd = typeConfig.get(2); // 增加的人口
+        if (consume.size() < 3 || happinessAdd.size() < 1 || residentAdd.size() < 1) {
+            throw new MwException(GameError.NO_CONFIG, String.format("玩家进行安民济物时, 配置错误, roleId:%S, type:%s", roleId, type));
         }
 
-        if (type == 2) {
-            // 千秋庆典
+        rewardDataManager.checkAndSubPlayerResHasSync(player, consume.get(0), consume.get(1), consume.get(2), AwardFrom.COMMON, "");
+        player.setHappiness(player.getHappiness() + happinessAdd.get(0));
+        // TODO 重新计算幸福度的范围, 同步更新人口恢复速度与资源产出速度
+        int residentTopLimit = player.getResidentTopLimit();
+        int residentTotalCnt = player.getResidentTotalCnt();
+        int finalAddResident = residentTotalCnt + residentAdd.get(0) > residentTopLimit ? residentTopLimit - residentTotalCnt : residentAdd.get(0);
+        player.addResidentTotalCnt(finalAddResident);
+        player.addIdleResidentCnt(finalAddResident);
 
-        }
+        // 更新记录时间
+        peaceAndWelfareRecord.put(type, TimeHelper.getCurrentSecond());
+
+        // 同步玩家信息
+        playerDataManager.syncRoleInfo(player);
 
         GamePb1.PeaceAndWelfareRs.Builder builder = GamePb1.PeaceAndWelfareRs.newBuilder();
         return builder.build();

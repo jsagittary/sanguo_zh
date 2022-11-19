@@ -53,17 +53,15 @@ public class Hero {
     private Map<Integer, AwakenData> awaken;
     private int sandTableState;//是否出战沙盘 1是 0否
     private int fightVal;//英雄战力值
-    //KEY:技能ID,VALUE:技能等级
-    private Map<Integer, Integer> skillLevels = new HashMap<>();
+    private Map<Integer, Integer> skillLevels = new HashMap<>();// KEY:技能ID,VALUE:技能等级
     private boolean isOnBaitTeam;//是否在采集鱼饵队列
     private int[] totem;
     private Integer treasureWare;//宝具
     private Map<Integer, TalentData> talent; // 武将天赋信息：key, 天赋页索引; value, 天赋页详情
-
-    /** 英雄品阶keyId*/
-    private int gradeKeyId;
-    /** 是否在主界面显示英雄奖励*/
-    private boolean showClient;
+    private boolean showClient; // 是否在主界面显示英雄奖励
+    private int gradeKeyId; // 英雄品阶keyId
+    private Map<Integer, Integer> interiorAttr; // 内政属性
+    private boolean isDispatched; // 是否已被委任
 
     public Hero() {
         attr = new int[4];// 三种属性，对应1-3位，0位为补位，不用
@@ -88,6 +86,7 @@ public class Hero {
         awaken = new TreeMap<>(Integer::compareTo);
         showClient = true;
         talent = new TreeMap<>(Integer::compareTo);
+        interiorAttr = new HashMap<>();
     }
 
     /**
@@ -865,6 +864,42 @@ public class Hero {
         return skillLevels;
     }
 
+    public boolean isOnBaitTeam() {
+        return isOnBaitTeam;
+    }
+
+    public void setOnBaitTeam(boolean onBaitTeam) {
+        isOnBaitTeam = onBaitTeam;
+    }
+
+    public int[] getTotem() {
+        return totem;
+    }
+
+    public int getTotemKey(int idx){
+        return totem[idx];
+    }
+
+    public void setTotemKey(int idx,int totemKey) {
+        totem[idx] = totemKey;
+    }
+
+    public Map<Integer, Integer> getInteriorAttr() {
+        return interiorAttr;
+    }
+
+    public void setInteriorAttr(Map<Integer, Integer> interiorAttr) {
+        this.interiorAttr = interiorAttr;
+    }
+
+    public boolean isDispatched() {
+        return isDispatched;
+    }
+
+    public void setDispatched(boolean dispatched) {
+        isDispatched = dispatched;
+    }
+
     @Override
     public String toString() {
         return "Hero{" +
@@ -885,6 +920,8 @@ public class Hero {
                 ", commandoPos=" + commandoPos +
                 ", quality=" + quality +
                 ", breakExp=" + breakExp +
+                ", cgyStage=" + cgyStage +
+                ", cgyLv=" + cgyLv +
                 ", washTotalFloorCount=" + washTotalFloorCount +
                 ", defPos=" + defPos +
                 ", extAttrs=" + extAttrs +
@@ -894,28 +931,17 @@ public class Hero {
                 ", warPlanes=" + warPlanes +
                 ", showFight=" + showFight +
                 ", awaken=" + awaken +
+                ", sandTableState=" + sandTableState +
+                ", fightVal=" + fightVal +
+                ", skillLevels=" + skillLevels +
+                ", isOnBaitTeam=" + isOnBaitTeam +
+                ", totem=" + Arrays.toString(totem) +
+                ", treasureWare=" + treasureWare +
                 ", talent=" + talent +
-                ", treasureWare=" + (CheckNull.isNull(treasureWare) ? -1 : treasureWare) +
+                ", interiorAttr=" + interiorAttr +
+                ", isDispatched=" + isDispatched +
+                ", gradeKeyId=" + gradeKeyId +
+                ", showClient=" + showClient +
                 '}';
-    }
-
-    public boolean isOnBaitTeam() {
-        return isOnBaitTeam;
-    }
-
-    public void setOnBaitTeam(boolean onBaitTeam) {
-        isOnBaitTeam = onBaitTeam;
-    }
-
-    public int[] getTotem() {
-        return totem;
-    }
-
-    public int getTotemKey(int idx){
-        return totem[idx];
-    }
-
-    public void setTotemKey(int idx,int totemKey) {
-        totem[idx] = totemKey;
     }
 }

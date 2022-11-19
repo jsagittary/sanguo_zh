@@ -37,11 +37,19 @@ public class ResourceMult {
     private int oilBerlinJob;
     private int oreBerlinJob;
 
-    //赛季天赋加成
+    // 赛季天赋加成
     private int foodSeasonTalent;
     private int elecSeasonTalent;
     private int oilSeasonTalent;
     private int oreSeasonTalent;
+
+    // 内政加成
+
+
+    // 地貌Buff加成
+
+
+    // 居民加成
 
     private int food;// 粮食
     private int elec;// 电

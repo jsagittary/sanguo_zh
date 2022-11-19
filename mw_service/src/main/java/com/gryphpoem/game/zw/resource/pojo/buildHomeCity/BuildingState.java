@@ -20,6 +20,26 @@ public class BuildingState {
     private int buildingId;
 
     /**
+     * 建筑类型
+     */
+    private int buildingType;
+
+    /**
+     * 建筑等级
+     */
+    private int buildingLv;
+
+    /**
+     * 建筑被放置的地基id
+     */
+    private int foundationId;
+
+    /**
+     * 建筑可被分配的居民上限, 用于派遣, 方便计算派遣的优先级
+     */
+    private int residentTopLimit;
+
+    /**
      * 被分配的农民数量
      */
     private int residentCnt;
@@ -28,11 +48,6 @@ public class BuildingState {
      * 被委任的武将id
      */
     private List<Integer> heroIds = new ArrayList<>();
-
-    /**
-     * 建筑被放置的地基id
-     */
-    private int foundationId;
 
     /**
      * 被分配产出的经济作物id
@@ -44,18 +59,44 @@ public class BuildingState {
      */
     private List<Integer> curProductCrop = new ArrayList<>();
 
-    private int buildingLv;
-
-    private int buildingType;
-
-    private int residentTopLimit;
-
     public int getBuildingId() {
         return buildingId;
     }
 
     public void setBuildingId(int buildingId) {
         this.buildingId = buildingId;
+    }
+
+    public int getBuildingType() {
+        return buildingType;
+    }
+
+    public void setBuildingType(int buildingType) {
+        this.buildingType = buildingType;
+    }
+
+    public int getBuildingLv() {
+        return buildingLv;
+    }
+
+    public void setBuildingLv(int buildingLv) {
+        this.buildingLv = buildingLv;
+    }
+
+    public int getFoundationId() {
+        return foundationId;
+    }
+
+    public void setFoundationId(int foundationId) {
+        this.foundationId = foundationId;
+    }
+
+    public int getResidentTopLimit() {
+        return residentTopLimit;
+    }
+
+    public void setResidentTopLimit(int residentTopLimit) {
+        this.residentTopLimit = residentTopLimit;
     }
 
     public int getResidentCnt() {
@@ -74,14 +115,6 @@ public class BuildingState {
         this.heroIds = heroIds;
     }
 
-    public int getFoundationId() {
-        return foundationId;
-    }
-
-    public void setFoundationId(int foundationId) {
-        this.foundationId = foundationId;
-    }
-
     public List<Integer> getEconomicCropData() {
         return economicCropData;
     }
@@ -98,30 +131,6 @@ public class BuildingState {
         this.curProductCrop = curProductCrop;
     }
 
-    public int getBuildingLv() {
-        return buildingLv;
-    }
-
-    public void setBuildingLv(int buildingLv) {
-        this.buildingLv = buildingLv;
-    }
-
-    public int getBuildingType() {
-        return buildingType;
-    }
-
-    public void setBuildingType(int buildingType) {
-        this.buildingType = buildingType;
-    }
-
-    public int getResidentTopLimit() {
-        return residentTopLimit;
-    }
-
-    public void setResidentTopLimit(int residentTopLimit) {
-        this.residentTopLimit = residentTopLimit;
-    }
-
     public BuildingState() {
     }
 
@@ -133,33 +142,38 @@ public class BuildingState {
 
     public BuildingState(CommonPb.BuildingState pb) {
         this.buildingId = pb.getBuildingId();
-        this.residentCnt = pb.getResidentCnt();
-        this.heroIds = pb.getHeroIdList();
-        this.foundationId = pb.getFoundationId();
-        this.economicCropData = pb.getEconomicCropIdList();
-        CommonPb.EconomicCropInfo economicCropInfo = pb.getEconomicCropInfo();
-        this.curProductCrop.add(economicCropInfo.getCropId());
-        this.curProductCrop.add(economicCropInfo.getStartTime());
-        this.curProductCrop.add(economicCropInfo.getEndTime());
         this.buildingLv = pb.getBuildingLv();
         this.buildingType = pb.getBuildingType();
+        this.foundationId = pb.getFoundationId();
+        this.residentTopLimit = pb.getResidentTopLimit();
+        this.residentCnt = pb.getResidentCnt();
+        this.heroIds = pb.getHeroIdList();
+        this.economicCropData = pb.getEconomicCropIdList();
+        if (pb.hasEconomicCropInfo()) {
+            CommonPb.EconomicCropInfo economicCropInfo = pb.getEconomicCropInfo();
+            this.curProductCrop.add(economicCropInfo.getCropId());
+            this.curProductCrop.add(economicCropInfo.getStartTime());
+            this.curProductCrop.add(economicCropInfo.getEndTime());
+        }
     }
 
     public CommonPb.BuildingState creatPb() {
         CommonPb.BuildingState.Builder pb = CommonPb.BuildingState.newBuilder();
         pb.setBuildingId(this.getBuildingId());
+        pb.setBuildingLv(this.buildingLv);
+        pb.setBuildingType(this.buildingType);
+        pb.setFoundationId(this.getFoundationId());
+        pb.setResidentTopLimit(this.residentTopLimit);
         pb.setResidentCnt(this.getResidentCnt());
         pb.addAllHeroId(this.getHeroIds());
-        pb.setFoundationId(this.getFoundationId());
         pb.addAllEconomicCropId(this.economicCropData);
         if (CheckNull.nonEmpty(this.curProductCrop) && this.curProductCrop.size() >= 3) {
             CommonPb.EconomicCropInfo.Builder economicCropInfo = CommonPb.EconomicCropInfo.newBuilder();
             economicCropInfo.setCropId(this.curProductCrop.get(0));
             economicCropInfo.setStartTime(this.curProductCrop.get(1));
             economicCropInfo.setEndTime(this.curProductCrop.get(2));
+            pb.setEconomicCropInfo(economicCropInfo.build());
         }
-        pb.setBuildingLv(this.buildingLv);
-        pb.setBuildingType(this.buildingType);
 
         return pb.build();
     }

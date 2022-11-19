@@ -881,6 +881,7 @@ public class PbHelper {
             builder.setParam(e.getParam());
         }
         builder.setFoundationId(e.getFoundationId());
+        builder.setIsCreate(e.getIsCreate());
         return builder.build();
     }
 

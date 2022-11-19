@@ -16,7 +16,7 @@ public class SwapBuildingPosHandler extends ClientHandler {
     public void action() throws Exception {
         GamePb1.SwapBuildingPosRq rq = msg.getExtension(GamePb1.SwapBuildingPosRq.ext);
         BuildingService buildingService = getService(BuildingService.class);
-        GamePb1.SwapBuildingPosRs resp = buildingService.swapBuildingLocation(getRoleId(), rq);
+        GamePb1.SwapBuildingPosRs resp = buildingService.swapBuildingPos(getRoleId(), rq);
         if (null != resp) {
             sendMsgToPlayer(GamePb1.SwapBuildingPosRs.ext, resp);
         }
