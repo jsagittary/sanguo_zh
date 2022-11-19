@@ -51,6 +51,10 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
             return;
         }
+        if (!hasEffectiveTimesSingleRound()) {
+            return;
+        }
+
 
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         if (!CheckNull.isEmpty(this.staticBuff.getEffects())) {

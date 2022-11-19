@@ -5,8 +5,8 @@ import com.gryphpoem.game.zw.pb.BattlePb;
 import lombok.Data;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Description:
@@ -62,32 +62,6 @@ public class FightContext {
     private BattlePb.RoundAction.Builder roundActionPb;                               // 回合动作pb
     private BattlePb.SkillAction.Builder skillActionPb;                               // 技能pb
     private BattlePb.OrdinaryAttackAction.Builder ordinaryAttackActionPb;             // 普攻pb
-    // 游戏逻辑限制动作嵌套动作, 只嵌套一层
-    private BattlePb.MultiEffectAction.Builder multiEffectActionPb;                   // 嵌套动作pb
-    private BattlePb.SkillAction.Builder effectSkillActionPb;                         // 效果技能攻击
-    private BattlePb.OrdinaryAttackAction.Builder effectAttackActionPb;               // 效果普攻攻击
-
-    /**
-     * 回合结束清除pb
-     */
-    public void roundEnd() {
-        if (Objects.nonNull(bothBattleEntityPb)) {
-            this.bothBattleEntityPb.clear();
-        }
-        if (Objects.nonNull(skillActionPb)) {
-            this.skillActionPb = null;
-        }
-        if (Objects.nonNull(this.ordinaryAttackActionPb)) {
-            this.ordinaryAttackActionPb = null;
-        }
-        if (Objects.nonNull(this.multiEffectActionPb)) {
-            this.multiEffectActionPb = null;
-        }
-        if (Objects.nonNull(effectSkillActionPb)) {
-            this.effectSkillActionPb = null;
-        }
-        if (Objects.nonNull(effectAttackActionPb)) {
-            this.effectAttackActionPb = null;
-        }
-    }
+    // 游戏逻辑限制动作嵌套动作, 无限嵌套, 策划配置规避无限循环
+    private LinkedList<MultiEffectActionPb> multiEffectActionPbList;                  // 无限嵌套的动作
 }

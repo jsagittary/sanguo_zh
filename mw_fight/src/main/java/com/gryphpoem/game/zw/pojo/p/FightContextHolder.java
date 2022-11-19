@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.pojo.p;
 import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.impl.buff.ConditionBuffImpl;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.util.FightPbUtil;
@@ -185,11 +186,12 @@ public class FightContextHolder {
 
     private void fillFightEntity(Force force, List<FightEntity> fightEntityList) {
         fightEntityList.add(new FightEntity(force.ownerId, force.id,
-                (int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, force.id)));
+                (int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, force.id), force.fighter.isAttacker, FightConstant.HeroType.PRINCIPAL_HERO));
         if (!CheckNull.isEmpty(force.assistantHeroList)) {
             for (FightAssistantHero ass : force.assistantHeroList) {
                 if (CheckNull.isNull(ass)) continue;
-                fightEntityList.add(new FightEntity(force.ownerId, ass.getHeroId(), (int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, ass.getHeroId())));
+                fightEntityList.add(new FightEntity(force.ownerId, ass.getHeroId(), (int) FightCalc.attributeValue(FightCommonConstant.AttrId.SPEED, force, ass.getHeroId()),
+                        force.fighter.isAttacker, FightConstant.HeroType.DEPUTY_HERO));
             }
         }
     }
@@ -260,12 +262,12 @@ public class FightContextHolder {
         return buffMap.get(timing);
     }
 
-    public void addRoundNum() {
-        LOCAL.get().setRoundNum(getRoundNum() + 1);
-    }
-
     public void clearRoundNum() {
         LOCAL.get().setRoundNum(0);
+    }
+
+    public void addRoundNum() {
+        LOCAL.get().setRoundNum(getRoundNum() + 1);
     }
 
 
@@ -322,28 +324,16 @@ public class FightContextHolder {
         LOCAL.get().setOrdinaryAttackActionPb(null);
     }
 
-    public BattlePb.SkillAction.Builder getCurEffectSkillActionPb() {
-        return LOCAL.get().getEffectSkillActionPb();
+    public LinkedList<MultiEffectActionPb> getMultiEffectActionList() {
+        return LOCAL.get().getMultiEffectActionPbList();
     }
 
-    public void setEffectSkillActionPb(BattlePb.SkillAction.Builder builder) {
-        LOCAL.get().setEffectSkillActionPb(builder);
-    }
+    public LinkedList<MultiEffectActionPb> getInitMultiEffectActionList() {
+        if (CheckNull.isNull(LOCAL.get().getMultiEffectActionPbList())) {
+            LOCAL.get().setMultiEffectActionPbList(new LinkedList<>());
+        }
 
-    public BattlePb.OrdinaryAttackAction.Builder getCurEffectAttackActionPb() {
-        return LOCAL.get().getEffectAttackActionPb();
-    }
-
-    public void setEffectAttackActionPb(BattlePb.OrdinaryAttackAction.Builder builder) {
-        LOCAL.get().setEffectAttackActionPb(builder);
-    }
-
-    public BattlePb.MultiEffectAction.Builder getCurMultiEffectActionPb() {
-        return LOCAL.get().getMultiEffectActionPb();
-    }
-
-    public void setCurMultiEffectActionPb(BattlePb.MultiEffectAction.Builder builder) {
-        LOCAL.get().setMultiEffectActionPb(builder);
+        return LOCAL.get().getMultiEffectActionPbList();
     }
 
     public BattlePb.BattleRoundStage.Builder getInitBattleRoundStagePb() {

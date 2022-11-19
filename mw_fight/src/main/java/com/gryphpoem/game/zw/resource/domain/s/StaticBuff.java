@@ -61,4 +61,8 @@ public class StaticBuff {
      * 同ID顶替规则
      */
     private int sameIdReplacementRule;
+    /**
+     * buff单回合生效次数
+     */
+    private int effectiveTimesSingleRound;
 }

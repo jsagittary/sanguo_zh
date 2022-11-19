@@ -240,6 +240,8 @@ public class FightLogic {
             }
 
             contextHolder.addRoundNum();
+            if (contextHolder.getRoundNum() > 1)
+                contextHolder.getBattleLogic().newRoundStart(force, target);
 
             LogUtil.fight("进攻方: ", force.ownerId, ", 防守方: ", target.ownerId, ", =============新回合开始=============");
             contextHolder.getInitBattleRoundStagePb().setRoundNum(contextHolder.getRoundNum());

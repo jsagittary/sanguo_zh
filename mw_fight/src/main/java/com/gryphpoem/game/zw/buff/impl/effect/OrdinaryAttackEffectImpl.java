@@ -15,16 +15,18 @@ import com.gryphpoem.push.util.CheckNull;
 
 import java.util.List;
 
+import static com.gryphpoem.game.zw.constant.FightConstant.EffectLogicId.COUNTERATTACK;
+
 /**
  * Description:
  * Author: zhangpeng
  * createTime: 2022-11-04 19:14
  */
 @BuffEffectType(buffEffect = FightConstant.BuffEffect.EFFECT)
-public class DoubleHitEffectImpl extends AbsFightEffect {
+public class OrdinaryAttackEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{FightConstant.EffectLogicId.DOUBLE_HIT};
+        return new int[]{FightConstant.EffectLogicId.DOUBLE_HIT, COUNTERATTACK};
     }
 
     @Override
@@ -49,20 +51,19 @@ public class DoubleHitEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, int timing, Object... params) {
-        if (contextHolder.getCurMultiEffectActionPb() != null) {
-            // 当前动作嵌套动作已有一层
-            return;
-        }
-
         List<Integer> effectConfig_ = effectConfig;
         ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
         if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getAtkHeroList()) || CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             return;
         }
 
-        contextHolder.setCurMultiEffectActionPb(BattlePb.MultiEffectAction.newBuilder());
-        contextHolder.setEffectAttackActionPb(BattlePb.OrdinaryAttackAction.newBuilder());
+        FightPbUtil.initNextMultiEffectAction(contextHolder, false);
         BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
+        MultiEffectActionPb curMultiEffectActionPb = contextHolder.getMultiEffectActionList().peekFirst();
+        if (rule.getEffectLogicId() == COUNTERATTACK) {
+            curMultiEffectActionPb.setCounterattack(false);
+        }
+
         for (Integer atkHeroId : actionDirection.getAtkHeroList()) {
             actionDirection.setCurAtkHeroId(atkHeroId);
             int actionAtkId = FightPbUtil.getActingSize(actionDirection.getAtk(), atkHeroId);
@@ -70,29 +71,43 @@ public class DoubleHitEffectImpl extends AbsFightEffect {
                 actionDirection.setCurDefHeroId(heroId);
                 LogUtil.fight("执行连击效果, 攻击方: ", actionDirection.getAtk().ownerId,
                         ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
-                battleLogic.buffOrdinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());
-                // 将当前动作添加进嵌套动作里
-                contextHolder.getCurMultiEffectActionPb().addAction(FightPbUtil.createBaseActionPb(BattlePb.OrdinaryAttackAction.action,
-                        contextHolder.getCurEffectAttackActionPb().build(), BattlePb.ActionTypeDefine.ORDINARY_ATTACK_VALUE, actionAtkId));
+                switch (rule.getEffectLogicId()) {
+                    case COUNTERATTACK:
+                        break;
+                    case FightConstant.EffectLogicId.DOUBLE_HIT:
+                        battleLogic.buffOrdinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());
+                        break;
+                }
+
+                // 将当前动作添加进嵌套效果里
+                curMultiEffectActionPb.getCurMultiEffectActionPb().addAction(FightPbUtil.createBaseActionPb(BattlePb.OrdinaryAttackAction.action,
+                        curMultiEffectActionPb.getCurAttackPb().build(), BattlePb.ActionTypeDefine.ORDINARY_ATTACK_VALUE, actionAtkId));
             }
         }
 
         // 创建baseEffectAction pb
         SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
         BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.MultiEffectAction.effect,
-                contextHolder.getCurMultiEffectActionPb().build(), FightConstant.EffectLogicId.DOUBLE_HIT,
+                curMultiEffectActionPb.getCurMultiEffectActionPb().build(), rule.getEffectLogicId(),
                 FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()),
                 FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.getForceId()), timing, FightConstant.EffectStatus.APPEAR,
                 simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
-        if (contextHolder.getCurSkillActionPb() != null) {
-            contextHolder.getCurSkillActionPb().addEffectAction(basePb.build());
-        } else {
-            contextHolder.getCurAttackActionPb().addEffectAction(basePb.build());
+        boolean padding = false;
+        if (curMultiEffectActionPb.getLastSkillPb() != null) {
+            curMultiEffectActionPb.getLastSkillPb().addEffectAction(basePb.build());
+            padding = true;
         }
-
-        // 清除嵌套效果
-        contextHolder.setCurMultiEffectActionPb(null);
-        contextHolder.setEffectAttackActionPb(null);
+        if (curMultiEffectActionPb.getLastAttackPb() != null) {
+            curMultiEffectActionPb.getLastAttackPb().addEffectAction(basePb.build());
+            padding = true;
+        }
+        if (!padding) {
+            if (curMultiEffectActionPb.getRoundActionPb() != null) {
+                curMultiEffectActionPb.getRoundActionPb().addEffectAction(basePb.build());
+            } else {
+                LogUtil.error("嵌套普攻伤害有问题, rule: ", rule.getEffectId(), ", curList: ", contextHolder.getMultiEffectActionList());
+            }
+        }
     }
 
     @Override
@@ -101,7 +116,6 @@ public class DoubleHitEffectImpl extends AbsFightEffect {
 
     @Override
     public boolean canEffect(FightContextHolder contextHolder, Object... params) {
-        // 若当前没有嵌套动作, 则可以触发连击效果
-        return CheckNull.isNull(contextHolder.getCurMultiEffectActionPb());
+        return FightPbUtil.curActionCounterattack(contextHolder);
     }
 }

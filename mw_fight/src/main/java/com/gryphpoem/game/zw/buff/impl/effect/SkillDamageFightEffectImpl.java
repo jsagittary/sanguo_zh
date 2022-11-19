@@ -55,10 +55,6 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectiveness(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, int timing, Object... params) {
-        if (timing != FightConstant.BuffEffectTiming.ACTIVE_RELEASE && contextHolder.getCurMultiEffectActionPb() != null) {
-            return;
-        }
-
         List<Integer> effectConfig_ = effectConfig;
         ActionDirection actionDirection = actionDirection(fightBuff, contextHolder, effectConfig_);
         if (CheckNull.isNull(actionDirection) || CheckNull.isEmpty(actionDirection.getAtkHeroList()) || CheckNull.isEmpty(actionDirection.getDefHeroList())) {
@@ -67,8 +63,7 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
         if (!CheckNull.isEmpty(actionDirection.getAtkHeroList()) && !CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             if (timing != FightConstant.BuffEffectTiming.ACTIVE_RELEASE) {
-                contextHolder.setCurMultiEffectActionPb(BattlePb.MultiEffectAction.newBuilder());
-                contextHolder.setEffectSkillActionPb(BattlePb.SkillAction.newBuilder());
+                FightPbUtil.initNextMultiEffectAction(contextHolder, true);
             }
 
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
@@ -84,31 +79,18 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
                     if (timing != FightConstant.BuffEffectTiming.ACTIVE_RELEASE) {
                         SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
-                        // 将当前动作添加进嵌套动作里
-                        contextHolder.getCurMultiEffectActionPb().addAction(FightPbUtil.createBaseActionPb(BattlePb.SkillAction.action,
-                                contextHolder.getCurEffectSkillActionPb().setSkillId(simpleHeroSkill.getS_skill().getSkillId()).build(),
+                        // 将当前动作添加进嵌套动作效果里
+                        MultiEffectActionPb curMultiAction = contextHolder.getMultiEffectActionList().peekFirst();
+                        curMultiAction.getCurMultiEffectActionPb().addAction(FightPbUtil.createBaseActionPb(BattlePb.SkillAction.action,
+                                curMultiAction.getCurSkillPb().setSkillId(simpleHeroSkill.getS_skill().getSkillId()).build(),
                                 BattlePb.ActionTypeDefine.SKILL_ATTACK_VALUE, actionAtkId));
+                        curMultiAction.getCurSkillPb().clear();
                     }
                 }
             }
 
-            // 创建baseEffectAction pb
             if (timing != FightConstant.BuffEffectTiming.ACTIVE_RELEASE) {
-                SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
-                BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.MultiEffectAction.effect,
-                        contextHolder.getCurMultiEffectActionPb().build(), FightConstant.EffectLogicId.SKILL_DAMAGE,
-                        FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()),
-                        FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.getForceId()), timing, FightConstant.EffectStatus.APPEAR,
-                        simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
-                if (contextHolder.getCurSkillActionPb() != null) {
-                    contextHolder.getCurSkillActionPb().addEffectAction(basePb.build());
-                } else {
-                    contextHolder.getCurAttackActionPb().addEffectAction(basePb.build());
-                }
-
-                // 清除嵌套效果
-                contextHolder.setCurMultiEffectActionPb(null);
-                contextHolder.setEffectAttackActionPb(null);
+                FightPbUtil.handleAfterSkillDamageEffect(fightBuff, contextHolder, rule, timing);
             }
         }
     }
@@ -119,7 +101,6 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
     @Override
     public boolean canEffect(FightContextHolder contextHolder, Object... params) {
-        // 若当前没有嵌套动作, 则可以触发连击效果
-        return CheckNull.isNull(contextHolder.getCurMultiEffectActionPb());
+        return FightPbUtil.curActionCounterattack(contextHolder);
     }
 }

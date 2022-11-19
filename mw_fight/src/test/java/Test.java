@@ -7,10 +7,11 @@ import java.util.Arrays;
  */
 public class Test {
     public static void main(String[] args) {
-        StudentText[] stu = new StudentText[3];
+        StudentText[] stu = new StudentText[4];
         stu[0] = new StudentText(101, "lisi");
         stu[1] = new StudentText(100, "zhangsan");
         stu[2] = new StudentText(102, "wangwu");
+        stu[3] = new StudentText(101, "xiba");
         System.out.println(Arrays.toString(stu));    //将数组中的各个元素打印出来
         Arrays.sort(stu);   //对数组中元素进行排序
         System.out.println(Arrays.toString(stu));

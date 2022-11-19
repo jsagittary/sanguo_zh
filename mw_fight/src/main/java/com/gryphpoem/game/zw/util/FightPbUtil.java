@@ -1,14 +1,20 @@
 package com.gryphpoem.game.zw.util;
 
 import com.google.protobuf.GeneratedMessage;
+import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.MultiEffectActionPb;
+import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description:
@@ -163,13 +169,23 @@ public class FightPbUtil {
      * @return
      */
     public static void addEffectActionList(FightContextHolder contextHolder, BattlePb.BaseEffectAction.Builder basePb) {
-        if (contextHolder.getCurEffectSkillActionPb() != null) {
-            contextHolder.getCurEffectSkillActionPb().addEffectAction(basePb.build());
-            return;
-        }
-        if (contextHolder.getCurEffectAttackActionPb() != null) {
-            contextHolder.getCurEffectAttackActionPb().addEffectAction(basePb.build());
-            return;
+        if (!CheckNull.isEmpty(contextHolder.getMultiEffectActionList())) {
+            MultiEffectActionPb firstPb = contextHolder.getInitMultiEffectActionList().peekFirst();
+            if (Objects.nonNull(firstPb)) {
+                boolean padding = false;
+                if (Objects.nonNull(firstPb.getCurSkillPb())) {
+                    firstPb.getCurSkillPb().addEffectAction(basePb.build());
+                    padding = true;
+                }
+                if (Objects.nonNull(firstPb.getCurAttackPb())) {
+                    firstPb.getCurAttackPb().addEffectAction(basePb.build());
+                    padding = true;
+                }
+                if (!padding && Objects.nonNull(firstPb.getRoundActionPb())) {
+                    firstPb.getRoundActionPb().addEffectAction(basePb.build());
+                }
+                return;
+            }
         }
 
         if (contextHolder.getCurSkillActionPb() != null) {
@@ -187,62 +203,23 @@ public class FightPbUtil {
     }
 
     /**
-     * 获取当前动作结算结果pb
-     *
-     * @param contextHolder
-     * @return
-     */
-    public static BattlePb.ActionResult.Builder curActionResult(FightContextHolder contextHolder) {
-        if (contextHolder.getCurEffectSkillActionPb() != null) {
-            BattlePb.ActionResult builder = contextHolder.getCurEffectSkillActionPb().getResult();
-            if (builder == null) {
-                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
-                contextHolder.getCurEffectSkillActionPb().setResult(resultPb);
-                return resultPb;
-            }
-        }
-        if (contextHolder.getCurEffectAttackActionPb() != null) {
-            BattlePb.ActionResult builder = contextHolder.getCurEffectAttackActionPb().getResult();
-            if (builder == null) {
-                BattlePb.ActionResult.Builder resultPb = BattlePb.ActionResult.newBuilder();
-                contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
-                return resultPb;
-            }
-        }
-
-        if (contextHolder.getCurSkillActionPb() != null) {
-            BattlePb.ActionResult resultPb = contextHolder.getCurSkillActionPb().getResult();
-            if (resultPb == null) {
-                BattlePb.ActionResult.Builder resultPb_ = BattlePb.ActionResult.newBuilder();
-                contextHolder.getCurSkillActionPb().setResult(resultPb_);
-                return resultPb_;
-            }
-        } else {
-            BattlePb.ActionResult resultPb = contextHolder.getCurAttackActionPb().getResult();
-            if (resultPb == null) {
-                BattlePb.ActionResult.Builder resultPb_ = BattlePb.ActionResult.newBuilder();
-                contextHolder.getCurAttackActionPb().setResult(resultPb_);
-                return resultPb_;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * 往当前动作塞动作结果
      *
      * @param contextHolder
      * @param resultPb
      */
     public static void setActionResult(FightContextHolder contextHolder, BattlePb.ActionResult resultPb) {
-        if (contextHolder.getCurEffectSkillActionPb() != null) {
-            contextHolder.getCurEffectSkillActionPb().setResult(resultPb);
-            return;
-        }
-        if (contextHolder.getCurEffectAttackActionPb() != null) {
-            contextHolder.getCurEffectAttackActionPb().setResult(resultPb);
-            return;
+        if (!CheckNull.isEmpty(contextHolder.getMultiEffectActionList())) {
+            MultiEffectActionPb firstPb = contextHolder.getInitMultiEffectActionList().peekFirst();
+            if (Objects.nonNull(firstPb)) {
+                if (Objects.nonNull(firstPb.getCurSkillPb())) {
+                    firstPb.getCurSkillPb().setResult(resultPb);
+                }
+                if (Objects.nonNull(firstPb.getCurAttackPb())) {
+                    firstPb.getCurAttackPb().setResult(resultPb);
+                }
+                return;
+            }
         }
 
         if (contextHolder.getCurSkillActionPb() != null) {
@@ -251,6 +228,90 @@ public class FightPbUtil {
         if (contextHolder.getCurAttackActionPb() != null) {
             contextHolder.getCurAttackActionPb().setResult(resultPb);
         }
+    }
 
+    public static void initNextMultiEffectAction(FightContextHolder contextHolder, boolean skill) {
+        MultiEffectActionPb curMultiAction = new MultiEffectActionPb();
+        BattlePb.MultiEffectAction.Builder builder = BattlePb.MultiEffectAction.newBuilder();
+        curMultiAction.setCurMultiEffectActionPb(builder);
+        LinkedList<MultiEffectActionPb> multiEffectActionList = contextHolder.getInitMultiEffectActionList();
+
+        MultiEffectActionPb mAction = multiEffectActionList.peekFirst();
+        if (Objects.nonNull(mAction)) {
+            if (Objects.nonNull(mAction.getCurSkillPb()))
+                curMultiAction.setLastSkillPb(mAction.getCurSkillPb());
+
+            if (Objects.nonNull(mAction.getCurAttackPb())) {
+                curMultiAction.setLastAttackPb(mAction.getCurAttackPb());
+            }
+        } else {
+            boolean padding = false;
+            if (Objects.nonNull(contextHolder.getCurSkillActionPb())) {
+                curMultiAction.setLastSkillPb(contextHolder.getCurSkillActionPb());
+                padding = true;
+            }
+            if (Objects.nonNull(contextHolder.getCurAttackActionPb())) {
+                curMultiAction.setLastAttackPb(contextHolder.getCurAttackActionPb());
+                padding = true;
+            }
+            if (!padding && Objects.nonNull(contextHolder.getRoundActionPb())) {
+                curMultiAction.setRoundActionPb(contextHolder.getRoundActionPb());
+            }
+        }
+
+        if (skill)
+            curMultiAction.setCurSkillPb(BattlePb.SkillAction.newBuilder());
+        else
+            curMultiAction.setCurAttackPb(BattlePb.OrdinaryAttackAction.newBuilder());
+        multiEffectActionList.addFirst(curMultiAction);
+    }
+
+    /**
+     * 释放完技能伤害效果后的处理
+     *
+     * @param fightBuff
+     * @param contextHolder
+     * @param timing
+     */
+    public static void handleAfterSkillDamageEffect(IFightBuff fightBuff, FightContextHolder contextHolder, StaticEffectRule rule, int timing) {
+        MultiEffectActionPb curMultiAction = contextHolder.getMultiEffectActionList().removeFirst();
+        SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
+        BattlePb.BaseEffectAction.Builder basePb = FightPbUtil.createBaseEffectActionPb(BattlePb.MultiEffectAction.effect,
+                curMultiAction.getCurMultiEffectActionPb().build(), FightConstant.EffectLogicId.SKILL_DAMAGE,
+                FightPbUtil.getActingSize(fightBuff.getBuffGiver(), fightBuff.getBuffGiverId()),
+                FightPbUtil.getActingSize(fightBuff.getForce(), fightBuff.getForceId()), timing, FightConstant.EffectStatus.APPEAR,
+                simpleHeroSkill.isOnStageSkill(), simpleHeroSkill.getS_skill().getSkillId());
+
+        boolean padding = false;
+        if (curMultiAction.getLastSkillPb() != null) {
+            curMultiAction.getLastSkillPb().addEffectAction(basePb.build());
+            padding = true;
+        }
+        if (curMultiAction.getLastAttackPb() != null) {
+            curMultiAction.getLastAttackPb().addEffectAction(basePb.build());
+            padding = true;
+        }
+        if (!padding) {
+            if (curMultiAction.getRoundActionPb() != null) {
+                curMultiAction.getRoundActionPb().addEffectAction(basePb.build());
+            } else {
+                LogUtil.error("嵌套技能伤害有问题, rule: ", rule.getEffectId(), ", curList: ", contextHolder.getMultiEffectActionList());
+            }
+        }
+    }
+
+    /**
+     * 判断当前动作是否可以进行反击
+     *
+     * @param contextHolder
+     * @return
+     */
+    public static boolean curActionCounterattack(FightContextHolder contextHolder) {
+        if (CheckNull.isEmpty(contextHolder.getMultiEffectActionList()))
+            return true;
+        MultiEffectActionPb pb = contextHolder.getMultiEffectActionList().peekFirst();
+        if (CheckNull.isNull(pb))
+            return true;
+        return pb.isCounterattack();
     }
 }

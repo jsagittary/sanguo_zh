@@ -63,6 +63,11 @@ public abstract class AbsConfigBuff implements IFightBuff {
      */
     protected IHeroSkill sSkill;
 
+    /**
+     * 单回合生效次数
+     */
+    protected int effectiveTimesSingleRound;
+
     public AbsConfigBuff() {
     }
 
@@ -131,6 +136,17 @@ public abstract class AbsConfigBuff implements IFightBuff {
         }
 
         return true;
+    }
+
+    protected boolean hasEffectiveTimesSingleRound() {
+        if (this.effectiveTimesSingleRound == 0)
+            return true;
+        return this.effectiveTimesSingleRound < this.staticBuff.getEffectiveTimesSingleRound();
+    }
+
+    @Override
+    public void clearEffectiveTimesSingleRound() {
+        this.effectiveTimesSingleRound = 0;
     }
 
     @Override

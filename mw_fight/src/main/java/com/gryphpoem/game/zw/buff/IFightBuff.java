@@ -157,4 +157,10 @@ public interface IFightBuff<T extends StaticBuff, S extends Force> extends IUniq
      * @return
      */
     void buffLoseEffectiveness(FightContextHolder contextHolder, Object... params);
+
+    /**
+     * 清除每回合buff作用次数
+     */
+    void clearEffectiveTimesSingleRound();
+
 }

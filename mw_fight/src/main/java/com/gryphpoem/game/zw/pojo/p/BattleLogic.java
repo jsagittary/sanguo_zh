@@ -531,4 +531,34 @@ public class BattleLogic {
         }
     }
 
+    /**
+     * 双方武将新的回合开始
+     *
+     * @param force
+     * @param target
+     */
+    public void newRoundStart(Force force, Force target) {
+        clearEffectiveTimesSingleRound(force);
+        clearEffectiveTimesSingleRound(target);
+    }
+
+    private void clearEffectiveTimesSingleRound(Force force) {
+        if (!CheckNull.isEmpty(force.buffList)) {
+            force.buffList.forEach(fightBuff -> {
+                if (CheckNull.isNull(fightBuff)) return;
+                fightBuff.clearEffectiveTimesSingleRound();
+            });
+        }
+        if (!CheckNull.isEmpty(force.assistantHeroList)) {
+            force.assistantHeroList.forEach(ass -> {
+                if (CheckNull.isNull(ass)) return;
+                if (CheckNull.isEmpty(ass.getBuffList())) return;
+                ass.getBuffList().forEach(fightBuff -> {
+                    if (CheckNull.isNull(fightBuff)) return;
+                    fightBuff.clearEffectiveTimesSingleRound();
+                });
+            });
+        }
+    }
+
 }

@@ -348,6 +348,10 @@ public interface FightConstant {
          */
         int SHIELD = 8;
         /**
+         * 反击
+         */
+        int COUNTERATTACK = 20;
+        /**
          * 连击
          */
         int DOUBLE_HIT = 21;
