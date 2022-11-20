@@ -69,13 +69,15 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
             int actionAtkId = FightPbUtil.getActingSize(actionDirection.getAtk(), atkHeroId);
             for (Integer heroId : actionDirection.getDefHeroList()) {
                 actionDirection.setCurDefHeroId(heroId);
-                LogUtil.fight("执行连击效果, 攻击方: ", actionDirection.getAtk().ownerId,
-                        ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
                 switch (rule.getEffectLogicId()) {
                     case COUNTERATTACK:
+                        LogUtil.fight("执行反击效果, 攻击方: ", actionDirection.getAtk().ownerId,
+                                ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
                         battleLogic.buffCounterAttack(actionDirection, contextHolder, effectConfig_);
                         break;
                     case FightConstant.EffectLogicId.DOUBLE_HIT:
+                        LogUtil.fight("执行连击效果, 攻击方: ", actionDirection.getAtk().ownerId,
+                                ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
                         battleLogic.buffOrdinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());
                         break;
                 }
