@@ -200,12 +200,6 @@ public class BattleLogic {
      * @param battleType
      */
     public void ordinaryAttack(Force atk, Force def, int atkHeroId, List<Integer> targetList, int battleType, FightContextHolder contextHolder) {
-        // 触发buff
-        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_GENERAL_ATTACK);
-        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_HIT);
-        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_ATTACKED);
-        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING);
-
         targetList.clear();
         targetList.add(def.id);
         if (!CheckNull.isEmpty(def.assistantHeroList)) {
@@ -213,6 +207,12 @@ public class BattleLogic {
         }
         int targetId = targetList.get(RandomHelper.randomInSize(targetList.size()));
         contextHolder.resetActionDirection(atk, def, atkHeroId, targetId);
+        
+        // 触发buff
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_GENERAL_ATTACK);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_HIT);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_ATTACKED);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING);
 
         // 计算普攻伤害
         hurt(contextHolder.getActionDirection(), FightCalc.calAttack(contextHolder.getActionDirection(), battleType), contextHolder);

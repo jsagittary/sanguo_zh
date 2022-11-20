@@ -256,6 +256,14 @@ public interface FightConstant {
          * 敌方至少一将
          */
         AT_LEAST_ONE_HERO_FROM_ENEMY_SIDE(25, DEF_SIZE),
+        /**
+         * 继承上一个动作的进攻者 (连击专用)
+         */
+        INHERIT_EXECUTION_OBJECT(31, null),
+        /**
+         * 对当前攻击者 (反击使用)
+         */
+        TO_THE_CURRENT_ATTACKER(32, null),
         ;
 
         private int type;

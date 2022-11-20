@@ -82,6 +82,7 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
                 // 将当前动作添加进嵌套效果里
                 curMultiEffectActionPb.getCurMultiEffectActionPb().addAction(FightPbUtil.createBaseActionPb(BattlePb.OrdinaryAttackAction.action,
                         curMultiEffectActionPb.getCurAttackPb().build(), BattlePb.ActionTypeDefine.ORDINARY_ATTACK_VALUE, actionAtkId));
+                curMultiEffectActionPb.getCurAttackPb().clear();
             }
         }
 

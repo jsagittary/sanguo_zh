@@ -179,6 +179,11 @@ public class FightUtil {
                     direction.getDefHeroList().add(fightBuff.getForceId());
                 }
                 break;
+            case INHERIT_EXECUTION_OBJECT:
+                // 连击使用, 攻击方仍然是当前普攻者的进攻者
+                direction.setAtk(contextHolder.getCurAttacker());
+                direction.getAtkHeroList().add(contextHolder.getCurAtkHeroId());
+                break;
             default:
                 actingForce(buffAttacker, buffDefender, buffObjective, direction, performer);
                 break;
