@@ -294,6 +294,10 @@ public class MineService {
                 for (List<Integer> mineIdList : mineIdListList) {
                     if (mineIdList.size() == 2) {
                         isInMineIdRange = mineId >= mineIdList.get(0) && mineId <= mineIdList.get(1);
+                        if (isInMineIdRange) {
+                            // 采集矿点在配置的任一范围矿点即可
+                            break;
+                        }
                     }
                 }
             }
