@@ -73,6 +73,7 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
                         ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
                 switch (rule.getEffectLogicId()) {
                     case COUNTERATTACK:
+                        battleLogic.buffCounterAttack(actionDirection, contextHolder, effectConfig_);
                         break;
                     case FightConstant.EffectLogicId.DOUBLE_HIT:
                         battleLogic.buffOrdinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());

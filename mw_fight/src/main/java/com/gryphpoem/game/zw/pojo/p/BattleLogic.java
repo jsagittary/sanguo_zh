@@ -207,7 +207,7 @@ public class BattleLogic {
         }
         int targetId = targetList.get(RandomHelper.randomInSize(targetList.size()));
         contextHolder.resetActionDirection(atk, def, atkHeroId, targetId);
-        
+
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_GENERAL_ATTACK);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_HIT);
@@ -241,6 +241,32 @@ public class BattleLogic {
 
         // 计算普攻伤害
         hurt(actionDirection, FightCalc.calAttack(actionDirection, battleType), contextHolder);
+
+        // 触发buff
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT, effectParams);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_ATTACKED, effectParams);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BLEEDING, effectParams);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BLOOD_VOLUME_BELOW_PERCENTAGE);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_GENERAL_ATTACK, effectParams);
+    }
+
+    /**
+     * buff反击伤害
+     *
+     * @param actionDirection
+     * @param contextHolder
+     * @param effectConfig
+     */
+    public void buffCounterAttack(ActionDirection actionDirection, FightContextHolder contextHolder, List<Integer> effectConfig) {
+        // 触发buff
+        Object[] effectParams = new Object[]{actionDirection};
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_GENERAL_ATTACK, effectParams);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_HIT, effectParams);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BEING_ATTACKED, effectParams);
+        FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_BLEEDING, effectParams);
+
+        // 计算普攻伤害
+        hurt(actionDirection, FightCalc.calCounterAttack(actionDirection, effectConfig, contextHolder.getBattleType()), contextHolder);
 
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_BEING_HIT, effectParams);

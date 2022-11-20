@@ -285,6 +285,64 @@ public class FightCalc {
     }
 
     /**
+     * 计算反击普攻伤害计算
+     *
+     * @param actionDirection
+     * @param effectConfig
+     * @param battleType
+     * @return
+     */
+    public static int calCounterAttack(ActionDirection actionDirection, List<Integer> effectConfig, int battleType) {
+        LogUtil.fight("*******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
+                actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始进行反击普攻计算******");
+        // 基础伤害
+        double baseHurt = baseHurt(actionDirection);
+        // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
+        baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        LogUtil.fight("计算反击伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
+                Arrays.toString(effectConfig.toArray()), ", 计算完固伤部分的基础伤害: ", baseHurt);
+        // 血量衰减
+        double bloodValueAttenuation = bloodValueAttenuation(actionDirection.getAtk());
+        LogUtil.fight("反击普攻伤害参与计算部分-血量衰减, 修正值: ", bloodValueAttenuation);
+        // 普攻修正
+        double generalAttackCorrection = attackCorrection(actionDirection);
+        // 终伤修正
+        double finalDamageCorrection = finalDamageCorrection(actionDirection);
+        // 兵种克制修正
+        double armsRestraintCorrection = armsRestraintCorrection(actionDirection);
+        // 普攻暴击伤害修正
+        double attackCriticalDamageCorrection = attackCriticalDamageCorrection(actionDirection);
+
+        // 浮动修正=[0.9,1.1]
+        double floatCorrection = RandomUtils.nextFloat(0.9f, 1.1f);
+        LogUtil.fight("反击普攻伤害参与计算部分-浮动修正, 修正值: ", floatCorrection);
+        // 克制=1+克制关系系数
+        double finalRestrain = getFinalRestrain(actionDirection, battleType);
+        LogUtil.fight("反击普攻伤害参与计算部分-克制, 克制值: ", finalRestrain);
+
+        double damage = (baseHurt * bloodValueAttenuation * generalAttackCorrection * finalDamageCorrection * armsRestraintCorrection *
+                attackCriticalDamageCorrection * floatCorrection * finalRestrain);
+        double damage_ = calDamageChange(actionDirection, damage);
+        LogUtil.fight(
+                "进攻方: ", actionDirection.getAtk().ownerId,
+                "-", actionDirection.getCurAtkHeroId(),
+                ", 对防守方: ", actionDirection.getDef().ownerId,
+                "-", actionDirection.getCurDefHeroId(),
+                ", 战斗回合===》战斗类型: ", battleType,
+                ", 反击普攻伤害汇总结算, 基础伤害: ", baseHurt,
+                ", 血量衰减: ", bloodValueAttenuation,
+                ", 普攻修正: ", generalAttackCorrection,
+                ", 重伤修正: ", finalDamageCorrection,
+                ", 兵种克制修正: ", armsRestraintCorrection,
+                ", 普攻暴击伤害修正: ", attackCriticalDamageCorrection,
+                "， 浮动修正: ", floatCorrection,
+                ", 克制: ", finalRestrain,
+                ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
+                ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_);
+        return (int) damage_;
+    }
+
+    /**
      * 计算无敌, 护盾的效果值
      *
      * @param actionDirection
