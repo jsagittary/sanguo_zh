@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.resource.util;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -62,5 +64,15 @@ public class HeroUtil {
                 }
             });
         }
+    }
+
+    /**
+     * 将领经验=（杀敌数+损兵数）/ (s_system表中Id389)
+     *
+     * @param force
+     * @return
+     */
+    public static float addHeroExpExp(Force force) {
+        return (force.killed + force.totalLost) * Constant.NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT;
     }
 }

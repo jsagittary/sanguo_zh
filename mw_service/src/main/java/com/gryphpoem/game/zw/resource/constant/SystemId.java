@@ -1327,6 +1327,31 @@ public class SystemId {
     public static final int GUAN_PING_RESCUE_REWARD = 373;
 
     /**
+     * 正常攻打副本及其他战斗经验系数
+     */
+    public static final int NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT = 389;
+
+    /**
+     * 阵营战（打NPC城池）：军工=杀敌数**系数      system表390
+     */
+    public static final int SYSTEM_ID_390 = 390;
+
+    /**
+     * 城池战（打玩家城池）：军工=损兵数**系数      system表391
+     */
+    public static final int SYSTEM_ID_391 = 391;
+
+    /**
+     * 矿点战（资源点战斗）：军工=损兵数**系数      system表392
+     */
+    public static final int SYSTEM_ID_392 = 392;
+
+    /**
+     * 燃油=20000+（杀敌数+损兵数）*系数      system表393
+     */
+    public static final int SYSTEM_ID_393 = 393;
+
+    /**
      * 战斗所有buff触发成功最高次数
      */
     public static final int ALL_EFFECTIVE_TIMES_SINGLE_ROUND = 801;

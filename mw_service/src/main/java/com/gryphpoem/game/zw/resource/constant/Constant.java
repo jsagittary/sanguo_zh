@@ -1030,10 +1030,39 @@ public final class Constant {
     public static List<List<Integer>> REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION;
 
     /**
+     * 正常攻打副本及其他战斗经验系数
+     */
+    public static float NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT;
+
+    /**
+     * 阵营战（打NPC城池）：军工=杀敌数**系数      system表390
+     */
+    public static float SYSTEM_ID_390;
+
+    /**
+     * 城池战（打玩家城池）：军工=损兵数**系数      system表391
+     */
+    public static float SYSTEM_ID_391;
+
+    /**
+     * 矿点战（资源点战斗）：军工=损兵数**系数      system表392
+     */
+    public static float SYSTEM_ID_392;
+
+
+    /**
+     * 燃油=20000+（杀敌数+损兵数）*系数      system表393
+     */
+    public static float SYSTEM_ID_393;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
-
+        SYSTEM_ID_393 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_393, 1);
+        SYSTEM_ID_392 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_392, 1);
+        SYSTEM_ID_391 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_391, 1);
+        SYSTEM_ID_390 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_390, 1);
         TREASURE_WARE_ATTR_STAGE_SCORE = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_ATTR_STAGE_SCORE, "[[]]");
         TREASURE_WARE_HIGHER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_HIGHER_STAGE, "[[]]");
         TREASURE_WARE_LOWER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_LOWER_STAGE, "[[]]");
@@ -1332,6 +1361,8 @@ public final class Constant {
         BATTLE_PICK_BOX_DROP_CAP = SystemTabLoader.getListListIntSystemValue(SystemId.BATTLE_PICK_BOX_DROP_CAP, "[[]]");
         REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = SystemTabLoader.getListListIntSystemValue(SystemId.REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION, "[[]]");
         StaticFightManager.ALL_EFFECTIVE_TIMES_SINGLE_ROUND = SystemTabLoader.getIntegerSystemValue(SystemId.ALL_EFFECTIVE_TIMES_SINGLE_ROUND, 10);
+        NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT = SystemTabLoader.getFloatSystemValue(SystemId.NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT, 0.5f);
+
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

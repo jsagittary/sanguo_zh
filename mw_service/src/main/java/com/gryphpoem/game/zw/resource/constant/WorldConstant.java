@@ -627,7 +627,7 @@ public class WorldConstant {
                 .getListListIntSystemValue(SystemId.BERLIN_OVERLORD_COMPENSATION_AWARD, "[[4,5044,1]]");
 
         K1 = SystemTabLoader.getFloatSystemValue(SystemId.K1, 1);
-        K2 = SystemTabLoader.getFloatSystemValue(SystemId.K2, 1);
+        StaticFightManager.K2 = K2 = SystemTabLoader.getFloatSystemValue(SystemId.K2, 1);
         K3 = SystemTabLoader.getFloatSystemValue(SystemId.K3, 1);
         StaticFightManager.K3 = K3;
         K4 = SystemTabLoader.getFloatSystemValue(SystemId.K4, 1);

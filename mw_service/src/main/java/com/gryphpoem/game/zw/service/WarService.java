@@ -1487,24 +1487,15 @@ public class WarService {
             // if (record.getKilled() > 0 && record.getLost() > 0) {
             dropList = new ArrayList<>(2);
             campDropMap.put(record.getRoleId(), dropList);
-            int oil = (int) (20000 + (record.getKilled() + record.getLost()) * 0.5);
-            int elec = (int) (12000 + (record.getKilled() + record.getLost()) * 0.3);
+            int oil = BattleUtil.addResourceAward(record, AwardType.Resource.OIL);
+            int eleC = BattleUtil.addResourceAward(record, AwardType.Resource.ELE);
             rewardDataManager.addAward(player, AwardType.RESOURCE, AwardType.Resource.OIL, oil,
                     AwardFrom.CAMP_BATTLE_ATTACK);
-            rewardDataManager.addAward(player, AwardType.RESOURCE, AwardType.Resource.ELE, elec,
+            rewardDataManager.addAward(player, AwardType.RESOURCE, AwardType.Resource.ELE, eleC,
                     AwardFrom.CAMP_BATTLE_ATTACK);
-            // if (record.isAttacker()) {
-            // } else {
-            // rewardDataManager.addAward(player, AwardType.RESOURCE,
-            // AwardType.Resource.OIL, oil,
-            // AwardFrom.CAMP_BATTLE_DEFEND);
-            // rewardDataManager.addAward(player, AwardType.RESOURCE,
-            // AwardType.Resource.ELE, elec,
-            // AwardFrom.CAMP_BATTLE_DEFEND);
-            // }
+            
             dropList.add(PbHelper.createAwardPb(AwardType.RESOURCE, AwardType.Resource.OIL, oil));
-            dropList.add(PbHelper.createAwardPb(AwardType.RESOURCE, AwardType.Resource.ELE, elec));
-            // }
+            dropList.add(PbHelper.createAwardPb(AwardType.RESOURCE, AwardType.Resource.ELE, eleC));
 
             info.addChangeType(AwardType.RESOURCE, AwardType.Resource.OIL);
             info.addChangeType(AwardType.RESOURCE, AwardType.Resource.ELE);
@@ -2240,7 +2231,8 @@ public class WarService {
             int kill = force.killed;
             int heroId = force.id;
             // 军工计算 ; 打人 军工=损兵数,其他按照公式来
-            int count = cityBattle ? force.totalLost : (int) (force.killed * 0.8f + force.totalLost * 0.2f);
+            int count = cityBattle ? (int) Math.ceil(BattleUtil.addPlayerMilitary(WorldConstant.BATTLE_TYPE_CITY, force)) :
+                    (int) Math.ceil(BattleUtil.addPlayerMilitary(WorldConstant.BATTLE_TYPE_CAMP, force));
             int award = addExploit ? count : 0;// 军工
             String owner = playerDataManager.getNickByLordId(roleId);
             int lv = 0;// 将领等级
@@ -2268,7 +2260,7 @@ public class WarService {
                 }
                 // 给将领加经验
                 if (force.hasFight) {
-                    addExp = (force.killed + force.totalLost) / 2;// 经验=（杀敌数+损兵数）/2
+                    addExp = (int) Math.ceil(HeroUtil.addHeroExpExp(force));
                     addExp = heroService.adaptHeroAddExp(player, addExp);
                     addExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                 }

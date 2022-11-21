@@ -22,9 +22,6 @@ public class FightLogic {
     public FightContextHolder contextHolder;
 
     public long fightId;
-    // 战斗类型
-    private int battleType;
-
     // 进攻方胜负 1.胜 2.负
     private int winState = -1;
 
@@ -33,7 +30,6 @@ public class FightLogic {
 
     public FightLogic(Fighter attacker, Fighter defender, boolean recordFlag, int battleType) {
         this.fightId = FightUtil.uniqueId();
-        this.battleType = battleType;
         attacker.isAttacker = true;
         this.contextHolder = new FightContextHolder(attacker, defender, battleType);
         if (recordFlag) {
@@ -88,7 +84,7 @@ public class FightLogic {
             BattlePb.BattleRoundPb.Builder recordData = contextHolder.getRecordData();
             int size = recordData.build().toByteArray().length;
             if (size >= 1024 * 1024 || contextHolder.getRoundNum() > 1000) {//大于1M的战报,或者回合数超过1000的战报
-                LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", battleType, size, contextHolder.getRoundNum()));
+                LogUtil.fight(String.format("battleType :%d, 战报大小 :%d 战斗回合数 :%d", contextHolder.getBattleType(), size, contextHolder.getRoundNum()));
             }
         }
     }
@@ -273,7 +269,7 @@ public class FightLogic {
 
                 // 普攻
                 contextHolder.getInitAttackActionPb();
-                contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, this.battleType, contextHolder);
+                contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, contextHolder.getBattleType(), contextHolder);
                 contextHolder.getRoundActionPb().setAttack(contextHolder.getCurAttackActionPb().build());
                 atk.attackCount++;
                 contextHolder.clearCurAttackActionPb();
@@ -362,7 +358,7 @@ public class FightLogic {
     }
 
     public int getBattleType() {
-        return battleType;
+        return contextHolder.getBattleType();
     }
 
     public Fighter getAttacker() {

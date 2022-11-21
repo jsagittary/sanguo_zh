@@ -16,6 +16,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.HeroService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,7 @@ public class FightSettleLogic {
                 }
 
                 // 将领经验 = （杀敌数+损兵数）/2
-                addExp = (force.killed + force.totalLost) / 2;
+                addExp = (int) Math.ceil(HeroUtil.addHeroExpExp(force));
                 addExp = heroService.adaptHeroAddExp(player, addExp);
 
                 if (addExp > 0) {
@@ -120,7 +121,7 @@ public class FightSettleLogic {
             }
 
             // 将领经验：将领经验 = （杀敌数+损兵数）/2
-            addExp = (force.killed + force.totalLost) / 2;
+            addExp = (int) Math.ceil(HeroUtil.addHeroExpExp(force));
             addExp = heroService.adaptHeroAddExp(player, addExp);
             if (addExp > 0) {
                 addExp *= num; // 活动翻倍
@@ -159,7 +160,7 @@ public class FightSettleLogic {
         // 计算经验之和, 均分经验
         if (!wipe) {
             for (Force force : forces) {
-                addExp = (force.killed + force.totalLost) / 2;
+                addExp = (int) Math.ceil(HeroUtil.addHeroExpExp(force));
                 int max = staticCombat.getExp();
                 addExp = max < addExp ? max : addExp;// 上限控制
                 totalExp += addExp;

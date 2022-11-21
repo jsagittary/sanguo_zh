@@ -3860,21 +3860,6 @@ public class WorldService {
         } else {// 进攻方失败，返回
             retreatArmyByDistance(atkplayer, army, now);
 
-            // 防守方赢，更新防守方的兵力
-            // List<TwoInt> form = new ArrayList<>();
-            // Hero hero;
-            // for (Force force : defender.forces) {
-            // if (force.totalLost > 0) {
-            // hero = defPlayer.heros.get(force.id);
-            // if (null == hero) {
-            // LogUtil.error("扣除兵力，未找到将领, heroId:", force.id);
-            // continue;
-            // }
-            // form.add(PbHelper.createTwoIntPb(force.id, hero.getCount()));
-            // }
-            // }
-            // guard.getArmy().setHero(form);
-
             // 发送战报邮件
             mailDataManager.sendCollectMail(atkplayer, report, MailConstant.MOLD_COLLECT_ATK_FAIL, null, now,
                     recoverArmyAwardMap, atkLord.getNick(), defLord.getNick(), atkLord.getNick(), atkPos.getA(),
@@ -3884,18 +3869,11 @@ public class WorldService {
                         recoverArmyAwardMap, defLord.getNick(), atkLord.getNick(), atkLord.getNick(), atkPos.getA(),
                         atkPos.getB(), defLord.getNick(), defPos.getA(), defPos.getB());
             }
-//            // 通知客户端玩家资源变化
-//            sendRoleResChange(changeMap);
-//            return;
         }
 
         //移除当前战斗警报
         if (army.getBattleId() != null && army.getBattleId() > 0) {
             warDataManager.removeBattleById(army.getBattleId());
-//            if (defPlayer.isLogin) {
-//                syncAttackRole(defPlayer, atkplayer.lord, army.getEndTime(),
-//                        WorldConstant.ATTACK_ROLE_0);
-//            }
         }
         // 通知客户端玩家资源变化
         sendRoleResChange(changeMap);
@@ -4499,7 +4477,7 @@ public class WorldService {
         for (Force force : defender.forces) {
             int award = 0;
             if (calAward) {
-                award = (int) (force.killed * 0.8f + force.totalLost * 0.2f);
+                award = (int) Math.ceil(BattleUtil.addPlayerMilitary(defender.fightLogic.getBattleType(), force));
             }
             Player tmpP = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
             if (CheckNull.isNull(tmpP)) {
