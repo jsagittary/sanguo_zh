@@ -29,7 +29,7 @@ public class FightLogic {
     }
 
     public FightLogic(Fighter attacker, Fighter defender, boolean recordFlag, int battleType) {
-        this.fightId = FightUtil.uniqueId();
+        this.fightId = FightUtil.getFightIdAndIncrement();
         attacker.isAttacker = true;
         this.contextHolder = new FightContextHolder(attacker, defender, battleType);
         if (recordFlag) {
@@ -172,13 +172,6 @@ public class FightLogic {
      * @param target
      */
     private void calFighterMorale(Force force, Force target) {
-//        force.morale = force.hp * 2;
-//        target.morale = force.hp * 2;
-//        force.maxRoundMorale = force.morale;
-//        target.maxRoundMorale = target.morale;
-//
-//        LogUtil.fight("============= 回合开始, 进攻方: force: ", force.ownerId, ", 防守方: target: ",
-//                target.ownerId, ", 恢复并记录最大士气, 进攻方: ", force.maxRoundMorale, ", 防守方: ", target.maxRoundMorale, " =============");
     }
 
     /**

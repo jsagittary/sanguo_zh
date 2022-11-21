@@ -35,6 +35,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.GlobalBattlePass;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.util.FightUtil;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
@@ -490,6 +491,7 @@ public class GameGlobal {
             ser.addAllRemovedActData(this.removedActData);
         }
         ser.setSerGlobalRelic(this.globalRelic.ser());
+        ser.setFightId(FightUtil.FIGHT_ID_GENERATOR);
         return ser.build().toByteArray();
     }
 
@@ -735,6 +737,7 @@ public class GameGlobal {
         if (ser.hasSerGlobalRelic()) {
             globalRelic.dser(ser.getSerGlobalRelic());
         }
+        FightUtil.FIGHT_ID_GENERATOR = ser.getFightId();
     }
 
     private void dserWorldTask(byte[] data) throws InvalidProtocolBufferException {

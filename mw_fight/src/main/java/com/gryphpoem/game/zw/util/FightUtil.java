@@ -24,6 +24,11 @@ public class FightUtil {
     private static long idGenerator = 0;
 
     /**
+     * 战斗唯一id, 战报id同此id
+     */
+    public static long FIGHT_ID_GENERATOR;
+
+    /**
      * 获取buff作用方, 以及被作用方的buff列表
      *
      * @param actionDirection
@@ -61,6 +66,10 @@ public class FightUtil {
             idGenerator = 0;
         }
         return idGenerator++;
+    }
+
+    public static long getFightIdAndIncrement() {
+        return ++FIGHT_ID_GENERATOR;
     }
 
     /**
