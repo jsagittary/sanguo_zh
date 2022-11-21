@@ -227,6 +227,7 @@ public class FightLogic {
      * @param target
      */
     private void fight(Force force, Force target) {
+        List<Integer> heroList = new ArrayList<>();
         while (force.alive() && target.alive()) {
             // 比较武将速度, 排列出场顺序
             List<FightEntity> fightEntityList = contextHolder.getSortedFightEntity(force, target);
@@ -241,7 +242,6 @@ public class FightLogic {
 
             LogUtil.fight("进攻方: ", force.ownerId, ", 防守方: ", target.ownerId, ", =============新回合开始=============");
             contextHolder.getInitBattleRoundStagePb().setRoundNum(contextHolder.getRoundNum());
-            List<Integer> heroList = new ArrayList<>();
             for (FightEntity fe : fightEntityList) {
                 Force atk = fe.getOwnId() == force.ownerId ? force : target;
                 Force def = atk.ownerId == force.ownerId ? target : force;
