@@ -3,16 +3,14 @@ package com.gryphpoem.game.zw.core.util;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.executor.NonOrderedQueuePoolExecutor;
 import com.gryphpoem.game.zw.core.work.SentryWork;
-
 import io.sentry.Sentry;
 import io.sentry.SentryClient;
 import io.sentry.SentryClientFactory;
 
 /**
- * @Description Sentry（远程日志监控系统）帮助类
  * @author TanDonghai
+ * @Description Sentry（远程日志监控系统）帮助类
  * @date 创建时间：2017年11月2日 下午3:42:18
- *
  */
 public class SentryHelper {
     private SentryHelper() {
@@ -36,9 +34,9 @@ public class SentryHelper {
             if (null != sentryClient) {
                 Sentry.setStoredClient(sentryClient);
                 sentryClient.setServerName(DataResource.serverName);
-                sentryClient.addTag("game", "sanguo");
-                sentryClient.addTag("game_desc", "三国");
-                sentryClient.addTag("server", String.format("sanguo_%d", DataResource.serverId));
+                sentryClient.addTag("game", "sanguo3");
+                sentryClient.addTag("game_desc", "三国3");
+                sentryClient.addTag("server", String.format("sanguo3_%d", DataResource.serverId));
                 sentryClient.addTag("environment", DataResource.environment);
                 initialized = true;
             }
