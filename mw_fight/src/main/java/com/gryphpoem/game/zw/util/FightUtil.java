@@ -181,8 +181,23 @@ public class FightUtil {
                 break;
             case INHERIT_EXECUTION_OBJECT:
                 // 连击使用, 攻击方仍然是当前普攻者的进攻者
-                direction.setAtk(contextHolder.getCurAttacker());
-                direction.getAtkHeroList().add(contextHolder.getCurAtkHeroId());
+                if (performer) {
+                    direction.setAtk(contextHolder.getCurDefender());
+                    direction.getAtkHeroList().add(contextHolder.getCurDefHeroId());
+                } else {
+                    direction.setDef(contextHolder.getCurDefender());
+                    direction.getDefHeroList().add(contextHolder.getCurDefHeroId());
+                }
+                break;
+            case TO_THE_CURRENT_ATTACKER:
+                ActionDirection lastActionDirection = FightPbUtil.getLastActionDirection(contextHolder);
+                if (performer) {
+                    direction.setAtk(lastActionDirection.getAtk());
+                    direction.getAtkHeroList().add(lastActionDirection.getCurAtkHeroId());
+                } else {
+                    direction.setDef(lastActionDirection.getAtk());
+                    direction.getDefHeroList().add(lastActionDirection.getCurAtkHeroId());
+                }
                 break;
             default:
                 actingForce(buffAttacker, buffDefender, buffObjective, direction, performer);

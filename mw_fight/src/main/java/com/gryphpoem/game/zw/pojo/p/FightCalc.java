@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
@@ -189,7 +190,7 @@ public class FightCalc {
         LogUtil.fight("******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
                 actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始技能伤害攻击计算*******");
         // 基础伤害
-        double baseHurt = baseHurt(actionDirection);
+        double baseHurt = baseHurt(actionDirection, battleType);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
         baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
@@ -215,7 +216,7 @@ public class FightCalc {
         double damage_ = calDamageChange(actionDirection, damage);
 
         LogUtil.fight(
-                "进攻方: ", actionDirection.getAtk().ownerId,
+                "<<<<<<伤害结算--进攻方: ", actionDirection.getAtk().ownerId,
                 "-", actionDirection.getCurAtkHeroId(),
                 ", 对防守方: ", actionDirection.getDef().ownerId,
                 "-", actionDirection.getCurDefHeroId(),
@@ -228,7 +229,8 @@ public class FightCalc {
                 "， 浮动修正: ", floatCorrection,
                 ", 克制: ", finalRestrain,
                 ", 无敌或护盾效果作用前, 技能最终伤害值:  ", damage,
-                ", 无敌或护盾效果作用后, 技能最终伤害值:  ", damage_);
+                ", 无敌或护盾效果作用后, 技能最终伤害值:  ", damage_,
+                ">>>>>>");
         return (int) damage_;
     }
 
@@ -242,7 +244,7 @@ public class FightCalc {
         LogUtil.fight("*******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
                 actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始进行普攻计算******");
         // 基础伤害
-        double baseHurt = baseHurt(actionDirection);
+        double baseHurt = baseHurt(actionDirection, battleType);
         // 血量衰减
         double bloodValueAttenuation = bloodValueAttenuation(actionDirection.getAtk());
         LogUtil.fight("普攻伤害参与计算部分-血量衰减, 修正值: ", bloodValueAttenuation);
@@ -266,7 +268,7 @@ public class FightCalc {
                 attackCriticalDamageCorrection * floatCorrection * finalRestrain);
         double damage_ = calDamageChange(actionDirection, damage);
         LogUtil.fight(
-                "进攻方: ", actionDirection.getAtk().ownerId,
+                "<<<<<<伤害结算--进攻方: ", actionDirection.getAtk().ownerId,
                 "-", actionDirection.getCurAtkHeroId(),
                 ", 对防守方: ", actionDirection.getDef().ownerId,
                 "-", actionDirection.getCurDefHeroId(),
@@ -280,7 +282,8 @@ public class FightCalc {
                 "， 浮动修正: ", floatCorrection,
                 ", 克制: ", finalRestrain,
                 ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
-                ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_);
+                ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
+                ">>>>>>");
         return (int) damage_;
     }
 
@@ -296,7 +299,7 @@ public class FightCalc {
         LogUtil.fight("*******进攻方: ", actionDirection.getAtk().ownerId, "-", actionDirection.getCurAtkHeroId(), ", 对防守方: ",
                 actionDirection.getDef().ownerId, "-", actionDirection.getCurDefHeroId(), " 开始进行反击普攻计算******");
         // 基础伤害
-        double baseHurt = baseHurt(actionDirection);
+        double baseHurt = baseHurt(actionDirection, battleType);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
         baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算反击伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
@@ -324,7 +327,7 @@ public class FightCalc {
                 attackCriticalDamageCorrection * floatCorrection * finalRestrain);
         double damage_ = calDamageChange(actionDirection, damage);
         LogUtil.fight(
-                "进攻方: ", actionDirection.getAtk().ownerId,
+                "<<<<<<伤害结算--进攻方: ", actionDirection.getAtk().ownerId,
                 "-", actionDirection.getCurAtkHeroId(),
                 ", 对防守方: ", actionDirection.getDef().ownerId,
                 "-", actionDirection.getCurDefHeroId(),
@@ -338,7 +341,8 @@ public class FightCalc {
                 "， 浮动修正: ", floatCorrection,
                 ", 克制: ", finalRestrain,
                 ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
-                ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_);
+                ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
+                ">>>>>>");
         return (int) damage_;
     }
 
@@ -394,24 +398,28 @@ public class FightCalc {
      * @param actionDirection
      * @return
      */
-    private static double baseHurt(ActionDirection actionDirection) {
+    private static double baseHurt(ActionDirection actionDirection, int battleType) {
         Force force = actionDirection.getAtk();
         Force target = actionDirection.getDef();
         double atk = attributeValue(FightCommonConstant.AttrId.ATTACK, force, actionDirection.getCurAtkHeroId());
         double atkDown = attributeValue(FightCommonConstant.AttrId.ATTACK_TOWN, force, actionDirection.getCurAtkHeroId());
         double def = attributeValue(FightCommonConstant.AttrId.DEFEND, target, actionDirection.getCurDefHeroId());
         double defDown = attributeValue(FightCommonConstant.AttrId.DEFEND_TOWN, target, actionDirection.getCurDefHeroId());
+        if (!isCityBattle(battleType)) {
+            atkDown = 0;
+            defDown = 0;
+        }
 
         // 伤害类型1 伤害类型1 结果 = A综合攻击*A综合攻击/(综合攻击a+B综合防御)
         // A综合攻击 = A战中攻击 + A战中攻坚 - B战中据守
         // B综合防御 = B战中防御
-        double attackerAtk = (atk + atkDown - defDown);
+        double attackerAtk = Math.max(atk / 2, atk + atkDown - defDown);
         double hurt1 = attackerAtk * attackerAtk / (attackerAtk + def);
 
         // 伤害类型2=（A战中穿甲-B战中防护）/ 3
         double attackExt = attributeValue(FightCommonConstant.AttrId.ATTACK_EXT, force, actionDirection.getCurAtkHeroId());
         double defendExt = attributeValue(FightCommonConstant.AttrId.DEFEND_EXT, target, actionDirection.getCurDefHeroId());
-        double hurt2 = attackExt - defendExt;
+        double hurt2 = Math.max(0, attackExt - defendExt);
 
         // 基础伤害=max ( RANDIEST ( 1 , 10 ) , 伤害类型1 ) + max ( RANDIEST ( 1 , 10 ) , 伤害类型2 )
         double baseHurt = Math.max(RandomUtils.nextFloat(1f, 10f), hurt1) + Math.max(RandomUtils.nextFloat(1f, 10f), hurt2);
@@ -743,5 +751,9 @@ public class FightCalc {
                 break;
         }
         return isRestraint;
+    }
+
+    public static boolean isCityBattle(int battleType) {
+        return ArrayUtils.contains(StaticFightManager.CITY_BATTLE_TYPE, battleType);
     }
 }

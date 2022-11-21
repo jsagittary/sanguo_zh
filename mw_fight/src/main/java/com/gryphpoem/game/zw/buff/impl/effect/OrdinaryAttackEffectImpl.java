@@ -57,7 +57,7 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
             return;
         }
 
-        FightPbUtil.initNextMultiEffectAction(contextHolder, false);
+        FightPbUtil.initNextMultiEffectAction(contextHolder, actionDirection, false);
         BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
         MultiEffectActionPb curMultiEffectActionPb = contextHolder.getMultiEffectActionList().peekFirst();
         if (rule.getEffectLogicId() == COUNTERATTACK) {
@@ -142,18 +142,19 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
     public boolean canEffect(FightContextHolder contextHolder, StaticEffectRule staticEffectRule, Object... params) {
         switch (staticEffectRule.getEffectId()) {
             case FightConstant.EffectLogicId.DOUBLE_HIT:
-                if (Objects.nonNull(contextHolder.getCurAttackActionPb())) {
-                    FightBuffEffect effect = contextHolder.getActionDirection().getAtk().
-                            getFightEffectMap(contextHolder.getActionDirection().getCurAtkHeroId());
-                    if (Objects.nonNull(effect)) {
-                        Map<Integer, List<FightEffectData>> fightEffectDataMap = effect.getEffectMap().get(staticEffectRule.getEffectLogicId());
-                        if (!CheckNull.isEmpty(fightEffectDataMap)) {
-                            List<FightEffectData> fightEffectDataList = fightEffectDataMap.get(staticEffectRule.getEffectId());
-                            if (!CheckNull.isEmpty(fightEffectDataList)) {
-                                // 若当前回合释放过连击, 则不再释放
-                                return Objects.isNull(fightEffectDataList.stream().filter(fightEffectData ->
-                                        fightEffectData.getValue() == contextHolder.getRoundNum()).findFirst().orElse(null));
-                            }
+                if (CheckNull.isNull(contextHolder.getCurAttackActionPb())) {
+                    return false;
+                }
+                FightBuffEffect effect = contextHolder.getActionDirection().getAtk().
+                        getFightEffectMap(contextHolder.getActionDirection().getCurAtkHeroId());
+                if (Objects.nonNull(effect)) {
+                    Map<Integer, List<FightEffectData>> fightEffectDataMap = effect.getEffectMap().get(staticEffectRule.getEffectLogicId());
+                    if (!CheckNull.isEmpty(fightEffectDataMap)) {
+                        List<FightEffectData> fightEffectDataList = fightEffectDataMap.get(staticEffectRule.getEffectId());
+                        if (!CheckNull.isEmpty(fightEffectDataList)) {
+                            // 若当前回合释放过连击, 则不再释放
+                            return Objects.isNull(fightEffectDataList.stream().filter(fightEffectData ->
+                                    fightEffectData.getValue() == contextHolder.getRoundNum()).findFirst().orElse(null));
                         }
                     }
                 }

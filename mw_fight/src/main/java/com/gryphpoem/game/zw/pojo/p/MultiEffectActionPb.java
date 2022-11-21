@@ -22,6 +22,8 @@ public class MultiEffectActionPb {
     private BattlePb.SkillAction.Builder curSkillPb;
     // 当前的技能pb
     private BattlePb.OrdinaryAttackAction.Builder curAttackPb;
+    // 攻击者与被攻击者信息
+    private ActionDirection actionDirection;
     // 是否可以对当前动作进行反击
     private boolean counterattack = true;
 }

@@ -51,7 +51,11 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", buff作用效果使用完, 无法再生效, buffConfig: ", this.staticBuff);
             return;
         }
-        if (!hasEffectiveTimesSingleRound()) {
+        if (!hasEffectiveTimesSingleRound() || this.effectiveTimesSingleRound >=
+                StaticFightManager.ALL_EFFECTIVE_TIMES_SINGLE_ROUND) {
+            // 触发次数或战斗允许逻辑触发次数达到上限则不再触发
+            LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", 触发次数已达上限, times: ",
+                    this.effectiveTimesSingleRound, ", 当前buff单回合最高触发次数配置: ", this.staticBuff.getEffectiveTimesSingleRound());
             return;
         }
 

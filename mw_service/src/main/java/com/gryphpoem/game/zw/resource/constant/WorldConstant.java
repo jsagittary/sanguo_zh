@@ -1258,6 +1258,11 @@ public class WorldConstant {
      */
     public static final int BANDIT_LV_999 = 999;
 
+
+    static {
+        StaticFightManager.CITY_BATTLE_TYPE = new int[]{BATTLE_TYPE_CITY};
+    }
+
     public static int berlinAoeExtHurt(int schdeule) {
         if (CheckNull.isEmpty(WorldConstant.BERLIN_BATTLE_FRENZY_EXT_HURT)) {
             return 0;

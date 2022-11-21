@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.BattlePb;
+import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.pojo.p.MultiEffectActionPb;
@@ -230,7 +231,14 @@ public class FightPbUtil {
         }
     }
 
-    public static void initNextMultiEffectAction(FightContextHolder contextHolder, boolean skill) {
+    /**
+     * 创建下一个动作信息内容pb类
+     *
+     * @param contextHolder
+     * @param actionDirection
+     * @param skill
+     */
+    public static void initNextMultiEffectAction(FightContextHolder contextHolder, ActionDirection actionDirection, boolean skill) {
         MultiEffectActionPb curMultiAction = new MultiEffectActionPb();
         BattlePb.MultiEffectAction.Builder builder = BattlePb.MultiEffectAction.newBuilder();
         curMultiAction.setCurMultiEffectActionPb(builder);
@@ -263,6 +271,7 @@ public class FightPbUtil {
             curMultiAction.setCurSkillPb(BattlePb.SkillAction.newBuilder());
         else
             curMultiAction.setCurAttackPb(BattlePb.OrdinaryAttackAction.newBuilder());
+        curMultiAction.setActionDirection(actionDirection);
         multiEffectActionList.addFirst(curMultiAction);
     }
 
@@ -313,5 +322,22 @@ public class FightPbUtil {
         if (CheckNull.isNull(pb))
             return true;
         return pb.isCounterattack();
+    }
+
+    /**
+     * 获取上一个动作执行与被执行方信息
+     *
+     * @param contextHolder
+     * @return
+     */
+    public static ActionDirection getLastActionDirection(FightContextHolder contextHolder) {
+        if (!CheckNull.isEmpty(contextHolder.getMultiEffectActionList())) {
+            MultiEffectActionPb lastEffectActionPb = contextHolder.getMultiEffectActionList().peekFirst();
+            if (Objects.nonNull(lastEffectActionPb)) {
+                return lastEffectActionPb.getActionDirection();
+            }
+        }
+
+        return contextHolder.getActionDirection();
     }
 }

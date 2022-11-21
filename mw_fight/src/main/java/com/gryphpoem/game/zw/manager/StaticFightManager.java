@@ -17,6 +17,15 @@ public class StaticFightManager {
     public static float K8; // 默认兵种克制
     public static float K9; // 阶级克制比
     public static float K10; // 阶级加成
+    /**
+     * 所有buff生效最高次数
+     */
+    public static int ALL_EFFECTIVE_TIMES_SINGLE_ROUND;
+
+    /**
+     * 城战类型
+     */
+    public static int[] CITY_BATTLE_TYPE;
 
     /**
      * buff配置

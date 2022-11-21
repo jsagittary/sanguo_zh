@@ -63,7 +63,7 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
         if (!CheckNull.isEmpty(actionDirection.getAtkHeroList()) && !CheckNull.isEmpty(actionDirection.getDefHeroList())) {
             if (timing != FightConstant.BuffEffectTiming.ACTIVE_RELEASE) {
-                FightPbUtil.initNextMultiEffectAction(contextHolder, true);
+                FightPbUtil.initNextMultiEffectAction(contextHolder, actionDirection, true);
             }
 
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
