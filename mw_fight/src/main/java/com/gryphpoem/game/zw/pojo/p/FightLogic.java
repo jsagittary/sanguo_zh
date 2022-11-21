@@ -307,6 +307,9 @@ public class FightLogic {
                             BattlePb.BattleRegroupStage.round, regroupPb.build()));
                 }
             }
+
+            force.hasFight = true;
+            target.hasFight = true;
         }
     }
 
