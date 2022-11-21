@@ -13,7 +13,7 @@ import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.List;
+import java.util.*;
 
 import static com.gryphpoem.game.zw.constant.FightConstant.EffectLogicId.COUNTERATTACK;
 
@@ -45,8 +45,8 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
-        return null;
+    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), (Integer) params[0]);
     }
 
     @Override
@@ -79,6 +79,12 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
                         LogUtil.fight("执行连击效果, 攻击方: ", actionDirection.getAtk().ownerId,
                                 ", 武将: ", atkHeroId, ", 被攻击方: ", actionDirection.getDef().ownerId, ", 被攻击武将: ", heroId);
                         battleLogic.buffOrdinaryAttack(actionDirection, contextHolder, contextHolder.getBattleType());
+
+                        // 记录释放过的连击效果
+                        FightBuffEffect fbe = actionDirection.getAtk().getFightEffectMap(atkHeroId);
+                        FightEffectData data = createFightEffectData(fightBuff, effectConfig_, fbe, contextHolder.getRoundNum());
+                        fbe.getEffectMap().computeIfAbsent(rule.getEffectLogicId(), m -> new HashMap<>()).
+                                computeIfAbsent(effectConfig_.get(2), l -> new ArrayList<>()).add(data);
                         break;
                 }
 
@@ -116,10 +122,47 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+        switch (rule.getEffectLogicId()) {
+            case FightConstant.EffectLogicId.DOUBLE_HIT:
+                Force force = fightBuff.getForce();
+                FightBuffEffect fightBuffEffect = force.getFightEffectMap(fightBuff.getForceId());
+                if (Objects.nonNull(fightBuffEffect)) {
+                    Map<Integer, List<FightEffectData>> fightEffectDataMap = fightBuffEffect.getEffectMap().get(rule.getEffectLogicId());
+                    if (!CheckNull.isEmpty(fightEffectDataMap) && !CheckNull.isEmpty(fightEffectDataMap.get(rule.getEffectId()))) {
+                        fightEffectDataMap.get(rule.getEffectId()).clear();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
-    public boolean canEffect(FightContextHolder contextHolder, Object... params) {
-        return FightPbUtil.curActionCounterattack(contextHolder);
+    public boolean canEffect(FightContextHolder contextHolder, StaticEffectRule staticEffectRule, Object... params) {
+        switch (staticEffectRule.getEffectId()) {
+            case FightConstant.EffectLogicId.DOUBLE_HIT:
+                if (Objects.nonNull(contextHolder.getCurAttackActionPb())) {
+                    FightBuffEffect effect = contextHolder.getActionDirection().getAtk().
+                            getFightEffectMap(contextHolder.getActionDirection().getCurAtkHeroId());
+                    if (Objects.nonNull(effect)) {
+                        Map<Integer, List<FightEffectData>> fightEffectDataMap = effect.getEffectMap().get(staticEffectRule.getEffectLogicId());
+                        if (!CheckNull.isEmpty(fightEffectDataMap)) {
+                            List<FightEffectData> fightEffectDataList = fightEffectDataMap.get(staticEffectRule.getEffectId());
+                            if (!CheckNull.isEmpty(fightEffectDataList)) {
+                                // 若当前回合释放过连击, 则不再释放
+                                if (Objects.nonNull(fightEffectDataList.stream().filter(fightEffectData -> fightEffectData.getValue() == contextHolder.getRoundNum()))) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+            case COUNTERATTACK:
+                return FightPbUtil.curActionCounterattack(contextHolder);
+            default:
+                return true;
+        }
     }
 }

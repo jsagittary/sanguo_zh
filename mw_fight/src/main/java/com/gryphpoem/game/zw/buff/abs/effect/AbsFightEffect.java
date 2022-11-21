@@ -206,7 +206,7 @@ public abstract class AbsFightEffect implements IFightEffect {
     }
 
     @Override
-    public boolean canEffect(FightContextHolder contextHolder, Object... params) {
+    public boolean canEffect(FightContextHolder contextHolder, StaticEffectRule staticEffectRule, Object... params) {
         return true;
     }
 
@@ -270,5 +270,5 @@ public abstract class AbsFightEffect implements IFightEffect {
      * @param fbe
      * @return
      */
-    protected abstract FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe);
+    protected abstract FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params);
 }

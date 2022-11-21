@@ -95,6 +95,9 @@ public class ConditionBuffImpl extends AbsConditionBuff {
         if (this.staticBuff.getBuffEffectiveTimes() > 0) {
             this.buffEffectiveTimes++;
         }
+        if (this.staticBuff.getEffectiveTimesSingleRound() > 0) {
+            this.effectiveTimesSingleRound++;
+        }
     }
 
     @Override

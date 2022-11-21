@@ -126,7 +126,7 @@ public class FightManager {
     public boolean effectCanRelease(FightContextHolder contextHolder, StaticEffectRule rule, Object... params) {
         IFightEffect fightEffect;
         if ((fightEffect = effectMap.get(rule.getEffectLogicId())) != null) {
-            return fightEffect.canEffect(contextHolder, params);
+            return fightEffect.canEffect(contextHolder, rule, params);
         }
 
         return true;

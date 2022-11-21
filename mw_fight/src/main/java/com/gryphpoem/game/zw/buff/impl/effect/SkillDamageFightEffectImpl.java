@@ -44,7 +44,7 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
+    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
         return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId());
     }
 
@@ -97,10 +97,5 @@ public class SkillDamageFightEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
-    }
-
-    @Override
-    public boolean canEffect(FightContextHolder contextHolder, Object... params) {
-        return FightPbUtil.curActionCounterattack(contextHolder);
     }
 }

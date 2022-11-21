@@ -61,5 +61,5 @@ public interface IFightEffect<T> {
      * @param contextHolder
      * @return
      */
-    boolean canEffect(FightContextHolder contextHolder, Object... params);
+    boolean canEffect(FightContextHolder contextHolder, StaticEffectRule staticEffectRule, Object... params);
 }

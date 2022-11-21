@@ -92,7 +92,7 @@ public class ShieldEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe) {
+    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
         return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), calEffectValue(fbe.getForce(), fbe.getHeroId(), effectConfig));
     }
 
