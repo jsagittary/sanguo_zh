@@ -151,7 +151,8 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
                             List<FightEffectData> fightEffectDataList = fightEffectDataMap.get(staticEffectRule.getEffectId());
                             if (!CheckNull.isEmpty(fightEffectDataList)) {
                                 // 若当前回合释放过连击, 则不再释放
-                                return Objects.isNull(fightEffectDataList.stream().filter(fightEffectData -> fightEffectData.getValue() == contextHolder.getRoundNum()));
+                                return Objects.isNull(fightEffectDataList.stream().filter(fightEffectData ->
+                                        fightEffectData.getValue() == contextHolder.getRoundNum()).findFirst().orElse(null));
                             }
                         }
                     }
