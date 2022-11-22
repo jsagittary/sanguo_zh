@@ -473,7 +473,7 @@ public class PropService {
                 CalculateUtil.reCalcAllHeroAttr(player);
                 break;
             case EffectConstant.BUILD_CNT:
-                buildingService.addAtuoBuild(player);// 触发自动建造
+                buildingService.addAutoBuild(player);// 触发自动建造
                 break;
             case EffectConstant.BANDIT_GOLD_BUFFER:
             case EffectConstant.BANDIT_WOOD_BUFFER:

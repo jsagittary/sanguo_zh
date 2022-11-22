@@ -1602,7 +1602,7 @@ public class PlayerService implements GmCmdService {
 
                 player.common.setAutoBuildOnOff(1);// 开启自动建造
                 buildingDataManager.syncAutoBuildInfo(player);// 同步自动建造
-                buildingService.addAtuoBuild(player);// 触发自动建造
+                buildingService.addAutoBuild(player);// 触发自动建造
             }
             // 需要设置的id
             int nextGuideId = staticGuidAward.getNextGuideId();

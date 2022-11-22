@@ -147,6 +147,7 @@ import com.gryphpoem.game.zw.handler.client.battlepass.GetBattlePassHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveBPAwardHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveTaskAwardHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.ExploreHandler;
+import com.gryphpoem.game.zw.handler.client.buildHomeCity.PeaceAndWelfareHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.ReclaimHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.SwapBuildingPosHandler;
 import com.gryphpoem.game.zw.handler.client.building.AssignEconomicCropHandler;
@@ -1299,12 +1300,6 @@ public class MessagePool implements IMessagePool {
         registerC(OnOffAutoBuildRq.EXT_FIELD_NUMBER, OnOffAutoBuildRs.EXT_FIELD_NUMBER, OnOffAutoBuildHandler.class);
 
         registerC(QuickBuyArmyRq.EXT_FIELD_NUMBER, QuickBuyArmyRs.EXT_FIELD_NUMBER, QuickBuyArmyHandler.class);
-        // 建造建筑
-        registerC(CreateBuildingRq.EXT_FIELD_NUMBER, CreateBuildingRs.EXT_FIELD_NUMBER, CreateBuildingHandler.class);
-        // 派遣居民
-        registerC(DispatchResidentRq.EXT_FIELD_NUMBER, DispatchResidentRs.EXT_FIELD_NUMBER, DispatchResidentHandler.class);
-        // 委任武将
-        registerC(DispatchHeroRq.EXT_FIELD_NUMBER, DispatchHeroRs.EXT_FIELD_NUMBER, DispatchHeroHandler.class);
 
         // 城墙相关协议
 
@@ -2420,11 +2415,17 @@ public class MessagePool implements IMessagePool {
 
         // 记录模拟器信息
         registerC(RecordLifeSimulatorRq.EXT_FIELD_NUMBER, RecordLifeSimulatorRs.EXT_FIELD_NUMBER, RecordSimulatorHandler.class);
-
         // 主城建设
         registerC(ExploreRq.EXT_FIELD_NUMBER, ExploreRs.EXT_FIELD_NUMBER, ExploreHandler.class);
         registerC(ReclaimFoundationRq.EXT_FIELD_NUMBER, ReclaimFoundationRs.EXT_FIELD_NUMBER, ReclaimHandler.class);
         registerC(SwapBuildingPosRq.EXT_FIELD_NUMBER, SwapBuildingPosRs.EXT_FIELD_NUMBER, SwapBuildingPosHandler.class);
+        registerC(PeaceAndWelfareRq.EXT_FIELD_NUMBER, PeaceAndWelfareRs.EXT_FIELD_NUMBER, PeaceAndWelfareHandler.class);
+        // 建造建筑
+        registerC(CreateBuildingRq.EXT_FIELD_NUMBER, CreateBuildingRs.EXT_FIELD_NUMBER, CreateBuildingHandler.class);
+        // 派遣居民
+        registerC(DispatchResidentRq.EXT_FIELD_NUMBER, DispatchResidentRs.EXT_FIELD_NUMBER, DispatchResidentHandler.class);
+        // 委任武将
+        registerC(DispatchHeroRq.EXT_FIELD_NUMBER, DispatchHeroRs.EXT_FIELD_NUMBER, DispatchHeroHandler.class);
         // 经济订单
         registerC(AssignEconomicCropRq.EXT_FIELD_NUMBER, AssignEconomicCropRs.EXT_FIELD_NUMBER, AssignEconomicCropHandler.class);
         registerC(SubmitEconomicOrderRq.EXT_FIELD_NUMBER, SubmitEconomicOrderRs.EXT_FIELD_NUMBER, SubmitEconomicOrderHandler.class);

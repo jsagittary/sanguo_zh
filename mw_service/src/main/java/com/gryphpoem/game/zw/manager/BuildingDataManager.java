@@ -51,6 +51,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -511,7 +512,7 @@ public class BuildingDataManager {
         }
 
         List<Integer> resOuts = staticBuildingLevel.getResourceOut();
-        if (resOuts == null) {
+        if (CheckNull.isEmpty(resOuts)) {
             LogUtil.error("BuildingLv resourceOut error,type=" + buildingType + ",lv=" + buildingLv);
             return false;
         }
@@ -1366,7 +1367,14 @@ public class BuildingDataManager {
         if (player != null && player.isLogin && player.ctx != null && mills != null && mills.length > 0) {
             SynGainResRs.Builder builder = SynGainResRs.newBuilder();
             for (Mill mill : mills) {
-                builder.addMills(PbHelper.createMillPb(mill));
+                BuildingState buildingState = player.getBuildingData().get(mill.getPos());
+                if (buildingState == null) {
+                    StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(mill.getPos());
+                    buildingState = new BuildingState(sBuildingInit.getBuildingId(), mill.getType());
+                    buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                    player.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
+                }
+                builder.addMills(PbHelper.createMillPb(mill, player.getBuildingData()));
             }
             Base.Builder msg = PbHelper.createSynBase(SynGainResRs.EXT_FIELD_NUMBER, SynGainResRs.ext, builder.build());
             MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
@@ -1580,6 +1588,10 @@ public class BuildingDataManager {
 
         if (buildingId >= 401 && buildingId <= 416) {
             return BuildingType.RES_FOOD;
+        }
+
+        if (buildingId >= 501 && buildingId <= 510) {
+            return BuildingType.RESIDENT_HOUSE;
         }
 
         return buildingId;

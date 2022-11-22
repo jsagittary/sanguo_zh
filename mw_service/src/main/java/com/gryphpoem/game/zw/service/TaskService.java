@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
 import com.gryphpoem.game.zw.manager.*;
@@ -18,12 +19,14 @@ import com.gryphpoem.game.zw.resource.constant.task.TaskCone513Type;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.CampMember;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDailyTaskAward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPartyTask;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTask;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -635,7 +638,14 @@ public class TaskService {
                     if (mill.getResCnt() > Constant.RES_GAIN_MAX) { // 防止爆掉了
                         mill.setResCnt(Constant.RES_GAIN_MAX);
                     }
-                    return PbHelper.createMillPb(mill);
+                    BuildingState buildingState = player.getBuildingData().get(mill.getPos());
+                    if (buildingState == null) {
+                        StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(mill.getPos());
+                        buildingState = new BuildingState(sBuildingInit.getBuildingId(), mill.getType());
+                        buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                        player.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
+                    }
+                    return PbHelper.createMillPb(mill, player.getBuildingData());
                 }).collect(Collectors.toList());
 
         SynGainResRs.Builder builder = SynGainResRs.newBuilder();

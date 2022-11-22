@@ -60,8 +60,9 @@ public class Hero {
     private Map<Integer, TalentData> talent; // 武将天赋信息：key, 天赋页索引; value, 天赋页详情
     private boolean showClient; // 是否在主界面显示英雄奖励
     private int gradeKeyId; // 英雄品阶keyId
-    private Map<Integer, Integer> interiorAttr; // 内政属性
+    private List<List<Integer>> interiorAttr; // 内政属性, [[建筑类型,属性,数值]]
     private boolean isDispatched; // 是否已被委任
+    private int buildingType; // 武将被委任的建筑类型
 
     public Hero() {
         attr = new int[4];// 三种属性，对应1-3位，0位为补位，不用
@@ -86,7 +87,7 @@ public class Hero {
         awaken = new TreeMap<>(Integer::compareTo);
         showClient = true;
         talent = new TreeMap<>(Integer::compareTo);
-        interiorAttr = new HashMap<>();
+        interiorAttr = new ArrayList<>(2);
     }
 
     /**
@@ -884,20 +885,28 @@ public class Hero {
         totem[idx] = totemKey;
     }
 
-    public Map<Integer, Integer> getInteriorAttr() {
+    public List<List<Integer>> getInteriorAttr() {
         return interiorAttr;
     }
 
-    public void setInteriorAttr(Map<Integer, Integer> interiorAttr) {
+    public void setInteriorAttr(List<List<Integer>> interiorAttr) {
         this.interiorAttr = interiorAttr;
     }
 
-    public boolean isDispatched() {
+    public boolean getIsDispatched() {
         return isDispatched;
     }
 
-    public void setDispatched(boolean dispatched) {
+    public void setIsDispatched(boolean dispatched) {
         isDispatched = dispatched;
+    }
+
+    public int getBuildingType() {
+        return buildingType;
+    }
+
+    public void setBuildingType(int buildingType) {
+        this.buildingType = buildingType;
     }
 
     @Override

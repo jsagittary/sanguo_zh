@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.buildHomeCity;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
@@ -13,8 +14,12 @@ import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.p.Building;
 import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.p.Mill;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
@@ -31,6 +36,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,6 +58,8 @@ public class BuildHomeCityService implements GmCmdService {
     private PlayerService playerService;
     @Autowired
     private BuildingDataManager buildingDataManager;
+    @Autowired
+    private BuildingDao buildingDao;
 
     /**
      * 探索迷雾
@@ -282,6 +290,49 @@ public class BuildHomeCityService implements GmCmdService {
         return builder.build();
     }
 
+    /**
+     * 幸福度自然更新的定时器逻辑<br>
+     * 小于会恢复度上限开始增长; 大于恢复度上限开始损耗
+     */
+    public void HappinessTimerLogic() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            try {
+                int happinessRecoveryTopLimit = Constant.HAPPINESS_RECOVERY_TOP_LIMIT;
+                int happiness = player.getHappiness();
+                if (happiness < happinessRecoveryTopLimit) {
+                    // 开始增长
+                } else if (happiness == happinessRecoveryTopLimit) {
+                    // 不变
+                } else {
+                    // 开始减少
+                }
+                // 根据更新后的幸福度, 同步更新人口恢复速度、资源生产速度
+            } catch (Exception e) {
+                LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+            }
+        }
+    }
+
+    /**
+     * 人口恢复的定时器逻辑<br>
+     * 人口总数小于人口上限就开始恢复
+     */
+    public void ResidentTimerLogic() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            try {
+
+            } catch (Exception e) {
+                LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+            }
+        }
+    }
+
     // 清剿土匪
     public void clearBandit(long roleId) {
 
@@ -300,29 +351,29 @@ public class BuildHomeCityService implements GmCmdService {
      * @param scoutIndex
      */
     public void doAtExploreEnd(Integer cellId, int scoutIndex, Player player) {
-        // Map<Integer, Integer> mapCellData = player.getMapCellData();
-        // // 新增解锁的地图格子
-        // mapCellData.put(cellId, 0);
-        // // 关联解锁的地图格子
-        // StaticHomeCityCell staticHomeCityCell = StaticDataMgr.getStaticHomeCityCellById(cellId);
-        // List<Integer> bindCellList = staticHomeCityCell.getBindCellList();
-        // for (Integer bindCellId : bindCellList) {
-        //     if (!mapCellData.containsKey(bindCellId)) {
-        //         mapCellData.put(bindCellId, 0);
-        //     }
-        // }
-        // // 恢复探索的侦察兵状态为空闲, 并向客户端同步
-        // player.getScoutData().put(scoutIndex, 0);
-        // playerDataManager.syncRoleInfo(player);
-        // // 移除探索队列
-        // player.getExploreQue().remove(scoutIndex);
-        // // 向客户端同步探索完成的格子
-        // GamePb1.SynExploreOrReclaimRs.Builder builder = GamePb1.SynExploreOrReclaimRs.newBuilder();
-        // builder.setType(1);
-        // builder.setCellId(cellId);
-        // builder.setFinishedExploreQueIndex(scoutIndex);
-        // BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynExploreOrReclaimRs.EXT_FIELD_NUMBER, GamePb1.SynExploreOrReclaimRs.ext, builder.build());
-        // MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
+        /*Map<Integer, Integer> mapCellData = player.getMapCellData();
+        // 新增解锁的地图格子
+        mapCellData.put(cellId, 0);
+        // 关联解锁的地图格子
+        StaticHomeCityCell staticHomeCityCell = StaticDataMgr.getStaticHomeCityCellById(cellId);
+        List<Integer> bindCellList = staticHomeCityCell.getBindCellList();
+        for (Integer bindCellId : bindCellList) {
+            if (!mapCellData.containsKey(bindCellId)) {
+                mapCellData.put(bindCellId, 0);
+            }
+        }
+        // 恢复探索的侦察兵状态为空闲, 并向客户端同步
+        player.getScoutData().put(scoutIndex, 0);
+        playerDataManager.syncRoleInfo(player);
+        // 移除探索队列
+        player.getExploreQue().remove(scoutIndex);
+        // 向客户端同步探索完成的格子
+        GamePb1.SynExploreOrReclaimRs.Builder builder = GamePb1.SynExploreOrReclaimRs.newBuilder();
+        builder.setType(1);
+        builder.setCellId(cellId);
+        builder.setFinishedExploreQueIndex(scoutIndex);
+        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynExploreOrReclaimRs.EXT_FIELD_NUMBER, GamePb1.SynExploreOrReclaimRs.ext, builder.build());
+        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));*/
     }
 
     /**
@@ -333,33 +384,33 @@ public class BuildHomeCityService implements GmCmdService {
      * @param player
      */
     public void doAtReclaimEnd(Integer cellId, int farmerCnt, Player player, Integer reclaimIndex) {
-        // // 获取玩家新增解锁的地基id, 解锁地基需要该地基所占的格子全部被开垦完成
-        // List<Integer> foundationIdList = StaticDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
-        // List<Integer> unlockFoundationIdList = new ArrayList<>();
-        // // 获取玩家已开垦的格子
-        // List<Integer> reclaimedCellIdList = (List<Integer>) player.getMapCellData().entrySet().stream().filter(entry -> entry.getValue() == 1).map(Map.Entry::getKey);
-        // for (Integer foundationId : foundationIdList) {
-        //     // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-        //     StaticHomeCityFoundation staticFoundation = StaticDataMgr.getStaticHomeCityFoundationById(foundationId);
-        //     if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-        //         unlockFoundationIdList.add(foundationId);
-        //     }
-        // }
-        // // 玩家新增解锁的地基
-        // player.getFoundationData().addAll(foundationIdList);
-        // // 释放开垦的农民, 并向客户端同步
-        // player.addIdleFarmerCount(farmerCnt);
-        // playerDataManager.syncRoleInfo(player);
-        // // 移除开垦队列
-        // player.getReclaimQue().remove(reclaimIndex);
-        // // 向客户端同步开垦出的地基
-        // GamePb1.SynExploreOrReclaimRs.Builder builder = GamePb1.SynExploreOrReclaimRs.newBuilder();
-        // builder.setType(2);
-        // builder.setCellId(cellId);
-        // builder.addAllFoundationId(unlockFoundationIdList);
-        // builder.setFinishedReclaimQueIndex(reclaimIndex);
-        // BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynExploreOrReclaimRs.EXT_FIELD_NUMBER, GamePb1.SynExploreOrReclaimRs.ext, builder.build());
-        // MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
+        /*// 获取玩家新增解锁的地基id, 解锁地基需要该地基所占的格子全部被开垦完成
+        List<Integer> foundationIdList = StaticDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
+        List<Integer> unlockFoundationIdList = new ArrayList<>();
+        // 获取玩家已开垦的格子
+        List<Integer> reclaimedCellIdList = (List<Integer>) player.getMapCellData().entrySet().stream().filter(entry -> entry.getValue() == 1).map(Map.Entry::getKey);
+        for (Integer foundationId : foundationIdList) {
+            // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+            StaticHomeCityFoundation staticFoundation = StaticDataMgr.getStaticHomeCityFoundationById(foundationId);
+            if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
+                unlockFoundationIdList.add(foundationId);
+            }
+        }
+        // 玩家新增解锁的地基
+        player.getFoundationData().addAll(foundationIdList);
+        // 释放开垦的农民, 并向客户端同步
+        player.addIdleFarmerCount(farmerCnt);
+        playerDataManager.syncRoleInfo(player);
+        // 移除开垦队列
+        player.getReclaimQue().remove(reclaimIndex);
+        // 向客户端同步开垦出的地基
+        GamePb1.SynExploreOrReclaimRs.Builder builder = GamePb1.SynExploreOrReclaimRs.newBuilder();
+        builder.setType(2);
+        builder.setCellId(cellId);
+        builder.addAllFoundationId(unlockFoundationIdList);
+        builder.setFinishedReclaimQueIndex(reclaimIndex);
+        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynExploreOrReclaimRs.EXT_FIELD_NUMBER, GamePb1.SynExploreOrReclaimRs.ext, builder.build());
+        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));*/
     }
 
     @GmCmd("buildCity")
@@ -378,7 +429,101 @@ public class BuildHomeCityService implements GmCmdService {
                 player.buildingExts.clear();
                 StaticIniLord staticIniLord = StaticIniDataMgr.getLordIniData();
                 playerDataManager.initBuildingInfo(player, staticIniLord);
-                buildingDataManager.createBuilding(player);
+                Building building = new Building();
+                building.setLordId(player.roleId);
+                Map<Integer, StaticBuildingInit> initBuildingMap = StaticBuildingDataMgr.getBuildingInitMap();
+                for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
+                    if (buildingData.get(buildingInit.getBuildingId()) == null) {
+                        BuildingState buildingState = new BuildingState(buildingInit.getBuildingId(), buildingInit.getBuildingType());
+                        buildingState.setBuildingLv(buildingInit.getInitLv());
+                        buildingData.put(buildingInit.getBuildingId(), buildingState);
+                    }
+                    if (BuildingDataManager.isResType(buildingInit.getBuildingType())) {
+                        player.mills.put(buildingInit.getBuildingId(), new Mill(buildingInit.getBuildingId(),
+                                buildingInit.getBuildingType(), buildingInit.getInitLv(), 0));
+                    } else {
+                        switch (buildingInit.getBuildingType()) {
+                            case BuildingType.COMMAND:
+                                building.setCommand(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.WALL:
+                                building.setWall(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.TECH:
+                                building.setTech(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.STOREHOUSE:
+                                building.setStoreHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.MALL:
+                                building.setMall(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.REMAKE_WEAPON_HOUSE:
+                                building.setRemakeWeaponHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.FACTORY_1:
+                                building.setFactory1(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.FACTORY_2:
+                                building.setFactory2(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.FACTORY_3:
+                                building.setFactory3(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.FERRY:
+                                building.setFerry(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.MAKE_WEAPON_HOUSE:
+                                building.setMakeWeaponHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.WAR_COLLEGE:
+                                building.setWarCollege(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.TRADE_CENTRE:
+                                building.setTradeCentre(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.WAR_FACTORY:
+                                building.setWarFactory(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.TRAIN_FACTORY_1:
+                                building.setTrainFactory1(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.TRAIN_FACTORY_2:
+                                building.setTrain2(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.AIR_BASE:
+                                building.setAirBase(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.SEASON_TREASURY:
+                                building.setSeasonTreasury(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.CIA:
+                                building.setCia(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.SMALL_GAME_HOUSE:
+                                building.setSmallGameHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.DRAW_HERO_HOUSE:
+                                building.setDrawHeroHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.SUPER_EQUIP_HOUSE:
+                                building.setSuperEquipHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.STATUTE:
+                                building.setSuperEquipHouse(buildingInit.getInitLv());
+                                break;
+                            case BuildingType.MEDAL_HOUSE:
+                                building.setSuperEquipHouse(buildingInit.getInitLv());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                buildingDao.updateBuilding(building);
+                player.building = building;
+                // 更新解锁解锁状态
+                // buildingDataManager.updateBuildingLockState(player);
                 break;
             case "fixFoundationData":
                 // 去除重复地基

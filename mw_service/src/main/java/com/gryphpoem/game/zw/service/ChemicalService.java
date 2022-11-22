@@ -5,14 +5,33 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
-import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.ActivityDataManager;
+import com.gryphpoem.game.zw.manager.BattlePassDataManager;
+import com.gryphpoem.game.zw.manager.BuildingDataManager;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.TaskDataManager;
+import com.gryphpoem.game.zw.manager.TechDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.ChemicalQue;
+import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.ChemicalExpandRs;
 import com.gryphpoem.game.zw.pb.GamePb1.ChemicalFinishRs;
 import com.gryphpoem.game.zw.pb.GamePb1.ChemicalRecruitRs;
 import com.gryphpoem.game.zw.pb.GamePb1.GetChemicalRs;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ActivityConst;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Chemical;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
@@ -20,6 +39,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticChemical;
 import com.gryphpoem.game.zw.resource.domain.s.StaticChemicalExpand;
 import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -35,7 +55,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * 化工厂
+ * 渡口
  *
  * @author tyler
  */
@@ -64,7 +84,7 @@ public class ChemicalService {
     private WorldScheduleService worldScheduleService;
 
     /**
-     * 获取化工厂信息
+     * 获取渡口信息
      *
      * @param roleId
      * @return
@@ -74,7 +94,7 @@ public class ChemicalService {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         if (player.building.getFerry() < 1) {
-            throw new MwException(GameError.BUILDING_NOT_CREATE.getCode(), "roleId:", roleId, "化工厂还未建造");
+            throw new MwException(GameError.BUILDING_NOT_CREATE.getCode(), "roleId:", roleId, "渡口还未建造");
         }
         GetChemicalRs.Builder builder = GetChemicalRs.newBuilder();
         Chemical chemical = player.chemical;
@@ -100,7 +120,7 @@ public class ChemicalService {
                 int countryPeople = worldDataManager.getCountryPeople(player.lord.getCamp());
                 int human = (int) player.resource.getHuman();
                 human = human / queCnt;
-                LogUtil.debug("剩余化工厂队列=" + queCnt);
+                LogUtil.debug("剩余渡口队列=" + queCnt);
                 processQue(chemical, roleId, human, countryPeople, player);
             }
         }
@@ -118,7 +138,7 @@ public class ChemicalService {
     }
 
     /**
-     * 化工厂生产
+     * 渡口生产
      *
      * @param roleId
      * @param pos
@@ -142,36 +162,36 @@ public class ChemicalService {
 
         StaticChemical staticChemical = StaticBuildingDataMgr.getChemicalMap(id);
         if (staticChemical == null) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "化工厂生产时，找不到配置, roleId:" + roleId + ",id=" + id);
+            throw new MwException(GameError.NO_CONFIG.getCode(), "渡口生产时，找不到配置, roleId:" + roleId + ",id=" + id);
         }
 
         // 判断队列大小
         StaticChemicalExpand chemicalExpand = StaticBuildingDataMgr.getChemicalExpandMap(chemical.getExpandLv());
-        // 队列总数 = 扩展数 + 化工厂等级 + 赛季天赋优化加成
+        // 队列总数 = 扩展数 + 渡口等级 + 赛季天赋优化加成
         int maxPos = getMaxPos(player, chemicalExpand);
         if (pos <= 0 || pos > maxPos) {
             throw new MwException(GameError.CHEMICAL_ON_TIME.getCode(),
-                    "化工厂生产时,队列已满, roleId:" + roleId + ",pos=" + pos);
+                    "渡口生产时,队列已满, roleId:" + roleId + ",pos=" + pos);
         }
 
         if (chemical.getPosQue().get(pos + "_") != null && chemical.getPosQue().get(pos + "") != null) {
             throw new MwException(GameError.CHEMICAL_ON_TIME.getCode(),
-                    "化工厂生产时,正在生产中, roleId:" + roleId + ",pos=" + pos);
+                    "渡口生产时,正在生产中, roleId:" + roleId + ",pos=" + pos);
         }
 
         //打造红装检查世界进程
         int currSchedule = worldScheduleService.getCurrentSchduleId();
-        if(staticChemical.getId() == 4 && currSchedule < Constant.DOCK_RED_MATERIAL_SCHEDULE){
-            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId,"船坞生产红色材料世界进程不符合",id,currSchedule));
+        if (staticChemical.getId() == 4 && currSchedule < Constant.DOCK_RED_MATERIAL_SCHEDULE) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId, "船坞生产红色材料世界进程不符合", id, currSchedule));
         }
 
         // 检查材料够不
-        rewardDataManager.checkPlayerResIsEnough(player, staticChemical.getCost(), "化工厂生产时");
+        rewardDataManager.checkPlayerResIsEnough(player, staticChemical.getCost(), "渡口生产时");
 
         List<CommonPb.Award> awards = rewardDataManager.getRandomAward(player, staticChemical.getReward(), 1);
         if (awards == null || awards.get(0).getId() <= 0) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
-                    "化工厂生产时，找不到配置, roleId:" + roleId + ",id=" + id + ",rewardId=" + staticChemical.getReward());
+                    "渡口生产时，找不到配置, roleId:" + roleId + ",id=" + id + ",rewardId=" + staticChemical.getReward());
         }
         CommonPb.Award award = awards.get(0);
 
@@ -180,7 +200,7 @@ public class ChemicalService {
         if (list != null && list.size() > 0) {
             for (List<Integer> needItem : list) {
                 if (needItem.get(1) == itemId) {
-                    rewardDataManager.checkPropIsEnough(player, needItem.get(1), needItem.get(2), "化工厂生产");
+                    rewardDataManager.checkPropIsEnough(player, needItem.get(1), needItem.get(2), "渡口生产");
                     rewardDataManager.subProp(player, needItem.get(1), needItem.get(2), AwardFrom.CHEMICAL_RECRUIT);
                     hasItem = true;
                     break;
@@ -189,7 +209,7 @@ public class ChemicalService {
         }
         if (!hasItem) {
             throw new MwException(GameError.RESOURCE_NOT_ENOUGH.getCode(),
-                    "化工厂生产时，资源不足, roleId:" + roleId + ",id=" + id);
+                    "渡口生产时，资源不足, roleId:" + roleId + ",id=" + id);
         }
 
         rewardDataManager.checkAndSubPlayerRes(player, staticChemical.getCost(), AwardFrom.CHEMICAL_RECRUIT);
@@ -208,11 +228,11 @@ public class ChemicalService {
         if (!CheckNull.isNull(sProp)) {
             activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_CHEMICAL_RECRUIT_CNT, sProp.getQuality());
             // 装备物资
-            activityDataManager.updActivity(player, ActivityConst.ACT_EQUIP_MATERIAL, award.getCount() , sProp.getQuality(), true);
+            activityDataManager.updActivity(player, ActivityConst.ACT_EQUIP_MATERIAL, award.getCount(), sProp.getQuality(), true);
 
             //貂蝉任务-船坞进行X次X品质交易
-            ActivityDiaoChanService.completeTask(player, ETask.TRADE_TIMES,sProp.getQuality());
-            TaskService.processTask(player, ETask.TRADE_TIMES,sProp.getQuality());
+            ActivityDiaoChanService.completeTask(player, ETask.TRADE_TIMES, sProp.getQuality());
+            TaskService.processTask(player, ETask.TRADE_TIMES, sProp.getQuality());
         }
 
         // 人口平分队列， 减少时间公式=(需要时间/ ( 人口 / (队列+1) ) )
@@ -245,6 +265,7 @@ public class ChemicalService {
 
     /**
      * 获得赛季天赋加成的最大孔位
+     *
      * @param player
      * @param chemicalExpand
      * @return
@@ -274,27 +295,27 @@ public class ChemicalService {
             // continue;
             // }
             oldStaticChemical = StaticBuildingDataMgr.getChemicalMap(q.getSid());
-            LogUtil.debug("化工厂队列材料id=" + q.getSid() + "," + oldStaticChemical);
+            LogUtil.debug("渡口队列材料id=" + q.getSid() + "," + oldStaticChemical);
             // period = add * 6 * q.getId();
             // period = (oldStaticChemical.getTime() / (add + countryPeople)) * 3600;
             // period = getPeriod(oldStaticChemical, add, countryPeople);
             // chemical.getPosQue().put(que.getKey(),
             // makeChemicalQue(q.getId(), q.getPos(), period, q.getEndTime() + period - q.getPeriod(), human,
             // q.getClonePos(), q.getSid(), q.getCount(), q.getStartTime()));
-            // LogUtil.debug(roleId + ",化工厂招募增减时间=" + add + ",新参加人数=" + human + ",原人数=" + q.getPeople() + ",新时间=" +
+            // LogUtil.debug(roleId + ",渡口招募增减时间=" + add + ",新参加人数=" + human + ",原人数=" + q.getPeople() + ",新时间=" +
             // period
             // + ",原时间=" + q.getPeriod() + ",结束时间=" + (q.getEndTime() + period - q.getPeriod()));
 
             // 新的重新计算
-            period = getPeriod(oldStaticChemical, human, countryPeople,player);
-            LogUtil.debug("化工厂时间生产加速前的时间= " + period);
+            period = getPeriod(oldStaticChemical, human, countryPeople, player);
+            LogUtil.debug("渡口时间生产加速前的时间= " + period);
             period *= num / Constant.TEN_THROUSAND;
-            LogUtil.debug("化工厂时间生产加速后的时间= " + period + "加速比例万分之:" + num);
+            LogUtil.debug("渡口时间生产加速后的时间= " + period + "加速比例万分之:" + num);
             int newEndTime = q.getStartTime() + period;
             chemical.getPosQue().put(que.getKey(), makeChemicalQue(q.getId(), q.getPos(), period, newEndTime, human,
                     q.getClonePos(), q.getSid(), q.getCount(), q.getStartTime()));
 
-            LogUtil.debug("roleId: ", roleId, ",化工厂时间重新调整 ,新的人数=", human, ",原人数=", q.getPeople(), ",新时间=", period,
+            LogUtil.debug("roleId: ", roleId, ",渡口时间重新调整 ,新的人数=", human, ",原人数=", q.getPeople(), ",新时间=", period,
                     ",原时间=", q.getPeriod(), ", 新结束时间=", newEndTime, ", 原来结束时间=", q.getEndTime(), " 开始时间=",
                     q.getStartTime());
         }
@@ -310,19 +331,19 @@ public class ChemicalService {
                 continue;
             }*/
             oldStaticChemical = StaticBuildingDataMgr.getChemicalMap(q.getSid());
-            LogUtil.debug("化工厂队列材料id=" + q.getSid() + "," + oldStaticChemical);
+            LogUtil.debug("渡口队列材料id=" + q.getSid() + "," + oldStaticChemical);
             // 新的重新计算
-            period = getPeriod(oldStaticChemical, human, countryPeople,player);
-            LogUtil.debug("预备队列化工厂时间= " + period);
+            period = getPeriod(oldStaticChemical, human, countryPeople, player);
+            LogUtil.debug("预备队列渡口时间= " + period);
             period *= num / Constant.TEN_THROUSAND;
-            LogUtil.debug("预备队列化工厂时间= " + period + "加速比例万分之:" + num);
+            LogUtil.debug("预备队列渡口时间= " + period + "加速比例万分之:" + num);
             ChemicalQue chemicalQue = chemical.getPosQue().get(q.getPos());// 主队列
             if (chemicalQue == null) continue;
 
             chemical.getPosQue().put(que.getKey(),
                     makeChemicalQue(q.getId(), q.getPos(), period, chemicalQue.getEndTime() + period, human,
                             q.getClonePos(), q.getSid(), q.getCount(), chemicalQue.getEndTime()));
-            LogUtil.debug("roleId: ", roleId, ",预备队列化工厂时间重新调整 ,新的人数=", human, ",原人数=", q.getPeople(), ",新时间=", period,
+            LogUtil.debug("roleId: ", roleId, ",预备队列渡口时间重新调整 ,新的人数=", human, ",原人数=", q.getPeople(), ",新时间=", period,
                     ",原时间=", q.getPeriod(), ", 新开始时间=", chemicalQue.getEndTime() + period, ", 原来开始时间=",
                     q.getStartTime());
         }
@@ -333,7 +354,7 @@ public class ChemicalService {
     // 生产紫色材料时间（单位/秒） =（2+10*8450/（8450+人口））*3600 向上取整
     // 生产橙色材料时间（单位/秒） =（3+9*10900/（10900+人口））*3600 向上取整
     private void addQue(Chemical chemical, StaticChemical staticChemical, int human, int id, int pos,
-            CommonPb.Award award, int countryPeoPle, Player player) {
+                        CommonPb.Award award, int countryPeoPle, Player player) {
         int propId = award.getId();
         int count = award.getCount();
         int now = TimeHelper.getCurrentSecond();
@@ -341,7 +362,7 @@ public class ChemicalService {
         ChemicalQue.Builder newQue = ChemicalQue.newBuilder();
         // int period = (staticChemical.getTime() - human * 6) * id;
         // int period = (staticChemical.getTime() / ((human == 0 ? 1 : human) + countryPeoPle)) * 3600;
-        int period = getPeriod(staticChemical, (human == 0 ? 1 : human), countryPeoPle,player);
+        int period = getPeriod(staticChemical, (human == 0 ? 1 : human), countryPeoPle, player);
         LogUtil.debug("生产加速前的时间= " + period);
         period *= num / Constant.TEN_THROUSAND;
         LogUtil.debug("生产加速后的时间= " + period + "加速比例万分之:" + num);
@@ -356,14 +377,14 @@ public class ChemicalService {
                     .setEndTime(startTime + period).setClonePos(true).setSid(id).setStartTime(startTime).build();
             chemical.getPosQue().put(pos + "_", newQue.build());
         }
-        LogUtil.debug("化工厂招募 新参加人数=" + human + ",新时间=" + period + ",是否预定位置=" + newQue.getClonePos() + ",结束时间="
+        LogUtil.debug("渡口招募 新参加人数=" + human + ",新时间=" + period + ",是否预定位置=" + newQue.getClonePos() + ",结束时间="
                 + newQue.getEndTime());
     }
 
-    private int getPeriod(StaticChemical staticChemical, int human, int countryPeoPle,Player player) {
-    	double period = 0;
+    private int getPeriod(StaticChemical staticChemical, int human, int countryPeoPle, Player player) {
+        double period = 0;
         //化工 科技加成  获取加成比例
-        double proportion = techDataManager.getTechEffect4Single(player,TechConstant.TYPE_22);
+        double proportion = techDataManager.getTechEffect4Single(player, TechConstant.TYPE_22);
         //赛季天赋
         double seasonTalentEffect = seasonTalentService.getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_403) / Constant.TEN_THROUSAND;
         if (staticChemical.getId() == 1) {
@@ -377,7 +398,68 @@ public class ChemicalService {
         } else {
             period = (staticChemical.getTime() / human + countryPeoPle) * 3600f * (1.0 - proportion - seasonTalentEffect);
         }
-        return (int)period;
+        return (int) period;
+    }
+
+    /**
+     * 三国3 新公式计算
+     *
+     * @param staticChemical
+     * @param player
+     * @return
+     */
+    public int getPeriod(StaticChemical staticChemical, Player player) {
+        BuildingState buildingState = player.getBuildingData().get(BuildingType.FERRY);
+        int residentCnt = buildingState.getResidentCnt(); // 人口
+
+        double period = 0;
+        //化工 科技加成  获取加成比例
+        double proportion = techDataManager.getTechEffect4Single(player, TechConstant.TYPE_22);
+        //赛季天赋
+        double seasonTalentEffect = seasonTalentService.getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_403) / Constant.TEN_THROUSAND;
+        if (staticChemical.getId() == 1) {
+            period = (1 + 11 * 2650.0f / (2650 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+        } else if (staticChemical.getId() == 2) {
+            period = (2 + 10 * 8450.0f / (8450 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+        } else if (staticChemical.getId() == 3) {
+            period = (3 + 9 * 10900.0f / (10900 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+        } else if (staticChemical.getId() == 4) {
+            period = (12 + 24 * 13350.0f / (13350 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+        } else {
+            period = (staticChemical.getTime() / residentCnt) * 3600f * (1.0 - proportion - seasonTalentEffect);
+        }
+        return (int) period;
+    }
+
+    /**
+     * 更新渡口的生产时间
+     *
+     * @param player
+     */
+    public void updatePeriod(Player player) {
+        for (ChemicalQue que : player.chemical.getPosQue().values()) {
+            StaticChemical staticChemical = StaticBuildingDataMgr.getChemicalMap(que.getSid());
+            int period = getPeriod(staticChemical, player);
+            double interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.FERRY);
+            period *= (1 - interiorEffect);
+            ChemicalQue.Builder queBuilder = que.toBuilder()
+                    .setPeriod(period)
+                    .setEndTime(que.getStartTime());
+            player.chemical.getPosQue().put(que.getPos() + "",  queBuilder.build());
+        }
+        synFerryQueInfo(player);
+    }
+
+    /**
+     * 向客户端同步渡口队列信息
+     *
+     * @param player
+     */
+    private void synFerryQueInfo(Player player) {
+        GamePb1.SynFerryQueInfoRs.Builder builder = GamePb1.SynFerryQueInfoRs.newBuilder();
+        builder.addAllQueue(player.chemical.getPosQue().values());
+        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynFerryQueInfoRs.EXT_FIELD_NUMBER, GamePb1.SynFerryQueInfoRs.ext, builder.build());
+        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
     }
 
     /**
@@ -400,7 +482,7 @@ public class ChemicalService {
         StaticChemicalExpand chemicalExpand = StaticBuildingDataMgr.getChemicalExpandMap(chemical.getExpandLv() + 1);
         if (chemicalExpand == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
-                    "化工厂扩建时，找不到配置, roleId:" + roleId + ",lv=" + chemical.getExpandLv());
+                    "渡口扩建时，找不到配置, roleId:" + roleId + ",lv=" + chemical.getExpandLv());
         }
         rewardDataManager.checkAndSubPlayerRes(player, chemicalExpand.getCost(), AwardFrom.CHEMICAL_EXPAND);
         chemical.setExpandLv(chemical.getExpandLv() + 1);
@@ -413,7 +495,7 @@ public class ChemicalService {
     }
 
     /**
-     * 化工厂推送 定时器
+     * 渡口推送 定时器
      */
     public void chemicalQueTimer() {
 /*        int now = TimeHelper.getCurrentSecond();
@@ -452,7 +534,7 @@ public class ChemicalService {
         Chemical chemical = player.chemical;
         if (chemical == null || chemical.getPosQue() == null || chemical.getPosQue().isEmpty()) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
-                    "化工厂领取时，找不到队列, roleId:" + roleId + ",lv=" + chemical.getExpandLv());
+                    "渡口领取时，找不到队列, roleId:" + roleId + ",lv=" + chemical.getExpandLv());
         }
         ChemicalFinishRs.Builder builder = ChemicalFinishRs.newBuilder();
         int now = TimeHelper.getCurrentSecond();
@@ -506,7 +588,7 @@ public class ChemicalService {
                 int countryPeople = worldDataManager.getCountryPeople(player.lord.getCamp());
                 int human = (int) player.resource.getHuman();
                 human = human / queCnt;
-                LogUtil.debug("剩余化工厂队列=" + queCnt);
+                LogUtil.debug("剩余渡口队列=" + queCnt);
                 processQue(chemical, roleId, human, countryPeople, player);
             }
             for (Entry<String, ChemicalQue> que : chemical.getPosQue().entrySet()) {
@@ -519,7 +601,7 @@ public class ChemicalService {
     }
 
     private ChemicalQue makeChemicalQue(int id, int pos, int period, int endTime, int people, boolean clonePos, int sid,
-            int count, int startTime) {
+                                        int count, int startTime) {
         return ChemicalQue.newBuilder().setPos(pos).setId(id).setPeople(people).setPeriod(period).setEndTime(endTime)
                 .setClonePos(clonePos).setSid(sid).setCount(count).setStartTime(startTime).build();
     }

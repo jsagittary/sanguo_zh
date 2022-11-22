@@ -89,7 +89,7 @@ public class RobotBuildingService {
 
         // 刷新资源矿点解锁状态
         buildingDataManager.refreshSourceData(robot);
-        buildingService.addAtuoBuild(robot);
+        buildingService.addAutoBuild(robot);
 
         // 如果有免费加速，立即使用
         for (BuildQue que : robot.buildQue.values()) {

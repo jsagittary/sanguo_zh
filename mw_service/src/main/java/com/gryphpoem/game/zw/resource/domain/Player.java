@@ -6,6 +6,7 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
@@ -137,6 +138,7 @@ import com.gryphpoem.game.zw.resource.domain.p.TechQue;
 import com.gryphpoem.game.zw.resource.domain.p.Treasure;
 import com.gryphpoem.game.zw.resource.domain.p.TriggerGift;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
@@ -2456,7 +2458,6 @@ public class Player {
             });
         }
         // 建筑状态信息
-        System.out.println("玩家建筑信息:" + this.lord.getLordId() + "||" + buildingData.toString());
         if (CheckNull.nonEmpty(buildingData)) {
             for (BuildingState buildingState : buildingData.values()) {
                 ser.addBuildingState(buildingState.creatPb());
@@ -3450,10 +3451,17 @@ public class Player {
     private byte[] serMill() {
         SerMill.Builder ser = SerMill.newBuilder();
         for (Mill mill : mills.values()) {
-            ser.addMill(PbHelper.createMillPb(mill));
+            BuildingState buildingState = buildingData.get(mill.getPos());
+            if (buildingState == null) {
+                StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(mill.getPos());
+                buildingState = new BuildingState(sBuildingInit.getBuildingId(), mill.getType());
+                buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                buildingData.put(sBuildingInit.getBuildingId(), buildingState);
+            }
+            ser.addMill(PbHelper.createMillPb(mill, buildingData));
         }
         for (BuildingExt ext : buildingExts.values()) {
-            ser.addBuildExt(PbHelper.createBuildingBaseByExtPb(ext));
+            ser.addBuildExt(PbHelper.createBuildingBaseByExtPb(ext, buildingData));
         }
         return ser.build().toByteArray();
     }

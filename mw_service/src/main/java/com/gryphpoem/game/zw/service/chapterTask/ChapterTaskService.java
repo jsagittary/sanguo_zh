@@ -146,7 +146,7 @@ public class ChapterTaskService implements GmCmdService {
         // 解锁资源建筑
         buildingDataManager.refreshSourceData(player);
         // 触发自动建造
-        buildingService.addAtuoBuild(player);
+        buildingService.addAutoBuild(player);
 
         // 特殊,商用建造队列赠送
         if (StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_BUILD_GIFT)) {

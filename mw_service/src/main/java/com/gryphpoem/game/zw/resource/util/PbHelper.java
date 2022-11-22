@@ -57,6 +57,7 @@ import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.daily.DailyReport;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
@@ -885,7 +886,7 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.Mill createMillPb(Mill mill) {
+    public static CommonPb.Mill createMillPb(Mill mill, Map<Integer, BuildingState> buildingData) {
         CommonPb.Mill.Builder builder = CommonPb.Mill.newBuilder();
         builder.setId(mill.getPos());
         builder.setType(mill.getType());
@@ -893,15 +894,43 @@ public class PbHelper {
         builder.setGainCnt(mill.getResCnt());
         builder.setResTime(mill.getResTime());
         builder.setUnlock(mill.isUnlock());
+
+        BuildingState buildingState = buildingData.get(mill.getPos());
+        if (buildingState != null) {
+            builder.addAllHeroId(buildingState.getHeroIds());
+            builder.setResidentCnt(buildingState.getResidentCnt());
+            builder.setFoundationId(buildingState.getFoundationId());
+            builder.setResidentTopLimit(buildingState.getResidentTopLimit());
+            builder.addAllEconomicCropId(buildingState.getEconomicCropData());
+            CommonPb.EconomicCropInfo.Builder curProductCrop = CommonPb.EconomicCropInfo.newBuilder();
+            if (CheckNull.nonEmpty(buildingState.getCurProductCrop()) && buildingState.getCurProductCrop().size() >= 3) {
+                curProductCrop.setCropId(buildingState.getCurProductCrop().get(0));
+                curProductCrop.setStartTime(buildingState.getCurProductCrop().get(1));
+                curProductCrop.setEndTime(buildingState.getCurProductCrop().get(2));
+            }
+            builder.setEconomicCropInfo(curProductCrop);
+        }
+
         return builder.build();
     }
 
-    public static CommonPb.BuildingBase createBuildingBaseByExtPb(BuildingExt ext) {
+    public static CommonPb.BuildingBase createBuildingBaseByExtPb(BuildingExt ext, Map<Integer, BuildingState> buildingData) {
         BuildingBase.Builder builder = BuildingBase.newBuilder();
         builder.setId(ext.getId());
         builder.setType(ext.getType());
         builder.setUnlock(ext.isUnlock());
         builder.setUnLockTime(ext.getUnLockTime());
+
+        BuildingState buildingState = buildingData.get(ext.getId());
+        if (buildingState == null) {
+            buildingState = new BuildingState(ext.getId(), ext.getType());
+            buildingData.put(ext.getId(), buildingState);
+        }
+        builder.addAllHeroId(buildingState.getHeroIds());
+        builder.setResidentCnt(buildingState.getResidentCnt());
+        builder.setFoundationId(buildingState.getFoundationId());
+        builder.setResidentTopLimit(buildingState.getResidentTopLimit());
+
         return builder.build();
     }
 

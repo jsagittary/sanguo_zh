@@ -6,6 +6,7 @@ import com.googlecode.protobuf.format.JsonFormat;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.ReflectUtil;
 import com.gryphpoem.game.zw.core.util.StrUtils;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
@@ -21,7 +22,9 @@ import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Tech;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -366,10 +369,17 @@ public class GmToolService {
                 break;
             case 4:// 建筑等级
                 player.buildingExts.values().forEach(buildExt -> {// 基础建筑
-                    builder.addBuild(PbHelper.createBuildingBaseByExtPb(buildExt));
+                    builder.addBuild(PbHelper.createBuildingBaseByExtPb(buildExt, player.getBuildingData()));
                 });
                 player.mills.values().forEach(mill -> {// 资源建筑
-                    builder.addMill(PbHelper.createMillPb(mill));
+                    BuildingState buildingState = player.getBuildingData().get(mill.getPos());
+                    if (buildingState == null) {
+                        StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(mill.getPos());
+                        buildingState = new BuildingState(sBuildingInit.getBuildingId(), mill.getType());
+                        buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                        player.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
+                    }
+                    builder.addMill(PbHelper.createMillPb(mill, player.getBuildingData()));
                 });
                 break;
             case 5:// 超级武器
