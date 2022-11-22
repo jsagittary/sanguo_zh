@@ -91,14 +91,14 @@ public class BuildingDataManager {
     public void createBuilding(Player player) {
         Building building = new Building();
         building.setLordId(player.roleId);
-        Map<Integer, BuildingState> buildingData = player.getBuildingData();
         Map<Integer, StaticBuildingInit> initBuildingMap = StaticBuildingDataMgr.getBuildingInitMap();
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
         for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
-            BuildingState buildingState = new BuildingState();
-            buildingState.setBuildingId(buildingInit.getBuildingId());
-            buildingState.setBuildingLv(buildingInit.getInitLv());
-            buildingState.setBuildingType(buildingInit.getBuildingType());
-            buildingData.put(buildingInit.getBuildingId(), buildingState);
+            if (buildingData.get(buildingInit.getBuildingId()) == null) {
+                BuildingState buildingState = new BuildingState(buildingInit.getBuildingId(), buildingInit.getBuildingType());
+                buildingState.setBuildingLv(buildingInit.getInitLv());
+                buildingData.put(buildingInit.getBuildingId(), buildingState);
+            }
             if (isResType(buildingInit.getBuildingType())) {
                 player.mills.put(buildingInit.getBuildingId(), new Mill(buildingInit.getBuildingId(),
                         buildingInit.getBuildingType(), buildingInit.getInitLv(), 0));

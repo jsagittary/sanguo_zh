@@ -194,6 +194,9 @@ public class BuildHomeCityService implements GmCmdService {
         }
         // 玩家新增解锁的地基
         player.getFoundationData().addAll(unlockFoundationIdList);
+        List<Integer> distinctFoundationList = player.getFoundationData().stream().distinct().collect(Collectors.toList());
+        player.getFoundationData().clear();
+        player.getFoundationData().addAll(distinctFoundationList);
 
         // 如果开垦的格子满足城墙解锁条件
         if (player.getFoundationData().containsAll(Constant.WALL_UNLOCK_CONDITION)) {
@@ -367,79 +370,15 @@ public class BuildHomeCityService implements GmCmdService {
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         switch (params[0]) {
             case "clearMapCell":
-                // 重置所有已探索的格子以及地基
+                // 重置所有已探索的格子、已开垦的地基、已解锁的建筑
                 mapCellData.clear();
                 foundationData.clear();
+                buildingData.clear();
+                player.mills.clear();
+                player.buildingExts.clear();
                 StaticIniLord staticIniLord = StaticIniDataMgr.getLordIniData();
-                Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
-                if (CheckNull.nonEmpty(buildingInfo)) {
-                    buildingInfo.forEach((k, v) -> {
-                        foundationData.add(v);
-                        BuildingState buildingState = new BuildingState(k, v);
-                        StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(v);
-                        List<Integer> cellList = staticHomeCityFoundation.getCellList();
-                        for (int i = 0; i < cellList.size(); i++) {
-                            Integer cellId = cellList.get(i);
-                            // 解锁的格子
-                            List<Integer> cellState = new ArrayList<>(2);
-                            cellState.add(1);// 已开垦
-                            StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                            cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
-                            mapCellData.put(cellId, cellState);
-                            // 解锁的地基
-                            List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
-                            List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
-                            player.getMapCellData().forEach((key, value) -> {
-                                if (value.get(0) == 1) {
-                                    reclaimedCellIdList.add(key);
-                                }
-                            });
-                            for (Integer foundationId : foundationIdList) {
-                                // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-                                StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
-                                if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                                    if (!foundationData.contains(foundationId)) {
-                                        foundationData.add(foundationId);
-                                    }
-                                }
-                            }
-
-                        }
-                        buildingData.put(k, buildingState);
-                    });
-                } else {
-                    foundationData.add(1);
-                    BuildingState buildingState = new BuildingState(BuildingType.COMMAND, 1);
-                    buildingData.put(BuildingType.COMMAND, buildingState);
-                    StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
-                    List<Integer> cellList = staticHomeCityFoundation.getCellList();
-                    for (int i = 0; i < cellList.size(); i++) {
-                        Integer cellId = cellList.get(i);
-                        // 解锁的格子
-                        List<Integer> cellState = new ArrayList<>(2);
-                        cellState.add(1);// 已开垦
-                        StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                        cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
-                        mapCellData.put(cellId, cellState);
-                        // 解锁的地基
-                        List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
-                        List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
-                        player.getMapCellData().forEach((key, value) -> {
-                            if (value.get(0) == 1) {
-                                reclaimedCellIdList.add(key);
-                            }
-                        });
-                        for (Integer foundationId : foundationIdList) {
-                            // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-                            StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
-                            if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                                if (!foundationData.contains(foundationId)) {
-                                    foundationData.add(foundationId);
-                                }
-                            }
-                        }
-                    }
-                }
+                playerDataManager.initBuildingInfo(player, staticIniLord);
+                buildingDataManager.createBuilding(player);
                 break;
             case "fixFoundationData":
                 // 去除重复地基
@@ -464,6 +403,10 @@ public class BuildHomeCityService implements GmCmdService {
                         foundationData.add(sHomeCityFoundation.getId());
                     }
                 }
+                break;
+            case "clearBuildQue":
+                player.buildQue.clear();
+                break;
             default:
         }
         playerDataManager.syncRoleInfo(player);

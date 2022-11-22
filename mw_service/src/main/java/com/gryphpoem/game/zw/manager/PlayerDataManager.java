@@ -6,6 +6,7 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
@@ -55,6 +56,7 @@ import com.gryphpoem.game.zw.resource.domain.p.PaySum;
 import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
@@ -463,85 +465,16 @@ public class PlayerDataManager implements PlayerDM {
             for (int i = 0; i < staticCharacterList.size(); i++) {
                 characterData.put(i + 1, 0);
             }
+
             // 初始化性格奖励记录
             Map<Integer, Integer> characterRewardRecord = player.getCharacterRewardRecord();
             List<StaticCharacterReward> staticCharacterRewardList = StaticBuildCityDataMgr.getStaticCharacterRewardList();
             for (int i = 0; i < staticCharacterRewardList.size(); i++) {
                 characterRewardRecord.put(i + 1, 0);
             }
-            // 初始化建筑信息、地图格子信息、已开垦的地基
-            Map<Integer, BuildingState> buildingData = player.getBuildingData();
-            Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
-            List<Integer> foundationData = player.getFoundationData();
-            Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
-            if (CheckNull.nonEmpty(buildingInfo)) {
-                buildingInfo.forEach((k, v) -> {
-                    foundationData.add(v);
-                    BuildingState buildingState = new BuildingState(k, v);
-                    StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(v);
-                    List<Integer> cellList = staticHomeCityFoundation.getCellList();
-                    for (int i = 0; i < cellList.size(); i++) {
-                        Integer cellId = cellList.get(i);
-                        // 解锁的格子
-                        List<Integer> cellState = new ArrayList<>(2);
-                        cellState.add(1);// 已开垦
-                        StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                        cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
-                        mapCellData.put(cellId, cellState);
-                        // 解锁的地基
-                        List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
-                        List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
-                        player.getMapCellData().forEach((key, value) -> {
-                            if (value.get(0) == 1) {
-                                reclaimedCellIdList.add(key);
-                            }
-                        });
-                        for (Integer foundationId : foundationIdList) {
-                            // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-                            StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
-                            if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                                if (!foundationData.contains(foundationId)) {
-                                    foundationData.add(foundationId);
-                                }
-                            }
-                        }
 
-                    }
-                    buildingData.put(k, buildingState);
-                });
-            } else {
-                foundationData.add(1);
-                BuildingState buildingState = new BuildingState(BuildingType.COMMAND, 1);
-                buildingData.put(BuildingType.COMMAND, buildingState);
-                StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
-                List<Integer> cellList = staticHomeCityFoundation.getCellList();
-                for (int i = 0; i < cellList.size(); i++) {
-                    Integer cellId = cellList.get(i);
-                    // 解锁的格子
-                    List<Integer> cellState = new ArrayList<>(2);
-                    cellState.add(1);// 已开垦
-                    StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                    cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
-                    mapCellData.put(cellId, cellState);
-                    // 解锁的地基
-                    List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
-                    List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
-                    player.getMapCellData().forEach((key, value) -> {
-                        if (value.get(0) == 1) {
-                            reclaimedCellIdList.add(key);
-                        }
-                    });
-                    for (Integer foundationId : foundationIdList) {
-                        // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-                        StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
-                        if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                            if (!foundationData.contains(foundationId)) {
-                                foundationData.add(foundationId);
-                            }
-                        }
-                    }
-                }
-            }
+            // 初始化建筑信息、地图格子信息、已开垦的地基
+            initBuildingInfo(player, staticIniLord);
 
             // 初始化农民配置
             List<Integer> residentCnt = staticIniLord.getResidentCnt();
@@ -566,8 +499,10 @@ public class PlayerDataManager implements PlayerDM {
             } else {
                 scoutData.put(1, 0);
             }
+
             // 初始化幸福度
             player.setHappiness(50);
+
             // 初始化订单数上限
             player.setEconomicOrderMaxCnt(Constant.ORDER_INI_TOP_LIMIT);
 
@@ -591,6 +526,90 @@ public class PlayerDataManager implements PlayerDM {
         rankDataManager.setRanks(player.lord);
         rankDataManager.setExploit(player.lord);
         return true;
+    }
+
+    public void initBuildingInfo(Player player, StaticIniLord staticIniLord) {
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        List<Integer> foundationData = player.getFoundationData();
+        Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
+        if (CheckNull.nonEmpty(buildingInfo)) {
+            buildingInfo.forEach((k, v) -> {
+                foundationData.add(v);
+                StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMap().get(k);
+                BuildingState buildingState = new BuildingState(k, sBuildingInit.getBuildingType());
+                buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                buildingState.setFoundationId(v);
+                buildingData.put(k, buildingState);
+                StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(v);
+                List<Integer> cellList = staticHomeCityFoundation.getCellList();
+                for (int i = 0; i < cellList.size(); i++) {
+                    Integer cellId = cellList.get(i);
+                    // 解锁的格子
+                    List<Integer> cellState = new ArrayList<>(2);
+                    cellState.add(1);// 已开垦
+                    StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                    cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
+                    mapCellData.put(cellId, cellState);
+                }
+                List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
+                player.getMapCellData().forEach((key, value) -> {
+                    if (value.get(0) == 1) {
+                        reclaimedCellIdList.add(key);
+                    }
+                });
+                // 解锁的地基
+                for (Integer reclaimedCellId : reclaimedCellIdList) {
+                    List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(reclaimedCellId); // 开垦的格子对应可解锁的地基
+                    for (Integer foundationId : foundationIdList) {
+                        // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+                        StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                        if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
+                            if (!foundationData.contains(foundationId)) {
+                                foundationData.add(foundationId);
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            foundationData.add(1);
+            StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMap().get(BuildingType.COMMAND);
+            BuildingState buildingState = new BuildingState(BuildingType.COMMAND, sBuildingInit.getBuildingType());
+            buildingState.setBuildingLv(sBuildingInit.getInitLv());
+            buildingState.setFoundationId(1);
+            buildingData.put(BuildingType.COMMAND, buildingState);
+            StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
+            List<Integer> cellList = staticHomeCityFoundation.getCellList();
+            for (int i = 0; i < cellList.size(); i++) {
+                Integer cellId = cellList.get(i);
+                // 解锁的格子
+                List<Integer> cellState = new ArrayList<>(2);
+                cellState.add(1);// 已开垦
+                StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
+                mapCellData.put(cellId, cellState);
+            }
+            // 解锁的地基
+            List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
+            player.getMapCellData().forEach((key, value) -> {
+                if (value.get(0) == 1) {
+                    reclaimedCellIdList.add(key);
+                }
+            });
+            for (Integer reclaimedCellId : reclaimedCellIdList) {
+                List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(reclaimedCellId); // 开垦的格子对应可解锁的地基
+                for (Integer foundationId : foundationIdList) {
+                    // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+                    StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                    if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
+                        if (!foundationData.contains(foundationId)) {
+                            foundationData.add(foundationId);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void createResource(Player player, StaticIniLord staticIniLord) {

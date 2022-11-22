@@ -701,8 +701,8 @@ public class WorldConstant {
         NEWYORK_WAR_LOST_EXP = SystemTabLoader.getListIntSystemValue(SystemId.NEWYORK_WAR_LOST_EXP, "[8,1]");
         NEWYORK_WAR_BEGIN_WEEK = SystemTabLoader.getIntegerSystemValue(SystemId.NEWYORK_WAR_BEGIN_WEEK, 5);
         WORLD_WAR_CITY_EFFECT = SystemTabLoader.getIntegerSystemValue(SystemId.WORLD_WAR_CITY_EFFECT, 500);
-        QUICK_BUY_ARMY_PRICE = SystemTabLoader.getListListIntSystemValue(SystemId.QUICK_BUY_ARMY_PRICE, "[[5000,240],[5000,260],[5000,280]]");
-        QUICK_BUY_ARMY_MAX_CNT = QUICK_BUY_ARMY_PRICE.size();
+        // QUICK_BUY_ARMY_PRICE = SystemTabLoader.getListListIntSystemValue(SystemId.QUICK_BUY_ARMY_PRICE, "[[5000,240],[5000,260],[5000,280]]");
+        // QUICK_BUY_ARMY_MAX_CNT = QUICK_BUY_ARMY_PRICE.size();
         QUICK_BUY_ARMY_COEF = SystemTabLoader.getIntegerSystemValue(SystemId.QUICK_BUY_ARMY_COEF, 5000);
         WAR_FIRE_TIME_CONF = SystemTabLoader.getListListSystemValue(SystemId.WAR_FIRE_TIME_CONF, "[[TUE,08:00:00],[WED,20:00:00,21:00:00],[WED,23:59:59],[5]]");
         WAR_FIRE_SAFE_AREA = SystemTabLoader.getListListIntSystemValue(SystemId.WAR_FIRE_SAFE_AREA, "[[5,5],[55,5],[5,55]]");

@@ -17,10 +17,10 @@ public class BuildingType {
     public static final int MAKE_WEAPON_HOUSE = 16;
     // 渡口
     public static final int FERRY = 17;;
+    // 戏台
+    public static final int SMALL_GAME_HOUSE = 18;
     // 城墙
     public static final int WALL = 29;
-    // 戏台
-    public static final int SMALL_GAME_HOUSE = 35;
     // 寻访台
     public static final int DRAW_HERO_HOUSE = 60;
     // 铸星台
@@ -45,7 +45,7 @@ public class BuildingType {
     // 矿石厂
     public static final int RES_ORE = 34;
     // 民居
-    public static final int RESIDENT_HOUSE = 36;
+    public static final int RESIDENT_HOUSE = 35;
 
     // 步兵营
     public static final int FACTORY_1 = 41;
@@ -60,7 +60,7 @@ public class BuildingType {
     public static final int TRAIN_FACTORY_3 = 53;
 
     // 空军基地(没用)
-    public static final int AIR_BASE = 18;
+    public static final int AIR_BASE = 9999;
     // 赛季宝库建筑(没用)
     public static final int SEASON_TREASURY = 70;
     // 码头(没用)
@@ -97,7 +97,7 @@ public class BuildingType {
      */
     public static final int[] FUNCTION_BUILDING = { COMMAND, TECH, WAR_FACTORY, STOREHOUSE, WAR_COLLEGE, REMAKE_WEAPON_HOUSE,
             MAKE_WEAPON_HOUSE, FERRY, WALL, SMALL_GAME_HOUSE, DRAW_HERO_HOUSE, SUPER_EQUIP_HOUSE, STATUTE, MEDAL_HOUSE,
-            TRADE_CENTRE, MALL, CIA, FACTORY_1, FACTORY_2, FACTORY_3, TRAIN_FACTORY_1, TRAIN_FACTORY_2 };
+            TRADE_CENTRE, MALL, CIA, FACTORY_1, FACTORY_2, FACTORY_3};
 
     /**
      * 一键委任武将的建筑及顺序

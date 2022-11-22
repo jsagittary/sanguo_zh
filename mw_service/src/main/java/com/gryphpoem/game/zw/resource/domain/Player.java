@@ -2456,6 +2456,7 @@ public class Player {
             });
         }
         // 建筑状态信息
+        System.out.println("玩家建筑信息:" + this.lord.getLordId() + "||" + buildingData.toString());
         if (CheckNull.nonEmpty(buildingData)) {
             for (BuildingState buildingState : buildingData.values()) {
                 ser.addBuildingState(buildingState.creatPb());

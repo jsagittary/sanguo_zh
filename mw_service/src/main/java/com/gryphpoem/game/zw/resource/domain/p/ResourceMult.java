@@ -51,6 +51,9 @@ public class ResourceMult {
 
     // 居民加成
 
+    // 幸福度加成
+
+
     private int food;// 粮食
     private int elec;// 电
     private int oil;// 油

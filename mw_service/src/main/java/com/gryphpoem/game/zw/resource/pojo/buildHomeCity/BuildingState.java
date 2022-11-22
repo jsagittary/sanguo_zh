@@ -59,6 +59,11 @@ public class BuildingState {
      */
     private List<Integer> curProductCrop = new ArrayList<>();
 
+    /**
+     * 地貌类型, 非0值对应s_foundation_buff的landType, 为0则表示没有地貌bUff
+     */
+    private int landType;
+
     public int getBuildingId() {
         return buildingId;
     }
@@ -131,13 +136,20 @@ public class BuildingState {
         this.curProductCrop = curProductCrop;
     }
 
+    public int getLandType() {
+        return landType;
+    }
+
+    public void setLandType(int landType) {
+        this.landType = landType;
+    }
+
     public BuildingState() {
     }
 
-    public BuildingState(int buildingId, int foundationId) {
+    public BuildingState(int buildingId, int buildingType) {
         this.buildingId = buildingId;
-        this.foundationId = foundationId;
-        this.residentCnt = 0;
+        this.buildingType = buildingType;
     }
 
     public BuildingState(CommonPb.BuildingState pb) {
@@ -162,10 +174,10 @@ public class BuildingState {
         pb.setBuildingId(this.getBuildingId());
         pb.setBuildingLv(this.buildingLv);
         pb.setBuildingType(this.buildingType);
-        pb.setFoundationId(this.getFoundationId());
+        pb.setFoundationId(this.foundationId);
         pb.setResidentTopLimit(this.residentTopLimit);
-        pb.setResidentCnt(this.getResidentCnt());
-        pb.addAllHeroId(this.getHeroIds());
+        pb.setResidentCnt(this.residentCnt);
+        pb.addAllHeroId(this.heroIds);
         pb.addAllEconomicCropId(this.economicCropData);
         if (CheckNull.nonEmpty(this.curProductCrop) && this.curProductCrop.size() >= 3) {
             CommonPb.EconomicCropInfo.Builder economicCropInfo = CommonPb.EconomicCropInfo.newBuilder();
@@ -178,4 +190,19 @@ public class BuildingState {
         return pb.build();
     }
 
+    @Override
+    public String toString() {
+        return "BuildingState{" +
+                "buildingId=" + buildingId +
+                ", buildingType=" + buildingType +
+                ", buildingLv=" + buildingLv +
+                ", foundationId=" + foundationId +
+                ", residentTopLimit=" + residentTopLimit +
+                ", residentCnt=" + residentCnt +
+                ", heroIds=" + heroIds +
+                ", economicCropData=" + economicCropData +
+                ", curProductCrop=" + curProductCrop +
+                ", landType=" + landType +
+                '}';
+    }
 }

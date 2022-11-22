@@ -65,7 +65,7 @@ public class RobotBuildingService {
         if (buildingId > 0) {
             try {
                 LogUtil.robot("机器人建造功能建筑, robot:", robot.roleId + ", buildingId:" + buildingId);
-                buildingService.upgradeBuilding(robot.roleId, buildingId,false, 0);
+                buildingService.upgradeBuilding(robot.roleId, buildingId,false);
             } catch (MwException e) {
                 LogUtil.robot(e, "机器人升级司令部等级出错, robot:", robot.roleId);
             }

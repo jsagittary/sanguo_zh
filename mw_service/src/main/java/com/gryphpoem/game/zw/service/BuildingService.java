@@ -214,27 +214,29 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             Map<Integer, BuildingState> buildingData = player.getBuildingData();
             GetBuildingRs.Builder builder = GetBuildingRs.newBuilder();
 
-            /**
-             * 功能建筑
-             */
+            // 功能建筑
             for (int buildingType : BuildingType.FUNCTION_BUILDING) {
                 BuildingBase.Builder buildingBase = BuildingBase.newBuilder();
+                BuildingState buildingState = buildingData.get(buildingType);
+                if (buildingState == null) {
+                    StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingType);
+                    buildingState = new BuildingState(sBuildingInit.getBuildingId(), buildingType);
+                    buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                    buildingData.put(sBuildingInit.getBuildingId(), buildingState);
+                }
+
                 if (buildingType == BuildingType.TRAIN_FACTORY_1) {
                     BuildingExt train = player.buildingExts.get(BuildingType.TRAIN_FACTORY_1);
                     if (!CheckNull.isNull(train)) {
-                        buildingBase = BuildingBase.newBuilder();
-                        buildingBase.setId(train.getId())
-                                .setType(train.getType())
-                                .setLv(building.getTrainFactory1())
-                                .setUnlock(buildingDataManager.checkBuildingLock(player, train.getId()));
-                        if (buildingData != null && buildingData.get(train.getId()) != null) {
-                            BuildingState buildingState = buildingData.get(train.getId());
-                            buildingBase
-                                    .addAllHeroId(buildingState.getHeroIds())
-                                    .setResidentCnt(buildingState.getResidentCnt())
-                                    .setFoundationId(buildingState.getFoundationId())
-                                    .setResidentTopLimit(buildingState.getResidentTopLimit());
-                        }
+                        buildingBase
+                                .setUnlock(buildingDataManager.checkBuildingLock(player, buildingType))
+                                .setId(buildingType)
+                                .setType(buildingType)
+                                .setLv(buildingState.getBuildingLv())
+                                .addAllHeroId(buildingState.getHeroIds())
+                                .setResidentCnt(buildingState.getResidentCnt())
+                                .setFoundationId(buildingState.getFoundationId())
+                                .setResidentTopLimit(buildingState.getResidentTopLimit());
                         builder.addBuildingBase(buildingBase);
                     }
                     continue;
@@ -249,36 +251,28 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                         }
                     }
                     if (!CheckNull.isNull(train2)) {
-                        buildingBase = BuildingBase.newBuilder();
-                        buildingBase.setId(train2.getId())
-                                .setType(train2.getType())
-                                .setLv(building.getTrain2())
-                                .setUnlock(buildingDataManager.checkBuildingLock(player, train2.getId()));
-                        if (buildingData != null && buildingData.get(train2.getId()) != null) {
-                            BuildingState buildingState = buildingData.get(train2.getId());
-                            buildingBase
-                                    .addAllHeroId(buildingState.getHeroIds())
-                                    .setResidentCnt(buildingState.getResidentCnt())
-                                    .setFoundationId(buildingState.getFoundationId())
-                                    .setResidentTopLimit(buildingState.getResidentTopLimit());
-                        }
-                        builder.addBuildingBase(buildingBase);
+                        buildingBase
+                                .setUnlock(buildingDataManager.checkBuildingLock(player, buildingType))
+                                .setId(buildingType)
+                                .setType(buildingType)
+                                .setLv(buildingState.getBuildingLv())
+                                .addAllHeroId(buildingState.getHeroIds())
+                                .setResidentCnt(buildingState.getResidentCnt())
+                                .setFoundationId(buildingState.getFoundationId())
+                                .setResidentTopLimit(buildingState.getResidentTopLimit());
                     }
                     continue;
                 }
 
-                buildingBase.setUnlock(buildingDataManager.checkBuildingLock(player, buildingType));
-                if (buildingData != null && buildingData.get(buildingType) != null) {
-                    BuildingState buildingState = buildingData.get(buildingType);
-                    buildingBase
-                            .setId(buildingType)
-                            .setType(buildingState.getBuildingType())
-                            .setLv(buildingState.getBuildingLv())
-                            .addAllHeroId(buildingState.getHeroIds())
-                            .setResidentCnt(buildingState.getResidentCnt())
-                            .setFoundationId(buildingState.getFoundationId())
-                            .setResidentTopLimit(buildingState.getResidentTopLimit());
-                }
+                buildingBase
+                        .setUnlock(buildingDataManager.checkBuildingLock(player, buildingType))
+                        .setId(buildingType)
+                        .setType(buildingType)
+                        .setLv(buildingState.getBuildingLv())
+                        .addAllHeroId(buildingState.getHeroIds())
+                        .setResidentCnt(buildingState.getResidentCnt())
+                        .setFoundationId(buildingState.getFoundationId())
+                        .setResidentTopLimit(buildingState.getResidentTopLimit());
                 builder.addBuildingBase(buildingBase);
             }
 
@@ -689,29 +683,32 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             // }
             // builder.addBuildingBase(buildingBase);
 
-            /**
-             * 资源建筑
-             */
+            // 资源建筑
             Iterator<Mill> it2 = player.mills.values().iterator();
             while (it2.hasNext()) {
                 CommonPb.Mill millPb = PbHelper.createMillPb(it2.next());
-                if (buildingData != null && buildingData.get(millPb.getId()) != null) {
-                    BuildingState buildingState = buildingData.get(millPb.getId());
-                    CommonPb.EconomicCropInfo.Builder curProductCrop = CommonPb.EconomicCropInfo.newBuilder();
-                    if (CheckNull.nonEmpty(buildingState.getCurProductCrop()) && buildingState.getCurProductCrop().size() >= 3) {
-                        curProductCrop.setCropId(buildingState.getCurProductCrop().get(0));
-                        curProductCrop.setStartTime(buildingState.getCurProductCrop().get(1));
-                        curProductCrop.setEndTime(buildingState.getCurProductCrop().get(2));
-                    }
-                    millPb.toBuilder()
-                            .addAllHeroId(buildingState.getHeroIds())
-                            .setResidentCnt(buildingState.getResidentCnt())
-                            .setFoundationId(buildingState.getFoundationId())
-                            .setResidentTopLimit(buildingState.getResidentTopLimit())
-                            .addAllEconomicCropId(buildingState.getEconomicCropData())
-                            .setEconomicCropInfo(curProductCrop);
+                BuildingState buildingState = buildingData.get(millPb.getId());
+                if (buildingState == null) {
+                    StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(millPb.getId());
+                    buildingState = new BuildingState(sBuildingInit.getBuildingId(), millPb.getId());
+                    buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                    buildingData.put(sBuildingInit.getBuildingId(), buildingState);
                 }
-                builder.addMill(millPb);
+                CommonPb.EconomicCropInfo.Builder curProductCrop = CommonPb.EconomicCropInfo.newBuilder();
+                if (CheckNull.nonEmpty(buildingState.getCurProductCrop()) && buildingState.getCurProductCrop().size() >= 3) {
+                    curProductCrop.setCropId(buildingState.getCurProductCrop().get(0));
+                    curProductCrop.setStartTime(buildingState.getCurProductCrop().get(1));
+                    curProductCrop.setEndTime(buildingState.getCurProductCrop().get(2));
+                }
+
+                CommonPb.Mill.Builder millBuilder = millPb.toBuilder()
+                        .addAllHeroId(buildingState.getHeroIds())
+                        .setResidentCnt(buildingState.getResidentCnt())
+                        .setFoundationId(buildingState.getFoundationId())
+                        .setResidentTopLimit(buildingState.getResidentTopLimit())
+                        .addAllEconomicCropId(buildingState.getEconomicCropData())
+                        .setEconomicCropInfo(curProductCrop);
+                builder.addMill(millBuilder.build());
             }
 
             Iterator<BuildQue> it1 = player.buildQue.values().iterator();
@@ -735,7 +732,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      * @param immediate  是否立即完成,true表示立即完成
      * @return 升级后的建筑信息
      */
-    public UpBuildingRs upgradeBuilding(long roleId, int buildingId, boolean immediate, int foundationId) throws MwException {
+    public UpBuildingRs upgradeBuilding(long roleId, int buildingId, boolean immediate) throws MwException {
         StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
         if (sBuildingInit == null) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
@@ -926,55 +923,13 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             // player.mills.put(pos, millMap);
         }
         // 判断建造还是升级
-        if (buildLevel < 1) {
-            // 客户端给建筑类型
-            boolean resType = BuildingDataManager.isResType(buildingId);
-            if (resType) {
-                // 资源建筑按建筑id从小到达顺序建造
-                Map<Integer, StaticBuildingInit> staticBuildingInitMap = StaticBuildingDataMgr.getBuildingByTypeMapByType(buildingId);
-                Integer staticMaxBuildingId = staticBuildingInitMap.values().stream().map(StaticBuildingInit::getBuildingId).max(Integer::compareTo).orElse(0);
-                int maxMillId = player.mills.values().stream().map(Mill::getPos).max(Integer::compareTo).orElse(0);
-                if (maxMillId >= staticMaxBuildingId) {
-                    throw new MwException(GameError.PARAM_ERROR, String.format("建造资源建筑时, 该资源建筑已达建造数量上限, roleId:%s, buildingType:%s", roleId, buildingId));
-                }
-
-                if (maxMillId == 0) {
-                    // 该资源建筑从未建造过
-                    Integer staticMinBuildingId = staticBuildingInitMap.values().stream().map(StaticBuildingInit::getBuildingId).min(Integer::compareTo).orElse(0);
-                    if (staticMinBuildingId == 0) {
-                        throw new MwException(GameError.PARAM_ERROR, String.format("资源建筑等级配置错误, roleId:%s, buildingType:%s", roleId, buildingId));
-                    }
-                    buildingId = staticMinBuildingId;
-                } else {
-                    buildingId = maxMillId + 1;
-                }
-            } else {
-                // 非资源建筑, 建筑id同建筑类型相等
-            }
-
+        if (BuildingDataManager.getBuildingLv(buildingId, player) < 1) {
             // 0->1是建造
             LogUtil.debug("建造了建筑  buildingId:", buildingId, ", roleId:", roleId);
             // 新手指引的记录
             updateBuidingGuide(player, buildingId, true);
-
-            if (foundationId <= 0) {
-                throw new MwException(GameError.INVALID_PARAM, String.format("建造建筑时, 传入的地基id非法, roleId:%s, buildingId:%s, foundationId:%s", roleId, buildingId, foundationId));
-            }
-            List<Integer> foundationData = player.getFoundationData();
-            if (!foundationData.contains(foundationId)) {
-                throw new MwException(GameError.PARAM_ERROR, String.format("建造建筑时, 该地基未解锁, roleId:%s, buildingId:%s, foundationId:%s", roleId, buildingId, foundationId));
-            }
-
-            Map<Integer, BuildingState> buildingData = player.getBuildingData();
-            int finalFoundationId = foundationId;
-            boolean foundationExistBuilding = buildingData.values().stream().anyMatch(tmp -> tmp.getFoundationId() == finalFoundationId);
-            if (foundationExistBuilding) {
-                throw new MwException(GameError.PARAM_ERROR, String.format("建造建筑时, 该地基上已有建筑, roleId:%s, buildingId:%s, foundationId:%s", roleId, buildingId, foundationId));
-            }
         } else {
             // 1->+是升级
-            BuildingState buildingState = player.getBuildingData().get(buildingId);
-            foundationId = buildingState == null ? foundationId : buildingState.getFoundationId();
         }
 
         UpBuildingRs.Builder builder = UpBuildingRs.newBuilder();
@@ -1024,7 +979,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             BuildQue que = createQue(player, 999, buildingType, buildingId, haust, now + haust);
             // 设置结束时间
             que.setEndTime(now);
-            que.setFoundationId(foundationId);
             // 清除免费加速
             que.clearFree();
             taskDataManager.updTask(player, TaskType.COND_FREE_CD, 1, que.getBuildingType()); // 任务进度
@@ -1033,7 +987,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             for (int i = 1; i <= queCnt; i++) {
                 if (!buildQue.containsKey(i)) {
                     BuildQue que = createQue(player, i, buildingType, buildingId, haust, now + haust);
-                    que.setFoundationId(foundationId);
                     buildQue.put(i, que);
                     builder.setQueue(PbHelper.createBuildQuePb(que));
                     break;
@@ -1783,9 +1736,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             }
             // 更新建筑状态
             if (buildingState == null) {
-                buildingState = new BuildingState();
-                buildingState.setBuildingId(buildingId);
-                buildingState.setBuildingType(buildingType);
+                buildingState = new BuildingState(buildingId, buildingType);
+                player.getBuildingData().put(buildingId, buildingState);
             }
             buildingState.setFoundationId(buildQue.getFoundationId());
 
@@ -1795,16 +1747,17 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 Mill mill = player.mills.get(buildingId);
                 if (mill == null) {
                     mill = new Mill(sBuildingInit.getBuildingId(), sBuildingInit.getBuildingType(), sBuildingInit.getInitLv(), 0);
-                    mill.setUnlock(true);
                     player.mills.put(buildingId, mill);
                 }
+                mill.setUnlock(true);
             } else {
                 BuildingExt buildingExt = player.buildingExts.get(buildingId);
                 if (buildingExt == null) {
-                    buildingExt = new BuildingExt(buildingId, buildingType, true);
-                    buildingExt.setUnLockTime(TimeHelper.getCurrentSecond());
+                    buildingExt = new BuildingExt(buildingId, buildingType);
                     player.buildingExts.put(buildingId, buildingExt);
                 }
+                buildingExt.setUnlock(true);
+                buildingExt.setUnLockTime(TimeHelper.getCurrentSecond());
             }
 
             // 集市解锁时开始刷新经济订单
@@ -1818,16 +1771,17 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         // 获取升级后的建筑等级配置
         StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(buildingType, buildingLv);
         if (sBuildingLevel == null) {
-            throw new MwException(GameError.NO_CONFIG, String.format("建造或升级民居时, 未获取到民居对应的等级配置, roleId:%s, buildingType:%s, buildingLv:%s", player.roleId, buildingType, buildingLv));
-        }
-        int resident = sBuildingLevel.getResident(); // 民居对应的此字段表示其增加的居民上限
-        if (buildingType == BuildingType.RESIDENT_HOUSE) {
-            // 民居增加玩家人口上限
-            player.addResidentTopLimit(resident);
-            playerDataManager.syncRoleInfo(player); // 向客户端同步领主信息变化
+            LogUtil.error("BuildingLv config error,type=" + buildingType + ",lv=" + buildingLv);
         } else {
-            // 非民居建筑, 增加可被派遣居民数量
-            buildingState.setResidentCnt(resident);
+            int resident = sBuildingLevel.getResident(); // 民居对应的此字段表示其增加的居民上限
+            if (buildingType == BuildingType.RESIDENT_HOUSE) {
+                // 民居增加玩家人口上限
+                player.addResidentTopLimit(resident);
+                playerDataManager.syncRoleInfo(player); // 向客户端同步领主信息变化
+            } else {
+                // 非民居建筑, 增加可被派遣居民数量
+                buildingState.setResidentCnt(resident);
+            }
         }
 
         buildingDataManager.synBuildToPlayer(player, buildQue, 2);
@@ -3073,21 +3027,28 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         if (isResType) {
             // 资源建筑按建筑id从小到达顺序建造
             Map<Integer, StaticBuildingInit> staticBuildingInitMap = StaticBuildingDataMgr.getBuildingByTypeMapByType(buildingType);
-            Integer staticMaxBuildingId = staticBuildingInitMap.values().stream().map(StaticBuildingInit::getBuildingId).max(Integer::compareTo).orElse(0);
-            int maxMillId = player.mills.values().stream().map(Mill::getPos).max(Integer::compareTo).orElse(0);
-            if (maxMillId >= staticMaxBuildingId) {
+            int hasBuildResBuildingCnt = (int) player.getBuildingData().values().stream()
+                    .filter(tmp -> tmp.getBuildingType() == buildingType && tmp.getBuildingLv() > 0)
+                    .count();
+            if (hasBuildResBuildingCnt >= staticBuildingInitMap.values().size()) {
                 throw new MwException(GameError.PARAM_ERROR, String.format("建造资源建筑时, 该资源建筑已达建造数量上限, roleId:%s, buildingType:%s", roleId, buildingId));
             }
 
-            if (maxMillId == 0) {
+            BuildingState buildingState = player.getBuildingData().values().stream()
+                    .filter(tmp -> tmp.getBuildingLv() > 0 && tmp.getBuildingType() == buildingType)
+                    .max(Comparator.comparing(BuildingState::getBuildingId))
+                    .orElse(null);
+            if (buildingState == null) {
                 // 该资源建筑从未建造过
-                Integer staticMinBuildingId = staticBuildingInitMap.values().stream().map(StaticBuildingInit::getBuildingId).min(Integer::compareTo).orElse(0);
+                Integer staticMinBuildingId = staticBuildingInitMap.values().stream()
+                        .map(StaticBuildingInit::getBuildingId)
+                        .min(Integer::compareTo).orElse(0);
                 if (staticMinBuildingId == 0) {
-                    throw new MwException(GameError.PARAM_ERROR, String.format("资源建筑等级配置错误, roleId:%s, buildingType:%s", roleId, buildingId));
+                    throw new MwException(GameError.PARAM_ERROR, String.format("建造资源建筑时, 获取建筑id最小的初始建筑配置错误, roleId:%s, buildingType:%s", roleId, buildingId));
                 }
                 buildingId = staticMinBuildingId;
             } else {
-                buildingId = maxMillId + 1;
+                buildingId = buildingState.getBuildingId() + 1;
             }
         } else {
             buildingId = buildingType;
@@ -3101,7 +3062,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         // 获取建筑类型  从玩家建筑信息中获取
         int buildingLv = BuildingDataManager.getBuildingLv(buildingId, player);
         if (buildingLv > 0) {
-            throw new MwException(GameError.FUNCTION_LOCK.getCode(), "建造建筑时，建筑已建造, roleId:" + roleId + ",buildingId:" + buildingId);
+            throw new MwException(GameError.FUNCTION_LOCK.getCode(), "建造建筑时，建筑已建造, roleId:" + roleId + ",buildingId:" + buildingId, ",buildingLv:" + buildingLv);
         }
 
         Lord lord = player.lord;
@@ -3125,15 +3086,15 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
 
         StaticBuildingLv staticBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(buildingType, buildingLv + 1);
         if (staticBuildingLevel == null) {
-            throw new MwException(GameError.INVALID_PARAM.getCode(), "建造建筑时，获取不到建筑1级配置 roleId:" + roleId + ",buildingType:" + buildingType);
+            throw new MwException(GameError.INVALID_PARAM.getCode(), "建造建筑时，获取不到建筑1级配置 roleId:" + roleId + ",buildingType:" + buildingType, ",buildingLv:" + buildingLv);
         }
 
         if (lord.getLevel() < staticBuildingLevel.getRoleLv()) {
-            throw new MwException(GameError.LV_NOT_ENOUGH.getCode(), "建造建筑时，等级不足, roleId:" + roleId + ",buildingType:" + buildingType);
+            throw new MwException(GameError.LV_NOT_ENOUGH.getCode(), "建造建筑时，等级不足, roleId:" + roleId + ",buildingType:" + buildingType, ",buildingLv:" + buildingLv);
         }
 
         if (buildingDataManager.checkBuildingLv(player, staticBuildingLevel.getUpNeedBuilding())) {
-            throw new MwException(GameError.COMMAND_LV_NOT_ENOUGH.getCode(), "建造建筑时，需要的其他建筑等级不足, roleId:" + roleId + ",buildingType:" + buildingType);
+            throw new MwException(GameError.COMMAND_LV_NOT_ENOUGH.getCode(), "建造建筑时，需要的其他建筑等级不足, roleId:" + roleId + ",buildingType:" + buildingType, ",buildingLv:" + buildingLv);
         }
 
         float factor = 0;
@@ -3448,10 +3409,39 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             BuildingState buildingState = buildingData.get(buildingId);
             buildingState.setResidentCnt(Math.min(buildingState.getResidentCnt() + residentCnt, residentTopLimit));
             // TODO 根据居民数量, 更新对应资源或产出的计算
+
         }
 
         return builder.build();
     }
+
+    /**
+     * 更新资源基础产出(单次)
+     *
+     * @param player
+     */
+    public void updateMillBaseResOut(Player player) {
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, List<BuildingState>> buildingStateByBuildingType = buildingData.values().stream().collect(Collectors.groupingBy(BuildingState::getBuildingType));
+        buildingStateByBuildingType.forEach((buildingType, buildingStateList) -> {
+            int totalResidentByBuildingType = buildingStateList.stream().mapToInt(BuildingState::getResidentCnt).sum();
+            switch (buildingType) {
+                case BuildingType.RES_OIL:
+                    player.resource.setOilOut((long) totalResidentByBuildingType * Constant.SINGLE_RESIDENT_ADDITION_IN_SINGLE_SILVER_BUILDING);
+                    break;
+                case BuildingType.RES_ELE:
+                    player.resource.setElecOut((long) totalResidentByBuildingType * Constant.SINGLE_RESIDENT_ADDITION_IN_SINGLE_WOOD_BUILDING);
+                    break;
+                case BuildingType.RES_FOOD:
+                    player.resource.setFoodOut((long) totalResidentByBuildingType * Constant.SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING);
+                    break;
+                case BuildingType.RES_ORE:
+                    player.resource.setOre((long) totalResidentByBuildingType * Constant.SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING);
+                    break;
+            }
+        });
+    }
+
 
     /**
      * 一键派遣居民
@@ -3462,7 +3452,38 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         int idleResidentCnt = player.getIdleResidentCnt();
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
-
+        // 全部建筑居民上限总和
+        Integer totalResidentTopLimit = buildingData.values().stream()
+                .filter(tmp -> tmp.getBuildingLv() >= 1)
+                .mapToInt(BuildingState::getResidentTopLimit)
+                .sum();
+        Map<Integer, List<BuildingState>> groupByBuildingType = buildingData.values().stream().collect(Collectors.groupingBy(BuildingState::getBuildingType));
+        for (List<BuildingState> buildingStateListByBuildingType : groupByBuildingType.values()) {
+            // 每一类建筑的居民上限总和
+            Integer totalResidentLimitByBuildingType = buildingStateListByBuildingType.stream()
+                    .filter(tmp -> tmp.getBuildingLv() >= 1)
+                    .mapToInt(BuildingState::getBuildingLv)
+                    .sum();
+            // 每一类建筑可派遣的居民数量
+            int canDispatchNumByBuildingType = idleResidentCnt * (totalResidentLimitByBuildingType / totalResidentTopLimit);
+            // 优先分配给有地貌buff的
+            List<BuildingState> sortedByLandBuff = buildingStateListByBuildingType.stream().sorted(Comparator.comparing(BuildingState::getLandType).reversed()).collect(Collectors.toList());
+            for (BuildingState buildingState : sortedByLandBuff) {
+                int residentTopLimit = buildingState.getResidentTopLimit();
+                int residentCnt = buildingState.getResidentCnt();
+                if (residentCnt < residentTopLimit) {
+                    // 说明建筑有可派遣居民的空闲位置
+                    if (canDispatchNumByBuildingType >= (residentTopLimit - residentCnt)) {
+                        buildingState.setResidentCnt(residentTopLimit);
+                    } else {
+                        buildingState.setResidentCnt(residentCnt + canDispatchNumByBuildingType);
+                    }
+                    idleResidentCnt = canDispatchNumByBuildingType - (residentTopLimit - residentCnt);
+                    buildingData.put(buildingState.getBuildingId(), buildingState);
+                    // TODO 更新建筑居民加成
+                }
+            }
+        }
 
         // 资源建筑有地貌buff加成, 优先派遣, 其余随机派遣
 
