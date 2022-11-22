@@ -18,7 +18,6 @@ import com.gryphpoem.game.zw.quartz.jobs.function.FunctionPreviewJob;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.DrawCardOperation;
 import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawCardWeight;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDrawHeoPlan;
@@ -105,14 +104,12 @@ public class DrawCardPlanTemplateService {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, no player plan data, keyId:%d", player.lord.getLordId(), req.getKeyId()));
         }
         GamePb5.GetDrawHeroCardActInfoRs.Builder builder = GamePb5.GetDrawHeroCardActInfoRs.newBuilder();
-        List<List<Integer>> optionalBoxConfigList = HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
-        if (CheckNull.nonEmpty(optionalBoxConfigList)) {
-            List<Integer> list = optionalBoxConfigList.stream().filter(tmp -> tmp.size() >= 3 && tmp.get(0) == req.getKeyId()).findFirst().orElse(null);
-            if (CheckNull.nonEmpty(list)) {
-                builder.addOptionalBoxConfig(list.get(0));
-                builder.addOptionalBoxConfig(list.get(1));
-                builder.addOptionalBoxConfig(list.get(2));
-            }
+
+        StaticDrawHeoPlan staticDrawHeoPlan = staticDrawHeroDataMgr.getDrawHeoPlanMap().get(req.getKeyId());
+        if (CheckNull.nonEmpty(staticDrawHeoPlan.getBoxLimit()) && staticDrawHeoPlan.getBoxLimit().size() >= 3) {
+            builder.addOptionalBoxConfig(staticDrawHeoPlan.getBoxLimit().get(0));
+            builder.addOptionalBoxConfig(staticDrawHeoPlan.getBoxLimit().get(1));
+            builder.addOptionalBoxConfig(staticDrawHeoPlan.getBoxLimit().get(2));
         }
         builder.setData((ActivityPb.TimeLimitedDrawCardActData) functionPlanData.createPb(false));
         return builder.build();
