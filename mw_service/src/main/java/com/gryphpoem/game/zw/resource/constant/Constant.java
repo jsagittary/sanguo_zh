@@ -1029,10 +1029,42 @@ public final class Constant {
     public static List<List<Integer>> REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION;
 
     /**
+     * 雄踞一方-州郡-开启纪元
+     */
+    public static List<Integer> OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION;
+
+    /**
+     * 州郡雄踞一方预显示时间
+     */
+    public static List<String> STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME;
+    /**
+     * 州郡雄踞一方开始时间
+     */
+    public static List<String> STATE_DOMINATE_WORLD_MAP_BEGIN_TIME;
+    /**
+     * 州郡雄踞一方结束时间
+     */
+    public static List<String> STATE_DOMINATE_WORLD_MAP_END;
+    /**
+     * 雄踞一方-州郡-胜利占领时间
+     */
+    public static int STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME;
+    /**
+     * 雄踞一方-州郡-返兵比例
+     */
+    public static int STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
 
+        OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION = SystemTabLoader.getListIntSystemValue(SystemId.OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION, "[4,8]");
+        STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME = SystemTabLoader.getListStringSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME, "");
+        STATE_DOMINATE_WORLD_MAP_BEGIN_TIME = SystemTabLoader.getListStringSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_BEGIN_TIME, "");
+        STATE_DOMINATE_WORLD_MAP_END = SystemTabLoader.getListStringSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_DURATION, "[]");
+        STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME, 900);
+        STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO = SystemTabLoader.getIntegerSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO, 5000);
         TREASURE_WARE_ATTR_STAGE_SCORE = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_ATTR_STAGE_SCORE, "[[]]");
         TREASURE_WARE_HIGHER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_HIGHER_STAGE, "[[]]");
         TREASURE_WARE_LOWER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_LOWER_STAGE, "[[]]");

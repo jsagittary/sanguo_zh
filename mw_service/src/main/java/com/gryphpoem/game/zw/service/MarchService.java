@@ -239,8 +239,6 @@ public class MarchService {
             // 攻打飞艇
             fightAirShip(player, army, now);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_ATTACK_SCHEDULE_BOSS) {
-            // 攻打世界boss
-            // worldScheduleService.fightSchedBossLogic(player, army, now);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_ALTAR) {
             ramadanVisitAltarService.marchEnd(player, army, now);
             // 不论是否拜访成功, 都需要返回行军

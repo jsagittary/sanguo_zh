@@ -1327,6 +1327,31 @@ public class SystemId {
     public static final int GUAN_PING_RESCUE_REWARD = 373;
 
     /**
+     * 雄踞一方-州郡-开启纪元
+     */
+    public static final int OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION = 810;
+    /**
+     * 州郡雄踞一方预显示时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME = 811;
+    /**
+     * 州郡雄踞一方开始时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_BEGIN_TIME = 812;
+    /**
+     * 州郡雄踞一方持续时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_DURATION = 813;
+    /**
+     * 雄踞一方-州郡-胜利占领时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME = 814;
+    /**
+     * 雄踞一方-州郡-返兵比例
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO = 815;
+
+    /**
      * 玩家登录刷新流寇距上次离线时间间隔
      */
     public static final int REFRESH_BANDITS_OFFLINE_TIME = 1008;

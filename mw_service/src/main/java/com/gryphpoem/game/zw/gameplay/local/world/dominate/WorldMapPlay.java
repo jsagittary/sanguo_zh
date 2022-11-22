@@ -1,11 +1,16 @@
 package com.gryphpoem.game.zw.gameplay.local.world.dominate;
 
+import com.gryphpoem.game.zw.pb.WorldPb;
+import com.gryphpoem.game.zw.resource.pojo.GamePb;
+
 /**
  * Description: 世界地图玩法  本类型暂时只做雄踞一方通用
  * Author: zhangpeng
  * createTime: 2022-11-21 22:19
  */
-public interface WorldMapPlay {
+public interface WorldMapPlay extends GamePb<WorldPb.BaseWorldFunctionPb> {
+
+    String getWorldMapFunctionName();
 
     /**
      * 获取地图功能玩法
@@ -15,12 +20,19 @@ public interface WorldMapPlay {
     int getWorldMapFunction();
 
     /**
-     * 服务器固定时间为一次执行周期, 执行的具体方法
+     * 初始化定时器
      */
-    void onTick();
+    void initSchedule();
 
     /**
      * 关闭地图
      */
     void close();
+
+    /**
+     * 活动状态
+     *
+     * @return
+     */
+    int state();
 }

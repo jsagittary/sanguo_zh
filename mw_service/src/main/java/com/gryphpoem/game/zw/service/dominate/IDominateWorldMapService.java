@@ -1,0 +1,50 @@
+package com.gryphpoem.game.zw.service.dominate;
+
+import com.gryphpoem.game.zw.pb.GamePb8;
+
+/**
+ * Description:
+ * Author: zhangpeng
+ * createTime: 2022-11-22 15:17
+ */
+public interface IDominateWorldMapService {
+    /**
+     * 获取活动信息
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+     GamePb8.GetDominateWorldMapInfoRs getDominateWorldMapInfo(long roleId, GamePb8.GetDominateWorldMapInfoRq req);
+
+    /**
+     * 攻击雄踞一方城池
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+     GamePb8.AttackDominateCityRs attackDominateCity(long roleId, GamePb8.AttackDominateCityRq req);
+
+    /**
+     * 获取雄踞一方城池详情
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+     GamePb8.GetDominateDetailRs getDominateDetail(long roleId, GamePb8.GetDominateDetailRq req);
+
+    /**
+     * 同步雄踞一方活动信息
+     *
+     */
+    void syncDominateWorldMapInfo();
+
+    /**
+     * 获取地图玩法id
+     *
+     * @return
+     */
+    int getWorldMapFunction();
+}

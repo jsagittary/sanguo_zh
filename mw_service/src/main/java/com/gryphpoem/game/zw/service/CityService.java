@@ -325,9 +325,6 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     public CityRebuildRs cityRebuild(long roleId, int cityId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        // if(checkIsCrossCity(cityId)){
-        // return crossCityService.crossCityRebuild(player, cityId);
-        // }
         // 检查城池是否存在
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(cityId);
         City city = worldDataManager.getCityById(cityId);
@@ -392,9 +389,6 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             rewardDataManager.checkAndSubPlayerRes(player, staticCity.getRebuild(), AwardFrom.CITY_REBUILD);
             // 更新城池拥有者
             city.setOwner(roleId, TimeHelper.getCurrentSecond());
-            // 发送竞选成功邮件
-//            mailDataManager.sendNormalMail(player, MailConstant.MOLD_CAMPAIGN_SUCC, TimeHelper.getCurrentSecond(),
-//                    city.getCityId(), city.getCityId());
             //发送重建奖励邮件
             Award ownerAward = PbHelper.createAward(staticCity.getOutAward());
             List<Award> ownerAwards = ListUtils.createList(ownerAward);
