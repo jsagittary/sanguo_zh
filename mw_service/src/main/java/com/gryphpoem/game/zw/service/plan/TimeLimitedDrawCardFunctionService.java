@@ -362,42 +362,41 @@ public class TimeLimitedDrawCardFunctionService extends AbsDrawCardPlanService {
         // 剩余抽卡次数
         int leftHeroDrawCountAfterBuyBox = drawCardTimeLimitedFunctionPlanData.getLeftHeroDrawCountAfterBuyBox();
 
-        List<List<Integer>> optionalBoxConfigList = HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
+        // List<List<Integer>> optionalBoxConfigList = HeroConstant.OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG;
+        StaticDrawHeoPlan staticDrawHeoPlan = staticDrawHeroDataMgr.getDrawHeoPlanMap().get(req.getKeyId());
         List<Integer> optionalBoxActiveCountConfig = HeroConstant.TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG; // [60,70,80,90,100,110,120]
-        if (CheckNull.isEmpty(optionalBoxConfigList) || CheckNull.isEmpty(optionalBoxActiveCountConfig)) {
+        if (CheckNull.isNull(staticDrawHeoPlan)
+                || CheckNull.isEmpty(staticDrawHeoPlan.getBoxLimit())
+                || staticDrawHeoPlan.getBoxLimit().size() < 3
+                || CheckNull.isEmpty(optionalBoxActiveCountConfig)) {
             throw new MwException(GameError.NO_CONFIG, String.format("roleId:%d, no config", roleId));
         }
         GamePb5.BuyOptionalBoxFromTimeLimitedDrawCardRs.Builder builder = GamePb5.BuyOptionalBoxFromTimeLimitedDrawCardRs.newBuilder();
-        for (List<Integer> optionalBoxConfig : optionalBoxConfigList) {
-            if (keyId == optionalBoxConfig.get(0)) {
-                // 配置的可购买自选箱需要累计寻访的次数
-                Integer needDrawCardCount = null;
-                int curBuyCount = drawCardTimeLimitedFunctionPlanData.getOptionalBoxBuyCount();
-                if (curBuyCount + 1 >= optionalBoxActiveCountConfig.size()) {
-                    needDrawCardCount = optionalBoxActiveCountConfig.get(optionalBoxActiveCountConfig.size() - 1);
-                } else {
-                    needDrawCardCount = optionalBoxActiveCountConfig.get(curBuyCount);
-                }
-
-                if (leftHeroDrawCountAfterBuyBox < needDrawCardCount) {
-                    throw new MwException(GameError.ACTIVITY_AWARD_NOT_GET, String.format("roleId:%d, not match condition", roleId));
-                }
-                // 配置的可购买自选箱id
-                Integer optionalBoxId = optionalBoxConfig.get(1);
-                // 配置的购买道具所需玉璧
-                Integer optionalBoxPrice = optionalBoxConfig.get(2);
-                // 检查购买宝箱需要的资源是否充足并扣减
-                rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.GOLD, optionalBoxPrice, AwardFrom.ACTIVITY_BUY, true, "");
-                // 更新剩余抽卡次数
-                drawCardTimeLimitedFunctionPlanData.subLeftHeroDrawCountAfterBuyBox(needDrawCardCount);
-                // 增加购买自选箱的次数
-                drawCardTimeLimitedFunctionPlanData.addTotalOptionalBoxBuyCount();
-                // 给玩家新增宝箱道具
-                CommonPb.Award award = rewardDataManager.sendRewardSignle(player, AwardType.PROP, optionalBoxId, 1, AwardFrom.ACTIVITY_BUY, "");
-                builder.addAward(award);
-                break;
-            }
+        // 配置的可购买自选箱需要累计寻访的次数
+        int needDrawCardCount = 0;
+        int curBuyCount = drawCardTimeLimitedFunctionPlanData.getOptionalBoxBuyCount();
+        if (curBuyCount + 1 >= optionalBoxActiveCountConfig.size()) {
+            needDrawCardCount = optionalBoxActiveCountConfig.get(optionalBoxActiveCountConfig.size() - 1);
+        } else {
+            needDrawCardCount = optionalBoxActiveCountConfig.get(curBuyCount);
         }
+
+        if (leftHeroDrawCountAfterBuyBox < needDrawCardCount) {
+            throw new MwException(GameError.ACTIVITY_AWARD_NOT_GET, String.format("roleId:%d, not match condition", roleId));
+        }
+        // 配置的可购买自选箱id
+        int optionalBoxId = staticDrawHeoPlan.getBoxLimit().get(1);
+        // 配置的购买道具所需玉璧
+        int optionalBoxPrice = staticDrawHeoPlan.getBoxLimit().get(2);
+        // 检查购买宝箱需要的资源是否充足并扣减
+        rewardDataManager.checkAndSubPlayerRes(player, AwardType.MONEY, AwardType.Money.GOLD, optionalBoxPrice, AwardFrom.ACTIVITY_BUY, true, "");
+        // 更新剩余抽卡次数
+        drawCardTimeLimitedFunctionPlanData.subLeftHeroDrawCountAfterBuyBox(needDrawCardCount);
+        // 增加购买自选箱的次数
+        drawCardTimeLimitedFunctionPlanData.addTotalOptionalBoxBuyCount();
+        // 给玩家新增宝箱道具
+        CommonPb.Award award = rewardDataManager.sendRewardSignle(player, AwardType.PROP, optionalBoxId, 1, AwardFrom.ACTIVITY_BUY, "");
+        builder.addAward(award);
 
         return builder.build();
     }
