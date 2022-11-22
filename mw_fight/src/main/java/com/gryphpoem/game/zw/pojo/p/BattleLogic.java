@@ -152,20 +152,18 @@ public class BattleLogic {
         int randomValue = lower + RandomHelper.randomInSize(upper - lower + 1);
         int recoveryValue = FightCalc.skillEnergyRecovery(atk, atkHeroId, randomValue);
 
-        List<SimpleHeroSkill> skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> Objects.nonNull(skill) && !skill.isOnStageSkill()).collect(Collectors.toList());
-        if (!CheckNull.isEmpty(skillList)) {
-            skillList.forEach(skill -> {
-                skill.setCurEnergy(skill.getCurEnergy() + recoveryValue);
-            });
-        }
-        if (atk.canReleaseSkill(fe.getHeroId())) {
+        // 主动技能充能, 找到能量足够的主动技能列表
+        List<SimpleHeroSkill> skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> {
+            if (Objects.isNull(skill) || skill.isOnStageSkill())
+                return false;
+            skill.setCurEnergy(skill.getCurEnergy() + recoveryValue);
+            return skill.getCurEnergy() >= skill.getS_skill().getReleaseNeedEnergy();
+        }).collect(Collectors.toList());
+        if (atk.canReleaseSkill(fe.getHeroId()) && !CheckNull.isEmpty(skillList)) {
             // 释放技能
-            skillList = atk.getSkillList(fe.getHeroId()).stream().filter(skill -> skill.getCurEnergy() >= skill.getS_skill().getReleaseNeedEnergy()).collect(Collectors.toList());
-            if (!CheckNull.isEmpty(skillList)) {
-                skillList.forEach(skill -> {
-                    skill.releaseSkill(contextHolder);
-                });
-            }
+            skillList.forEach(skill -> {
+                skill.releaseSkill(contextHolder);
+            });
         }
     }
 
