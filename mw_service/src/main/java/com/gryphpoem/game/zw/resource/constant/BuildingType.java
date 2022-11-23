@@ -82,7 +82,7 @@ public class BuildingType {
     /**
      * 资源建筑数组
      */
-    public static final int[] RES_ARRAY = new int[] { RES_OIL, RES_ELE, RES_FOOD, RES_ORE, RESIDENT_HOUSE };
+    public static final int[] RES_ARRAY = new int[] { RES_OIL, RES_ELE, RES_FOOD, RES_ORE };
     public static final int[] TRAIN_ARRAY = new int[] { TRAIN_FACTORY_1, TRAIN_FACTORY_2, TRAIN_FACTORY_3 };
     public static final int[] FACTORY_ARRAY = new int[] { FACTORY_1, FACTORY_2, FACTORY_3 };
 

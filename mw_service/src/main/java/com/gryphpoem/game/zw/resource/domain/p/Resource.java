@@ -15,7 +15,7 @@ public class Resource implements Cloneable {
     private long elecOut;//
     private long oilOut;//
     private long oreOut;//
-    private int foodOutF;// 当前粮食产出增加百分比
+    private int foodOutF;// 当前粮食产出增加万分比
     private int elecOutF;//
     private int oilOutF;//
     private int oreOutF;//

@@ -215,7 +215,15 @@ public class ChemicalService {
         rewardDataManager.checkAndSubPlayerRes(player, staticChemical.getCost(), AwardFrom.CHEMICAL_RECRUIT);
 
         ChemicalRecruitRs.Builder builder = ChemicalRecruitRs.newBuilder();
-        int human = (int) player.resource.getHuman();
+        // int human = (int) player.resource.getHuman();
+        BuildingState buildingState = player.getBuildingData().get(BuildingType.FERRY);
+        int human = 0;
+        if (buildingState != null) {
+            human = buildingState.getResidentCnt(); // 人口
+        }
+        if (human == 0) {
+            throw new MwException(GameError.PARAM_ERROR, "渡口生产订单时, 当前渡口没有居民, 无法生产, roleId:%s", roleId);
+        }
         int now = TimeHelper.getCurrentSecond();
         int queCnt = 0;
         for (Entry<String, ChemicalQue> kv : chemical.getPosQue().entrySet()) {
@@ -241,11 +249,11 @@ public class ChemicalService {
         if (human == 0 || queCnt == 0) {
             addQue(chemical, staticChemical, human, id, pos, award, countryPeople, player);
         } else if (chemical.getPosQue().get(pos + "") != null) {
-            human = chemical.getPosQue().get(pos + "").getPeople();
+            // human = chemical.getPosQue().get(pos + "").getPeople();
             addQue(chemical, staticChemical, human, id, pos, award, countryPeople, player);
         } else {
             // 所有时间重新计算
-            human = human / (queCnt + 1);
+            // human = human / (queCnt + 1);
             processQue(chemical, roleId, human, countryPeople, player);
             // 增加队列
             addQue(chemical, staticChemical, human, id, pos, award, countryPeople, player);
@@ -284,6 +292,7 @@ public class ChemicalService {
         int num = activityDataManager.getActProductionNum(player);
         int period = 0;
         // 先计算正在生产的队列,再计算预备队列
+        int queNum = (int) chemical.getPosQue().values().stream().filter(p -> !p.getClonePos()).count();
         for (Entry<String, ChemicalQue> que : chemical.getPosQue().entrySet()) {
             q = que.getValue();
             if (q.getClonePos()) {
@@ -307,7 +316,8 @@ public class ChemicalService {
             // + ",原时间=" + q.getPeriod() + ",结束时间=" + (q.getEndTime() + period - q.getPeriod()));
 
             // 新的重新计算
-            period = getPeriod(oldStaticChemical, human, countryPeople, player);
+            // period = getPeriod(oldStaticChemical, human, countryPeople, player);
+            period = getPeriod(oldStaticChemical, player, queNum);
             LogUtil.debug("渡口时间生产加速前的时间= " + period);
             period *= num / Constant.TEN_THROUSAND;
             LogUtil.debug("渡口时间生产加速后的时间= " + period + "加速比例万分之:" + num);
@@ -321,6 +331,7 @@ public class ChemicalService {
         }
 
         // 重新计算预备队列
+        queNum = (int) chemical.getPosQue().values().stream().filter(ChemicalQue::getClonePos).count();
         for (Entry<String, ChemicalQue> que : chemical.getPosQue().entrySet()) {
             q = que.getValue();
             if (!q.getClonePos()) {
@@ -333,7 +344,8 @@ public class ChemicalService {
             oldStaticChemical = StaticBuildingDataMgr.getChemicalMap(q.getSid());
             LogUtil.debug("渡口队列材料id=" + q.getSid() + "," + oldStaticChemical);
             // 新的重新计算
-            period = getPeriod(oldStaticChemical, human, countryPeople, player);
+            // period = getPeriod(oldStaticChemical, human, countryPeople, player);
+            period = getPeriod(oldStaticChemical, player, queNum);
             LogUtil.debug("预备队列渡口时间= " + period);
             period *= num / Constant.TEN_THROUSAND;
             LogUtil.debug("预备队列渡口时间= " + period + "加速比例万分之:" + num);
@@ -362,7 +374,9 @@ public class ChemicalService {
         ChemicalQue.Builder newQue = ChemicalQue.newBuilder();
         // int period = (staticChemical.getTime() - human * 6) * id;
         // int period = (staticChemical.getTime() / ((human == 0 ? 1 : human) + countryPeoPle)) * 3600;
-        int period = getPeriod(staticChemical, (human == 0 ? 1 : human), countryPeoPle, player);
+        int queNum = (int) chemical.getPosQue().values().stream().filter(tmp -> !tmp.getClonePos()).count();
+        // int period = getPeriod(staticChemical, (human == 0 ? 1 : human), countryPeoPle, player);
+        int period = getPeriod(staticChemical, player, queNum);
         LogUtil.debug("生产加速前的时间= " + period);
         period *= num / Constant.TEN_THROUSAND;
         LogUtil.debug("生产加速后的时间= " + period + "加速比例万分之:" + num);
@@ -402,50 +416,62 @@ public class ChemicalService {
     }
 
     /**
-     * 三国3 新公式计算
+     * 三国3 新公式计算<br>
+     * (6 + 12 / 队列数) * 3600 * (1 - 科技减免 ) * (1 - 居民减免)
      *
      * @param staticChemical
      * @param player
      * @return
      */
-    public int getPeriod(StaticChemical staticChemical, Player player) {
+    public int getPeriod(StaticChemical staticChemical, Player player, int queNum) {
         BuildingState buildingState = player.getBuildingData().get(BuildingType.FERRY);
-        int residentCnt = buildingState.getResidentCnt(); // 人口
+        int residentCnt = 0;
+        if (buildingState != null) {
+            residentCnt = buildingState.getResidentCnt(); // 人口
+        }
 
         double period = 0;
-        //化工 科技加成  获取加成比例
+        // 化工 科技加成  获取加成比例
         double proportion = techDataManager.getTechEffect4Single(player, TechConstant.TYPE_22);
-        //赛季天赋
+        // 赛季天赋
         double seasonTalentEffect = seasonTalentService.getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_403) / Constant.TEN_THROUSAND;
+        // 居民加成
+        double residentEffect = residentCnt * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT / Constant.TEN_THROUSAND;
+
         if (staticChemical.getId() == 1) {
-            period = (1 + 11 * 2650.0f / (2650 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+            period = (1 + 1.0 * 11 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else if (staticChemical.getId() == 2) {
-            period = (2 + 10 * 8450.0f / (8450 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+            period = (2 + 1.0 * 10 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else if (staticChemical.getId() == 3) {
-            period = (3 + 9 * 10900.0f / (10900 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+            period = (3 + 1.0 * 9 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else if (staticChemical.getId() == 4) {
-            period = (12 + 24 * 13350.0f / (13350 + residentCnt)) * 3600f * (1.0 - proportion - seasonTalentEffect);
+            period = (12 + 1.0 * 24 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else {
-            period = (staticChemical.getTime() / residentCnt) * 3600f * (1.0 - proportion - seasonTalentEffect);
+            period = (1.0 * staticChemical.getTime() / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         }
         return (int) period;
     }
 
     /**
-     * 更新渡口的生产时间
+     * 更新渡口的生产时间<br>
+     * 渡口的时间更新, 以余下的时间为基础进行计算
      *
      * @param player
      */
-    public void updatePeriod(Player player) {
+    public void updateFerryProductTime(Player player, int effect) {
+        int now = TimeHelper.getCurrentSecond();
         for (ChemicalQue que : player.chemical.getPosQue().values()) {
-            StaticChemical staticChemical = StaticBuildingDataMgr.getChemicalMap(que.getSid());
-            int period = getPeriod(staticChemical, player);
-            double interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.FERRY);
-            period *= (1 - interiorEffect);
+            int startTime = que.getStartTime();
+            int endTime = que.getEndTime();
+            if (endTime < now) {
+                continue;
+            }
+            int remainingTime = new Double(Math.ceil((endTime - now) * (1 - effect / Constant.TEN_THROUSAND))).intValue();
+            endTime = now + remainingTime;
             ChemicalQue.Builder queBuilder = que.toBuilder()
-                    .setPeriod(period)
-                    .setEndTime(que.getStartTime());
-            player.chemical.getPosQue().put(que.getPos() + "",  queBuilder.build());
+                    .setPeriod(endTime - startTime)
+                    .setEndTime(endTime);
+            player.chemical.getPosQue().put(que.getPos() + "", queBuilder.build());
         }
         synFerryQueInfo(player);
     }

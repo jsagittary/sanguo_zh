@@ -55,7 +55,10 @@ public class StaticHeroDataMgr {
     private static Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap = new TreeMap<>();
     // 武将初始等级自适应配置， key：heroId
     private static Map<Integer, StaticHeroAppoint> staticHeroAppointMap = new HashMap<>();
-
+    // 武将品阶对应的类型属性
+    private List<StaticHeroGradeInterior> staticHeroGradeInteriorList = new ArrayList<>();
+    // 武将品阶对应的内政属性 key1-品阶, key2-品阶等级
+    private Map<Integer, Map<Integer, StaticHeroGradeInterior>> staticHeroGradeInteriorMap = new HashMap<>();
 
     public static void init() {
         Map<Integer, StaticHero> heroMap = staticDataDao.selectHeroMap();

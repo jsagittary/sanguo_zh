@@ -1783,7 +1783,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 playerDataManager.syncRoleInfo(player); // 向客户端同步领主信息变化
             } else {
                 // 非民居建筑, 增加可被派遣居民数量
-                buildingState.setResidentCnt(resident);
+                buildingState.setResidentTopLimit(resident);
             }
         }
 
@@ -3434,7 +3434,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      */
     public GamePb1.DispatchResidentRs dispatchResident(long roleId, GamePb1.DispatchResidentRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-
         GamePb1.DispatchResidentRs.Builder builder = GamePb1.DispatchResidentRs.newBuilder();
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         int idleResidentCnt = player.getIdleResidentCnt();
@@ -3442,17 +3441,14 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             throw new MwException(GameError.NO_CONFIG, String.format("派遣居民时, 无空闲居民可派遣, roleId:%s", roleId));
         }
         boolean autoDispatch = rq.getAutoDispatch();
-        List<Integer> millIds = new ArrayList<>();
         if (autoDispatch) {
             // 一键派遣
-            autoDispatchResident(player, millIds);
-            // 更新资源建筑基础产量
-            updateMillBaseResOut(player);
+            autoDispatchResident(player, builder);
         } else {
             // 单个建筑派遣
             int buildingId = rq.getBuildingId();
-            int residentCnt = rq.getResidentCnt(); // 指定建筑派遣时, 派遣的数量为最终值, 非增量派遣
-            if (residentCnt > idleResidentCnt) {
+            int newResidentCnt = rq.getResidentCnt(); // 指定建筑派遣时, 派遣的数量为最终值, 非增量值
+            if (newResidentCnt > idleResidentCnt) {
                 throw new MwException(GameError.NO_CONFIG, String.format("派遣居民时, 派遣数量超过了当前空闲居民数, roleId:%s", roleId));
             }
             StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
@@ -3466,20 +3462,24 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 throw new MwException(GameError.NO_CONFIG, String.format("派遣居民时, 未获取到对应建筑的的等级配置, roleId:%s, buildingId:%s, buildingLv:%s", roleId, buildingId, buildingLv));
             }
             if (BuildingDataManager.isResType(buildingType)) {
-                // 资源类型重新分配居民前, 先将已产出的资源征收了
+                // 资源建筑重新分配居民前, 先将已产出的资源征收了
+                List<Integer> millIds = new ArrayList<>();
                 millIds.add(buildingId);
                 forceGainResource(player, millIds);
             }
             int residentTopLimit = sBuildingLevel.getResident();
             BuildingState buildingState = buildingData.get(buildingId);
-            buildingState.setResidentCnt(Math.min(residentCnt, residentTopLimit));
+            int oldResidentCnt = buildingState.getResidentCnt();
+            buildingState.setResidentCnt(Math.min(newResidentCnt, residentTopLimit));
+            builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
             if (BuildingDataManager.isResType(buildingType)) {
                 // 更新资源建筑基础产量
                 updateMillBaseResOut(player);
             }
             if (buildingType == BuildingType.FERRY) {
-                // 更新渡口生产队列
-                DataResource.ac.getBean(ChemicalService.class).updatePeriod(player);
+                // 给渡口重新派遣居民时, 重新计算渡口的产出时间
+                int ferryResidentEffect = Math.max(newResidentCnt - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
+                DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
             }
         }
 
@@ -3493,14 +3493,17 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      * @param buildingType
      * @return
      */
-    public double calculateInteriorEffect(Player player, int buildingType) {
-        double effect = 0.00;
+    public int calculateInteriorEffect(Player player, int buildingType) {
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
-        BuildingState buildingState = buildingData.values().stream().filter(tmp -> tmp.getBuildingType() == buildingType).findFirst().orElse(null);
+        BuildingState buildingState = buildingData.values().stream()
+                .filter(tmp -> tmp.getBuildingType() == buildingType)
+                .findFirst()
+                .orElse(null);
         if (buildingState == null) {
             throw new MwException(GameError.DATA_EXCEPTION, String.format("计算内政属性加成时, 未找到对应的建筑状态信息, roleId:%s, buildingType:%s", player.getLordId(), buildingType));
         }
 
+        int effect = 0;
         List<Integer> heroIds = buildingState.getHeroIds();
         for (Integer heroId : heroIds) {
             Hero hero = player.heros.get(heroId);
@@ -3515,7 +3518,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                     }
                     // int attrId = list.get(1); // 暂时没用
                     int attrValue = list.get(2);
-                    effect += attrValue / Constant.TEN_THROUSAND;
+                    effect += attrValue;
                 }
             }
         }
@@ -3528,26 +3531,32 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      *
      * @param player
      */
-    private void autoDispatchResident(Player player, List<Integer> millIds) {
+    private void autoDispatchResident(Player player, GamePb1.DispatchResidentRs.Builder builder) {
         int idleResidentCnt = player.getIdleResidentCnt();
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
-        // 全部建筑居民上限总和
-        Integer totalResidentTopLimit = buildingData.values().stream()
-                .filter(tmp -> tmp.getBuildingLv() >= 1)
+        // 全部建筑居民上限总和(民居除外)
+        int totalResidentTopLimit = buildingData.values().stream()
+                .filter(tmp -> tmp.getBuildingLv() >= 1 && tmp.getBuildingType() != BuildingType.RESIDENT_HOUSE)
                 .mapToInt(BuildingState::getResidentTopLimit)
                 .sum();
         Map<Integer, List<BuildingState>> groupByBuildingType = buildingData.values().stream().collect(Collectors.groupingBy(BuildingState::getBuildingType));
+        List<Integer> millIds = new ArrayList<>();
         for (Entry<Integer, List<BuildingState>> entry : groupByBuildingType.entrySet()) {
-            Integer buildingType = entry.getKey();
+            int buildingType = entry.getKey();
+            if (buildingType == BuildingType.RESIDENT_HOUSE) {
+                // 民居不可派遣居民 TODO 后期被派遣的居民需要从民居中扣减
+                continue;
+            }
+            boolean dispatchFlag = false;
             List<BuildingState> buildingStateListByBuildingType = entry.getValue();
             if (BuildingDataManager.isResType(buildingType)) {
-                // 资源类型重新分配居民前, 先将已产出的资源征收了
+                // 资源建筑重新分配居民前, 先将已产出的资源征收了
                 millIds.addAll(buildingStateListByBuildingType.stream().map(BuildingState::getBuildingId).collect(Collectors.toList()));
                 forceGainResource(player, millIds);
             }
             // 每一类建筑的居民上限总和
-            Integer totalResidentLimitByBuildingType = buildingStateListByBuildingType.stream()
+            int totalResidentLimitByBuildingType = buildingStateListByBuildingType.stream()
                     .filter(tmp -> tmp.getBuildingLv() >= 1)
                     .mapToInt(BuildingState::getBuildingLv)
                     .sum();
@@ -3558,24 +3567,37 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                     .sorted(Comparator.comparing(BuildingState::getLandType).reversed())
                     .collect(Collectors.toList());
             for (BuildingState buildingState : sortedByLandBuff) {
-                if (idleResidentCnt <= 0) {
+                if (canDispatchNumByBuildingType <= 0) {
                     break;
                 }
-                int residentTopLimit = buildingState.getResidentTopLimit();
-                int residentCnt = buildingState.getResidentCnt();
-                if (residentCnt < residentTopLimit) {
+                StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(buildingType, buildingState.getBuildingLv());
+                if (sBuildingLevel == null) {
+                    throw new MwException(GameError.DATA_EXCEPTION, String.format("派遣居民时, 获取不到建筑的等级配置, roleId:%s, buildType:%s, buildingLv:%s", player.getLordId(), buildingType, buildingState.getBuildingLv()));
+                }
+                int residentTopLimit = sBuildingLevel.getResident();
+                int oldResidentCnt = buildingState.getResidentCnt();
+                if (oldResidentCnt < residentTopLimit) {
                     // 说明建筑有可派遣居民的空闲位置
-                    if (canDispatchNumByBuildingType >= (residentTopLimit - residentCnt)) {
+                    if ((canDispatchNumByBuildingType + oldResidentCnt) >= residentTopLimit) {
                         buildingState.setResidentCnt(residentTopLimit);
                     } else {
-                        buildingState.setResidentCnt(residentCnt + canDispatchNumByBuildingType);
+                        buildingState.setResidentCnt(oldResidentCnt + canDispatchNumByBuildingType);
                     }
-                    idleResidentCnt = canDispatchNumByBuildingType - (residentTopLimit - residentCnt);
+                    canDispatchNumByBuildingType -= (buildingState.getResidentCnt() - oldResidentCnt);
+                    idleResidentCnt -= (buildingState.getResidentCnt() - oldResidentCnt);
                     buildingData.put(buildingState.getBuildingId(), buildingState);
+                    builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
+                    dispatchFlag = true;
+                }
+                if (buildingType == BuildingType.FERRY) {
+                    // 给渡口重新派遣居民时, 重新计算渡口的产出时间
+                    int ferryResidentEffect = Math.max(buildingState.getResidentCnt() - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
+                    DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
                 }
             }
-            if (buildingType == BuildingType.FERRY) {
-                // TODO 给渡口重新派遣居民时, 重新计算渡口的产出时间
+            if (dispatchFlag && BuildingDataManager.isResType(buildingType)) {
+                // 更新资源建筑基础产量
+                updateMillBaseResOut(player);
             }
         }
     }
@@ -3608,7 +3630,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
     }
 
     /**
-     * 强制给玩家将资源征收了
+     * 强制给玩家将已产出的资源征收(用于资源产量更新前)
      *
      * @param player
      * @param millIds
@@ -3643,36 +3665,47 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      */
     public GamePb1.DispatchHeroRs dispatchHero(long roleId, GamePb1.DispatchHeroRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-
         GamePb1.DispatchHeroRs.Builder builder = GamePb1.DispatchHeroRs.newBuilder();
         boolean autoDispatch = rq.getAutoDispatch();
         if (autoDispatch) {
-            // 一键委任
-            int[] autoDispatchHeroRule = BuildingType.AUTO_DISPATCH_HERO_RULE;
-            for (int i = 0; i < autoDispatchHeroRule.length; i++) {
-                int buildingType = autoDispatchHeroRule[i];
-                // 根据建筑类型找对应内政属性最高的武将
-
-                if (BuildingDataManager.isResType(buildingType)) {
-                    // 资源建筑, 一类资源建筑内政
-
-                    // TODO 根据武将内政属性, 更新对应资源或产出的计算
-                } else {
-                    // 非资源建筑
-
-                    // TODO 根据武将内政属性, 更新对应资源或产出的计算
-                }
-            }
+            autoDispatchHero(player, builder);
         } else {
             int buildingId = rq.getBuildingId();
             Map<Integer, BuildingState> buildingData = player.getBuildingData();
             BuildingState buildingState = buildingData.get(buildingId);
+            // 校验该建筑委任槽的解锁条件
+            int buildingType = buildingState.getBuildingType();
+            Map<Integer, StaticBuildingInit> staticBuildingInitByType = StaticBuildingDataMgr.getBuildingByTypeMapByType(buildingType);
+            StaticBuildingInit sBuildingInit = staticBuildingInitByType.values().stream().findAny().orElse(null);
+            if (sBuildingInit == null) {
+                throw new MwException(GameError.DATA_EXCEPTION, "手动委任武将时, 未找到建筑的初始配置, roleId:%s, buildingType:%s", player.getLordId(), buildingType);
+            }
+            if (buildingState.getHeroIds().size() >= sBuildingInit.getNeedBuildingLv().size()) {
+                throw new MwException(GameError.DATA_EXCEPTION, "手动委任武将时, 建筑委任槽已满, roleId:%s, buildingType:%s", player.getLordId(), buildingType);
+            }
             List<Integer> heroIdList = rq.getHeroIdList();
-            for (Integer heroId : heroIdList) {
-                if (player.heros.containsKey(heroId) && !buildingState.getHeroIds().contains(heroId)) {
-                    buildingState.getHeroIds().add(heroId);
-                    // TODO 根据武将内政属性, 更新对应资源或产出的计算
+            boolean dispatchFlag = false;
+            if (CheckNull.nonEmpty(heroIdList)) {
+                // 说明建筑有空的委任槽, 校验空的委任槽是否已解锁
+                for (int i = 0; i < sBuildingInit.getNeedBuildingLv().size(); i++) {
+                    if (buildingState.getHeroIds().size() <= i && buildingState.getBuildingLv() >= sBuildingInit.getNeedBuildingLv().get(i)) {
+                        // 说明第j个委任槽为空, 且该槽位已解锁
+                        buildingState.getHeroIds().add(heroIdList.get(i));
+                        Hero hero = player.heros.get(heroIdList.get(i));
+                        hero.setIsDispatched(true);
+                        hero.setBuildingType(buildingType);
+                        dispatchFlag = true;
+                        CommonPb.BuildingInfo.Builder buildingInfoBuilder = CommonPb.BuildingInfo.newBuilder();
+                        buildingInfoBuilder.setBuildingType(buildingType);
+                        buildingInfoBuilder.addAllHeroId(buildingState.getHeroIds());
+                        builder.addBuildingInfo(buildingInfoBuilder.build());
+                    }
                 }
+            }
+            // 每一类建筑确定有新的武将委任后, 如果是渡口, 则需立即更新订单的生产时间, 其他建筑类型在各自的资源结算或计算时再取值处理
+            if (dispatchFlag && buildingType == BuildingType.FERRY) {
+                int ferryInteriorEffect = calculateInteriorEffect(player, BuildingType.FERRY);
+                DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryInteriorEffect);
             }
         }
 
@@ -3680,14 +3713,152 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
     }
 
     /**
-     * 一键委任武将时时, 单个建筑的处理
+     * 一键委任武将时, 单个建筑的处理
      *
      * @param player
-     * @param buildingId
      * @return
      */
-    private void autoDispatchHero(Player player, int buildingId, boolean dispatchResult) {
+    private void autoDispatchHero(Player player, GamePb1.DispatchHeroRs.Builder builder) {
+        int[] autoDispatchHeroRule = BuildingType.AUTO_DISPATCH_HERO_RULE;
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        for (int buildingType : autoDispatchHeroRule) {
+            // 校验该建筑委任槽的解锁条件
+            Map<Integer, StaticBuildingInit> staticBuildingInitByType = StaticBuildingDataMgr.getBuildingByTypeMapByType(buildingType);
+            StaticBuildingInit sBuildingInit = staticBuildingInitByType.values().stream().findAny().orElse(null);
+            if (sBuildingInit == null) {
+                throw new MwException(GameError.DATA_EXCEPTION, "一键委任时, 未找到建筑的初始配置, roleId:%s, buildingType:%s", player.getLordId(), buildingType);
+            }
 
+            boolean dispatchFlag = false;
+            List<Integer> needBuildingLv = sBuildingInit.getNeedBuildingLv();
+            List<BuildingState> buildingStateList = buildingData.values().stream()
+                    .filter(tmp -> tmp.getBuildingType() == buildingType)
+                    .collect(Collectors.toList());
+            for (int i = 0; i < buildingStateList.size(); i++) {
+                BuildingState buildingState = buildingStateList.get(0);
+                List<Integer> heroIds = buildingState.getHeroIds();
+                int buildingLv = buildingState.getBuildingLv();
+                if (heroIds.size() >= needBuildingLv.size()) {
+                    continue;
+                }
+                // 说明建筑有空的委任槽, 校验空的委任槽是否已解锁
+                for (int j = 0; j < needBuildingLv.size(); j++) {
+                    if (heroIds.size() <= j && buildingLv >= needBuildingLv.get(j)) {
+                        // 说明第j个委任槽为空, 且该槽位已解锁
+                        // 根据建筑类型找对应内政属性最高的武将
+                        int bestHeroId = getBestHeroForBuildingByInterior(player, buildingType);
+                        if (bestHeroId == 0) {
+                            break;
+                        }
+                        heroIds.add(bestHeroId);
+                        Hero hero = player.heros.get(bestHeroId);
+                        hero.setIsDispatched(true);
+                        hero.setBuildingType(buildingType);
+                        dispatchFlag = true;
+                    }
+                }
+                if (dispatchFlag && i == 0) {
+                    // 判断i == 0, 是因为资源建筑需要按类型统一返回一个BuildingInfo给客户端
+                    CommonPb.BuildingInfo.Builder buildingInfoBuilder = CommonPb.BuildingInfo.newBuilder();
+                    buildingInfoBuilder.setBuildingType(buildingType);
+                    buildingInfoBuilder.addAllHeroId(buildingState.getHeroIds());
+                    builder.addBuildingInfo(buildingInfoBuilder.build());
+                }
+            }
+            // 每一类建筑确定有新的武将委任后, 如果是渡口, 则需立即更新订单的生产时间, 其他建筑类型在各自的资源结算或计算时再取值处理
+            if (dispatchFlag && buildingType == BuildingType.FERRY) {
+                int ferryInteriorEffect = calculateInteriorEffect(player, BuildingType.FERRY);
+                DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryInteriorEffect);
+            }
+        }
+    }
+
+    /**
+     * 获取玩家武将列表中最匹配指定类型建筑的
+     *
+     * @param player
+     * @param buildingType
+     * @return
+     */
+    private int getBestHeroForBuildingByInterior(Player player, int buildingType) {
+        int heroId = 0;
+        Map<Integer, Integer> hasRelatedAttrHeroMap = new HashMap<>();
+        for (Hero hero : player.heros.values()) {
+            if (hero.getIsDispatched()) {
+                // 已委任的武将, 不参与
+                continue;
+            }
+            if (CheckNull.isEmpty(hero.getInteriorAttr())) {
+                continue;
+            }
+            for (List<Integer> list : hero.getInteriorAttr()) {
+                if (CheckNull.isEmpty(list) || list.size() < 3) {
+                    continue;
+                }
+                if (list.get(0) == buildingType) {
+                    // 内政属性的建筑类型与要分配的建筑类型匹配, 临时存储武将id和对应内政属性值
+                    hasRelatedAttrHeroMap.put(hero.getHeroId(), list.get(2));
+                }
+            }
+        }
+        if (CheckNull.isEmpty(hasRelatedAttrHeroMap)) {
+            return heroId;
+        }
+        // 找出属性值最大的那个
+        heroId = hasRelatedAttrHeroMap.entrySet().stream()
+                .max(Comparator.comparingInt(Map.Entry::getValue))
+                .map(Map.Entry::getKey)
+                .orElse(0);
+        return heroId;
+    }
+
+    /**
+     * 更新建筑内政属性加成
+     *
+     * @param player
+     * @param buildingType
+     */
+    public void updateBuildingInteriorEffect(Player player, int buildingType) {
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, Hero> heroMap = player.heros;
+        if (BuildingDataManager.isResType(buildingType)) {
+            List<Integer> millIds = buildingData.values().stream()
+                    .filter(tmp -> tmp.getBuildingType() == buildingType)
+                    .map(BuildingState::getBuildingId)
+                    .collect(Collectors.toList());
+            forceGainResource(player, millIds);
+
+            BuildingState buildingState = buildingData.values().stream()
+                    .filter(tmp -> tmp.getBuildingType() == buildingType)
+                    .findAny().orElse(null);
+            if (buildingState != null) {
+                List<Integer> heroIds = buildingState.getHeroIds();
+                int totalAddEffect = 0;
+                for (Hero hero : heroMap.values()) {
+                    if (heroIds.contains(hero.getHeroId())) {
+                        totalAddEffect += hero.getInteriorAttr().stream()
+                                .filter(tmp -> tmp.get(0) == buildingType)
+                                .map(tmp -> tmp.get(2))
+                                .mapToInt(Integer::intValue)
+                                .sum();
+                    }
+                }
+                switch (buildingType) {
+                    case BuildingType.RES_OIL:
+                        player.resource.setOilOutF(player.resource.getOilOutF() + totalAddEffect);
+                        break;
+                    case BuildingType.RES_ELE:
+                        player.resource.setElecOutF(player.resource.getElecOutF() + totalAddEffect);
+                        break;
+                    case BuildingType.RES_FOOD:
+                        player.resource.setFoodOutF(player.resource.getFoodOutF() + totalAddEffect);
+                        break;
+                    case BuildingType.RES_ORE:
+                        player.resource.setOilOutF(player.resource.getOreOutF() + totalAddEffect);
+                        break;
+                }
+            }
+        }
     }
 
     @GmCmd("building")
@@ -3696,103 +3867,109 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         switch (params[0]) {
             case "clearSomeBuilding":
                 int buildingId = Integer.parseInt(params[1]);
-                int buildingType = BuildingDataManager.getBuildingTypeById(buildingId);
-                Map<Integer, BuildingState> buildingData = player.getBuildingData();
-                Map<Integer, Mill> mills = player.mills;
-                Map<Integer, BuildingExt> buildingExts = player.buildingExts;
-                Building building = player.building;
-                StaticBuildingInit staticBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
-                if (staticBuildingInit == null) {
-                    break;
-                }
-                buildingData.remove(buildingId);
-                BuildingState buildingState = new BuildingState(staticBuildingInit.getBuildingId(), staticBuildingInit.getBuildingType());
-                buildingState.setBuildingLv(staticBuildingInit.getInitLv());
-                buildingData.put(buildingId, buildingState);
-                if (BuildingDataManager.isResType(buildingType)) {
-                    mills.remove(buildingId);
-                    mills.put(staticBuildingInit.getBuildingId(), new Mill(staticBuildingInit.getBuildingId(),
-                            staticBuildingInit.getBuildingType(), staticBuildingInit.getInitLv(), 0));
-                } else {
-                    buildingExts.remove(buildingId);
-                    int lv = staticBuildingInit.getInitLv();
-                    switch (buildingId) {
-                        case BuildingType.COMMAND:
-                            building.setCommand(lv);
-                            break;
-                        case BuildingType.TECH:
-                            building.setTech(lv);
-                            break;
-                        case BuildingType.WAR_FACTORY:
-                            building.setWarFactory(lv);
-                            break;
-                        case BuildingType.STOREHOUSE:
-                            building.setStoreHouse(lv);
-                            break;
-                        case BuildingType.WAR_COLLEGE:
-                            building.setWarCollege(lv);
-                            break;
-                        case BuildingType.REMAKE_WEAPON_HOUSE:
-                            building.setRemakeWeaponHouse(lv);
-                            break;
-                        case BuildingType.MAKE_WEAPON_HOUSE:
-                            building.setMakeWeaponHouse(lv);
-                            break;
-                        case BuildingType.FERRY:
-                            building.setFerry(lv);
-                            break;
-                        case BuildingType.WALL:
-                            building.setWall(lv);
-                            break;
-                        case BuildingType.SMALL_GAME_HOUSE:
-                            building.setSmallGameHouse(lv);
-                            break;
-                        case BuildingType.DRAW_HERO_HOUSE:
-                            building.setDrawHeroHouse(lv);
-                            break;
-                        case BuildingType.SUPER_EQUIP_HOUSE:
-                            building.setSuperEquipHouse(lv);
-                            break;
-                        case BuildingType.STATUTE:
-                            building.setStatute(lv);
-                            break;
-                        case BuildingType.MEDAL_HOUSE:
-                            building.setMedalHouse(lv);
-                            break;
-                        case BuildingType.TRADE_CENTRE:
-                            building.setTradeCentre(lv);
-                            break;
-                        case BuildingType.MALL:
-                            building.setMall(lv);
-                            break;
-                        case BuildingType.CIA:
-                            building.setCia(lv);
-                            break;
-                        case BuildingType.FACTORY_1:
-                            building.setFactory1(lv);
-                            break;
-                        case BuildingType.FACTORY_2:
-                            building.setFactory2(lv);
-                            break;
-                        case BuildingType.FACTORY_3:
-                            building.setFactory3(lv);
-                            break;
-                        case BuildingType.TRAIN_FACTORY_1:
-                            building.setTrainFactory1(lv);
-                            break;
-                        case BuildingType.TRAIN_FACTORY_2:
-                            building.setTrain2(lv);
-                            break;
-                        case BuildingType.AIR_BASE:
-                            building.setAirBase(lv);
-                            break;
-                        case BuildingType.SEASON_TREASURY:
-                            building.setSeasonTreasury(lv);
-                            break;
-                    }
-                }
-                buildingDataManager.updateBuildingLockState(player);
+                clearSomeBuilding(player, buildingId);
+                break;
             default:
         }
     }
+
+    public void clearSomeBuilding(Player player, int buildingId) {
+        int buildingType = BuildingDataManager.getBuildingTypeById(buildingId);
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, Mill> mills = player.mills;
+        Map<Integer, BuildingExt> buildingExts = player.buildingExts;
+        Building building = player.building;
+        StaticBuildingInit staticBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
+        if (staticBuildingInit == null) {
+            return;
+        }
+        buildingData.remove(buildingId);
+        BuildingState buildingState = new BuildingState(staticBuildingInit.getBuildingId(), staticBuildingInit.getBuildingType());
+        buildingState.setBuildingLv(staticBuildingInit.getInitLv());
+        buildingData.put(buildingId, buildingState);
+        if (BuildingDataManager.isResType(buildingType)) {
+            mills.remove(buildingId);
+            mills.put(staticBuildingInit.getBuildingId(), new Mill(staticBuildingInit.getBuildingId(),
+                    staticBuildingInit.getBuildingType(), staticBuildingInit.getInitLv(), 0));
+        } else {
+            buildingExts.remove(buildingId);
+            int lv = staticBuildingInit.getInitLv();
+            switch (buildingId) {
+                case BuildingType.COMMAND:
+                    building.setCommand(lv);
+                    break;
+                case BuildingType.TECH:
+                    building.setTech(lv);
+                    break;
+                case BuildingType.WAR_FACTORY:
+                    building.setWarFactory(lv);
+                    break;
+                case BuildingType.STOREHOUSE:
+                    building.setStoreHouse(lv);
+                    break;
+                case BuildingType.WAR_COLLEGE:
+                    building.setWarCollege(lv);
+                    break;
+                case BuildingType.REMAKE_WEAPON_HOUSE:
+                    building.setRemakeWeaponHouse(lv);
+                    break;
+                case BuildingType.MAKE_WEAPON_HOUSE:
+                    building.setMakeWeaponHouse(lv);
+                    break;
+                case BuildingType.FERRY:
+                    building.setFerry(lv);
+                    break;
+                case BuildingType.WALL:
+                    building.setWall(lv);
+                    break;
+                case BuildingType.SMALL_GAME_HOUSE:
+                    building.setSmallGameHouse(lv);
+                    break;
+                case BuildingType.DRAW_HERO_HOUSE:
+                    building.setDrawHeroHouse(lv);
+                    break;
+                case BuildingType.SUPER_EQUIP_HOUSE:
+                    building.setSuperEquipHouse(lv);
+                    break;
+                case BuildingType.STATUTE:
+                    building.setStatute(lv);
+                    break;
+                case BuildingType.MEDAL_HOUSE:
+                    building.setMedalHouse(lv);
+                    break;
+                case BuildingType.TRADE_CENTRE:
+                    building.setTradeCentre(lv);
+                    break;
+                case BuildingType.MALL:
+                    building.setMall(lv);
+                    break;
+                case BuildingType.CIA:
+                    building.setCia(lv);
+                    break;
+                case BuildingType.FACTORY_1:
+                    building.setFactory1(lv);
+                    break;
+                case BuildingType.FACTORY_2:
+                    building.setFactory2(lv);
+                    break;
+                case BuildingType.FACTORY_3:
+                    building.setFactory3(lv);
+                    break;
+                case BuildingType.TRAIN_FACTORY_1:
+                    building.setTrainFactory1(lv);
+                    break;
+                case BuildingType.TRAIN_FACTORY_2:
+                    building.setTrain2(lv);
+                    break;
+                case BuildingType.AIR_BASE:
+                    building.setAirBase(lv);
+                    break;
+                case BuildingType.SEASON_TREASURY:
+                    building.setSeasonTreasury(lv);
+                    break;
+            }
+        }
+        buildingDataManager.updateBuildingLockState(player);
+    }
+
 }

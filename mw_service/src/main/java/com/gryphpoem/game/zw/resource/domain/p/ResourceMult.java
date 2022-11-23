@@ -43,16 +43,11 @@ public class ResourceMult {
     private int oilSeasonTalent;
     private int oreSeasonTalent;
 
-    // 内政加成
-
-
-    // 地貌Buff加成
-
-
-    // 居民加成
-
-    // 幸福度加成
-
+    // 内政属性加成
+    private int foodInterior;
+    private int elecInterior;
+    private int oilInterior;
+    private int oreInterior;
 
     private int food;// 粮食
     private int elec;// 电
@@ -315,7 +310,39 @@ public class ResourceMult {
         this.oreSeasonTalent = oreSeasonTalent;
     }
 
-//    @Override
+    public int getFoodInterior() {
+        return foodInterior;
+    }
+
+    public void setFoodInterior(int foodInterior) {
+        this.foodInterior = foodInterior;
+    }
+
+    public int getElecInterior() {
+        return elecInterior;
+    }
+
+    public void setElecInterior(int elecInterior) {
+        this.elecInterior = elecInterior;
+    }
+
+    public int getOilInterior() {
+        return oilInterior;
+    }
+
+    public void setOilInterior(int oilInterior) {
+        this.oilInterior = oilInterior;
+    }
+
+    public int getOreInterior() {
+        return oreInterior;
+    }
+
+    public void setOreInterior(int oreInterior) {
+        this.oreInterior = oreInterior;
+    }
+
+    //    @Override
 //    public String toString() {
 //        return "ResourceMult [foodWeath=" + foodWeath + ", elecWeath=" + elecWeath + ", oilWeath=" + oilWeath
 //                + ", oreWeath=" + oreWeath + ", foodTech=" + foodTech + ", elecTech=" + elecTech + ", oilTech="

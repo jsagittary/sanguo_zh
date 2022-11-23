@@ -18,6 +18,7 @@ public class StaticBuildingInit {
     private int canUp;// 能否升级 0.不可升级; 1.可升级
     private int canDestroy; // 能否拆除 0.不能拆除 1.可以拆除
     private List<Integer> canBuildType;// 拆除后可建筑的类型
+    private List<Integer> needBuildingLv; // 委任槽位解锁,建筑等级要求[第一个槽位解锁需要等级,第二个槽位解锁需要等级]
 
     public int getBuildingId() {
         return buildingId;
@@ -83,4 +84,11 @@ public class StaticBuildingInit {
         this.maxLv = maxLv;
     }
 
+    public List<Integer> getNeedBuildingLv() {
+        return needBuildingLv;
+    }
+
+    public void setNeedBuildingLv(List<Integer> needBuildingLv) {
+        this.needBuildingLv = needBuildingLv;
+    }
 }

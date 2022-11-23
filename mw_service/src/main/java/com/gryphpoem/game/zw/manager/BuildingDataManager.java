@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.manager;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
@@ -50,10 +51,12 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.BuildingService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -651,6 +654,61 @@ public class BuildingDataManager {
         }
     }
 
+    /**
+     * 内政属性加成
+     *
+     * @param player
+     * @param resMult
+     */
+    public void getResourceOut4Interior(Player player, ResourceMult resMult) {
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        Map<Integer, Hero> heroMap = player.heros;
+        for (int buildingType : BuildingType.RES_ARRAY) {
+            if (BuildingDataManager.isResType(buildingType)) {
+                BuildingState buildingState = buildingData.values().stream()
+                        .filter(tmp -> tmp.getBuildingType() == buildingType)
+                        .findAny().orElse(null);
+                if (buildingState != null) {
+                    /*int totalAddEffect = 0;
+                    List<Integer> heroIds = buildingState.getHeroIds();
+                    for (Hero hero : heroMap.values()) {
+                        if (heroIds.contains(hero.getHeroId())) {
+                            totalAddEffect += hero.getInteriorAttr().stream()
+                                    .filter(tmp -> tmp.get(0) == buildingType)
+                                    .map(tmp -> tmp.get(2))
+                                    .mapToInt(Integer::intValue)
+                                    .sum();
+                        }
+                    }*/
+                    int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, buildingType);
+                    switch (buildingType) {
+                        case BuildingType.RES_OIL:
+                            resMult.setOilInterior(interiorEffect);
+                            break;
+                        case BuildingType.RES_ELE:
+                            resMult.setElecInterior(interiorEffect);
+                            break;
+                        case BuildingType.RES_FOOD:
+                            resMult.setFoodInterior(interiorEffect);
+                            break;
+                        case BuildingType.RES_ORE:
+                            resMult.setOreInterior(interiorEffect);
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取地貌buff加成
+     *
+     * @param player
+     * @param resMult
+     */
+    public void getResourceOut4LandBuff(Player player, ResourceMult resMult) {}
+
+
     private int getRes(long base, int... mult) {
         int num = (int) base;
         for (int i : mult) {
@@ -709,27 +767,32 @@ public class BuildingDataManager {
         getResourceOut4Agent(player, resourceMult);// 特工加成
         getResourceOut4BerlinJob(player, resourceMult);// 柏林官员加成
         getResourceOut4SeasonTalent(player, resourceMult);//赛季天赋加成
+        getResourceOut4Interior(player, resourceMult); // 内政属性加成
 
         switch (buildintType) {
             case BuildingType.RES_ELE:
                 resourceMult.setElec(getRes(resOut, resource.getElecOutF(), resourceMult.getElecWeath(),
                         resourceMult.getElecSeason(), resourceMult.getElecTech(), resourceMult.getElecActive(),
-                        resourceMult.getElecAgent(), resourceMult.getElecBerlinJob(), resourceMult.getElecSeasonTalent()));
+                        resourceMult.getElecAgent(), resourceMult.getElecBerlinJob(), resourceMult.getElecSeasonTalent(),
+                        resourceMult.getElecInterior()));
                 return resourceMult.getElec();
             case BuildingType.RES_FOOD:
                 resourceMult.setFood(getRes(resOut, resource.getFoodOutF(), resourceMult.getFoodWeath(),
                         resourceMult.getFoodSeason(), resourceMult.getFoodTech(), resourceMult.getFoodActive(),
-                        resourceMult.getFoodAgent(), resourceMult.getFoodBerlinJob(), resourceMult.getFoodSeasonTalent()));
+                        resourceMult.getFoodAgent(), resourceMult.getFoodBerlinJob(), resourceMult.getFoodSeasonTalent(),
+                        resourceMult.getFoodInterior()));
                 return resourceMult.getFood();
             case BuildingType.RES_OIL:
                 resourceMult.setOil(getRes(resOut, resource.getOilOutF(), resourceMult.getOilWeath(),
                         resourceMult.getOilSeason(), resourceMult.getOilTech(), resourceMult.getOilActive(),
-                        resourceMult.getOilAgent(), resourceMult.getOilBerlinJob(), resourceMult.getOilSeasonTalent()));
+                        resourceMult.getOilAgent(), resourceMult.getOilBerlinJob(), resourceMult.getOilSeasonTalent(),
+                        resourceMult.getOilInterior()));
                 return resourceMult.getOil();
             case BuildingType.RES_ORE:
                 resourceMult.setOre(getRes(resOut, resource.getOreOutF(), resourceMult.getOreWeath(),
                         resourceMult.getOreSeason(), resourceMult.getOreTech(), resourceMult.getOreActive(),
-                        resourceMult.getOreAgent(), resourceMult.getOreBerlinJob(), resourceMult.getOreSeasonTalent()));
+                        resourceMult.getOreAgent(), resourceMult.getOreBerlinJob(), resourceMult.getOreSeasonTalent(),
+                        resourceMult.getOreInterior()));
                 return resourceMult.getOre();
         }
 
