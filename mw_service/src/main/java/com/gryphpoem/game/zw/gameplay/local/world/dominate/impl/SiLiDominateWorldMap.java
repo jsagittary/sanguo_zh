@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.gameplay.local.world.dominate.impl;
 
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.abs.TimeLimitDominateMap;
 import com.gryphpoem.game.zw.pb.WorldPb;
+import com.gryphpoem.game.zw.service.GameService;
 
 /**
  * Description: 司隶雄踞一方
@@ -35,6 +36,10 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
 
     @Override
     public void close() {
+
+    }
+
+    public void handleOnStartup() {
 
     }
 }

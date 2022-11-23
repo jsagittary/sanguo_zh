@@ -7,14 +7,12 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
 import com.gryphpoem.game.zw.manager.BattlePassDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
-import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
-import com.gryphpoem.game.zw.pb.GamePb2;
-import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.DbActivity;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7Act;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7ActStatus;
@@ -2681,6 +2679,21 @@ public class PbHelper {
         builder.setMaxCollectTime(sg.getMaxCollectTime());
         builder.setArmyArriveTime(sg.getArmyArriveTime());
         builder.setCanMaxCollectTime(sg.getCanMaxCollectTime());
+        return builder.build();
+    }
+
+    public static WorldPb.DominateSideGovernorPb createDominateSideGovernorPb(Player player, DominateSideGovernor governor) {
+        WorldPb.DominateSideGovernorPb.Builder builder = WorldPb.DominateSideGovernorPb.newBuilder();
+        builder.setRoleId(player.roleId);
+        builder.setName(player.lord.getNick());
+        builder.setJob(player.lord.getJob());
+        builder.setLv(player.lord.getLevel());
+        builder.setCamp(player.lord.getCamp());
+        builder.setArea(player.lord.getArea());
+        builder.setPortrait(player.lord.getPortrait());
+        builder.setRanks(player.lord.getRanks());
+        builder.setWinnerTime((int) (governor.getTime() / 1000l));
+        builder.setPortraitFrame(player.getDressUp().getCurPortraitFrame());
         return builder.build();
     }
 

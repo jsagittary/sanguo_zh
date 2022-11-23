@@ -35,4 +35,6 @@ public interface WorldMapPlay extends GamePb<WorldPb.BaseWorldFunctionPb> {
      * @return
      */
     int state();
+
+    boolean isOpen();
 }

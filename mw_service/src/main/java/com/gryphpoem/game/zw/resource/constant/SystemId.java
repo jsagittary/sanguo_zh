@@ -1,5 +1,8 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author TanDonghai
  * @ClassName SystemId.java
@@ -1343,13 +1346,40 @@ public class SystemId {
      */
     public static final int STATE_DOMINATE_WORLD_MAP_DURATION = 813;
     /**
-     * 雄踞一方-州郡-胜利占领时间
+     * 雄踞一方-州郡-胜利配置
      */
-    public static final int STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME = 814;
+    public static final int STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG = 814;
     /**
      * 雄踞一方-州郡-返兵比例
      */
     public static final int STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO = 815;
+
+    /**
+     * 雄踞一方活动，雄踞一方城池防守队列军团数量上限
+     */
+    public static final int MAXIMUM_NUMBER_OF_DOMINATE_DEFENSE_QUEUE = 816;
+
+
+    /**
+     * 雄踞一方活动，每个进攻兵团的最大战斗场数
+     */
+    public static final int DOMINATE_ARMY_FIGHT_MAX = 817;
+
+    /**
+     * 雄踞一方通用跑马灯触发条件
+     */
+    public static final int DOMINATE_CHAT_KILL_BROADCAST_MAP = 818;
+
+    /**
+     * 雄踞一方行军时间减少比例
+     */
+    public static final int DOMINATE_MARCH_SPEEDUP = 819;
+
+
+    /**
+     * 雄踞一方 疲劳debuff参数
+     */
+    public static final int DOMINATE_FATIGUE_DE_BUFF_PARAMETER = 820;
 
     /**
      * 玩家登录刷新流寇距上次离线时间间隔

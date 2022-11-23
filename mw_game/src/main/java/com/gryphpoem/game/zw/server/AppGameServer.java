@@ -261,7 +261,7 @@ public class AppGameServer extends Server {
             // 跨服服务器连接,此处会向注册中心获取ip 端口
             innerServer = InnerServerMgr.createInnerServer();
             DataResource.innerServer = innerServer;
-        } catch (MwException e) {
+        } catch (Exception e) {
             LogUtil.error("数据修复出错，退出", e);
             System.exit(1);
         }

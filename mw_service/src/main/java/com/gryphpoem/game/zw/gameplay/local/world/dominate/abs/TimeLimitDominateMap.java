@@ -2,12 +2,14 @@ package com.gryphpoem.game.zw.gameplay.local.world.dominate.abs;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
-import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.WorldMapPlay;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
 import java.util.*;
 
@@ -17,6 +19,8 @@ import java.util.*;
  * createTime: 2022-11-22 14:56
  */
 public abstract class TimeLimitDominateMap implements WorldMapPlay {
+    /** 当前活动次数*/
+    protected int curTimes;
     /** 活动是否开放*/
     private boolean open;
     /** 世界地图玩法*/
@@ -64,12 +68,21 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         this.curEndTime = curEndTime;
     }
 
+    @Override
     public boolean isOpen() {
         return open;
     }
 
     public void setOpen(boolean open) {
         this.open = open;
+    }
+
+    public Map<Integer, List<DominateSideCity>> getCurOpenCityList() {
+        return curOpenCityList;
+    }
+
+    public int getCurTimes() {
+        return curTimes;
     }
 
     /**
@@ -114,5 +127,36 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
     @Override
     public String getWorldMapFunctionName() {
         return "Dominate_" + getWorldMapFunction();
+    }
+
+    /**
+     * 检测当前活动是否有城池阵营胜出
+     */
+    public void checkWinOfOccupyTime() {
+        if (state() != WorldPb.WorldFunctionStateDefine.IN_PROGRESS_VALUE) {
+            LogUtil.error("雄踞一方活动未在进行中");
+            return;
+        }
+        List<DominateSideCity> sideCityList;
+        if (CheckNull.isEmpty(this.curOpenCityList) || CheckNull.isEmpty(
+                sideCityList = this.curOpenCityList.get(this.curTimes))) {
+            LogUtil.error("活动进行中, 正在开放的城池为空");
+            return;
+        }
+
+        int now = TimeHelper.getCurrentSecond();
+        sideCityList.forEach(sideCity -> {
+            if (sideCity.isOver())
+                return;
+
+            for (int camp : Constant.Camp.camps) {
+                int campOccupyTime = sideCity.getCampOccupyTime(now, camp);
+                if (campOccupyTime >= Constant.TEN_THROUSAND) {
+                    sideCity.setOver(true);
+                    sideCity.setCamp(camp);
+                    break;
+                }
+            }
+        });
     }
 }

@@ -1048,22 +1048,51 @@ public final class Constant {
     /**
      * 雄踞一方-州郡-胜利占领时间
      */
-    public static int STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME;
+    public static List<Integer> STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG;
     /**
      * 雄踞一方-州郡-返兵比例
      */
     public static int STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO;
 
     /**
+     * 雄踞一方行军时间减少比例
+     */
+    public static int DOMINATE_MARCH_SPEEDUP;
+
+    /**
+     * 雄踞一方活动，雄踞一方城池防守队列军团数量上限
+     */
+    public static int MAXIMUM_NUMBER_OF_DOMINATE_DEFENSE_QUEUE;
+
+    /**
+     * 雄踞一方 疲劳debuff参数
+     */
+    public static List<List<Integer>> DOMINATE_FATIGUE_DE_BUFF_PARAMETER;
+
+    /**
+     * 雄踞一方活动，每个进攻兵团的最大战斗场数
+     */
+    public static int DOMINATE_ARMY_FIGHT_MAX;
+
+    /**
+     * 雄踞一方跑马灯触发条件
+     */
+    public static Map<Integer, Integer> DOMINATE_CHAT_KILL_BROADCAST_MAP;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
-
+        DOMINATE_CHAT_KILL_BROADCAST_MAP = SystemTabLoader.getMapIntSystemValue(SystemId.DOMINATE_CHAT_KILL_BROADCAST_MAP, "");
+        DOMINATE_ARMY_FIGHT_MAX = SystemTabLoader.getIntegerSystemValue(SystemId.DOMINATE_ARMY_FIGHT_MAX, 50);
+        DOMINATE_FATIGUE_DE_BUFF_PARAMETER = SystemTabLoader.getListListIntSystemValue(SystemId.DOMINATE_FATIGUE_DE_BUFF_PARAMETER, "");
+        MAXIMUM_NUMBER_OF_DOMINATE_DEFENSE_QUEUE = SystemTabLoader.getIntegerSystemValue(SystemId.MAXIMUM_NUMBER_OF_DOMINATE_DEFENSE_QUEUE, 999);
+        DOMINATE_MARCH_SPEEDUP = SystemTabLoader.getIntegerSystemValue(SystemId.DOMINATE_MARCH_SPEEDUP, 5000);
         OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION = SystemTabLoader.getListIntSystemValue(SystemId.OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION, "[4,8]");
         STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME = SystemTabLoader.getListStringSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME, "");
         STATE_DOMINATE_WORLD_MAP_BEGIN_TIME = SystemTabLoader.getListStringSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_BEGIN_TIME, "");
         STATE_DOMINATE_WORLD_MAP_END = SystemTabLoader.getListStringSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_DURATION, "[]");
-        STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_TIME, 900);
+        STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG, "[]");
         STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO = SystemTabLoader.getIntegerSystemValue(SystemId.STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO, 5000);
         TREASURE_WARE_ATTR_STAGE_SCORE = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_ATTR_STAGE_SCORE, "[[]]");
         TREASURE_WARE_HIGHER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_HIGHER_STAGE, "[[]]");

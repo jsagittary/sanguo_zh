@@ -106,6 +106,42 @@ public class FightService {
         return fighter;
     }
 
+    /**
+     * 创建带有deBuff的fighter
+     *
+     * @param player
+     * @param armyKeyId
+     * @param form
+     * @param holdTime
+     * @return
+     */
+    public Fighter createFighterWithFatigueDeBuff(Player player, int armyKeyId, List<TwoInt> form, List<List<Integer>> fatigueDeBuff, long holdTime) {
+        if (CheckNull.isEmpty(form)) {
+            throw new IllegalArgumentException(String.format("roleId :%d, armyKeyId :%d, heroMap isEmpty", player.roleId, armyKeyId));
+        }
+        Fighter fighter = createFighter();
+        Force force;
+        for (TwoInt twoInt : form) {
+            Hero hero = player.heros.get(twoInt.getV1());
+            int hpCount = Objects.nonNull(hero) ? hero.getCount() : 0;
+            if (hpCount <= 0) {//死亡的将领不进入战斗
+                LogUtil.debug(String.format("roleId :%d, armyKeyId :%d, hero count :%d", player.roleId, armyKeyId, hpCount));
+                continue;
+            }
+            StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+            force = createForceWithFatigueBuff(player, staticHero, fatigueDeBuff, twoInt.getV1(), hpCount, holdTime);
+            force.roleType = Constant.Role.PLAYER;
+            force.ownerId = player.roleId;
+            force.camp = player.lord.getCamp();
+            force.skillId = staticHero.getSkillId();
+            fighter.addForce(force);
+            // 加入光环技能
+            addMedalAuraSkill(fighter, hero, player);
+        }
+        fighter.roleType = Constant.Role.PLAYER;
+        return fighter;
+    }
+
     public Fighter createFighter(Player player, List<TwoInt> form) {
         if (null == form) {
             return null;
@@ -1076,6 +1112,57 @@ public class FightService {
             int attrId, ratio;
             if (intervalTime > 0) {
                 for (List<Integer> config : ActParamConstant.FATIGUE_DE_BUFF_PARAMETER) {
+                    if (CheckNull.isEmpty(config)) continue;
+                    ratio = 0;
+                    attrId = config.get(0);
+                    if (intervalTime < config.get(1))
+                        continue;
+                    ratio += config.get(3);
+                    ratio += (intervalTime - config.get(1)) / config.get(2) * config.get(3);
+                    ratio = Math.min(ratio, config.get(4));
+                    attrData.addRatioValue(attrId, ratio * -1);
+                }
+            }
+        }
+
+
+        int line = calcHeroLine(player, hero, staticHero.getLine());
+        int lead = (int) Math.ceil(hero.getAttr()[HeroConstant.ATTR_LEAD] * 1.0 / line);// 当兵力不能被整除时，向上取整
+        int heroLv = techDataManager.getIntensifyLv4HeroType(player, staticHero.getType());// 等级
+        int restrain = techDataManager.getIntensifyRestrain4HeroType(player, staticHero.getType());// 克制值
+        Force force = new Force(attrData, staticHero.getType(), count, lead, heroId, player.roleId);
+
+        // 添加战机详情
+        addPlaneInfo(player, hero, force);
+
+        //设置英雄战斗技能
+        loadHeroSkill(force, hero);
+        force.setIntensifyLv(heroLv);
+        force.setEffect(restrain);
+        return force;
+    }
+
+    /**
+     * 创建带有deBuff的force
+     *
+     * @param player
+     * @param staticHero
+     * @param heroId
+     * @param count
+     * @param holdTime
+     * @return
+     */
+    public Force createForceWithFatigueBuff(Player player, StaticHero staticHero, List<List<Integer>> fatigueDeBuff, int heroId, int count, long holdTime) {
+        Hero hero = player.heros.get(heroId);
+        Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
+        AttrData attrData = new AttrData(attrMap);
+        // 雄踞一方防守玩家deBuff
+        if (holdTime > 0 && CheckNull.nonEmpty(fatigueDeBuff)) {
+            long nowMills = System.currentTimeMillis();
+            long intervalTime = (nowMills - holdTime) / 1000l;
+            int attrId, ratio;
+            if (intervalTime > 0) {
+                for (List<Integer> config : fatigueDeBuff) {
                     if (CheckNull.isEmpty(config)) continue;
                     ratio = 0;
                     attrId = config.get(0);

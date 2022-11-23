@@ -180,14 +180,14 @@ public class RelicsFightService {
     }
 
     private FightLogic fightLogic(RelicEntity rlc, Player attackPlayer, Army atkArmy, Player defendPlayer, Army defArmy, int nowSec, RelicEntity o1, Turple<Long, Integer> o2) {
-        long fightId = incrAndGetFightId();
+        long fightId = 0;
         try {
             Fighter attacker = fightService.createRelicFighter(attackPlayer, atkArmy.getKeyId(), atkArmy.getHero(), 0);
             Fighter defender = fightService.createRelicFighter(defendPlayer, defArmy.getKeyId(), defArmy.getHero(), rlc.holdTime(defendPlayer.roleId, defArmy.getKeyId()));
             FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_HIS_REMAIN);
             fightLogic.packForm();
             fightLogic.fight();
-            fightLogic.fightId = fightId;
+            fightId = fightLogic.fightId;
             LogUtil.debug(String.format("his cityId :%d, fightId :%d, result :%s, attack roleId :%d, atk army keyId :%d, defend roleId :%d, army keyId :%d",
                     rlc.getCfgId(), fightId, fightLogic.getWinState(), attackPlayer.roleId, atkArmy.getKeyId(), defendPlayer.roleId, defArmy.getKeyId()));
 
