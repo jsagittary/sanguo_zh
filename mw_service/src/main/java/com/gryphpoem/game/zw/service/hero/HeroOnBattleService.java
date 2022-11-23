@@ -272,6 +272,10 @@ public class HeroOnBattleService implements GmCmdService {
             throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "内阁采集将领上阵队列位置不正确, roleId:", roleId,
                     ", pos:", pos);
         }
+        if (heroRoleType != HeroConstant.HERO_ROLE_TYPE_PRINCIPAL && heroRoleType != HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(), "客户端发送的上阵武将角色错误, roleId:", roleId, ", pos:",
+                    pos, ", roleType: ", heroRoleType);
+        }
 
         // 检测配置是否正确
         List<Integer> lvRequire = Constant.ACQ_HERO_REQUIRE;
@@ -434,7 +438,7 @@ public class HeroOnBattleService implements GmCmdService {
 
         for (int i = 1; i < player.getPlayerFormation().getHeroAcq().length; i++) {
             PartnerHero partnerHero = player.getPlayerFormation().getHeroAcq()[i];
-            if (!HeroUtil.isEmptyPartner(partnerHero)) continue;
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
             builder.addHeroIds(partnerHero.createPb(false));
         }
 
@@ -470,6 +474,10 @@ public class HeroOnBattleService implements GmCmdService {
         if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
             throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:",
                     pos);
+        }
+        if (heroRoleType != HeroConstant.HERO_ROLE_TYPE_PRINCIPAL && heroRoleType != HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            throw new MwException(GameError.ONHOOK_PARAMS_ERROR.getCode(), "客户端发送的上阵武将角色错误, roleId:", roleId, ", pos:",
+                    pos, ", roleType: ", heroRoleType);
         }
 
         // 检测配置是否正确
@@ -813,18 +821,33 @@ public class HeroOnBattleService implements GmCmdService {
      */
     private void downHero(Hero battleHero, PartnerHero partnerHero, Consumer<Hero> consumer) {
         if (CheckNull.isNull(battleHero)) return;
-        if (battleHero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
-            if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
-                // 主将下阵, 副将都下阵
-                for (Hero hero : partnerHero.getDeputyHeroList()) {
-                    if (CheckNull.isNull(hero)) continue;
-                    consumer.accept(hero);
-                    hero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
-                }
+        switch (battleHero.getRoleType()) {
+            case HeroConstant.HERO_ROLE_TYPE_PRINCIPAL:
+                if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                    // 主将下阵, 副将都下阵
+                    for (Hero hero : partnerHero.getDeputyHeroList()) {
+                        if (CheckNull.isNull(hero)) continue;
+                        consumer.accept(hero);
+                        hero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                    }
 
-                partnerHero.getDeputyHeroList().clear();
+                    partnerHero.getDeputyHeroList().clear();
+                }
                 partnerHero.setPrincipalHero(null);
-            }
+                break;
+            case HeroConstant.HERO_ROLE_TYPE_DEPUTY:
+                if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                    // 副将下阵容
+                    Iterator<Hero> it = partnerHero.getDeputyHeroList().iterator();
+                    while (it.hasNext()) {
+                        Hero hero = it.next();
+                        if (CheckNull.isNull(hero) || hero.getHeroId() != battleHero.getHeroId())
+                            continue;
+                        it.remove();
+                        break;
+                    }
+                }
+                break;
         }
 
         battleHero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
@@ -833,6 +856,79 @@ public class HeroOnBattleService implements GmCmdService {
     @GmCmd("heroOnBattle")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
+        if ("reset".equalsIgnoreCase(params[0])) {
+            switch (params[1]) {
+                case "1":
+                    Arrays.stream(player.getPlayerFormation().getHeroBattle()).forEach(a -> {
+                        if (HeroUtil.isEmptyPartner(a))
+                            return;
+                        a.getPrincipalHero().onBattle(0);
+                        a.getPrincipalHero().onDef(0);
+                        a.getPrincipalHero().setPartnerPosIndex(0);
+                        a.getPrincipalHero().setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                        if (CheckNull.nonEmpty(a.getDeputyHeroList())) {
+                            a.getDeputyHeroList().forEach(hero -> {
+                                hero.onBattle(0);
+                                hero.onDef(0);
+                                hero.setPartnerPosIndex(0);
+                                hero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                            });
+                        }
+                        a.setPrincipalHero(null);
+                        a.getDeputyHeroList().clear();
+                    });
+                    break;
+                case "2":
+                    Arrays.stream(player.getPlayerFormation().getHeroAcq()).forEach(a -> {
+                        if (HeroUtil.isEmptyPartner(a))
+                            return;
+                        a.getPrincipalHero().onAcq(0);
+                        a.getPrincipalHero().setPartnerPosIndex(0);
+                        a.getPrincipalHero().setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                        if (CheckNull.nonEmpty(a.getDeputyHeroList())) {
+                            a.getDeputyHeroList().forEach(hero -> {
+                                hero.onAcq(0);
+                                hero.setPartnerPosIndex(0);
+                                hero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                            });
+                        }
+                        a.setPrincipalHero(null);
+                        a.getDeputyHeroList().clear();
+                    });
+                    break;
+                case "3":
+                    Arrays.stream(player.getPlayerFormation().getHeroWall()).forEach(a -> {
+                        if (HeroUtil.isEmptyPartner(a))
+                            return;
+                        a.getPrincipalHero().onWall(0);
+                        a.getPrincipalHero().setPartnerPosIndex(0);
+                        a.getPrincipalHero().setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                        if (CheckNull.nonEmpty(a.getDeputyHeroList())) {
+                            a.getDeputyHeroList().forEach(hero -> {
+                                hero.onWall(0);
+                                hero.setPartnerPosIndex(0);
+                                hero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+                            });
+                        }
+                        a.setPrincipalHero(null);
+                        a.getDeputyHeroList().clear();
+                    });
+                    break;
+            }
+        }
 
+        if ("resetAll".equalsIgnoreCase(params[0])) {
+            player.getPlayerFormation().setHeroBattle(new PartnerHero[HeroConstant.HERO_BATTLE_LEN + 1]);
+            player.getPlayerFormation().setHeroAcq(new PartnerHero[HeroConstant.HERO_BATTLE_LEN + 1]);
+            player.getPlayerFormation().setHeroWall(new PartnerHero[HeroConstant.HERO_BATTLE_LEN + 1]);
+            for (Hero hero : player.heros.values()) {
+                if (CheckNull.isNull(hero)) continue;
+                hero.onBattle(0);
+                hero.onAcq(0);
+                hero.onDef(0);
+                hero.setPartnerPosIndex(0);
+                hero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+            }
+        }
     }
 }
