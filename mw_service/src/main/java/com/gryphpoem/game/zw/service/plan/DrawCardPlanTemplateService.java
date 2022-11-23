@@ -193,6 +193,11 @@ public class DrawCardPlanTemplateService {
             CommonPb.DrawCardPlan.Builder drawPlanPb = plan.createPb(false);
             StaticDrawCardWeight weightConfig = staticDrawHeroDataMgr.checkConfigEmpty(plan.getSearchTypeId());
             drawPlanPb.setWeightId(CheckNull.isNull(weightConfig) ? 0 : weightConfig.getId());
+            if (CheckNull.nonEmpty(plan.getBoxLimit()) && plan.getBoxLimit().size() >= 3) {
+                drawPlanPb.addBoxLimit(plan.getBoxLimit().get(0));
+                drawPlanPb.addBoxLimit(plan.getBoxLimit().get(1));
+                drawPlanPb.addBoxLimit(plan.getBoxLimit().get(2));
+            }
             builder.setPlan(drawPlanPb);
         }
         if (Objects.nonNull(data))
