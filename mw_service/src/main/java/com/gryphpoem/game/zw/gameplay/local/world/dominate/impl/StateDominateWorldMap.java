@@ -21,7 +21,6 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.service.GameService;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
@@ -338,31 +337,6 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         }
     }
 
-    private List<CampRankData> sortCampRank(Collection<CampRankData> cols) {
-        List<CampRankData> list = new ArrayList<>(cols);
-        list.sort(COMPARATOR_CAMP_RANK);
-        int i = 0;
-        for (CampRankData campRankData : list) {
-            campRankData.rank = ++i;
-        }
-        return list;
-    }
-
-    private static final Comparator<CampRankData> COMPARATOR_CAMP_RANK = (o1, o2) -> {
-        if (o1.value < o2.value) {
-            return 1;
-        } else if (o1.value > o2.value) {
-            return -1;
-        } else {
-            if (o1.time > o2.time) {
-                return 1;
-            } else if (o1.time < o2.time) {
-                return -1;
-            }
-        }
-        return 0;
-    };
-
     /**
      * 初始化下一次活动时间
      *
@@ -594,7 +568,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         basePb.setOpen(this.isOpen());
         basePb.setFunction(WorldPb.WorldFunctionDefine.STATES_AND_COUNTIES_DOMINATE_VALUE);
 
-        if (state != WorldPb.WorldFunctionStateDefine.END_VALUE &&
+        if (this.isOpen() && state != WorldPb.WorldFunctionStateDefine.END_VALUE &&
                 state != WorldPb.WorldFunctionStateDefine.NOT_START_VALUE) {
             builder.setNextPreviewTime((int) (this.nextPreviewDate.getTime() / 1000l));
             builder.setNextBeginTime((int) (this.nextBeginDate.getTime() / 1000l));

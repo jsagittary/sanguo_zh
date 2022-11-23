@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -159,4 +160,29 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
             }
         });
     }
+
+    protected List<CampRankData> sortCampRank(Collection<CampRankData> cols) {
+        List<CampRankData> list = new ArrayList<>(cols);
+        list.sort(COMPARATOR_CAMP_RANK);
+        int i = 0;
+        for (CampRankData campRankData : list) {
+            campRankData.rank = ++i;
+        }
+        return list;
+    }
+
+    private static final Comparator<CampRankData> COMPARATOR_CAMP_RANK = (o1, o2) -> {
+        if (o1.value < o2.value) {
+            return 1;
+        } else if (o1.value > o2.value) {
+            return -1;
+        } else {
+            if (o1.time > o2.time) {
+                return 1;
+            } else if (o1.time < o2.time) {
+                return -1;
+            }
+        }
+        return 0;
+    };
 }

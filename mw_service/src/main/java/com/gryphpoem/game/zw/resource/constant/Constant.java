@@ -1079,10 +1079,40 @@ public final class Constant {
      */
     public static Map<Integer, Integer> DOMINATE_CHAT_KILL_BROADCAST_MAP;
 
+
+    /**
+     * 雄踞一方-司隶-开启纪元
+     */
+    public static int SI_LI_DOMINATE_OPEN_SCHEDULE;
+
+    /**
+     * 雄踞一方-司隶-预显示时间
+     */
+    public static String SI_LI_DOMINATE_PREVIEW_TIME;
+
+    /**
+     * 雄踞一方-司隶-开启时间
+     */
+    public static String SI_LI_DOMINATE_BEGIN_TIME;
+
+    /**
+     * 雄踞一方-司隶-胜利配置
+     */
+    public static List<Integer> SI_LI_DOMINATE_VICTORY_CONFIG;
+    /**
+     * 雄踞一方-司隶-结束时间
+     */
+    public static String SI_LI_DOMINATE_END_TIME;
+
     /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
+        SI_LI_DOMINATE_END_TIME = SystemTabLoader.getStringSystemValue(SystemId.SI_LI_DOMINATE_END_TIME, "");
+        SI_LI_DOMINATE_VICTORY_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.SI_LI_DOMINATE_VICTORY_CONFIG, "");
+        SI_LI_DOMINATE_BEGIN_TIME = SystemTabLoader.getStringSystemValue(SystemId.SI_LI_DOMINATE_BEGIN_TIME, "");
+        SI_LI_DOMINATE_PREVIEW_TIME = SystemTabLoader.getStringSystemValue(SystemId.SI_LI_DOMINATE_PREVIEW_TIME, "");
+        SI_LI_DOMINATE_OPEN_SCHEDULE = SystemTabLoader.getIntegerSystemValue(SystemId.SI_LI_DOMINATE_OPEN_SCHEDULE, 10);
         DOMINATE_CHAT_KILL_BROADCAST_MAP = SystemTabLoader.getMapIntSystemValue(SystemId.DOMINATE_CHAT_KILL_BROADCAST_MAP, "");
         DOMINATE_ARMY_FIGHT_MAX = SystemTabLoader.getIntegerSystemValue(SystemId.DOMINATE_ARMY_FIGHT_MAX, 50);
         DOMINATE_FATIGUE_DE_BUFF_PARAMETER = SystemTabLoader.getListListIntSystemValue(SystemId.DOMINATE_FATIGUE_DE_BUFF_PARAMETER, "");

@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import javax.swing.plaf.PanelUI;
 import java.util.List;
 import java.util.Map;
 
@@ -1328,6 +1329,30 @@ public class SystemId {
      * 关平增援赠送指定品阶关平
      */
     public static final int GUAN_PING_RESCUE_REWARD = 373;
+
+    /**
+     * 雄踞一方-司隶-开启纪元
+     */
+    public static final int SI_LI_DOMINATE_OPEN_SCHEDULE = 803;
+
+    /**
+     * 雄踞一方-司隶-预显示时间
+     */
+    public static final int SI_LI_DOMINATE_PREVIEW_TIME = 804;
+
+    /**
+     * 雄踞一方-司隶-开启时间
+     */
+    public static final int SI_LI_DOMINATE_BEGIN_TIME = 805;
+
+    /**
+     * 雄踞一方-司隶-胜利配置
+     */
+    public static final int SI_LI_DOMINATE_VICTORY_CONFIG = 806;
+    /**
+     * 雄踞一方-司隶-结束时间
+     */
+    public static final int SI_LI_DOMINATE_END_TIME = 807;
 
     /**
      * 雄踞一方-州郡-开启纪元
