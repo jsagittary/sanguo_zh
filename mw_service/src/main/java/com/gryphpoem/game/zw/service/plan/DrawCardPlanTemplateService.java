@@ -104,6 +104,13 @@ public class DrawCardPlanTemplateService {
             throw new MwException(GameError.PARAM_ERROR, String.format("roleId:%d, no player plan data, keyId:%d", player.lord.getLordId(), req.getKeyId()));
         }
         GamePb5.GetDrawHeroCardActInfoRs.Builder builder = GamePb5.GetDrawHeroCardActInfoRs.newBuilder();
+
+        StaticDrawHeoPlan staticDrawHeoPlan = staticDrawHeroDataMgr.getDrawHeoPlanMap().get(req.getKeyId());
+        if (CheckNull.nonEmpty(staticDrawHeoPlan.getBoxLimit()) && staticDrawHeoPlan.getBoxLimit().size() >= 3) {
+            builder.addOptionalBoxConfig(staticDrawHeoPlan.getBoxLimit().get(0));
+            builder.addOptionalBoxConfig(staticDrawHeoPlan.getBoxLimit().get(1));
+            builder.addOptionalBoxConfig(staticDrawHeoPlan.getBoxLimit().get(2));
+        }
         builder.setData((ActivityPb.TimeLimitedDrawCardActData) functionPlanData.createPb(false));
         return builder.build();
     }

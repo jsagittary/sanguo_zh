@@ -44,6 +44,7 @@ public class StaticHero {
     protected List<Integer> activateFight; // 天赋激活加成战力
     /** 合成英雄需要的碎片数量*/
     private int chips;
+    private int activate; // 1为可以觉醒 0为无法觉醒
 
     public int getHeroType() {
         return heroType;
@@ -303,6 +304,14 @@ public class StaticHero {
 
     public void setActivateFight(List<Integer> activateFight) {
         this.activateFight = activateFight;
+    }
+
+    public int getActivate() {
+        return activate;
+    }
+
+    public void setActivate(int activate) {
+        this.activate = activate;
     }
 
     /**
