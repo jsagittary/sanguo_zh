@@ -1029,6 +1029,11 @@ public final class Constant {
     public static List<List<Integer>> REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION;
 
     /**
+     * 天赋开启需求武将等级
+     */
+    public static int HERO_LEVEL_OF_OPEN_TALENT;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
@@ -1330,6 +1335,7 @@ public final class Constant {
         EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = SystemTabLoader.getListListIntSystemValue(SystemId.EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT, "[[]]");
         BATTLE_PICK_BOX_DROP_CAP = SystemTabLoader.getListListIntSystemValue(SystemId.BATTLE_PICK_BOX_DROP_CAP, "[[]]");
         REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION = SystemTabLoader.getListListIntSystemValue(SystemId.REBEL_DROP_BLUEPRINT_GUARANTEE_CONFIGURATION, "[[]]");
+        HERO_LEVEL_OF_OPEN_TALENT = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_LEVEL_OF_OPEN_TALENT, 0);
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

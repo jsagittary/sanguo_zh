@@ -291,7 +291,8 @@ public interface StaticIniMapper {
 
     @MapKey("id")
     @Results({
-            @Result(column = "serverIdList", property = "serverIdList", typeHandler = ListListTypeHandler.class)
+            @Result(column = "serverIdList", property = "serverIdList", typeHandler = ListListTypeHandler.class),
+            @Result(column = "boxLimit", property = "boxLimit", typeHandler = ListIntTypeHandler.class)
     })
     @Select("select * from s_hero_search_plan")
     Map<Integer, StaticDrawHeoPlan> selectStaticDrawHeoPlanMap();

@@ -41,6 +41,11 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan.Builder> 
      */
     private int openDuration;
 
+    /**
+     * [活动id，道具id，钻石购买价格]
+     */
+    private List<Integer> boxLimit;
+
     public int getId() {
         return id;
     }
@@ -105,6 +110,14 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan.Builder> 
         this.name = name;
     }
 
+    public List<Integer> getBoxLimit() {
+        return boxLimit;
+    }
+
+    public void setBoxLimit(List<Integer> boxLimit) {
+        this.boxLimit = boxLimit;
+    }
+
     /**
      * 初始化数据
      *
@@ -165,6 +178,7 @@ public class StaticDrawHeoPlan implements GamePb<CommonPb.DrawCardPlan.Builder> 
                 ", previewDays=" + previewDays +
                 ", openBeginDays=" + openBeginDays +
                 ", openDuration=" + openDuration +
+                ", boxLimit=" + boxLimit +
                 '}';
     }
 

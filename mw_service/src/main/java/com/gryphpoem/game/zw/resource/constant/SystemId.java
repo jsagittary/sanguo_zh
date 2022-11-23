@@ -1862,6 +1862,11 @@ public class SystemId {
     public static final int SEARCH_THE_RANGE_OF_THE_REBELS = 1112;
 
     /**
+     * 天赋开启需求武将等级
+     */
+    public static final int HERO_LEVEL_OF_OPEN_TALENT = 1113;
+
+    /**
      * 品质与万能碎片的兑换
      */
     public static final int EXCHANGE_OF_QUALITY_AND_UNIVERSAL_FRAGMENT = 4001;
