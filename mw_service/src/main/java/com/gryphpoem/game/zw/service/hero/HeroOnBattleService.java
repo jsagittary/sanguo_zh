@@ -739,10 +739,6 @@ public class HeroOnBattleService implements GmCmdService {
                                    StaticHero onBattleHero, int heroRoleType, int deputyPosIndex, Consumer<Hero> consumer) {
         // 副将处理
         if (Objects.nonNull(partnerHero)) {
-            if (Objects.nonNull(battleHero)) {
-                battleHero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
-            }
-
             switch (heroRoleType) {
                 case HeroConstant.HERO_ROLE_TYPE_PRINCIPAL:
                     // 若当前武将上阵为替换的为主将
@@ -775,9 +771,12 @@ public class HeroOnBattleService implements GmCmdService {
                     deputyHeroList.add(hero);
                     break;
             }
-
-            hero.setRoleType(heroRoleType);
         }
+
+        if (Objects.nonNull(battleHero)) {
+            battleHero.setRoleType(HeroConstant.HERO_ROLE_TYPE_NOTHING);
+        }
+        hero.setRoleType(heroRoleType);
     }
 
     /**
