@@ -10,6 +10,7 @@ import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
+import com.gryphpoem.game.zw.quartz.jobs.DominateSideJob;
 import com.gryphpoem.game.zw.quartz.jobs.RelicJob;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
@@ -81,8 +82,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
             for (int i = 0; i < previewTime.size(); i++) {
                 String previewCron = previewTime.get(0);
                 if (StringUtils.isBlank(previewCron)) continue;
-                jobName = getWorldMapFunctionName() + "_" + "preview_" + (i + 1);
-                QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", RelicJob.class, previewCron);
+                jobName = getWorldMapFunctionName() + "_" + DominateSideJob.PREVIEW + "_" + (i + 1);
+                QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", DominateSideJob.class, previewCron);
             }
         }
 
@@ -92,8 +93,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
             for (int i = 0; i < beginTime.size(); i++) {
                 String beginCron = beginTime.get(0);
                 if (StringUtils.isBlank(beginCron)) continue;
-                jobName = getWorldMapFunctionName() + "_" + "begin_" + (i + 1);
-                QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", RelicJob.class, beginCron);
+                jobName = getWorldMapFunctionName() + "_" + DominateSideJob.BEGIN + "_" + (i + 1);
+                QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", DominateSideJob.class, beginCron);
             }
         }
 
@@ -103,8 +104,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
             for (int i = 0; i < endTime.size(); i++) {
                 String endCron = endTime.get(0);
                 if (StringUtils.isBlank(endCron)) continue;
-                jobName = getWorldMapFunctionName() + "_" + "end_" + (i + 1);
-                QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", RelicJob.class, endCron);
+                jobName = getWorldMapFunctionName() + "_" + DominateSideJob.END + "_" + (i + 1);
+                QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", DominateSideJob.class, endCron);
             }
         }
     }
@@ -604,8 +605,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         return basePb.build();
     }
 
-    public void incContinuousKillCnt(long roleId, int cityId) {
-        this.playerStateDominateMap.computeIfAbsent(roleId, m -> new PlayerStateDominate(roleId)).incContinuousKillCnt(cityId);
+    public int incContinuousKillCnt(long roleId, int cityId) {
+        return this.playerStateDominateMap.computeIfAbsent(roleId, m -> new PlayerStateDominate(roleId)).incContinuousKillCnt(cityId);
     }
 
     public void clearContinuousKillCnt(long roleId, int cityId) {
@@ -613,6 +614,13 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         if (Objects.nonNull(playerStateDominate)) {
             playerStateDominate.getContinuousKillCntMap().put(cityId, 0);
         }
+    }
+
+    public int getContinuousKillCnt(long roleId, int cityId) {
+        PlayerStateDominate playerStateDominate = this.playerStateDominateMap.get(roleId);
+        if (CheckNull.isNull(playerStateDominate))
+            return 0;
+        return playerStateDominate.getContinuousKillCntMap().getOrDefault(cityId, 0);
     }
 
     @Override

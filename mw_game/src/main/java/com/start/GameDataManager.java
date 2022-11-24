@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.server.AppGameServer;
 import com.gryphpoem.game.zw.service.BerlinWarService;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
@@ -87,8 +88,7 @@ public class GameDataManager {
      *
      */
     public void handWorldMap() throws Exception {
-        StateDominateWorldMap.getInstance().handleOnStartup();
-        SiLiDominateWorldMap.getInstance().handleOnStartup();
+        DataResource.ac.getBean(DominateWorldMapService.class).handleOnData();
     }
 
     /**

@@ -1,8 +1,22 @@
 package com.gryphpoem.game.zw.service.dominate;
 
+import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
+import com.gryphpoem.game.zw.pb.GamePb8;
+import com.gryphpoem.game.zw.pb.WorldPb;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
+import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -15,5 +29,135 @@ public class DominateWorldMapService {
     @Autowired
     private List<IDominateWorldMapService> serviceList;
 
+    private IDominateWorldMapService getService(int functionId) {
+        if (CheckNull.isEmpty(serviceList)) return null;
+        return serviceList.stream().filter(service -> service.getWorldMapFunction() == functionId).findFirst().orElse(null);
+    }
 
+    /**
+     * 获取地体活动信息
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+    public GamePb8.GetDominateWorldMapInfoRs getDominateWorldMapInfo(long roleId, GamePb8.GetDominateWorldMapInfoRq req) {
+        IDominateWorldMapService service = getService(req.getWorldFunction());
+        if (CheckNull.isNull(service)) {
+            throw new MwException(GameError.PARAM_ERROR, "未找到处理类, req: ", req.getWorldFunction());
+        }
+        return service.getDominateWorldMapInfo(roleId, req);
+    }
+
+    /**
+     * 攻击某个雄踞一方城池
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+    public GamePb8.AttackDominateCityRs attackDominateCity(long roleId, GamePb8.AttackDominateCityRq req) {
+        IDominateWorldMapService service = getService(req.getWorldFunction());
+        if (CheckNull.isNull(service)) {
+            throw new MwException(GameError.PARAM_ERROR, "未找到处理类, req: ", req.getWorldFunction());
+        }
+        return service.attackDominateCity(roleId, req);
+    }
+
+    /**
+     * 获取城池详情
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+    public GamePb8.GetDominateDetailRs getDominateDetail(long roleId, GamePb8.GetDominateDetailRq req) {
+        IDominateWorldMapService service = getService(req.getWorldFunction());
+        if (CheckNull.isNull(service)) {
+            throw new MwException(GameError.PARAM_ERROR, "未找到处理类, req: ", req.getWorldFunction());
+        }
+        return service.getDominateDetail(roleId, req);
+    }
+
+    /**
+     * 获取城池历任都督
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+    public GamePb8.GetDominateGovernorListRs getDominateGovernorList(long roleId, GamePb8.GetDominateGovernorListRq req) {
+        IDominateWorldMapService service = getService(req.getWorldFunction());
+        if (CheckNull.isNull(service)) {
+            throw new MwException(GameError.PARAM_ERROR, "未找到处理类, req: ", req.getWorldFunction());
+        }
+        return service.getDominateGovernorList(roleId, req);
+    }
+
+    /**
+     * 获取雄踞一方排行榜
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+    public GamePb8.GetDominateRankRs getDominateRank(long roleId, GamePb8.GetDominateRankRq req) {
+        IDominateWorldMapService service = getService(req.getWorldFunction());
+        if (CheckNull.isNull(service)) {
+            throw new MwException(GameError.PARAM_ERROR, "未找到处理类, req: ", req.getWorldFunction());
+        }
+        return service.getDominateRank(roleId, req);
+    }
+
+    public void initSchedule() {
+        StateDominateWorldMap.getInstance().initSchedule();
+        SiLiDominateWorldMap.getInstance().initSchedule();
+    }
+
+    public void handleOnData() throws ParseException {
+        StateDominateWorldMap.getInstance().handleOnStartup();
+        SiLiDominateWorldMap.getInstance().handleOnStartup();
+    }
+
+    public void marchEnd(Player player, Army army, int nowSec) {
+        IDominateWorldMapService service = getService(getWorldFunctionByArmyType(army));
+        if (CheckNull.isNull(service)) {
+            throw new MwException(GameError.PARAM_ERROR, "未找到处理类, army: ", army.getType());
+        }
+        service.marchEnd(player, army, nowSec);
+    }
+
+    public void checkDominateSideCity(StaticCity staticCity) {
+        if (CheckNull.isNull(staticCity)) {
+            throw new MwException(GameError.NO_CONFIG, "不能存在此城池");
+        }
+        if (staticCity.getType() == WorldConstant.CITY_TYPE_3 || staticCity.getType() == WorldConstant.CITY_TYPE_6) {
+            throw new MwException(GameError.PARAM_ERROR, "不可通过其他方式攻击州郡城");
+        }
+        boolean isDominateCity = false;
+        if (CheckNull.nonEmpty(Constant.SI_LI_DOMINATE_OPEN_CITY)) {
+            for (List<Integer> list : Constant.SI_LI_DOMINATE_OPEN_CITY) {
+                if (CheckNull.isEmpty(list)) continue;
+                if (list.contains(staticCity.getCityId())) {
+                    isDominateCity = true;
+                    break;
+                }
+            }
+        }
+
+        if (isDominateCity) {
+            throw new MwException(GameError.PARAM_ERROR, "不可通过其他方式攻击州郡城");
+        }
+    }
+
+    private int getWorldFunctionByArmyType(Army army) {
+        switch (army.getType()) {
+            case ArmyConstant.ARMY_TYPE_STATE_DOMINATE_ATTACK:
+                return WorldPb.WorldFunctionDefine.STATES_AND_COUNTIES_DOMINATE_VALUE;
+            case ArmyConstant.ARMY_TYPE_SI_LI_DOMINATE_ATTACK:
+                return WorldPb.WorldFunctionDefine.SI_LI_DOMINATE_SIDE_VALUE;
+            default:
+                return -1;
+        }
+    }
 }

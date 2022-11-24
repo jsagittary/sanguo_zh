@@ -28,7 +28,9 @@ public class PlayerStateDominate {
     /**
      * 增加连杀次数
      */
-    public void incContinuousKillCnt(int cityId) {
-        this.continuousKillCntMap.merge(cityId, 1, Integer::sum);
+    public int incContinuousKillCnt(int cityId) {
+        int killCnt = this.continuousKillCntMap.getOrDefault(cityId, 0);
+        this.continuousKillCntMap.put(cityId, ++killCnt);
+        return killCnt;
     }
 }

@@ -2661,4 +2661,8 @@
 	<select id="selectHeroAppointList" resultMap="StaticHeroAppoint">
 		SELECT * FROM s_hero_appoint
 	</select>
+
+	<select id="selectStaticDominateWarAwardList" resultMap="StaticDominateWarAward">
+		SELECT * FROM s_dominate_war_award
+	</select>
 </mapper>

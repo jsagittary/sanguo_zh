@@ -36,6 +36,7 @@ import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -140,8 +141,7 @@ public class ScheduleManager {
         DataResource.ac.getBean(SeasonService.class).initSchedule(sched);
         DataResource.getBean(SeasonTalentService.class).initSchedule(sched);
         DataResource.getBean(CrossGamePlayService.class).initSchedule(sched);
-        StateDominateWorldMap.getInstance().initSchedule();
-        SiLiDominateWorldMap.getInstance().initSchedule();
+        DataResource.ac.getBean(DominateWorldMapService.class).initSchedule();
     }
 
     public void initSandTableContest() {

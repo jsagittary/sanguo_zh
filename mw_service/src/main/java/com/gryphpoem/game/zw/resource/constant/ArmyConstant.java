@@ -117,6 +117,8 @@ public class ArmyConstant {
     public static final int ARMY_TYPE_RELIC_BATTLE = 24;
     /*** 行军类型: 州郡雄踞一方*/
     public static final int ARMY_TYPE_STATE_DOMINATE_ATTACK = 25;
+    /*** 行军类型: 司隶雄踞一方*/
+    public static final int ARMY_TYPE_SI_LI_DOMINATE_ATTACK = 26;
 
     /**
      * 行军状态：空闲
@@ -196,6 +198,8 @@ public class ArmyConstant {
     public static final int ARMY_STATE_RELIC_PROBING = 19;
     /** 行军状态：州郡雄踞一方探索中 */
     public static final int ARMY_STATE_STATE_DOMINATE_HOLDER = 20;
+    /** 行军状态：司隶雄踞一方探索中 */
+    public static final int ARMY_STATE_SI_LI_DOMINATE_HOLDER = 21;
 
     /**
      * 战斗结果：平局或其他

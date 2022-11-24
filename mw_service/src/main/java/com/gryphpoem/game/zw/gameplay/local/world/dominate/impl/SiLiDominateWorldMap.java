@@ -1,23 +1,37 @@
 package com.gryphpoem.game.zw.gameplay.local.world.dominate.impl;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
-import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.rank.Rank;
+import com.gryphpoem.game.zw.core.rank.RankItem;
+import com.gryphpoem.game.zw.core.rank.RealTimeRank;
+import com.gryphpoem.game.zw.core.rank.SimpleRankComparatorFactory;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
+import com.gryphpoem.game.zw.dataMgr.StaticDominateDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.PlayerSiLiDominateFightRecord;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.abs.TimeLimitDominateMap;
+import com.gryphpoem.game.zw.manager.MailDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
+import com.gryphpoem.game.zw.quartz.jobs.DominateSideJob;
 import com.gryphpoem.game.zw.quartz.jobs.RelicJob;
-import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
+import com.gryphpoem.game.zw.resource.domain.s.StaticDominateWarAward;
+import com.gryphpoem.game.zw.resource.pojo.ActRank;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
 
@@ -31,6 +45,11 @@ import java.util.*;
  */
 public class SiLiDominateWorldMap extends TimeLimitDominateMap {
 
+    private static final int MAX_RANK_NUM = 1000000; // 排行榜上限
+    // 玩家排行榜数据 key: 排行榜类型,不会进行存储,在服务器初始化时,会重新计算赋值
+    private Map<Integer, RealTimeRank> ranks = new HashMap<>();
+    private Map<Long, PlayerSiLiDominateFightRecord> recordMap = new HashMap<>();
+
     private static class InstanceHolder {
         private static final SiLiDominateWorldMap INSTANCE = new SiLiDominateWorldMap(
                 WorldPb.WorldFunctionDefine.SI_LI_DOMINATE_SIDE_VALUE);
@@ -39,11 +58,6 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
     public static final SiLiDominateWorldMap getInstance() {
         return SiLiDominateWorldMap.InstanceHolder.INSTANCE;
     }
-
-    /**
-     * 都城名城列表
-     */
-    public static final int[] FAMOUS_CITY = new int[]{201, 202, 203, 204, 302, 309, 312, 319};
 
     public SiLiDominateWorldMap(int worldFunction) {
         super(worldFunction);
@@ -54,20 +68,20 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         String jobName;
         String previewTimeCron = Constant.SI_LI_DOMINATE_PREVIEW_TIME;
         if (!StringUtils.isBlank(previewTimeCron)) {
-            jobName = getWorldMapFunctionName() + "_preview";
-            QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", RelicJob.class, previewTimeCron);
+            jobName = getWorldMapFunctionName() + "_" + DominateSideJob.PREVIEW;
+            QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", DominateSideJob.class, previewTimeCron);
         }
 
         String beginTimeCron = Constant.SI_LI_DOMINATE_BEGIN_TIME;
         if (!StringUtils.isBlank(beginTimeCron)) {
-            jobName = getWorldMapFunctionName() + "_begin";
-            QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", RelicJob.class, beginTimeCron);
+            jobName = getWorldMapFunctionName() + "_" + DominateSideJob.BEGIN;
+            QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", DominateSideJob.class, beginTimeCron);
         }
 
         String endTimeCron = Constant.SI_LI_DOMINATE_END_TIME;
         if (!StringUtils.isBlank(endTimeCron)) {
-            jobName = getWorldMapFunctionName() + "_end";
-            QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", RelicJob.class, endTimeCron);
+            jobName = getWorldMapFunctionName() + "_" + DominateSideJob.END;
+            QuartzHelper.addJob(ScheduleManager.getInstance().getSched(), jobName, "DominateSide", DominateSideJob.class, endTimeCron);
         }
     }
 
@@ -103,7 +117,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
 
     @Override
     public void close() {
-
+        this.curOpenCityList.clear();
     }
 
     /**
@@ -118,6 +132,8 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
      * 司隶-雄踞一方活动开始
      */
     public void onBegin() {
+        this.ranks.clear();
+        this.recordMap.clear();
         String jobName = getWorldMapFunctionName() + "_" + "begin_check_" + curTimes;
         ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
             checkWinOfOccupyTime(); // 检测柏林占领时间
@@ -130,6 +146,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
     public void onEnd() throws ParseException {
         // 城池结算
         int now = TimeHelper.getCurrentSecond();
+        Map<Integer, Map<Integer, Integer>> campOccupyMap = null;
         if (CheckNull.nonEmpty(this.curOpenCityList)) {
             Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
                 list.forEach(sideCity -> {
@@ -148,11 +165,80 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
                 });
             });
 
-            this.curOpenCityList.clear();
+            campOccupyMap = new HashMap<>();
+            for (DominateSideCity sideCity : this.curOpenCityList.get(curTimes)) {
+                StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
+                if (CheckNull.isNull(staticCity)) continue;
+                int curCount = campOccupyMap.computeIfAbsent(sideCity.getCamp(), m -> new HashMap<>()).
+                        computeIfAbsent(staticCity.getType(), l -> 0);
+                curCount++;
+                campOccupyMap.get(sideCity.getCamp()).put(staticCity.getType(), curCount);
+            }
         }
 
-        // 初始化下次开放活动时间
         Date nowDate = new Date();
+        MailDataManager mailDataManager = DataResource.ac.getBean(MailDataManager.class);
+        PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
+        if (CheckNull.nonEmpty(this.recordMap)) {
+            Date tmpDate = new Date();
+            for (Map.Entry<Long, PlayerSiLiDominateFightRecord> entry : this.recordMap.entrySet()) {
+                long curRoleId = entry.getKey();
+                PlayerSiLiDominateFightRecord record = entry.getValue();
+                if (CheckNull.isNull(record) || record.getKillCnt() < Constant.MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS)
+                    continue;
+                tmpDate.setTime(record.getKillRankTime());
+                if (!DateHelper.isSameDate(tmpDate, nowDate))
+                    continue;
+                Player curPlayer = playerDataManager.getPlayer(curRoleId);
+                if (CheckNull.isNull(curPlayer)) continue;
+                // 金珠奖励
+                StaticDominateWarAward award = StaticDominateDataMgr.findKillRankAward(record.getKillCnt());
+
+                List<CommonPb.Award> awardList = null;
+                if (Objects.nonNull(award)) {
+                    awardList = new ArrayList<>();
+                    awardList.add(PbHelper.createAwardPb(AwardType.SPECIAL, AwardType.Special.SHENG_WU, award.getAward()));
+                }
+
+                // 大中城奖励
+                int totalCityOccupyCnt = 0;
+                if (CheckNull.nonEmpty(campOccupyMap) &&
+                        CheckNull.nonEmpty(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY)) {
+                    List<List<Integer>> cityAward = null;
+                    Map<Integer, Integer> cityCountMap = campOccupyMap.get(curPlayer.lord.getCamp());
+                    if (CheckNull.nonEmpty(cityCountMap)) {
+                        int cnt;
+                        if ((cnt = cityCountMap.getOrDefault(WorldConstant.CITY_TYPE_8, 0)) > 0) {
+                            totalCityOccupyCnt += cnt;
+                            cityAward = new ArrayList<>();
+                            cityAward.add(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY.get(0));
+                            if (CheckNull.isNull(awardList)) awardList = new ArrayList<>();
+                            awardList.addAll(PbHelper.createMultipleAwardsPb(cityAward, cnt));
+                        }
+
+                        if ((cnt = cityCountMap.getOrDefault(WorldConstant.CITY_TYPE_HOME, 0)) > 0) {
+                            totalCityOccupyCnt += cnt;
+                            if (CheckNull.nonEmpty(cityAward)) {
+                                cityAward.clear();
+                            } else {
+                                cityAward = new ArrayList<>();
+                            }
+                            cityAward.add(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY.get(1));
+                            if (CheckNull.isNull(awardList)) awardList = new ArrayList<>();
+                            awardList.addAll(PbHelper.createMultipleAwardsPb(cityAward, cnt));
+                        }
+                    }
+                }
+
+                if (CheckNull.nonEmpty(awardList)) {
+                    mailDataManager.sendAttachMail(curPlayer, awardList, MailConstant.MOLD_SI_LI_DOMINATE_AWARD, AwardFrom.DO_SOME,
+                            curPlayer.lord.getCamp(), totalCityOccupyCnt, record.getKillCnt(), Objects.nonNull(award) ? award.getAward() : 0);
+                }
+            }
+        }
+
+
+        // 初始化下次开放活动时间
         String previewTimeCron = Constant.SI_LI_DOMINATE_PREVIEW_TIME;
         if (!StringUtils.isBlank(previewTimeCron)) {
             CronExpression cronExpression = new CronExpression(previewTimeCron);
@@ -171,6 +257,9 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
             Date nextDate = cronExpression.getNextValidTimeAfter(nowDate);
             setCurEndTime(nextDate);
         }
+
+        // 清理数据
+        close();
     }
 
     /**
@@ -191,7 +280,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         } else {
             if (now.after(getCurPreviewDate()) && now.before(getCurEndTime()) && CheckNull.isEmpty(this.curOpenCityList)) {
                 // 若比当前时间晚且未结束且未当前开放城池未空 (停服期 间 错过了预显示定时器)
-                createMultiDominateCity(worldDataManager);
+                onPreview();
             }
         }
 
@@ -208,6 +297,15 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
                 ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
                     checkWinOfOccupyTime(); // 检测柏林占领时间
                 }, this.getCurBeginDate(), this.getCurEndTime(), 1);
+                if (CheckNull.nonEmpty(ranks)) {
+                    RealTimeRank realTimeRank = getPlayerRanks(0);
+                    RankItem rankItem = realTimeRank.getRankItem(1);
+                    if (Objects.nonNull(rankItem) &&
+                            !DateHelper.isToday(new Date(rankItem.getLastModifyTime()))) {
+                        this.ranks.clear();
+                        this.recordMap.clear();
+                    }
+                }
             }
         }
 
@@ -240,8 +338,11 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
      * @param worldDataManager
      */
     private void createMultiDominateCity(WorldDataManager worldDataManager) {
-        for (int cityId : FAMOUS_CITY)
-            createDominateCity(worldDataManager, cityId);
+        if (CheckNull.isEmpty(Constant.SI_LI_DOMINATE_OPEN_CITY)) return;
+        for (List<Integer> cityIdList : Constant.SI_LI_DOMINATE_OPEN_CITY) {
+            if (CheckNull.isEmpty(cityIdList)) continue;
+            cityIdList.forEach(cityId -> createDominateCity(worldDataManager, cityId));
+        }
     }
 
     /**
@@ -266,4 +367,27 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         sideCity.setCamp(Constant.Camp.NPC);
         worldDataManager.getCityMap().put(cityId, sideCity);
     }
+
+    public PlayerSiLiDominateFightRecord getPlayerRecord(long roleId) {
+        PlayerSiLiDominateFightRecord record = this.recordMap.get(roleId);
+        if (CheckNull.isNull(record)) {
+            record = new PlayerSiLiDominateFightRecord();
+            this.recordMap.put(roleId, record);
+        }
+        return record;
+    }
+
+    public RealTimeRank getPlayerRanks(int type) {
+        // 如果没有刷新则刷新数据
+        return ranks.computeIfAbsent(type, k -> {
+            Comparator<RankItem<Integer>> c = SimpleRankComparatorFactory.createDescComparable();
+            return new RealTimeRank(MAX_RANK_NUM, c);
+        });
+    }
+
+    public void addPlayerRank(long lordId, int value, int now, int rankType) {
+        RealTimeRank killArmyRank = getPlayerRanks(rankType);
+        killArmyRank.update(new RankItem(lordId, value, System.currentTimeMillis()));
+    }
+
 }

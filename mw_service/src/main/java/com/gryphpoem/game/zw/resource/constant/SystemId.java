@@ -1350,9 +1350,13 @@ public class SystemId {
      */
     public static final int SI_LI_DOMINATE_VICTORY_CONFIG = 806;
     /**
+     * 雄踞一方-司隶-开放的城池
+     */
+    public static final int SI_LI_DOMINATE_OPEN_CITY = 807;
+    /**
      * 雄踞一方-司隶-结束时间
      */
-    public static final int SI_LI_DOMINATE_END_TIME = 807;
+    public static final int SI_LI_DOMINATE_END_TIME = 808;
 
     /**
      * 雄踞一方-州郡-开启纪元
@@ -1405,6 +1409,16 @@ public class SystemId {
      * 雄踞一方 疲劳debuff参数
      */
     public static final int DOMINATE_FATIGUE_DE_BUFF_PARAMETER = 820;
+
+    /**
+     * 领取占领奖励的最低累杀兵力要求
+     */
+    public static final int MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS = 821;
+
+    /**
+     * 单个大城和中城的占点奖励
+     */
+    public static final int BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY = 822;
 
     /**
      * 玩家登录刷新流寇距上次离线时间间隔

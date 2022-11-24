@@ -61,6 +61,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.service.relic.RelicService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,6 +193,8 @@ public class WorldService {
     private MusicFestivalCreativeService musicFestivalCreativeService;
     @Autowired
     private CampService campService;
+    @Autowired
+    private DominateWorldMapService dominateWorldMapService;
 
     /**
      * 获取某个行政区域的数据
@@ -2359,6 +2362,11 @@ public class WorldService {
             if (WorldConstant.ATTACK_STATE_NEED_LV > player.lord.getLevel()) {
                 throw new MwException(GameError.ATTACK_STATE_NEED_LV.getCode(), "指挥官先磨砺至45级，再发动阵营战吧, roleId:", roleId);
             }
+            // 不可从此协议攻击雄踞一方城池
+            if (battle.isCampBattle()) {
+                StaticCity staticCity = StaticWorldDataMgr.getCityByPos(battle.getPos());
+                dominateWorldMapService.checkDominateSideCity(staticCity);
+            }
         }
 
         if (battle.getAtkCamp() != camp && battle.getDefCamp() != camp) {
@@ -2640,6 +2648,8 @@ public class WorldService {
                         roleId);
             }
         }
+        // 不可从此协议攻击雄踞一方城池
+        dominateWorldMapService.checkDominateSideCity(staticCity);
 
         if (CheckNull.isEmpty(battleList)) {
             city.setAttackCamp(player.lord.getCamp());// 记录进攻该城池的阵营

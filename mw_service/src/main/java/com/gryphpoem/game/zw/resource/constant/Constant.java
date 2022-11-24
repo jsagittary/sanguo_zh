@@ -1105,9 +1105,27 @@ public final class Constant {
     public static String SI_LI_DOMINATE_END_TIME;
 
     /**
+     * 雄踞一方-司隶-开放的城池
+     */
+    public static List<List<Integer>> SI_LI_DOMINATE_OPEN_CITY;
+
+    /**
+     * 领取占领奖励的最低累杀兵力要求
+     */
+    public static int MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS;
+
+    /**
+     * 雄踞一方-司隶-单个大城和中城的占点奖励
+     */
+    public static List<List<Integer>> BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
+        BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY = SystemTabLoader.getListListIntSystemValue(SystemId.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY, "");
+        MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS = SystemTabLoader.getIntegerSystemValue(SystemId.MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS, 100);
+        SI_LI_DOMINATE_OPEN_CITY = SystemTabLoader.getListListIntSystemValue(SystemId.SI_LI_DOMINATE_OPEN_CITY, "");
         SI_LI_DOMINATE_END_TIME = SystemTabLoader.getStringSystemValue(SystemId.SI_LI_DOMINATE_END_TIME, "");
         SI_LI_DOMINATE_VICTORY_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.SI_LI_DOMINATE_VICTORY_CONFIG, "");
         SI_LI_DOMINATE_BEGIN_TIME = SystemTabLoader.getStringSystemValue(SystemId.SI_LI_DOMINATE_BEGIN_TIME, "");

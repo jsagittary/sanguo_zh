@@ -47,6 +47,15 @@ public interface IDominateWorldMapService {
      GamePb8.GetDominateGovernorListRs getDominateGovernorList(long roleId, GamePb8.GetDominateGovernorListRq req);
 
     /**
+     * 获取雄踞一方排行榜信息
+     *
+     * @param roleId
+     * @param req
+     * @return
+     */
+     GamePb8.GetDominateRankRs getDominateRank(long roleId, GamePb8.GetDominateRankRq req);
+
+    /**
      * 行军达到
      *
      * @param player
