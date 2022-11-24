@@ -1,10 +1,14 @@
 package com.gryphpoem.game.zw.resource.pojo.buildHomeCity;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 建筑状态, 用来记录被派遣在建筑上的居民与武将
@@ -45,14 +49,14 @@ public class BuildingState {
     private int residentCnt;
 
     /**
-     * 被委任的武将id
+     * 被委任的武将id, key-位置索引, value-武将id
      */
-    private List<Integer> heroIds = new ArrayList<>();
+    private Map<Integer, Integer> heroIdInfo = new HashMap<>(2);
 
     /**
-     * 被分配产出的经济作物id
+     * 被分配产出的经济作物id, key-位置索引, value-作物id
      */
-    private List<Integer> economicCropData = new ArrayList<>();
+    private Map<Integer, Integer> cropIdInfo = new HashMap<>(3);
 
     /**
      * 建筑当前正在产出的经济作物 [作物id, 开始时间, 结束时间]
@@ -112,20 +116,20 @@ public class BuildingState {
         this.residentCnt = residentCnt;
     }
 
-    public List<Integer> getHeroIds() {
-        return heroIds;
+    public Map<Integer, Integer> getHeroIdInfo() {
+        return heroIdInfo;
     }
 
-    public void setHeroIds(List<Integer> heroIds) {
-        this.heroIds = heroIds;
+    public void setHeroIdInfo(Map<Integer, Integer> heroIdInfo) {
+        this.heroIdInfo = heroIdInfo;
     }
 
-    public List<Integer> getEconomicCropData() {
-        return economicCropData;
+    public Map<Integer, Integer> getCropIdInfo() {
+        return cropIdInfo;
     }
 
-    public void setEconomicCropData(List<Integer> economicCropData) {
-        this.economicCropData = economicCropData;
+    public void setCropIdInfo(Map<Integer, Integer> cropIdInfo) {
+        this.cropIdInfo = cropIdInfo;
     }
 
     public List<Integer> getCurProductCrop() {
@@ -152,21 +156,59 @@ public class BuildingState {
         this.buildingType = buildingType;
     }
 
-    public BuildingState(CommonPb.BuildingState pb) {
-        this.buildingId = pb.getBuildingId();
-        this.buildingLv = pb.getBuildingLv();
-        this.buildingType = pb.getBuildingType();
-        this.foundationId = pb.getFoundationId();
-        this.residentTopLimit = pb.getResidentTopLimit();
-        this.residentCnt = pb.getResidentCnt();
-        this.heroIds = pb.getHeroIdList();
-        this.economicCropData = pb.getEconomicCropIdList();
-        if (pb.hasEconomicCropInfo()) {
-            CommonPb.EconomicCropInfo economicCropInfo = pb.getEconomicCropInfo();
-            this.curProductCrop.add(economicCropInfo.getCropId());
-            this.curProductCrop.add(economicCropInfo.getStartTime());
-            this.curProductCrop.add(economicCropInfo.getEndTime());
+    public BuildingState dser(SerializePb.SerBuildingState ser) {
+        this.buildingId = ser.getBuildingId();
+        this.buildingLv = ser.getBuildingLv();
+        this.buildingType = ser.getBuildingType();
+        this.foundationId = ser.getFoundationId();
+        this.residentTopLimit = ser.getResidentTopLimit();
+        this.residentCnt = ser.getResidentCnt();
+        if (CheckNull.nonEmpty(ser.getHeroIdInfoList())) {
+            ser.getHeroIdInfoList().forEach(tmp -> {
+                if (!this.heroIdInfo.containsKey(tmp.getV1())) {
+                    this.heroIdInfo.put(tmp.getV1(), tmp.getV2());
+                }
+            });
         }
+        if (CheckNull.nonEmpty(ser.getCropIdInfoList())) {
+            ser.getCropIdInfoList().forEach(tmp -> {
+                if (!this.cropIdInfo.containsKey(tmp.getV1())) {
+                    this.cropIdInfo.put(tmp.getV1(), tmp.getV2());
+                }
+            });
+        }
+        if (ser.hasCurProductCropInfo()) {
+            CommonPb.CurProductCropInfo curProductCropInfo = ser.getCurProductCropInfo();
+            this.curProductCrop.add(curProductCropInfo.getCropId());
+            this.curProductCrop.add(curProductCropInfo.getStartTime());
+            this.curProductCrop.add(curProductCropInfo.getEndTime());
+        }
+        return this;
+    }
+
+    public SerializePb.SerBuildingState ser() {
+        SerializePb.SerBuildingState.Builder ser = SerializePb.SerBuildingState.newBuilder();
+        ser.setBuildingId(this.buildingId);
+        ser.setBuildingLv(this.buildingLv);
+        ser.setBuildingType(this.buildingType);
+        ser.setFoundationId(this.foundationId);
+        ser.setResidentTopLimit(this.residentTopLimit);
+        ser.setResidentCnt(this.residentCnt);
+        if (CheckNull.nonEmpty(this.heroIdInfo)) {
+            ser.addAllHeroIdInfo(PbHelper.createTwoIntListByMap(this.heroIdInfo));
+        }
+        if (CheckNull.nonEmpty(this.cropIdInfo)) {
+            ser.addAllCropIdInfo(PbHelper.createTwoIntListByMap(this.cropIdInfo));
+        }
+        if (CheckNull.nonEmpty(this.curProductCrop) && this.curProductCrop.size() >= 3) {
+            CommonPb.CurProductCropInfo.Builder curProductCropInfoBuilder = CommonPb.CurProductCropInfo.newBuilder();
+            curProductCropInfoBuilder.setCropId(this.curProductCrop.get(0));
+            curProductCropInfoBuilder.setStartTime(this.curProductCrop.get(1));
+            curProductCropInfoBuilder.setEndTime(this.curProductCrop.get(2));
+            ser.setCurProductCropInfo(curProductCropInfoBuilder.build());
+        }
+
+        return ser.build();
     }
 
     public CommonPb.BuildingState creatPb() {
@@ -177,14 +219,16 @@ public class BuildingState {
         pb.setFoundationId(this.foundationId);
         pb.setResidentTopLimit(this.residentTopLimit);
         pb.setResidentCnt(this.residentCnt);
-        pb.addAllHeroId(this.heroIds);
-        pb.addAllEconomicCropId(this.economicCropData);
+        if (CheckNull.nonEmpty(this.heroIdInfo)) {
+            pb.addAllHeroIdInfo(PbHelper.createTwoIntListByMap(this.heroIdInfo));
+        }
+        pb.addAllCropId(this.cropIdInfo.values());
         if (CheckNull.nonEmpty(this.curProductCrop) && this.curProductCrop.size() >= 3) {
-            CommonPb.EconomicCropInfo.Builder economicCropInfo = CommonPb.EconomicCropInfo.newBuilder();
+            CommonPb.CurProductCropInfo.Builder economicCropInfo = CommonPb.CurProductCropInfo.newBuilder();
             economicCropInfo.setCropId(this.curProductCrop.get(0));
             economicCropInfo.setStartTime(this.curProductCrop.get(1));
             economicCropInfo.setEndTime(this.curProductCrop.get(2));
-            pb.setEconomicCropInfo(economicCropInfo.build());
+            pb.setCurProductCropInfo(economicCropInfo.build());
         }
 
         return pb.build();
@@ -199,8 +243,8 @@ public class BuildingState {
                 ", foundationId=" + foundationId +
                 ", residentTopLimit=" + residentTopLimit +
                 ", residentCnt=" + residentCnt +
-                ", heroIds=" + heroIds +
-                ", economicCropData=" + economicCropData +
+                ", heroIdInfo=" + heroIdInfo +
+                ", cropIdInfo=" + cropIdInfo +
                 ", curProductCrop=" + curProductCrop +
                 ", landType=" + landType +
                 '}';

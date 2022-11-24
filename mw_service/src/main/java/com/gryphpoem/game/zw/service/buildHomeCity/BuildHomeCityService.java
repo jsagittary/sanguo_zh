@@ -523,7 +523,7 @@ public class BuildHomeCityService implements GmCmdService {
                 buildingDao.updateBuilding(building);
                 player.building = building;
                 // 更新解锁解锁状态
-                // buildingDataManager.updateBuildingLockState(player);
+                buildingDataManager.updateBuildingLockState(player);
                 break;
             case "fixFoundationData":
                 // 去除重复地基

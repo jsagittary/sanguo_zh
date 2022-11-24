@@ -246,7 +246,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
             player.setCityEvent(cityEvent);
         }
         CityEvent cityEvent = player.getCityEvent();
-        List<LifeSimulatorInfo> lifeSimulatorInfoList = cityEvent.getLifeSimulatorInfoList();
+        List<LifeSimulatorInfo> lifeSimulatorInfoList = new ArrayList<>(cityEvent.getLifeSimulatorInfoList());
         List<Integer> cityEventRefreshConfig = Constant.CITY_EVENT_REFRESH_CONFIG;
         // 获取当前周期开启时间, 当前周期结束时间, 周期次数
         int latestEndTime = cityEvent.getEndTime();
@@ -281,6 +281,7 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 lifeSimulatorInfo.setPauseTime(0);
                 lifeSimulatorInfo.setDelay(0);
                 lifeSimulatorInfoList.add(lifeSimulatorInfo);
+                cityEvent.setLifeSimulatorInfoList(lifeSimulatorInfoList);
                 LogUtil.common(String.format("转点刷新玩家城镇事件成功, roleId:%s, simulatorType:%s", player.roleId, staticSimCity.getType()));
                 cityEvent.setTotalCountCurPeriod(totalCountCurPeriod + 1);
                 // 向客户端同步新增的模拟器

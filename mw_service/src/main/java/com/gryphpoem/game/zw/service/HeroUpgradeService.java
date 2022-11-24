@@ -26,6 +26,7 @@ import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroGradeInterior;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -104,6 +105,29 @@ public class HeroUpgradeService implements GmCmdService {
         checkCondition(player, preStaticData.getCondition(), staticData.getKeyId(), hero);
         checkConsume(player, preStaticData.getConsume(), staticData.getKeyId());
         hero.setGradeKeyId(staticData.getKeyId());
+        // 英雄升阶, 更新属性内政
+        List<List<Integer>> interiorAttr = new ArrayList<>(hero.getInteriorAttr());
+        StaticHeroGradeInterior sHeroGradeInterior = StaticHeroDataMgr.getStaticHeroGradeInterior(staticData.getGrade(), staticData.getLevel());
+        if (sHeroGradeInterior != null && CheckNull.nonEmpty(sHeroGradeInterior.getAttr())) {
+            for (List<Integer> attr : sHeroGradeInterior.getAttr()) {
+                if (CheckNull.isEmpty(attr) || attr.size() <= 3) {
+                    continue;
+                }
+                List<Integer> list = interiorAttr.stream()
+                        .filter(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == attr.get(0).intValue())
+                        .findFirst()
+                        .orElse(null);
+                if (list == null) {
+                    interiorAttr.add(attr);
+                } else {
+                    int newAttrValue = list.get(2) + attr.get(2);
+                    list.set(2, newAttrValue);
+                    interiorAttr.removeIf(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == list.get(0).intValue());
+                    interiorAttr.add(list);
+                }
+            }
+        }
+        hero.setInteriorAttr(interiorAttr);
         CalculateUtil.processAttr(player, hero);
 
         // 若武将升级到满阶, 发送跑马灯

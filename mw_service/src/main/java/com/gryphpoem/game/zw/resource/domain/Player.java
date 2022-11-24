@@ -974,10 +974,18 @@ public class Player {
         return foundationData;
     }
 
+    public void setFoundationData(List<Integer> foundationData) {
+        this.foundationData = foundationData;
+    }
+
     /**
      * 居民数量, [总数, 空闲数, 上限]
      */
     private List<Integer> residentData = new ArrayList<>(3);
+
+    public void setResidentData(List<Integer> residentData) {
+        this.residentData = residentData;
+    }
 
     public List<Integer> getResidentData() {
         return residentData;
@@ -2460,7 +2468,7 @@ public class Player {
         // 建筑状态信息
         if (CheckNull.nonEmpty(buildingData)) {
             for (BuildingState buildingState : buildingData.values()) {
-                ser.addBuildingState(buildingState.creatPb());
+                ser.addSerBuildingState(buildingState.ser());
             }
         }
         // 已开垦的地基
@@ -3131,8 +3139,8 @@ public class Player {
             }
         }
         // 建筑状态信息
-        if (CheckNull.nonEmpty(ser.getBuildingStateList())) {
-            ser.getBuildingStateList().forEach(o -> this.buildingData.put(o.getBuildingId(), new BuildingState(o)));
+        if (CheckNull.nonEmpty(ser.getSerBuildingStateList())) {
+            ser.getSerBuildingStateList().forEach(o -> this.buildingData.put(o.getBuildingId(), new BuildingState().dser(o)));
         }
         // 解锁的地基数据
         if (CheckNull.nonEmpty(ser.getFoundationDataList())) {

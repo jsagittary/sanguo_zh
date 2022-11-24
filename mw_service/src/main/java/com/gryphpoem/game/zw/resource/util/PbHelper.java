@@ -897,18 +897,20 @@ public class PbHelper {
 
         BuildingState buildingState = buildingData.get(mill.getPos());
         if (buildingState != null) {
-            builder.addAllHeroId(buildingState.getHeroIds());
+            if (CheckNull.nonEmpty(buildingState.getHeroIdInfo())) {
+                builder.addAllHeroIdInfo(createTwoIntListByMap(buildingState.getHeroIdInfo()));
+            }
             builder.setResidentCnt(buildingState.getResidentCnt());
             builder.setFoundationId(buildingState.getFoundationId());
             builder.setResidentTopLimit(buildingState.getResidentTopLimit());
-            builder.addAllEconomicCropId(buildingState.getEconomicCropData());
-            CommonPb.EconomicCropInfo.Builder curProductCrop = CommonPb.EconomicCropInfo.newBuilder();
+            builder.addAllCropId(buildingState.getCropIdInfo().values());
+            CommonPb.CurProductCropInfo.Builder curProductCropBuilder = CommonPb.CurProductCropInfo.newBuilder();
             if (CheckNull.nonEmpty(buildingState.getCurProductCrop()) && buildingState.getCurProductCrop().size() >= 3) {
-                curProductCrop.setCropId(buildingState.getCurProductCrop().get(0));
-                curProductCrop.setStartTime(buildingState.getCurProductCrop().get(1));
-                curProductCrop.setEndTime(buildingState.getCurProductCrop().get(2));
+                curProductCropBuilder.setCropId(buildingState.getCurProductCrop().get(0));
+                curProductCropBuilder.setStartTime(buildingState.getCurProductCrop().get(1));
+                curProductCropBuilder.setEndTime(buildingState.getCurProductCrop().get(2));
             }
-            builder.setEconomicCropInfo(curProductCrop);
+            builder.setCurProductCropInfo(curProductCropBuilder.build());
         }
 
         return builder.build();
@@ -926,11 +928,12 @@ public class PbHelper {
             buildingState = new BuildingState(ext.getId(), ext.getType());
             buildingData.put(ext.getId(), buildingState);
         }
-        builder.addAllHeroId(buildingState.getHeroIds());
+        if (CheckNull.nonEmpty(buildingState.getHeroIdInfo())) {
+            builder.addAllHeroIdInfo(createTwoIntListByMap(buildingState.getHeroIdInfo()));
+        }
         builder.setResidentCnt(buildingState.getResidentCnt());
         builder.setFoundationId(buildingState.getFoundationId());
         builder.setResidentTopLimit(buildingState.getResidentTopLimit());
-
         return builder.build();
     }
 

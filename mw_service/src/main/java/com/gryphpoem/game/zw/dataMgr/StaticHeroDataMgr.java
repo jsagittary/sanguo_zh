@@ -50,15 +50,17 @@ public class StaticHeroDataMgr {
     private static Map<Integer, StaticHeroSeason> seasonHeroMap = new HashMap<>();
     // 将领寻访额外奖励
     private static Map<Integer, StaticHeroSearchExtAward> searchHeroExtAward = new HashMap<>();
-    /** 英雄升品阶配置表 map<<<heroId, map<grade, map<level, data>>>*/
+    /**
+     * 英雄升品阶配置表 map<<<heroId, map<grade, map<level, data>>>
+     */
     private static Map<Integer, TreeMap<Integer, TreeMap<Integer, StaticHeroUpgrade>>> heroUpgradeMap = new HashMap<>();
     private static Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap = new TreeMap<>();
     // 武将初始等级自适应配置， key：heroId
     private static Map<Integer, StaticHeroAppoint> staticHeroAppointMap = new HashMap<>();
     // 武将品阶对应的类型属性
-    private List<StaticHeroGradeInterior> staticHeroGradeInteriorList = new ArrayList<>();
+    private static List<StaticHeroGradeInterior> staticHeroGradeInteriorList = new ArrayList<>();
     // 武将品阶对应的内政属性 key1-品阶, key2-品阶等级
-    private Map<Integer, Map<Integer, StaticHeroGradeInterior>> staticHeroGradeInteriorMap = new HashMap<>();
+    private static Map<Integer, Map<Integer, StaticHeroGradeInterior>> staticHeroGradeInteriorMap = new HashMap<>();
 
     public static void init() {
         Map<Integer, StaticHero> heroMap = staticDataDao.selectHeroMap();
@@ -76,6 +78,13 @@ public class StaticHeroDataMgr {
         StaticHeroDataMgr.heroDecoratedMap = staticDataDao.selectHeroDecoratedMap();
         List<StaticHeroEvolve> heroEvolves = staticDataDao.selectHeroEvolveList();
         StaticHeroDataMgr.heroEvolveGroupMap = heroEvolves.stream().collect(Collectors.groupingBy(StaticHeroEvolve::getGroup));
+        staticHeroGradeInteriorList = staticDataDao.selectHeroGradeInteriorList();
+        if (CheckNull.nonEmpty(staticHeroGradeInteriorList)) {
+            staticHeroGradeInteriorList.forEach(sHeroGradeInterior -> {
+                staticHeroGradeInteriorMap.computeIfAbsent(sHeroGradeInterior.getGrade(), map -> new HashMap<>())
+                        .put(sHeroGradeInterior.getLevel(), sHeroGradeInterior);
+            });
+        }
 
         //初始化赛季英雄
         initSessionHero();
@@ -103,6 +112,7 @@ public class StaticHeroDataMgr {
 
     /**
      * 获取指定武将初始等级自适应配置
+     *
      * @param heroId 武将id
      * @return
      */
@@ -458,7 +468,16 @@ public class StaticHeroDataMgr {
         return lvMap != null ? lvMap.get(lv) : null;
     }
 
-    public static Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> getHeroSkill(int heroId){
+    public static Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> getHeroSkill(int heroId) {
         return heroSkillMap.get(heroId);
+    }
+
+    public static StaticHeroGradeInterior getStaticHeroGradeInterior(int gradeId, int gradeLevel) {
+        Map<Integer, StaticHeroGradeInterior> levelInteriorMap = staticHeroGradeInteriorMap.get(gradeId);
+        if (levelInteriorMap != null) {
+            return levelInteriorMap.get(gradeLevel);
+        } else {
+            return null;
+        }
     }
 }

@@ -2676,4 +2676,14 @@
 	<select id="selectHeroAppointList" resultMap="StaticHeroAppoint">
 		SELECT * FROM s_hero_appoint
 	</select>
+
+	<resultMap id="StaticHeroGradeInterior" type="StaticHeroGradeInterior">
+		<id column="keyId" property="keyId" />
+		<result column="attr" property="attr"
+				typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
+	</resultMap>
+	<select id="selectHeroGradeInteriorList" resultMap="StaticHeroGradeInterior">
+		SELECT * FROM s_hero_grade_interior
+	</select>
+
 </mapper>

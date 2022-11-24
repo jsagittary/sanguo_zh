@@ -417,7 +417,10 @@ public class ChemicalService {
 
     /**
      * 三国3 新公式计算<br>
-     * (6 + 12 / 队列数) * 3600 * (1 - 科技减免 ) * (1 - 居民减免)
+     * 生产蓝色材料时间（单位/秒） = 8 * 3600 * (1 - 科技减免) * (1 - 农民数量 * 单个农民减免万分比)
+     * 生产紫色材料时间（单位/秒） = 10 * 3600 * (1 - 科技减免) * (1 - 农民数量 * 单个农民减免万分比)
+     * 生产橙色材料时间（单位/秒） = 12 * 3600 * (1 - 科技减免) * (1 - 农民数量 * 单个农民减免万分比)
+     * 生产红色材料时间（单位/秒） = 36 * 3600 * (1 - 科技减免) * (1 - 农民数量 * 单个农民减免万分比)
      *
      * @param staticChemical
      * @param player
@@ -439,13 +442,13 @@ public class ChemicalService {
         double residentEffect = residentCnt * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT / Constant.TEN_THROUSAND;
 
         if (staticChemical.getId() == 1) {
-            period = (1 + 1.0 * 11 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 8 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else if (staticChemical.getId() == 2) {
-            period = (2 + 1.0 * 10 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 10 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else if (staticChemical.getId() == 3) {
-            period = (3 + 1.0 * 9 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 12 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else if (staticChemical.getId() == 4) {
-            period = (12 + 1.0 * 24 / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 36 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         } else {
             period = (1.0 * staticChemical.getTime() / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         }

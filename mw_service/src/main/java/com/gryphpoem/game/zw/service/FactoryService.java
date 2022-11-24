@@ -597,6 +597,10 @@ public class FactoryService {
                     it.remove();
                 }
             }
+            // 计算兵营内政属性加成
+            int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, id);
+            addNum *= (1 + interiorEffect / Constant.TEN_THROUSAND);
+
             AddArmRs.Builder builder = AddArmRs.newBuilder();
             if (addNum > 0) {
                 rewardDataManager.addAward(player, AwardType.ARMY, BuildingType.getResourceByBuildingType(type), addNum,

@@ -478,7 +478,7 @@ public class PlayerDataManager implements PlayerDM {
 
             // 初始化农民配置
             List<Integer> residentCnt = staticIniLord.getResidentCnt();
-            List<Integer> residentData = player.getResidentData();
+            List<Integer> residentData = new ArrayList<>(player.getResidentData());
             residentData.clear();
             if (CheckNull.nonEmpty(residentCnt)) {
                 residentData.add(residentCnt.get(1)); // 总数
@@ -489,6 +489,7 @@ public class PlayerDataManager implements PlayerDM {
                 residentData.add(4); // 空闲数
                 residentData.add(4); // 上限
             }
+            player.setResidentData(residentData);
 
             // 初始化侦察兵配置
             Map<Integer, Integer> scoutData = player.getScoutData();
@@ -531,7 +532,7 @@ public class PlayerDataManager implements PlayerDM {
     public void initBuildingInfo(Player player, StaticIniLord staticIniLord) {
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
-        List<Integer> foundationData = player.getFoundationData();
+        List<Integer> foundationData = new ArrayList<>(player.getFoundationData());
         Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
         if (CheckNull.nonEmpty(buildingInfo)) {
             buildingInfo.forEach((k, v) -> {
@@ -610,6 +611,7 @@ public class PlayerDataManager implements PlayerDM {
                 }
             }
         }
+        player.setFoundationData(foundationData);
     }
 
     private void createResource(Player player, StaticIniLord staticIniLord) {

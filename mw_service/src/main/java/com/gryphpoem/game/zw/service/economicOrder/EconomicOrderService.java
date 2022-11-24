@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.economicOrder;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
@@ -28,6 +29,7 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.BuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -167,20 +169,31 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
         int randomCnt = 2 - preDisplayOrder.size();
         List<Integer> canUnlockEconomicCropIds = StaticBuildCityDataMgr.getCanUnlockEconomicCropIds(player.lord.getLevel());
         // 随机新的预显示订单
-        List<StaticEconomicOrder> staticEconomicOrderList = StaticBuildCityDataMgr.getStaticEconomicOrderList().stream()
+        List<StaticEconomicOrder> sEconomicOrderList = StaticBuildCityDataMgr.getStaticEconomicOrderList().stream()
                 .filter(tmp -> lordLv >= tmp.getNeedLordLv().get(0) && lordLv <= tmp.getNeedLordLv().get(1))
                 .collect(Collectors.toList());
-        if (CheckNull.nonEmpty(staticEconomicOrderList)) {
+        if (CheckNull.nonEmpty(sEconomicOrderList)) {
             int cnt = 0;
             int now = TimeHelper.getCurrentSecond();
-            for (StaticEconomicOrder sEconomicOrder : staticEconomicOrderList) {
+            for (StaticEconomicOrder sEconomicOrder : sEconomicOrderList) {
                 if (cnt >= randomCnt) {
                     break;
                 }
-                int weight = sEconomicOrder.getWeight();
                 int orderId = sEconomicOrder.getId();
-                if (weight <= 0) {
-                    throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 权重小于或等于0, orderId:%s", orderId));
+                int weight = sEconomicOrder.getWeight();
+                if (weight < 0) {
+                    throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 权重小于0, orderId:%s", orderId));
+                }
+                int quantity = sEconomicOrder.getQuantity();
+                // 计算内政属性加成, 品质3传说的权重增加，品质1普通的权重减少
+                int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.MALL);
+                switch (quantity) {
+                    case 1:
+                        weight -= interiorEffect;
+                        break;
+                    case 3:
+                        weight += interiorEffect;
+                        break;
                 }
                 boolean hit = RandomHelper.isHitRangeIn10000(weight);
                 if (hit) {
@@ -217,7 +230,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                     int keyId = player.maxKey();
                     economicOrder.setKeyId(keyId);
                     economicOrder.setOrderId(orderId);
-                    economicOrder.setQuantity(sEconomicOrder.getQuantity());
+                    economicOrder.setQuantity(quantity);
                     List<Integer> placeRange = sEconomicOrder.getPlace(); // 订单来源处 [城池id]
                     if (CheckNull.isEmpty(placeRange)) {
                         throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("经济订单配置错误, 订单出处配置格式错误, orderId:%s", orderId));
