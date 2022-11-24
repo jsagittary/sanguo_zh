@@ -26,7 +26,6 @@ import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.relic.RelicEntity;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -334,7 +333,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
                 // 州郡雄踞一方活动未开启
                 LogUtil.error(String.format("dominate not open!!! roleId :%d, armyKeyId :%d, target pos :%d, march end time :%d",
                         roleId, army.getKeyId(), tarPos, army.getEndTime()));
-                retreatArmy(player, army, null, nowSec, false);
+                retreatArmy(player, army, null, null, nowSec, false);
                 return;
             }
 
@@ -422,7 +421,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
                 //never got here except fight error!!!
                 LogUtil.error(String.format("cityId :%d, roleId :%d army keyId :%d, survival hero list :%s. defend remain size :%d",
                         sideCity.getCityId(), player.roleId, army.getKeyId(), armyHeroString(army), defendList.size()));
-                retreatArmy(player, army, null, nowSec, false);
+                retreatArmy(player, army, null, sideCity, nowSec, false);
             }
         }
     }
@@ -456,17 +455,17 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
             Map<Long, Integer> recoverMap = new HashMap<>();
             // 损兵与伤病恢复
             if (attacker.lost > 0) {
-                subAndRetreatDeadHeroInArmy(attackPlayer, attacker, atkArmy, changeMap, recoverMap, nowSec);
+                subAndRetreatDeadHeroInArmy(attackPlayer, attacker, atkArmy, changeMap, recoverMap, rlc, nowSec);
                 //进攻方兵力=0 则返回部队
                 if (atkArmy.getHeroLeadCount() <= 0) {
-                    retreatArmy(attackPlayer, atkArmy, changeMap, nowSec, false);
+                    retreatArmy(attackPlayer, atkArmy, changeMap, rlc, nowSec, false);
                 }
             }
             if (defender.lost > 0) {
-                subAndRetreatDeadHeroInArmy(defendPlayer, defender, defArmy, changeMap, recoverMap, nowSec);
+                subAndRetreatDeadHeroInArmy(defendPlayer, defender, defArmy, changeMap, recoverMap, rlc, nowSec);
                 if (defArmy.getHeroLeadCount() <= 0) {
                     rlc.getDefendList().remove(o2);
-                    retreatArmy(defendPlayer, defArmy, changeMap, nowSec, true);
+                    retreatArmy(defendPlayer, defArmy, changeMap, rlc, nowSec, true);
                 }
             }
 
@@ -589,12 +588,14 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param nowSec
      * @param b
      */
-    protected void retreatArmy(Player player, Army army, Map<Long, ChangeInfo> changeMap, int nowSec, boolean b) {
+    protected void retreatArmy(Player player, Army army, Map<Long, ChangeInfo> changeMap, DominateSideCity sideCity, int nowSec, boolean b) {
         try {
             Map<Integer, Integer> recoverMap = army.getRecoverMap();
             if (CheckNull.nonEmpty(recoverMap)) doRecoverArmy(player, army, recoverMap, changeMap);
             worldService.retreatArmy(player, army, nowSec);
             worldService.synRetreatArmy(player, army, nowSec);
+            if (Objects.nonNull(sideCity))
+                sideCity.removeHolder(player.roleId, army.getKeyId());
         } catch (Exception e) {
             LogUtil.error(String.format("retreat army occur exception,roleId=%s,army=%s", player.roleId, army), e);
         }
@@ -682,7 +683,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param recoverMap
      * @param nowSec
      */
-    protected void subAndRetreatDeadHeroInArmy(Player player, Fighter fighter, Army army, Map<Long, ChangeInfo> changeMap, Map<Long, Integer> recoverMap, int nowSec) {
+    protected void subAndRetreatDeadHeroInArmy(Player player, Fighter fighter, Army army, Map<Long, ChangeInfo> changeMap, Map<Long, Integer> recoverMap, DominateSideCity sideCity, int nowSec) {
         // 通用损兵处理
         warService.subBattleHeroArm(fighter.forces, changeMap, AwardFrom.STATE_DOMINATE_FIGHT);
         // 记录将领累计损兵恢复
@@ -724,7 +725,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
                     recoverMap.merge(player.roleId, recoverHp, Integer::sum);
                 }
                 //返回死亡将领
-                retreatArmy(player, deadArmy, changeMap, nowSec, false);
+                retreatArmy(player, deadArmy, changeMap, sideCity, nowSec, false);
             }
         } else {
             //整个部队全部死亡

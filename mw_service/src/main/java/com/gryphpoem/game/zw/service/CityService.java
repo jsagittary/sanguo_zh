@@ -26,6 +26,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,8 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     private BattlePassDataManager battlePassDataManager;
     @Autowired
     private WorldScheduleService worldScheduleService;
+    @Autowired
+    private DominateWorldMapService dominateWorldMapService;
 
     /**
      * 城池征收
@@ -387,8 +390,8 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             }
             // 检查并扣除消耗
             rewardDataManager.checkAndSubPlayerRes(player, staticCity.getRebuild(), AwardFrom.CITY_REBUILD);
-            // 更新城池拥有者
-            city.setOwner(roleId, TimeHelper.getCurrentSecond());
+            dominateWorldMapService.addCityGovernor(city, roleId);
+
             //发送重建奖励邮件
             Award ownerAward = PbHelper.createAward(staticCity.getOutAward());
             List<Award> ownerAwards = ListUtils.createList(ownerAward);
@@ -868,7 +871,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             String nick = null;// 竞选成功玩家名称
             StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(city.getCityId());
             if (null != owner) {
-                city.setOwner(owner.roleId, now);
+                dominateWorldMapService.addCityGovernor(city, owner.roleId);
                 nick = owner.lord.getNick();
 
                 Award ownerAward = PbHelper.createAward(staticCity.getInAward());

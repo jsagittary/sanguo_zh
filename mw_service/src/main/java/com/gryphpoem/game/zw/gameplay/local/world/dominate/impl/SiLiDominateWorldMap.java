@@ -15,18 +15,16 @@ import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.quartz.jobs.DominateSideJob;
-import com.gryphpoem.game.zw.quartz.jobs.RelicJob;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDominateWarAward;
-import com.gryphpoem.game.zw.resource.pojo.ActRank;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
-import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
@@ -262,6 +260,32 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         close();
     }
 
+    public void deserialize(SerializePb.SerSiLiDominateWorldMap ser) {
+        deserialize(ser.getTimeLimitMap());
+        if (CheckNull.nonEmpty(ser.getRecordList())) {
+            if (CheckNull.isNull(recordMap)) recordMap = new HashMap<>();
+            ser.getRecordList().forEach(recordPb -> {
+                PlayerSiLiDominateFightRecord playerData = new PlayerSiLiDominateFightRecord(recordPb);
+                addPlayerRank(recordPb.getRoleId(), playerData.getKillCnt(), 0, 0);
+                recordMap.put(recordPb.getRoleId(), playerData);
+            });
+        }
+    }
+
+    public SerializePb.SerSiLiDominateWorldMap createWorldMapPb(boolean isSaveDb) {
+        SerializePb.SerTimeLimitDominateMap timeLimitDominateMap = super.createMapPb(isSaveDb);
+        SerializePb.SerSiLiDominateWorldMap.Builder builder = SerializePb.SerSiLiDominateWorldMap.newBuilder();
+        builder.setTimeLimitMap(timeLimitDominateMap);
+        if (CheckNull.nonEmpty(this.recordMap)) {
+            this.recordMap.entrySet().forEach(entry -> {
+                SerializePb.SerPlayerSiLiDominateFightRecord.Builder recordPb = entry.getValue().createPb(true);
+                recordPb.setRoleId(entry.getKey());
+                builder.addRecord(recordPb.build());
+            });
+        }
+        return builder.build();
+    }
+
     /**
      * 服务器启动后处理活动时间数据
      *
@@ -341,31 +365,8 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         if (CheckNull.isEmpty(Constant.SI_LI_DOMINATE_OPEN_CITY)) return;
         for (List<Integer> cityIdList : Constant.SI_LI_DOMINATE_OPEN_CITY) {
             if (CheckNull.isEmpty(cityIdList)) continue;
-            cityIdList.forEach(cityId -> createDominateCity(worldDataManager, cityId));
+            cityIdList.forEach(cityId -> createDominateCity(worldDataManager, cityId, this.curTimes));
         }
-    }
-
-    /**
-     * 创建雄踞一方城池
-     *
-     * @param worldDataManager
-     * @param cityId
-     */
-    private void createDominateCity(WorldDataManager worldDataManager, int cityId) {
-        City city = worldDataManager.getCityById(cityId);
-        if (CheckNull.isNull(city)) return;
-        DominateSideCity sideCity;
-        if (city instanceof DominateSideCity) {
-            sideCity = (DominateSideCity) city;
-        } else {
-            sideCity = new DominateSideCity(city);
-        }
-        this.curOpenCityList.computeIfAbsent(this.curTimes, l -> new ArrayList<>(2)).
-                add(sideCity);
-        // 重置城池归属
-        sideCity.setOver(false);
-        sideCity.setCamp(Constant.Camp.NPC);
-        worldDataManager.getCityMap().put(cityId, sideCity);
     }
 
     public PlayerSiLiDominateFightRecord getPlayerRecord(long roleId) {

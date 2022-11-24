@@ -21,10 +21,12 @@ public class ProtoRegistry {
         GamePb5.registerAllExtensions(registry);
         GamePb6.registerAllExtensions(registry);
         GamePb7.registerAllExtensions(registry);
+        GamePb8.registerAllExtensions(registry);
         HttpPb.registerAllExtensions(registry);
         CommonPb.registerAllExtensions(registry);
         SerializePb.registerAllExtensions(registry);
         CrossPb.registerAllExtensions(registry);
         ActivityPb.registerAllExtensions(registry);
+        WorldPb.registerAllExtensions(registry);
     }
 }

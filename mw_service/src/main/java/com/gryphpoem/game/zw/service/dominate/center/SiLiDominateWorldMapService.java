@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.dominate.center;
 
 import com.gryphpoem.game.zw.core.rank.SimpleRank4SkipSet;
+import com.gryphpoem.game.zw.dataMgr.StaticDominateDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.PlayerSiLiDominateFightRecord;
@@ -22,6 +23,7 @@ import com.gryphpoem.game.zw.service.dominate.abs.AbsDominateWorldMapService;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -63,6 +65,8 @@ public class SiLiDominateWorldMapService extends AbsDominateWorldMapService {
         builder.setRankSize(rankList.size());
         builder.setMyValue(record.getKillCnt());
         builder.setMyRank(rankList.getRank(roleId));
+        builder.setScore(Optional.ofNullable(StaticDominateDataMgr.findKillRankAward(record.getKillCnt())).
+                map(award -> award.getAward()).orElse(0));
         return builder.build();
     }
 

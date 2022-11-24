@@ -4,20 +4,20 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
-import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.PlayerSiLiDominateFightRecord;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.abs.TimeLimitDominateMap;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.quartz.jobs.DominateSideJob;
-import com.gryphpoem.game.zw.quartz.jobs.RelicJob;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
+import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.pojo.dominate.PlayerStateDominate;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
-import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
@@ -69,6 +69,42 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         super(worldFunction);
         this.nextOpenCityList = new HashMap<>();
         this.playerStateDominateMap = new HashMap<>();
+    }
+
+    public void deserialize(SerializePb.SerStateDominateWorldMap ser) {
+        deserialize(ser.getTimeLimitMap());
+        this.nextBeginDate = new Date(ser.getNextBeginDate());
+        this.nextPreviewDate = new Date(ser.getNextPreviewDate());
+        this.nextEndTime = new Date(ser.getNextEndTime());
+        if (CheckNull.isNull(this.nextOpenCityList)) {
+            this.nextOpenCityList = new HashMap<>();
+        }
+
+        if (CheckNull.nonEmpty(ser.getNextOpenCityList())) {
+            ser.getNextOpenCityList().forEach(cityPb -> {
+                List<Integer> list = this.nextOpenCityList.computeIfAbsent(cityPb.getTimes(), l -> new ArrayList<>());
+                list.addAll(cityPb.getCityIdList());
+            });
+        }
+    }
+
+    public SerializePb.SerStateDominateWorldMap createWorldMapPb(boolean isSaveDb) {
+        SerializePb.SerTimeLimitDominateMap timeLimitDominateMap = super.createMapPb(isSaveDb);
+        SerializePb.SerStateDominateWorldMap.Builder builder = SerializePb.SerStateDominateWorldMap.newBuilder();
+        builder.setTimeLimitMap(timeLimitDominateMap);
+        builder.setNextBeginDate(this.nextBeginDate.getTime());
+        builder.setNextEndTime(this.nextEndTime.getTime());
+        builder.setNextPreviewDate(this.nextPreviewDate.getTime());
+        if (CheckNull.nonEmpty(this.nextOpenCityList)) {
+            SerializePb.SerOpenDominateSideCity.Builder cityPb = SerializePb.SerOpenDominateSideCity.newBuilder();
+            this.nextOpenCityList.entrySet().forEach(en -> {
+                cityPb.setTimes(en.getKey());
+                cityPb.addAllCityId(en.getValue());
+                builder.addNextOpenCity(cityPb.build());
+                cityPb.clear();
+            });
+        }
+        return builder.build();
     }
 
     /**
@@ -494,30 +530,6 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         }
 
         return cityList;
-    }
-
-    /**
-     * 将当前City转化为DominateSideCity
-     *
-     * @param worldDataManager
-     * @param cityId
-     * @param times
-     */
-    private void createDominateCity(WorldDataManager worldDataManager, int cityId, int times) {
-        City city = worldDataManager.getCityById(cityId);
-        if (CheckNull.isNull(city)) return;
-        DominateSideCity sideCity;
-        if (city instanceof DominateSideCity) {
-            sideCity = (DominateSideCity) city;
-        } else {
-            sideCity = new DominateSideCity(city);
-        }
-        this.curOpenCityList.computeIfAbsent(times, l -> new ArrayList<>(2)).
-                add(sideCity);
-        // 重置城池归属
-        sideCity.setOver(false);
-        sideCity.setCamp(Constant.Camp.NPC);
-        worldDataManager.getCityMap().put(cityId, sideCity);
     }
 
     public int getCurTimes() {

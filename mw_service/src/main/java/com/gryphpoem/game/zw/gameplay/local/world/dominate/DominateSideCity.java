@@ -1,23 +1,27 @@
 package com.gryphpoem.game.zw.gameplay.local.world.dominate;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.BerlinWarConstant;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Description: 雄踞一方城池
  * Author: zhangpeng
  * createTime: 2022-11-22 17:27
  */
-public class DominateSideCity extends City {
+public class DominateSideCity extends City implements GamePb<SerializePb.SerDominateSideCity> {
     //当前归属阵营
     private int holdCamp;
     //开始占领时间戳
@@ -89,9 +93,11 @@ public class DominateSideCity extends City {
     public void setHoldCamp(int holdCamp, int now) {
         this.holdCamp = holdCamp;
         CampRankData campRankData = campRankDataMap.get(this.holdCamp);
-        if (campRankData.time == 0) {
-            campRankData.time = now;
-        }
+        campRankData.time = now;
+    }
+
+    public void setHoldCamp(int holdCamp) {
+        this.holdCamp = holdCamp;
     }
 
     public void setStartHold(int startHold) {
@@ -190,5 +196,89 @@ public class DominateSideCity extends City {
 
         setHoldCamp(atkCamp, now);
         setStartHold(now);
+    }
+
+    public long removeHolder(long roleId, int armyKeyId) {
+        HashMap<Integer, Long> map;
+        if ((map = this.holdArmyTime.get(roleId)) != null) {
+            return map.remove(armyKeyId);
+        }
+        return 0l;
+    }
+
+    public void reset() {
+        this.setOver(false);
+        this.setCamp(Constant.Camp.NPC);
+        this.holdCamp = Constant.Camp.NPC;
+        this.startHold = 0;
+        this.campRankDataMap.clear();
+        this.defendList.clear();
+        this.holdArmyTime.clear();
+    }
+
+    public DominateSideCity(SerializePb.SerDominateSideCity city) {
+        super(city.getCity());
+        setOver(city.getIsOver());
+        setHoldCamp(city.getHoldCamp());
+        setStartHold(city.getStartHold());
+        this.campRankDataMap = new HashMap<>();
+        if (CheckNull.nonEmpty(city.getRankInfoList())) {
+            city.getRankInfoList().forEach(campRankInfo -> {
+                CampRankData campRankData = new CampRankData();
+                campRankData.dser(campRankInfo);
+                campRankDataMap.put(campRankInfo.getCamp(), campRankData);
+            });
+        }
+        this.governorList = new LinkedList<>();
+        if (CheckNull.nonEmpty(city.getGovernorList())) {
+            city.getGovernorList().forEach(pb -> {
+                this.governorList.addFirst(new DominateSideGovernor(pb));
+            });
+        }
+        this.defendList = new LinkedList<>();
+        if (CheckNull.nonEmpty(city.getDefendList())) {
+            city.getDefendList().forEach(de -> {
+                this.defendList.add(new Turple<>(de.getV1(), de.getV2()));
+            });
+        }
+        this.holdArmyTime = new HashMap<>();
+        city.getArmyList().forEach(army -> {
+            if (army.getHoldTimeCount() > 0) {
+                army.getHoldTimeList().forEach(holdArmyTime -> {
+                    this.holdArmyTime.computeIfAbsent(army.getRoleId(), m -> new HashMap<>()).
+                            computeIfAbsent(holdArmyTime.getV1(), l -> holdArmyTime.getV2());
+                });
+            }
+        });
+    }
+
+    @Override
+    public SerializePb.SerDominateSideCity createPb(boolean isSaveDb) {
+        SerializePb.SerDominateSideCity.Builder builder = SerializePb.SerDominateSideCity.newBuilder();
+        builder.setCity(PbHelper.createCityPb(this));
+        builder.setHoldCamp(this.holdCamp);
+        builder.setStartHold(this.startHold);
+        builder.setIsOver(this.isOver);
+        builder.addAllRankInfo(this.campRankDataMap.values().stream().map(CampRankData::ser).collect(Collectors.toList()));
+        if (CheckNull.nonEmpty(this.governorList)) {
+            builder.addAllGovernor(this.governorList.stream().map(g -> g.createPb(true)).collect(Collectors.toList()));
+        }
+        if (CheckNull.nonEmpty(this.defendList)) {
+            builder.addAllDefend(this.defendList.stream().map(t -> PbHelper.createLongIntPb(t.getA(), t.getB())).collect(Collectors.toList()));
+        }
+        if (CheckNull.nonEmpty(this.holdArmyTime)) {
+            SerializePb.SerRelicHoldArmy.Builder armyPb = SerializePb.SerRelicHoldArmy.newBuilder();
+            this.holdArmyTime.entrySet().forEach(en -> {
+                armyPb.setRoleId(en.getKey());
+                if (CheckNull.nonEmpty(en.getValue())) {
+                    en.getValue().entrySet().forEach(en_ -> {
+                        armyPb.addHoldTime(PbHelper.createIntLongPc(en_.getKey(), en_.getValue()));
+                    });
+                }
+                builder.addArmy(armyPb.build());
+                armyPb.clear();
+            });
+        }
+        return builder.build();
     }
 }

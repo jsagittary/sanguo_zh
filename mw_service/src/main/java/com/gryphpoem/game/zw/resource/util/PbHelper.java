@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
 import com.gryphpoem.game.zw.manager.BattlePassDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -3367,5 +3368,13 @@ public class PbHelper {
 
     public static CommonPb.RptSummary createRptSummary(int total, int lost, int camp, String name, int portrait, int portraitFrame) {
         return createRptSummary(total, lost, camp, name, portrait, portraitFrame, 0);
+    }
+
+    public static SerializePb.SerOpenDominateSideCity openDominateSideCityPb(Map.Entry<Integer, List<DominateSideCity>> oneTimeOpenCity) {
+        if (CheckNull.isNull(oneTimeOpenCity)) return null;
+        SerializePb.SerOpenDominateSideCity.Builder builder = SerializePb.SerOpenDominateSideCity.newBuilder();
+        builder.setTimes(oneTimeOpenCity.getKey());
+        builder.addAllCityId(oneTimeOpenCity.getValue().stream().map(DominateSideCity::getCityId).collect(Collectors.toList()));
+        return builder.build();
     }
 }

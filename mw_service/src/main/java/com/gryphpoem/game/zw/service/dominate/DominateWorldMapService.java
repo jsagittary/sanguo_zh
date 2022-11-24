@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.service.dominate;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.pb.GamePb8;
@@ -12,7 +14,9 @@ import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -158,6 +162,15 @@ public class DominateWorldMapService {
                 return WorldPb.WorldFunctionDefine.SI_LI_DOMINATE_SIDE_VALUE;
             default:
                 return -1;
+        }
+    }
+
+    public void addCityGovernor(City city, long roleId) {
+        // 更新城池拥有者
+        city.setOwner(roleId, TimeHelper.getCurrentSecond());
+        if (city instanceof DominateSideCity) {
+            DominateSideCity sideCity = (DominateSideCity) city;
+            sideCity.getGovernorList().addFirst(new DominateSideGovernor(roleId, System.currentTimeMillis(), city.getCityId()));
         }
     }
 }

@@ -4,8 +4,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.*;
 import com.gryphpoem.game.zw.resource.constant.ChatConst;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -491,6 +495,8 @@ public class GameGlobal {
             ser.addAllRemovedActData(this.removedActData);
         }
         ser.setSerGlobalRelic(this.globalRelic.ser());
+        ser.setStateMap(StateDominateWorldMap.getInstance().createWorldMapPb(true));
+        ser.setSiLiMap(SiLiDominateWorldMap.getInstance().createWorldMapPb(true));
         return ser.build().toByteArray();
     }
 
@@ -552,7 +558,11 @@ public class GameGlobal {
     private byte[] serCity() {
         SerCity.Builder ser = SerCity.newBuilder();
         for (City city : cityMap.values()) {
-            ser.addCity(PbHelper.createCityPb(city));
+            if (city instanceof DominateSideCity) {
+                ser.addDominateCity(((DominateSideCity) city).createPb(true));
+            } else {
+                ser.addCity(PbHelper.createCityPb(city));
+            }
         }
         return ser.build().toByteArray();
     }
@@ -736,6 +746,12 @@ public class GameGlobal {
         if (ser.hasSerGlobalRelic()) {
             globalRelic.dser(ser.getSerGlobalRelic());
         }
+        if (ser.hasStateMap()) {
+            StateDominateWorldMap.getInstance().deserialize(ser.getStateMap());
+        }
+        if (ser.hasSiLiMap()) {
+            SiLiDominateWorldMap.getInstance().deserialize(ser.getSiLiMap());
+        }
     }
 
     private void dserWorldTask(byte[] data) throws InvalidProtocolBufferException {
@@ -802,6 +818,9 @@ public class GameGlobal {
         SerCity ser = SerCity.parseFrom(data);
         for (CommonPb.City city : ser.getCityList()) {
             cityMap.put(city.getCityId(), new City(city));
+        }
+        for (SerializePb.SerDominateSideCity city : ser.getDominateCityList()) {
+            cityMap.put(city.getCity().getCityId(), new DominateSideCity(city));
         }
     }
 
