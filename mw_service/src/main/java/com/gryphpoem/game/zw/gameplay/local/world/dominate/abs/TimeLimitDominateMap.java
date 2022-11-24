@@ -147,6 +147,9 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
 
     @Override
     public int state() {
+        if (!open) {
+            return WorldPb.WorldFunctionStateDefine.NOT_START_VALUE;
+        }
         Date now = new Date();
         if (now.before(this.getCurPreviewDate())) {
             return WorldPb.WorldFunctionStateDefine.NOT_START_VALUE;
