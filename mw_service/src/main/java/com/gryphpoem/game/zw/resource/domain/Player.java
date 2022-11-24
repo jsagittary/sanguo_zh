@@ -3034,8 +3034,9 @@ public class Player {
             PartnerHero partnerHero = null;
             if (hero.isOnBattle()) {
                 if (hero.getPos() >= HeroConstant.HERO_BATTLE_1 && hero.getPos() <= HeroConstant.HERO_BATTLE_4) {
-                    if (playerFormation.getHeroBattle()[hero.getPos()] == null) {
-                        playerFormation.getHeroBattle()[hero.getPos()] = new PartnerHero();
+                    partnerHero = playerFormation.getHeroBattle()[hero.getPos()];
+                    if (partnerHero == null) {
+                        partnerHero = playerFormation.getHeroBattle()[hero.getPos()] = new PartnerHero();
                     }
                     if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
                         partnerHero.setPrincipalHero(hero);
@@ -3050,8 +3051,9 @@ public class Player {
             if (hero.isOnWall()) {
                 if (hero.getWallPos() >= HeroConstant.HERO_BATTLE_1
                         && hero.getWallPos() <= HeroConstant.HERO_BATTLE_4) {
-                    if (playerFormation.getHeroWall()[hero.getPos()] == null) {
-                        playerFormation.getHeroWall()[hero.getPos()] = new PartnerHero();
+                    partnerHero = playerFormation.getHeroWall()[hero.getPos()];
+                    if (partnerHero == null) {
+                        partnerHero = playerFormation.getHeroWall()[hero.getPos()] = new PartnerHero();
                     }
                     if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
                         partnerHero.setPrincipalHero(hero);
@@ -3061,8 +3063,9 @@ public class Player {
                 }
             }
             if (hero.isOnAcq()) {
-                if (playerFormation.getHeroAcq()[hero.getPos()] == null) {
-                    playerFormation.getHeroAcq()[hero.getPos()] = new PartnerHero();
+                partnerHero = playerFormation.getHeroAcq()[hero.getPos()];
+                if (partnerHero == null) {
+                    partnerHero = playerFormation.getHeroAcq()[hero.getPos()] = new PartnerHero();
                 }
                 if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
                     partnerHero.setPrincipalHero(hero);

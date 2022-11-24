@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo.hero;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.HeroUtil;
@@ -48,11 +49,14 @@ public class PartnerHero implements GamePb<CommonPb.PartnerHeroPb> {
         });
     }
 
-    public Hero getCurHero(int heroId) {
-        if (this.principalHero.getHeroId() == heroId)
-            return this.principalHero;
-        if (CheckNull.nonEmpty(this.deputyHeroList)) {
-            return this.deputyHeroList.stream().filter(deputyHero -> deputyHero.getHeroId() == heroId).findFirst().orElse(null);
+    public Hero getCurHero(int heroType, int partnerPosIndex) {
+        switch (heroType) {
+            case HeroConstant.HERO_ROLE_TYPE_PRINCIPAL:
+                return this.principalHero;
+            case HeroConstant.HERO_ROLE_TYPE_DEPUTY:
+                if (CheckNull.isEmpty(this.deputyHeroList))
+                    return null;
+                return this.deputyHeroList.stream().filter(hero -> hero.getPartnerPosIndex() == partnerPosIndex).findFirst().orElse(null);
         }
 
         return null;
