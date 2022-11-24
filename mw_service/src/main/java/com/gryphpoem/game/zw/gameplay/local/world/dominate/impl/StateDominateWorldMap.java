@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.gameplay.local.world.dominate.impl;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
@@ -13,6 +14,7 @@ import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.quartz.jobs.DominateSideJob;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
@@ -23,6 +25,7 @@ import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
 
@@ -317,6 +320,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 initMultiNextOpenCityList(stateList, areaMap, curScheduleId, 2);
                 break;
         }
+
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     /**
@@ -330,6 +335,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
             checkWinOfOccupyTime(); // 检测柏林占领时间
         }, this.getCurBeginDate(), this.getCurEndTime(), 1);
+
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     /**
@@ -372,6 +379,8 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
 
             this.curOpenCityList.clear();
         }
+
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     /**

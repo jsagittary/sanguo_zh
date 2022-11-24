@@ -1,16 +1,17 @@
 package com.gryphpoem.game.zw.gameplay.local.world.dominate.abs;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.WorldMapPlay;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
@@ -193,20 +194,25 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
             return;
         }
 
+        boolean sync = false;
         int now = TimeHelper.getCurrentSecond();
-        sideCityList.forEach(sideCity -> {
-            if (sideCity.isOver())
-                return;
-
+        for (DominateSideCity sideCity : sideCityList) {
+            if (CheckNull.isNull(sideCity)) continue;
+            if (sideCity.isOver()) continue;
             for (int camp : Constant.Camp.camps) {
                 int campOccupyTime = sideCity.getCampOccupyTime(now, camp);
                 if (campOccupyTime >= Constant.TEN_THROUSAND) {
                     sideCity.setOver(true);
                     sideCity.setCamp(camp);
+                    if (!sync) sync = true;
                     break;
                 }
             }
-        });
+        }
+
+        if (sync) {
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
+        }
     }
 
     /**

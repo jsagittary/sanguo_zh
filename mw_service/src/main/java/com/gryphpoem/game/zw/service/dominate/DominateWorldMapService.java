@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.service.dominate;
 
+import com.gryphpoem.game.zw.core.eventbus.Subscribe;
+import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
@@ -12,12 +14,14 @@ import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.EventRegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +34,7 @@ import java.util.List;
  * createTime: 2022-11-22 21:30
  */
 @Component
-public class DominateWorldMapService {
+public class DominateWorldMapService implements EventRegisterService {
     @Autowired
     private List<IDominateWorldMapService> serviceList;
 
@@ -190,5 +194,13 @@ public class DominateWorldMapService {
         if (ser.hasSiLiMap()) {
             SiLiDominateWorldMap.getInstance().deserialize(ser.getSiLiMap());
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void syncDominateWorldMapInfo(Events.SyncDominateWorldMapChangeEvent event) {
+        IDominateWorldMapService service = getService(event.worldFunction);
+        if (CheckNull.isNull(service)) return;
+
+        service.syncDominateWorldMapInfo();
     }
 }

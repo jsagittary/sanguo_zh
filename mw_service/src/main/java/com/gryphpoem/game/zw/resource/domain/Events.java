@@ -198,4 +198,16 @@ public interface Events {
             this.player = player;
         }
     }
+
+    /**
+     * 同步雄踞一方地图信息变更
+     *
+     */
+    class SyncDominateWorldMapChangeEvent {
+        public int worldFunction;
+
+        public SyncDominateWorldMapChangeEvent(int worldFunction) {
+            this.worldFunction = worldFunction;
+        }
+    }
 }

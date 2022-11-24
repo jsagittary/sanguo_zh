@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.gameplay.local.world.dominate.impl;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.rank.Rank;
 import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.rank.RealTimeRank;
@@ -21,6 +22,7 @@ import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.quartz.jobs.DominateSideJob;
 import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticDominateWarAward;
@@ -124,6 +126,8 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
     public void onPreview() {
         this.curOpenCityList.clear();
         createMultiDominateCity(DataResource.ac.getBean(WorldDataManager.class));
+
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     /**
@@ -136,6 +140,8 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
             checkWinOfOccupyTime(); // 检测柏林占领时间
         }, this.getCurBeginDate(), this.getCurEndTime(), 1);
+
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     /**
@@ -258,6 +264,8 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
 
         // 清理数据
         close();
+
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     public void deserialize(SerializePb.SerSiLiDominateWorldMap ser) {

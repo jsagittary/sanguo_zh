@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.dominate.abs;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -11,6 +12,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.dominate.abs.TimeLimitDominate
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb8;
 import com.gryphpoem.game.zw.pb.WorldPb;
@@ -30,8 +32,10 @@ import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.FightService;
+import com.gryphpoem.game.zw.service.PlayerService;
 import com.gryphpoem.game.zw.service.WarService;
 import com.gryphpoem.game.zw.service.WorldService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.service.dominate.IDominateWorldMapService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,6 +67,8 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
     protected WarService warService;
     @Autowired
     protected MailDataManager mailDataManager;
+    @Autowired
+    protected PlayerService playerService;
 
     @Override
     public GamePb8.GetDominateWorldMapInfoRs getDominateWorldMapInfo(long roleId, GamePb8.GetDominateWorldMapInfoRq req) {
@@ -250,7 +256,14 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
 
     @Override
     public void syncDominateWorldMapInfo() {
-
+        GamePb8.SyncDominateMapInfoRs.Builder builder = GamePb8.SyncDominateMapInfoRs.newBuilder();
+        builder.setBaseFunction(getWorldMapPlay(getWorldMapFunction()).createPb(false));
+        BasePb.Base base = PbHelper.createSynBase(GamePb8.SyncDominateMapInfoRs.EXT_FIELD_NUMBER, GamePb8.SyncDominateMapInfoRs.ext, builder.build()).build();
+        Optional.ofNullable(playerDataManager.getAllOnlinePlayer().values()).ifPresent(list -> {
+            list.forEach(player -> {
+                playerService.syncMsgToPlayer(base, player);
+            });
+        });
     }
 
     /**
@@ -763,6 +776,8 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
 
         // 占领遗迹后重置连杀次数
         afterOccupation(sideCity, attackPlayer);
+        // 同步通知城池归属变更
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
     }
 
     /**
