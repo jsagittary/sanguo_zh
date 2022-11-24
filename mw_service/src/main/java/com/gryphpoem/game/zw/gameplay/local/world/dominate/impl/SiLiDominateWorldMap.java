@@ -357,7 +357,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
 
         // 若世界进程足够, 则活动开启
         int curScheduleId = DataResource.ac.getBean(WorldScheduleService.class).getCurrentSchduleId();
-        if (curScheduleId >= Constant.OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION.get(0)) {
+        if (curScheduleId >= Constant.SI_LI_DOMINATE_OPEN_SCHEDULE) {
             this.setOpen(true);
         } else {
             this.setOpen(false);
