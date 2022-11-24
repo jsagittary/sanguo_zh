@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
@@ -40,6 +41,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.GlobalBattlePass;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
@@ -746,12 +748,7 @@ public class GameGlobal {
         if (ser.hasSerGlobalRelic()) {
             globalRelic.dser(ser.getSerGlobalRelic());
         }
-        if (ser.hasStateMap()) {
-            StateDominateWorldMap.getInstance().deserialize(ser.getStateMap());
-        }
-        if (ser.hasSiLiMap()) {
-            SiLiDominateWorldMap.getInstance().deserialize(ser.getSiLiMap());
-        }
+        DataResource.ac.getBean(DominateWorldMapService.class).setSer(ser);
     }
 
     private void dserWorldTask(byte[] data) throws InvalidProtocolBufferException {

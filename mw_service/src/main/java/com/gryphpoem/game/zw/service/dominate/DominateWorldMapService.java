@@ -6,6 +6,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.pb.GamePb8;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -32,6 +33,8 @@ import java.util.List;
 public class DominateWorldMapService {
     @Autowired
     private List<IDominateWorldMapService> serviceList;
+
+    private volatile SerializePb.SerGlobalExt ser;
 
     private IDominateWorldMapService getService(int functionId) {
         if (CheckNull.isEmpty(serviceList)) return null;
@@ -119,6 +122,8 @@ public class DominateWorldMapService {
     }
 
     public void handleOnData() throws ParseException {
+        deserialize();
+        this.ser = null;
         StateDominateWorldMap.getInstance().handleOnStartup();
         SiLiDominateWorldMap.getInstance().handleOnStartup();
     }
@@ -171,6 +176,19 @@ public class DominateWorldMapService {
         if (city instanceof DominateSideCity) {
             DominateSideCity sideCity = (DominateSideCity) city;
             sideCity.getGovernorList().addFirst(new DominateSideGovernor(roleId, System.currentTimeMillis(), city.getCityId()));
+        }
+    }
+
+    public void setSer(SerializePb.SerGlobalExt ser) {
+        this.ser = ser;
+    }
+
+    public void deserialize() {
+        if (ser.hasStateMap()) {
+            StateDominateWorldMap.getInstance().deserialize(ser.getStateMap());
+        }
+        if (ser.hasSiLiMap()) {
+            SiLiDominateWorldMap.getInstance().deserialize(ser.getSiLiMap());
         }
     }
 }
