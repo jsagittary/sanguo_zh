@@ -255,9 +255,9 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
     }
 
     @Override
-    public void syncDominateWorldMapInfo() {
+    public void syncDominateWorldMapInfo(WorldPb.BaseWorldFunctionPb builder_) {
         GamePb8.SyncDominateMapInfoRs.Builder builder = GamePb8.SyncDominateMapInfoRs.newBuilder();
-        builder.setBaseFunction(getWorldMapPlay(getWorldMapFunction()).createPb(false));
+        builder.setBaseFunction(builder_);
         BasePb.Base base = PbHelper.createSynBase(GamePb8.SyncDominateMapInfoRs.EXT_FIELD_NUMBER, GamePb8.SyncDominateMapInfoRs.ext, builder.build()).build();
         Optional.ofNullable(playerDataManager.getAllOnlinePlayer().values()).ifPresent(list -> {
             list.forEach(player -> {
@@ -341,9 +341,9 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
             long roleId = player.roleId;
             int tarPos = army.getTarget();
             //活动未开启
-            StateDominateWorldMap worldMap = StateDominateWorldMap.getInstance();
-            if (worldMap.state() != WorldPb.WorldFunctionStateDefine.IN_PROGRESS_VALUE) {
-                // 州郡雄踞一方活动未开启
+            WorldMapPlay worldMapPlay = getWorldMapPlay(getWorldMapFunction());
+            if (worldMapPlay.state() != WorldPb.WorldFunctionStateDefine.IN_PROGRESS_VALUE) {
+                // 州郡/司隶雄踞一方活动未开启
                 LogUtil.error(String.format("dominate not open!!! roleId :%d, armyKeyId :%d, target pos :%d, march end time :%d",
                         roleId, army.getKeyId(), tarPos, army.getEndTime()));
                 retreatArmy(player, army, null, null, nowSec, false);
@@ -351,7 +351,6 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
             }
 
             // 城池不存在
-            WorldMapPlay worldMapPlay = getWorldMapPlay(getWorldMapFunction());
             TimeLimitDominateMap timeLimitDominateMap = (TimeLimitDominateMap) worldMapPlay;
             List<DominateSideCity> sideCityList = timeLimitDominateMap.getCurOpenCityList().get(timeLimitDominateMap.getCurTimes());
             DominateSideCity sideCity;
@@ -368,11 +367,11 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
             //没有防守部队 直接占领
             LinkedList<Turple<Long, Integer>> defendList = sideCity.getDefendList();
             if (CheckNull.isEmpty(defendList)) {
-                handAttackDominateSuccess(sideCity, player, army, nowSec);
+                handAttackDominateSuccess(sideCity, player, army, worldMapPlay, nowSec);
                 return;
             }
             //开始战斗
-            doFight(sideCity, player, army, nowSec);
+            doFight(sideCity, player, army, worldMapPlay, nowSec);
         } catch (Exception e) {
             LogUtil.error(String.format("roleId :%d, armyKeyId :%d, heroList :%s", player.roleId, army.getKeyId(), armyHeroString(army)), e);
             //行军失败!!! 返回部队
@@ -388,7 +387,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param army
      * @param nowSec
      */
-    public void doFight(DominateSideCity sideCity, Player player, Army army, int nowSec) {
+    public void doFight(DominateSideCity sideCity, Player player, Army army, WorldMapPlay worldMapPlay, int nowSec) {
         LinkedList<Turple<Long, Integer>> defendList = sideCity.getDefendList();
         int fightCount = 0;
         do {
@@ -429,7 +428,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
         //攻打遗迹战斗结束[进攻胜利, 防守胜利, 战斗异常]
         if (army.getHeroLeadCount() > 0) {
             if (defendList.isEmpty()) {
-                handAttackDominateSuccess(sideCity, player, army, nowSec);
+                handAttackDominateSuccess(sideCity, player, army, worldMapPlay, nowSec);
             } else {//达到战斗次数上限还没打下来 就返回
                 //never got here except fight error!!!
                 LogUtil.error(String.format("cityId :%d, roleId :%d army keyId :%d, survival hero list :%s. defend remain size :%d",
@@ -760,7 +759,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param army
      * @param nowSec
      */
-    protected void handAttackDominateSuccess(DominateSideCity sideCity, Player attackPlayer, Army army, int nowSec) {
+    protected void handAttackDominateSuccess(DominateSideCity sideCity, Player attackPlayer, Army army, WorldMapPlay worldMap, int nowSec) {
         //更换占领阵营，先计算原阵营的占领时间
         sideCity.changeCampHolder(attackPlayer.getCamp(), nowSec);
 
@@ -777,7 +776,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
         // 占领遗迹后重置连杀次数
         afterOccupation(sideCity, attackPlayer);
         // 同步通知城池归属变更
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), worldMap.createPb(false)));
     }
 
     /**

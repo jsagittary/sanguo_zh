@@ -201,6 +201,6 @@ public class DominateWorldMapService implements EventRegisterService {
         IDominateWorldMapService service = getService(event.worldFunction);
         if (CheckNull.isNull(service)) return;
 
-        service.syncDominateWorldMapInfo();
+        service.syncDominateWorldMapInfo(event.builder);
     }
 }

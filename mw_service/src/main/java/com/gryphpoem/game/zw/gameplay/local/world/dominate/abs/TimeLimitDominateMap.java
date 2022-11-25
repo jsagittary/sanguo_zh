@@ -214,7 +214,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         }
 
         if (sync) {
-            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
         }
     }
 

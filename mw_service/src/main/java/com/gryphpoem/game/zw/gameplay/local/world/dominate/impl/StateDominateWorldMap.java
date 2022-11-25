@@ -321,7 +321,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 break;
         }
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
     }
 
     /**
@@ -336,7 +336,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
             checkWinOfOccupyTime(); // 检测柏林占领时间
         }, this.getCurBeginDate(), this.getCurEndTime(), 1);
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
     }
 
     /**
@@ -376,11 +376,10 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                     }
                 });
             });
-
-            this.curOpenCityList.clear();
         }
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction()));
+        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        this.curOpenCityList.clear();
     }
 
     /**

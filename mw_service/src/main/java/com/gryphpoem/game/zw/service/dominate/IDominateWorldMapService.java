@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.dominate;
 
 import com.gryphpoem.game.zw.pb.GamePb8;
+import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 
@@ -68,7 +69,7 @@ public interface IDominateWorldMapService {
      * 同步雄踞一方活动信息
      *
      */
-    void syncDominateWorldMapInfo();
+    void syncDominateWorldMapInfo(WorldPb.BaseWorldFunctionPb builder);
 
     /**
      * 获取地图玩法id
