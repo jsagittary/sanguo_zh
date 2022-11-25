@@ -352,7 +352,7 @@ public class GameGlobal {
         global.setGestapo(serGestapo());
         global.setGlobalExt(serGlobalExt());
         global.setWorldSchedule(serWroldSchedule());
-
+        global.setDominateData(serDominateData());
         return global;
     }
 
@@ -497,6 +497,17 @@ public class GameGlobal {
             ser.addAllRemovedActData(this.removedActData);
         }
         ser.setSerGlobalRelic(this.globalRelic.ser());
+        return ser.build().toByteArray();
+    }
+
+    public void deDominateData(byte[] data) throws InvalidProtocolBufferException {
+        SerializePb.SerDominateData ser = SerializePb.SerDominateData.parseFrom(data);
+        DataResource.ac.getBean(DominateWorldMapService.class).setSer(ser);
+    }
+
+
+    public byte[] serDominateData() {
+        SerializePb.SerDominateData.Builder ser = SerializePb.SerDominateData.newBuilder();
         ser.setStateMap(StateDominateWorldMap.getInstance().createWorldMapPb(true));
         ser.setSiLiMap(SiLiDominateWorldMap.getInstance().createWorldMapPb(true));
         return ser.build().toByteArray();
@@ -615,6 +626,7 @@ public class GameGlobal {
         dserGestapo(global.getGestapo());
         dserGlobalExt(global.getGlobalExt());
         dserWorldSchedule(global.getWorldSchedule());
+        deDominateData(global.getDominateData());
     }
 
     private void dserTrophy(byte[] data) throws InvalidProtocolBufferException {
@@ -748,7 +760,6 @@ public class GameGlobal {
         if (ser.hasSerGlobalRelic()) {
             globalRelic.dser(ser.getSerGlobalRelic());
         }
-        DataResource.ac.getBean(DominateWorldMapService.class).setSer(ser);
     }
 
     private void dserWorldTask(byte[] data) throws InvalidProtocolBufferException {

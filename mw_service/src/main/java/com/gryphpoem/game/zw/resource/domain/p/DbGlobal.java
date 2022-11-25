@@ -21,6 +21,7 @@ public class DbGlobal implements DbSerializeId {
     private byte[] gestapo;// 盖世太保信息
     private byte[] globalExt;// 公用数据扩展
     private byte[] worldSchedule;// 世界进程信息
+    private byte[] dominateData;// 雄踞一方数据
 
     public byte[] getGestapo() {
         return gestapo;
@@ -124,6 +125,14 @@ public class DbGlobal implements DbSerializeId {
 
     public void setWorldSchedule(byte[] worldSchedule) {
         this.worldSchedule = worldSchedule;
+    }
+
+    public byte[] getDominateData() {
+        return dominateData;
+    }
+
+    public void setDominateData(byte[] dominateData) {
+        this.dominateData = dominateData;
     }
 
     @Override

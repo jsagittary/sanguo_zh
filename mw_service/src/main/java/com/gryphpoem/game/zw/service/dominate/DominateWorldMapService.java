@@ -38,7 +38,7 @@ public class DominateWorldMapService implements EventRegisterService {
     @Autowired
     private List<IDominateWorldMapService> serviceList;
 
-    private volatile SerializePb.SerGlobalExt ser;
+    private volatile SerializePb.SerDominateData ser;
 
     private IDominateWorldMapService getService(int functionId) {
         if (CheckNull.isEmpty(serviceList)) return null;
@@ -183,7 +183,7 @@ public class DominateWorldMapService implements EventRegisterService {
         }
     }
 
-    public void setSer(SerializePb.SerGlobalExt ser) {
+    public void setSer(SerializePb.SerDominateData ser) {
         this.ser = ser;
     }
 
