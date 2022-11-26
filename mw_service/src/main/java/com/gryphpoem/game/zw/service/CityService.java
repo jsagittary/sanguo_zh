@@ -107,12 +107,12 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
                     cityId, ", cityCamp:", city.getCamp(), ", playerCamp:", player.lord.getCamp());
         }
 
-        // 检查玩家是否是本城所在区域的
-        int area = player.lord.getArea();
-        if (staticCity.getArea() != area) {
-            throw new MwException(GameError.CAN_NOT_LEVY_OTHER_AREA.getCode(), "不能跨区征收, roleId:", roleId, ", cityId:",
-                    cityId, ", roleArea:", area, ", cityArea:", staticCity.getArea());
-        }
+        // 跨地区征收允许
+//        int area = player.lord.getArea();
+//        if (staticCity.getArea() != area) {
+//            throw new MwException(GameError.CAN_NOT_LEVY_OTHER_AREA.getCode(), "不能跨区征收, roleId:", roleId, ", cityId:",
+//                    cityId, ", roleArea:", area, ", cityArea:", staticCity.getArea());
+//        }
 
         // 检查城池是否处于战斗中， 此限制去掉
         // if (city.isInBattle()) {
