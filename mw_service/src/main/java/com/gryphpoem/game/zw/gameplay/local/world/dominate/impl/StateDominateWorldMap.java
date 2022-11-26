@@ -333,7 +333,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         LogUtil.common("worldFunction: ", getWorldMapFunction(), ", curTimes: ", curTimes, " begin");
         String jobName = getWorldMapFunctionName() + "_" + "begin_check_" + curTimes;
         ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
-            checkWinOfOccupyTime(); // 检测柏林占领时间
+            checkWinOfOccupyTime(); // 检测州郡雄踞一方占领情况
         }, this.getCurBeginDate(), this.getCurEndTime(), 1);
 
         EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
