@@ -53,7 +53,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
     }
 
     public void deserialize(SerializePb.SerTimeLimitDominateMap ser) {
-        this.curBeginDate = new Date(ser.getCurBeginDate());
+        this.curPreviewDate = new Date(ser.getCurPreviewDate());
         this.curEndTime = new Date(ser.getCurEndTime());
         this.curBeginDate = new Date(ser.getCurBeginDate());
         this.open = ser.getOpen();
