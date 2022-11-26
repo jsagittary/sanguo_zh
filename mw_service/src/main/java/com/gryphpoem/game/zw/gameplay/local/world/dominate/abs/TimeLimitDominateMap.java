@@ -203,7 +203,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
             if (CheckNull.isNull(sideCity)) continue;
             if (sideCity.isOver()) continue;
             for (int camp : Constant.Camp.camps) {
-                int campOccupyTime = sideCity.getCampOccupyTime(now, camp);
+                int campOccupyTime = sideCity.getCampOccupyTime(now, camp, getVictoryConfig());
                 if (campOccupyTime >= Constant.TEN_THROUSAND) {
                     sideCity.setOver(true);
                     sideCity.setCamp(camp);
@@ -215,6 +215,17 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
 
         if (sync) {
             EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        }
+    }
+
+    public List<Integer> getVictoryConfig() {
+        switch (getWorldMapFunction()) {
+            case WorldPb.WorldFunctionDefine.STATES_AND_COUNTIES_DOMINATE_VALUE:
+                return Constant.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG;
+            case WorldPb.WorldFunctionDefine.SI_LI_DOMINATE_SIDE_VALUE:
+                return Constant.SI_LI_DOMINATE_VICTORY_CONFIG;
+            default:
+                return null;
         }
     }
 

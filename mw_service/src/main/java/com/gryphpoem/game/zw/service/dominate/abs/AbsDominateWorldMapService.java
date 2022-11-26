@@ -200,7 +200,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
         DominateSideCity sideCity = (DominateSideCity) city;
         switch (state) {
             case WorldPb.WorldFunctionStateDefine.IN_PROGRESS_VALUE:
-                LinkedList<Turple<Long, Integer>> defendList =  sideCity.getDefendList();
+                LinkedList<Turple<Long, Integer>> defendList = sideCity.getDefendList();
                 if (CheckNull.nonEmpty(defendList)) {
                     builder.addAllProbArmy(defendList.stream().map(data -> getBaseArmyPb(data, sideCity)).collect(Collectors.toList()));
                 }
@@ -761,7 +761,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      */
     protected void handAttackDominateSuccess(DominateSideCity sideCity, Player attackPlayer, Army army, WorldMapPlay worldMap, int nowSec) {
         //更换占领阵营，先计算原阵营的占领时间
-        sideCity.changeCampHolder(attackPlayer.getCamp(), nowSec);
+        sideCity.changeCampHolder(attackPlayer.getCamp(), nowSec, ((TimeLimitDominateMap) worldMap).getVictoryConfig());
 
         List<Integer> posList = new ArrayList<>();
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
@@ -825,7 +825,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param nowSec
      */
     protected abstract void attackFightSuccess(FightLogic fightLogic, DominateSideCity sideCity, CommonPb.Report.Builder report, Player attackPlayer, Army army,
-                                    Player defendPlayer, int nowSec);
+                                               Player defendPlayer, int nowSec);
 
     /**
      * 进攻失败
@@ -839,7 +839,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param nowSec
      */
     protected abstract void attackFightFailure(FightLogic fightLogic, DominateSideCity sideCity, CommonPb.Report.Builder report, Player attackPlayer, Army army,
-                                    Player defendPlayer, int nowSec);
+                                               Player defendPlayer, int nowSec);
 
     /**
      * 占领城池之后

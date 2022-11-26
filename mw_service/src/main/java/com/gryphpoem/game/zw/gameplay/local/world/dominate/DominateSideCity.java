@@ -138,16 +138,15 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
         }
     }
 
-    public int getCampOccupyTime(int now, int camp) {
+    public int getCampOccupyTime(int now, int camp, List<Integer> config) {
         CampRankData campRankData = this.campRankDataMap.get(camp);
         int hisInfluence = campRankData.data;
-        if (camp == this.holdCamp) {
+        if (camp == this.holdCamp && CheckNull.nonEmpty(config)) {
             // 当前战令的时间
             int occupyTime = now - startHold;
             if (occupyTime > 0) {
                 // 本次占领时间 / 15秒 = 增加的势力值 * 1000 (这里记录万分比)
-                int addInfluence = (occupyTime / Constant.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG.get(0)) *
-                        Constant.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG.get(1);
+                int addInfluence = (occupyTime / config.get(0)) * config.get(1);
                 // 添加势力值
                 hisInfluence += addInfluence;
             }
@@ -169,16 +168,16 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
      * @param atkCamp
      * @param now
      */
-    public void changeCampHolder(int atkCamp, int now) {
+    public void changeCampHolder(int atkCamp, int now, List<Integer> config) {
         this.holdArmyTime.clear();
-        if (this.getCamp() != Constant.Camp.NPC && this.startHold > 0) {
+        if (this.getCamp() != Constant.Camp.NPC && this.startHold > 0 && CheckNull.nonEmpty(config)) {
             // 历史占领的时间
             CampRankData preCampRankData = this.campRankDataMap.get(this.getCamp());
             // 本次占领的时间
             int occupyTime = this.startHold > 0 && now > this.startHold ? now - this.startHold : 0;
             if (occupyTime > 0) {
                 // 本次占领时间 / 15秒 = 增加的势力值 * 1000 (这里记录万分比)
-                int addInfluence = (occupyTime / Constant.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG.get(0)) * Constant.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG.get(1);
+                int addInfluence = (occupyTime / config.get(0)) * config.get(1);
                 // 历史的势力值
                 preCampRankData.data += addInfluence;
             }
@@ -188,7 +187,7 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
             // 扣除前占领阵营的势力值
             int influence = preCampRankData.data;
             if (influence > 0) {
-                influence = (int) (influence * (1 - (Constant.STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG.get(2) / Constant.TEN_THROUSAND)));
+                influence = (int) (influence * (1 - (config.get(2) / Constant.TEN_THROUSAND)));
                 // 更新扣除后的势力值
                 preCampRankData.data = influence;
             }
