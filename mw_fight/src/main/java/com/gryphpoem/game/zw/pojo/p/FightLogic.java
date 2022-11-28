@@ -111,7 +111,6 @@ public class FightLogic {
         contextHolder.getActionDirection().setDef(target);
         contextHolder.setCurAtkHeroId(force.id);
         // 主将释放登场技能
-        contextHolder.getInitSkillActionPb();
         List<SimpleHeroSkill> skillList = force.skillList.stream().filter(
                 skill -> Objects.nonNull(skill) && skill.isOnStageSkill()).collect(Collectors.toList());
         if (!CheckNull.isEmpty(skillList)) {
@@ -254,7 +253,6 @@ public class FightLogic {
                 contextHolder.getBattleLogic().releaseSingleBuff(buffList, contextHolder, FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND);
 
                 // 释放技能
-                contextHolder.getInitSkillActionPb();
                 contextHolder.getBattleLogic().releaseSkill(atk, def, fe, fe.getHeroId(), contextHolder);
 
                 // 清除没有作用次数的buff

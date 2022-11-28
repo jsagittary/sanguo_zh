@@ -14,6 +14,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,7 +59,7 @@ public class AddBuffEffectImpl extends AbsFightEffect {
 
         StaticBuff staticBuff = StaticFightManager.getStaticBuff(effectConfig_.get(3));
         if (CheckNull.isNull(staticBuff)) {
-            LogUtil.error("add buff, config: ", effectConfig, ", staticBuff not found");
+            LogUtil.error("add buff, config: ", CheckNull.isEmpty(effectConfig_) ? "" : Arrays.toString(effectConfig_.toArray()), ", staticBuff not found");
             return;
         }
         if (!RandomHelper.isHitRangeIn10000(effectConfig_.get(4))) {

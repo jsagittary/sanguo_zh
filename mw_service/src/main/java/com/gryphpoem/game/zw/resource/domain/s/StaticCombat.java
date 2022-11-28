@@ -31,7 +31,7 @@ public class StaticCombat {
 
     /**
      * 获取城池NPC总兵力
-     * 
+     *
      * @return
      */
     public int getTotalArm() {

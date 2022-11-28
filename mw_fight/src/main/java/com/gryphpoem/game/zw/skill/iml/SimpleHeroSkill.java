@@ -156,6 +156,7 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public void releaseSkill(FightContextHolder contextHolder, Object... params) {
         // 初始化技能pb
+        contextHolder.getInitSkillActionPb();
         contextHolder.getActionDirection().setSkill(this);
         contextHolder.getCurSkillActionPb().setSkillId(this.s_skill.getSkillId());
         super.releaseSkill(contextHolder, params);

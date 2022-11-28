@@ -1327,7 +1327,7 @@ public class HeroService implements GmCmdService {
             for (int i = 1; i < playerFormation.getHeroBattle().length; i++) {
                 if (playerFormation.getHeroBattle()[i] != null &&
                         playerFormation.getHeroBattle()[i].getPrincipalHero() != null) {
-                    builder.addCombatPos(i);
+                    builder.addBattlePos(i);
                 }
             }
         } else {
