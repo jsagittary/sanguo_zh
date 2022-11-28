@@ -1,11 +1,13 @@
 package com.gryphpoem.game.zw.resource.pojo.global;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +72,7 @@ public class ScheduleBoss {
         List<CommonPb.Force> bossNpcList = boss.getBossNpcList();
         if (!CheckNull.isEmpty(bossNpcList)) {
             for (CommonPb.Force force : bossNpcList) {
-                this.npc.add(new NpcForce(force.getNpcId(), force.getHp(), force.getCurLine()));
+                this.npc.add(new NpcForce(force.getNpcId(), force.getHp(), force.getCurLine(), force.getDeputyNpcList()));
             }
         }
     }
@@ -82,16 +84,16 @@ public class ScheduleBoss {
      * @param npcId
      * @return
      */
-    public static ScheduleBoss createBoss(int scheduleId, List<Integer> npcId) {
+    public static ScheduleBoss createBoss(int scheduleId, List<List<Integer>> npcId) {
         ScheduleBoss scheduleBoss = new ScheduleBoss();
         scheduleBoss.scheduleId = scheduleId;
         scheduleBoss.npc = new ArrayList<>();
         if (!CheckNull.isEmpty(npcId)) {
-            for (Integer id : npcId) {
-                StaticNpc staticNpc = StaticNpcDataMgr.getNpcMap().get(id);
-                if (staticNpc != null) {
-                    scheduleBoss.npc.add(new NpcForce(id, staticNpc.getTotalArm(), 0));
-                }
+            FightService fightService = DataResource.ac.getBean(FightService.class);
+            for (List<Integer> id : npcId) {
+                NpcForce npcForce = fightService.createCacheNpcForce(id);
+                if (CheckNull.isNull(npcForce)) continue;
+                scheduleBoss.npc.add(npcForce);
             }
         }
         return scheduleBoss;

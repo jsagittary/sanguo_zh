@@ -200,7 +200,9 @@ public class AirshipArmy extends BaseArmy {
                 airShip.getNpc().clear();
                 for (Force force : defender.forces) {
                     if (force.alive()) {
-                        airShip.getNpc().add(new NpcForce(force.id, force.hp, force.curLine));
+                        List<Integer> deputyList = Optional.ofNullable(force.assistantHeroList).map(list ->
+                                list.stream().map(ass -> ass.getHeroId()).collect(Collectors.toList())).orElse(null);
+                        airShip.getNpc().add(new NpcForce(force.id, force.hp, force.curLine, deputyList));
                     }
                 }
             }

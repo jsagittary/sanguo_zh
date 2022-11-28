@@ -48,7 +48,7 @@ public class AirshipWorldData implements WorldEntity {
         this.keyId = ser.getKeyId();
         this.pos = ser.getPos();
         for (CommonPb.Force f : ser.getNpcList()) {
-            npc.add(new NpcForce(f.getNpcId(), f.getHp(), f.getCurLine()));
+            npc.add(new NpcForce(f.getNpcId(), f.getHp(), f.getCurLine(), f.getDeputyNpcList()));
         }
         this.belongRoleId = ser.getBelongRoleId();
         this.status = ser.getStatus();

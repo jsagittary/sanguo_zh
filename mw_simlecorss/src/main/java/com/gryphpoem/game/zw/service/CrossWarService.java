@@ -359,7 +359,9 @@ public class CrossWarService implements ApplicationContextAware {
             defNpcForce.clear();
             for (Force f : defender.forces) {
                 if (f.alive()) {
-                    defNpcForce.add(new NpcForce(f.id, f.hp, f.curLine));
+                    List<Integer> deputyList = Optional.ofNullable(f.assistantHeroList).map(list ->
+                            list.stream().map(ass -> ass.getHeroId()).collect(Collectors.toList())).orElse(null);
+                    defNpcForce.add(new NpcForce(f.id, f.hp, f.curLine, deputyList));
                 }
             }
         }

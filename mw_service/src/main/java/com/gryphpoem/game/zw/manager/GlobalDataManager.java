@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.manager;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
@@ -22,6 +23,7 @@ import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.random.MineLvRandom;
 import com.gryphpoem.game.zw.server.SaveGlobalServer;
+import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.RebelService;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -287,6 +289,7 @@ public class GlobalDataManager {
             LogUtil.error("开始生成城池, count:", cityList.size());
             StaticNpc npc;
             List<CityHero> heroList;
+            FightService fightService = DataResource.ac.getBean(FightService.class);
             for (StaticCity staticCity : cityList) {
                 city = new City();
                 city.setCityId(staticCity.getCityId());
@@ -299,9 +302,10 @@ public class GlobalDataManager {
                 }
 
                 heroList = new ArrayList<>();
-                for (Integer npcId : staticCity.getForm()) {
-                    npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-                    heroList.add(new CityHero(npcId, npc.getTotalArm()));
+                for (List<Integer> npcIdList : staticCity.getForm()) {
+                    CityHero cityHero = fightService.createCityHero(npcIdList);
+                    if (CheckNull.isNull(cityHero)) continue;
+                    heroList.add(cityHero);
                 }
                 gameGlobal.getCityMap().put(city.getCityId(), city);
             }

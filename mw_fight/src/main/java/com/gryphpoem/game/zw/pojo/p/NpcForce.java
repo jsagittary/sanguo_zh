@@ -1,6 +1,9 @@
 package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.push.util.CheckNull;
+
+import java.util.List;
 
 /**
  * @author QiuKun
@@ -12,15 +15,17 @@ public class NpcForce {
     private int npcId;// npc将领id
     private int hp;// 当前血量，兵力
     private int curLine;// 当前战斗的是第几排兵，从0开始
+    private List<Integer> deputyNpcIdList;// 副将npcId列表
 
-    public NpcForce(int npcId, int hp, int curLine) {
+    public NpcForce(int npcId, int hp, int curLine, List<Integer> deputyNpcIdList) {
         this.npcId = npcId;
         this.hp = hp;
         this.curLine = curLine;
+        this.deputyNpcIdList = deputyNpcIdList;
     }
 
-    public NpcForce(int npcId, int hp) {
-        this(npcId, hp, 0);
+    public NpcForce(int npcId, int hp, List<Integer> deputyNpcIdList) {
+        this(npcId, hp, 0, deputyNpcIdList);
     }
 
     public int getNpcId() {
@@ -56,6 +61,8 @@ public class NpcForce {
         builder.setNpcId(npcId);
         builder.setCurLine(curLine);
         builder.setHp(hp);
+        if (!CheckNull.isEmpty(this.deputyNpcIdList))
+            builder.addAllDeputyNpc(this.deputyNpcIdList);
         return builder.build();
     }
 

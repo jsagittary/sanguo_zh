@@ -13,7 +13,7 @@ public class StaticAirship {
     private int lv; // 等级
     private int liveTime; // 存活时间 秒值
     private int rebirthInterval; // 复活间隔 秒值
-    private List<Integer> form; // 兵力阵型，格式：[npcId,npcId...]
+    private List<List<Integer>> form; // 兵力阵型，格式：[npcId,npcId...]
     private int participate; // 可参与人数
     /**
      * 固定掉落奖励
@@ -60,11 +60,11 @@ public class StaticAirship {
         this.rebirthInterval = rebirthInterval;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

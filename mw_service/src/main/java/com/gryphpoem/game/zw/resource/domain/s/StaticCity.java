@@ -50,45 +50,45 @@ public class StaticCity {
      */
     private int produceTime;
     /**
-     * 阵营归属是非npc时 城池初始兵力阵型，格式：[npcId,npcId...]
+     * 阵营归属是非npc时 城池初始兵力阵型，格式：[[npcId,副将1npcId,副将2npcId],...]
      */
-    private List<Integer> form;
+    private List<List<Integer>> form;
     /**
-     * 阵营归属是npc城时 首杀初始兵力阵型，格式：[npcId,npcId...]
+     * 阵营归属是npc城时 首杀初始兵力阵型，格式：[[npcId,副将1npcId,副将2npcId],...]
      */
-    private List<Integer> firstForm;
+    private List<List<Integer>> firstForm;
     /**
      * 阵营归属是非npc时 更具服务器id来读取此字段
      */
-    private List<Integer> combineForm;
+    private List<List<Integer>> combineForm;
     /**
      * 阵营归属是npc城时 更具服务器id来读取此字段
      */
-    private List<Integer> combineFirstForm;
+    private List<List<Integer>> combineFirstForm;
     /**
      * 阵营归属是非npc时 世界进程11阶段读取此字段
      */
-    private List<Integer> form_11;
+    private List<List<Integer>> form_11;
     /**
      * 阵营归属是npc时 世界进程11阶段读取此字段
      */
-    private List<Integer> form_11first;
+    private List<List<Integer>> form_11first;
     /**
      * 阵营归属是非npc时 世界进程12阶段读取此字段
      */
-    private List<Integer> form_12;
+    private List<List<Integer>> form_12;
     /**
      * 阵营归属是npc时 世界进程12阶段读取此字段
      */
-    private List<Integer> form_12first;
+    private List<List<Integer>> form_12first;
     /**
      * 阵营归属是非npc时 世界进程13阶段读取此字段
      */
-    private List<Integer> form_13;
+    private List<List<Integer>> form_13;
     /**
      * 阵营归属是npc时 世界进程13阶段读取此字段
      */
-    private List<Integer> form_13first;
+    private List<List<Integer>> form_13first;
     /**
      * 城池占领后的产出列表，从列表中随机，格式：[[type,id,count,weight]]
      */
@@ -221,19 +221,19 @@ public class StaticCity {
         this.produceTime = produceTime;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 
-    public List<Integer> getFirstForm() {
+    public List<List<Integer>> getFirstForm() {
         return firstForm;
     }
 
-    public void setFirstForm(List<Integer> firstForm) {
+    public void setFirstForm(List<List<Integer>> firstForm) {
         this.firstForm = firstForm;
     }
 
@@ -404,11 +404,11 @@ public class StaticCity {
      * @param npcCity 是否是npc城池
      * @return 阵营配置
      */
-    public List<Integer> getFormList(boolean npcCity) {
+    public List<List<Integer>> getFormList(boolean npcCity) {
         WorldScheduleService scheduleService = DataResource.ac.getBean(WorldScheduleService.class);
         // 当前的世界进程阶段
         int curSchId = scheduleService.getCurrentSchduleId();
-        List<Integer> formList = null;
+        List<List<Integer>> formList = null;
         if (curSchId > ScheduleConstant.SCHEDULE_BERLIN_ID) {
             // 大于第10进程阶段
             switch (curSchId) {
@@ -453,8 +453,10 @@ public class StaticCity {
     public int getTotalArm() {
         if (totalArm < 0) {
             totalArm = 0;
-            for (Integer npcId : form) {
-                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+            for (List<Integer> npcIdList : form) {
+                if (CheckNull.isEmpty(npcIdList)) continue;
+                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+                if (CheckNull.isNull(npc)) continue;
                 totalArm += npc.getTotalArm();
             }
         }
@@ -473,19 +475,19 @@ public class StaticCity {
         return xy;
     }
 
-    public List<Integer> getCombineForm() {
+    public List<List<Integer>> getCombineForm() {
         return combineForm;
     }
 
-    public void setCombineForm(List<Integer> combineForm) {
+    public void setCombineForm(List<List<Integer>> combineForm) {
         this.combineForm = combineForm;
     }
 
-    public List<Integer> getCombineFirstForm() {
+    public List<List<Integer>> getCombineFirstForm() {
         return combineFirstForm;
     }
 
-    public void setCombineFirstForm(List<Integer> combineFirstForm) {
+    public void setCombineFirstForm(List<List<Integer>> combineFirstForm) {
         this.combineFirstForm = combineFirstForm;
     }
 
@@ -521,35 +523,35 @@ public class StaticCity {
         this.ownCellId = ownCellId;
     }
 
-    public List<Integer> getForm_11() {
+    public List<List<Integer>> getForm_11() {
         return form_11;
     }
 
-    public void setForm_11(List<Integer> form_11) {
+    public void setForm_11(List<List<Integer>> form_11) {
         this.form_11 = form_11;
     }
 
-    public List<Integer> getForm_11first() {
+    public List<List<Integer>> getForm_11first() {
         return form_11first;
     }
 
-    public void setForm_11first(List<Integer> form_11first) {
+    public void setForm_11first(List<List<Integer>> form_11first) {
         this.form_11first = form_11first;
     }
 
-    public List<Integer> getForm_12() {
+    public List<List<Integer>> getForm_12() {
         return form_12;
     }
 
-    public void setForm_12(List<Integer> form_12) {
+    public void setForm_12(List<List<Integer>> form_12) {
         this.form_12 = form_12;
     }
 
-    public List<Integer> getForm_12first() {
+    public List<List<Integer>> getForm_12first() {
         return form_12first;
     }
 
-    public void setForm_12first(List<Integer> form_12first) {
+    public void setForm_12first(List<List<Integer>> form_12first) {
         this.form_12first = form_12first;
     }
 
@@ -607,19 +609,19 @@ public class StaticCity {
         this.outAward = outAward;
     }
 
-    public List<Integer> getForm_13() {
+    public List<List<Integer>> getForm_13() {
         return form_13;
     }
 
-    public void setForm_13(List<Integer> form_13) {
+    public void setForm_13(List<List<Integer>> form_13) {
         this.form_13 = form_13;
     }
 
-    public List<Integer> getForm_13first() {
+    public List<List<Integer>> getForm_13first() {
         return form_13first;
     }
 
-    public void setForm_13first(List<Integer> form_13first) {
+    public void setForm_13first(List<List<Integer>> form_13first) {
         this.form_13first = form_13first;
     }
 }

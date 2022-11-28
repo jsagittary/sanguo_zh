@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.resource.domain.s;
 
 import com.gryphpoem.cross.constants.FightCommonConstant;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,6 +20,22 @@ public class StaticNpc {
     private int armType;// 兵种类型
     private int armLv;// 兵种品质、等级
     private Map<Integer, Integer> attr;// 属性，格式：[[attrId,value]...]
+    /**
+     * 登场技能
+     */
+    private List<Integer> onStageSkills;
+    /**
+     * 主动技能
+     */
+    private List<Integer> activeSkills;
+    /**
+     * 每回合充能属性
+     */
+    private List<List<Integer>> chargeEveryRound;
+    /**
+     * 技能等级
+     */
+    private int skillLv;
 
     private int totalArm = -1;
 
@@ -89,10 +106,45 @@ public class StaticNpc {
     public int getTotalArm() {
         if (totalArm < 0) {
             Integer count = getAttr().get(FightCommonConstant.AttrId.LEAD);
-//			totalArm = null == count ? 0 : count * getLine();
             totalArm = null == count ? 0 : count;
         }
         return totalArm;
+    }
+
+    public int getSpeed() {
+        return getAttr().getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
+    }
+
+    public List<Integer> getOnStageSkills() {
+        return onStageSkills;
+    }
+
+    public void setOnStageSkills(List<Integer> onStageSkills) {
+        this.onStageSkills = onStageSkills;
+    }
+
+    public List<Integer> getActiveSkills() {
+        return activeSkills;
+    }
+
+    public void setActiveSkills(List<Integer> activeSkills) {
+        this.activeSkills = activeSkills;
+    }
+
+    public List<List<Integer>> getChargeEveryRound() {
+        return chargeEveryRound;
+    }
+
+    public void setChargeEveryRound(List<List<Integer>> chargeEveryRound) {
+        this.chargeEveryRound = chargeEveryRound;
+    }
+
+    public int getSkillLv() {
+        return skillLv;
+    }
+
+    public void setSkillLv(int skillLv) {
+        this.skillLv = skillLv;
     }
 
     @Override

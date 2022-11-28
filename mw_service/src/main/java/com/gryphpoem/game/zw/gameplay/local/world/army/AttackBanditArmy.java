@@ -88,10 +88,11 @@ public class AttackBanditArmy extends BaseArmy {
         }
 
         StaticNpc npc;
-        for (Integer npcId : staticBandit.getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : staticBandit.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (null == npc) {
-                LogUtil.error("NPCid未配置, npcId:", npcId);
+                LogUtil.error("NPCid未配置, npcId:", npcIdList.get(0));
                 // 部队返回
                 retreatArmy(mapMarchArmy, marchTime, marchTime);
                 return;

@@ -2813,8 +2813,10 @@ public class WorldService {
         StaticCityDev cityDev = StaticWorldDataMgr.getCityDev(devLv);
         int armTotal = 0;
         StaticNpc npc;
-        for (Integer npcId : cityDev.getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : cityDev.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+            if (CheckNull.isNull(npc)) continue;
             armTotal += npc.getTotalArm();
         }
 

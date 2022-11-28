@@ -22,7 +22,7 @@ public class StaticMultCombat {
     private List<List<Integer>> passRand;// 通关装备
 
     private List<List<Integer>> teamAward; // 合作奖励
-    private List<Integer> form;// 阵型
+    private List<List<Integer>> form;// 阵型
 
     public int getCombatId() {
         return combatId;
@@ -80,11 +80,11 @@ public class StaticMultCombat {
         this.teamAward = teamAward;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

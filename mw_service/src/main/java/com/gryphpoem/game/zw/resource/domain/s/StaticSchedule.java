@@ -41,9 +41,9 @@ public class StaticSchedule {
     private int rankArea;
 
     /**
-     * boss的阵型 格式[npcId,npcId]
+     * boss的阵型 格式[[npcId,副将1npcId,副将2npcId],...]
      */
-    private List<Integer> bossForm;
+    private List<List<Integer>> bossForm;
 
     /**
      * 可攻打城池type 格式: [cityType]
@@ -116,11 +116,11 @@ public class StaticSchedule {
         this.attckCity = attckCity;
     }
 
-    public List<Integer> getBossForm() {
+    public List<List<Integer>> getBossForm() {
         return bossForm;
     }
 
-    public void setBossForm(List<Integer> bossForm) {
+    public void setBossForm(List<List<Integer>> bossForm) {
         this.bossForm = bossForm;
     }
 

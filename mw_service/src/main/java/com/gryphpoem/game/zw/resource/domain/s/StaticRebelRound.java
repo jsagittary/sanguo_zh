@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.resource.domain.s;
 
 import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class StaticRebelRound {
     private int credit;// 得到的叛乱积分
     private int interval;// 间隔时间(秒值)
     private List<List<Integer>> award;// 给予的资源奖励 格式[[type,id,count]]
-    private List<Integer> from; // 阵型 格式[npcId]
+    private List<List<Integer>> from; // 阵型 格式[npcId]
 
     public int getId() {
         return id;
@@ -93,11 +94,11 @@ public class StaticRebelRound {
         this.award = award;
     }
 
-    public List<Integer> getFrom() {
+    public List<List<Integer>> getFrom() {
         return from;
     }
 
-    public void setFrom(List<Integer> from) {
+    public void setFrom(List<List<Integer>> from) {
         this.from = from;
     }
 
@@ -108,8 +109,9 @@ public class StaticRebelRound {
      */
     public int getArmCnt() {
         int cnt = 0;
-        for (int id : from) {
-            StaticNpc sNpc = StaticNpcDataMgr.getNpcMap().get(id);
+        for (List<Integer> npcIdList : from) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            StaticNpc sNpc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (sNpc != null) {
                 Integer arm = sNpc.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (arm != null) {

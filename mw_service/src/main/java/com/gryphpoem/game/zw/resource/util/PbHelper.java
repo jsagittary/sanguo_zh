@@ -417,7 +417,7 @@ public class PbHelper {
         builder.setExtraReward(city.getExtraReward());
         if (city.getFormList() != null) {
             for (CityHero hero : city.getFormList()) {
-                builder.addForm(createTwoIntPb(hero.getNpcId(), hero.getCurArm()));
+                builder.addForm(hero.createPartnerHeroIdPb());
             }
         }
         if (!CheckNull.isNullTrim(city.getName())) {

@@ -1354,9 +1354,9 @@ public class WarService {
         } else {
             formList = new ArrayList<>();
         }
-        for (Integer npcId : cityDev.getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        for (List<Integer> npcIdList : cityDev.getForm()) {
+            hero = fightService.createCityHero(npcIdList);
+            if (CheckNull.isNull(hero)) continue;
             formList.add(hero);
         }
         cityDev.setFormList(formList);

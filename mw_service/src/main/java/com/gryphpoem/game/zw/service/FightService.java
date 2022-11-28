@@ -889,14 +889,15 @@ public class FightService {
             LogUtil.error("流寇id未配置, banditId:", banditId);
             return null;
         }
-        List<Integer> npcIdList = staticBandit.getForm();
-        if (null == npcIdList) {
+        List<List<Integer>> npcIdListList = staticBandit.getForm();
+        if (null == npcIdListList) {
             return null;
         }
 
         Fighter fighter = createFighter();
-        for (Integer npcId : npcIdList) {
-            fighter.addForce(createNpcForce(npcId));
+        for (List<Integer> npcIdList : npcIdListList) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            fighter.addForce(createNpcForce(npcIdList));
         }
         fighter.roleType = Constant.Role.BANDIT;
         return fighter;
@@ -908,12 +909,12 @@ public class FightService {
      * @param npcIdList
      * @return
      */
-    public Fighter createNpcFighter(List<Integer> npcIdList) {
+    public Fighter createNpcFighter(List<List<Integer>> npcIdList) {
         if (null == npcIdList) {
             return null;
         }
         Fighter fighter = createFighter();
-        for (Integer npcId : npcIdList) {
+        for (List<Integer> npcId : npcIdList) {
             fighter.addForce(createNpcForce(npcId));
         }
         fighter.roleType = Constant.Role.BANDIT;
@@ -923,13 +924,68 @@ public class FightService {
     /**
      * 创建Force对象
      *
-     * @param npcId
+     * @param npcIdList
      * @return
      */
-    public Force createNpcForce(int npcId) {
-        StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-        AttrData attrData = new AttrData(npc.getAttr());
-        return new Force(attrData, npc.getArmType(), npc.getLine(), npcId);
+    public Force createNpcForce(List<Integer> npcIdList) {
+        if (CheckNull.isEmpty(npcIdList)) return null;
+
+        StaticNpc npc;
+        AttrData attrData;
+        Force force = null;
+        for (int i = 0; i < npcIdList.size(); i++) {
+            Integer npcId = npcIdList.get(0);
+            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+            if (CheckNull.isNull(npc)) continue;
+            attrData = new AttrData(npc.getAttr());
+            List<SimpleHeroSkill> skillList = createFightSkillList(npc.getActiveSkills(),
+                    npc.getOnStageSkills(), npc.getSkillLv());
+            if (i == 0) {
+                force = new Force(attrData, npc.getArmType(), npc.getLine(), npcId);
+                if (CheckNull.nonEmpty(skillList))
+                    force.skillList = skillList;
+            } else {
+                FightAssistantHero assistantHero = new FightAssistantHero(force, npcId, force.attrData.copy(), skillList);
+                force.assistantHeroList.add(assistantHero);
+                assistantHero.getAttrData().speed = npc.getSpeed();
+            }
+        }
+
+        return force;
+    }
+
+    /**
+     * 创建技能列表
+     *
+     * @param activeSkills
+     * @param onStageSkills
+     * @param skillLv
+     * @return
+     */
+    public List<SimpleHeroSkill> createFightSkillList(List<Integer> activeSkills, List<Integer> onStageSkills, int skillLv) {
+        List<SimpleHeroSkill> skillList = null;
+        if (CheckNull.nonEmpty(activeSkills)) {
+            skillList = new ArrayList<>();
+            for (Integer skillId : activeSkills) {
+                StaticHeroSkill staticConfig = StaticFightManager.getHeroSkill(skillId, skillLv);
+                if (Objects.nonNull(staticConfig)) {
+                    SimpleHeroSkill skill = new SimpleHeroSkill(staticConfig, false);
+                    skillList.add(skill);
+                }
+            }
+        }
+        if (CheckNull.nonEmpty(onStageSkills)) {
+            if (CheckNull.isNull(skillList)) skillList = new ArrayList<>();
+            for (Integer skillId : onStageSkills) {
+                StaticHeroSkill staticConfig = StaticFightManager.getHeroSkill(skillId, skillLv);
+                if (Objects.nonNull(staticConfig)) {
+                    SimpleHeroSkill skill = new SimpleHeroSkill(staticConfig, true);
+                    skillList.add(skill);
+                }
+            }
+        }
+
+        return skillList;
     }
 
     /**
@@ -1634,5 +1690,22 @@ public class FightService {
         Player player = playerDataManager.getPlayer(force.ownerId);
         warService.addExploit(player, exploit, changeInfo, awardFrom);
         return PbHelper.createRptHero(force.roleType, force.killed, exploit, force, player.lord.getNick(), player.lord.getLevel(), 0, force.totalLost);
+    }
+
+    public NpcForce createCacheNpcForce(List<Integer> npcIdList) {
+        if (CheckNull.isEmpty(npcIdList)) return null;
+        StaticNpc staticNpc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+        if (staticNpc != null) {
+            int hp = staticNpc.getAttr().getOrDefault(FightCommonConstant.AttrId.LEAD, 1);
+            return new NpcForce(staticNpc.getNpcId(), hp, 0, npcIdList.size() > 1 ? npcIdList.subList(1, npcIdList.size()) : null);
+        }
+        return null;
+    }
+
+    public CityHero createCityHero(List<Integer> npcIdList) {
+        if (CheckNull.isEmpty(npcIdList)) return null;
+        StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+        if (CheckNull.isNull(npc)) return null;
+        return new CityHero(npcIdList.get(0), npc.getTotalArm(), npcIdList.size() > 1 ? npcIdList.subList(1, npcIdList.size()) : null);
     }
 }

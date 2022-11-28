@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.cross.constants.FightCommonConstant;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -527,16 +528,14 @@ public class AirshipService {
      * @param aswd
      * @param form
      */
-    public static void addNpcForce(AirshipWorldData aswd, List<Integer> form) {
+    public static void addNpcForce(AirshipWorldData aswd, List<List<Integer>> form) {
         if (aswd != null && !CheckNull.isEmpty(form)) {
             aswd.getNpc().clear(); // 先清除原来的npc
-            for (Integer npcId : form) {
-                StaticNpc staticNpc = StaticNpcDataMgr.getNpcMap().get(npcId);
-                if (staticNpc != null) {
-                    int hp = staticNpc.getAttr().getOrDefault(FightCommonConstant.AttrId.LEAD, 1);
-                    NpcForce npcForce = new NpcForce(staticNpc.getNpcId(), hp, 0);
-                    aswd.getNpc().add(npcForce);
-                }
+            FightService fightService = DataResource.ac.getBean(FightService.class);
+            for (List<Integer> npcIdList : form) {
+                NpcForce npcForce = fightService.createCacheNpcForce(npcIdList);
+                if (CheckNull.isNull(npcForce)) continue;
+                aswd.getNpc().add(npcForce);
             }
         }
     }

@@ -432,10 +432,11 @@ public class MarchService {
         }
 
         StaticNpc npc;
-        for (Integer npcId : staticBandit.getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : staticBandit.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (null == npc) {
-                LogUtil.error("NPCid未配置, npcId:", npcId);
+                LogUtil.error("NPCid未配置, npcId:", npcIdList.get(0));
 
                 // 部队返回
                 worldService.retreatArmy(player, army, now);
@@ -1251,10 +1252,11 @@ public class MarchService {
         int banditId = staticCabinetPlan.getBanditId();
         StaticBandit staticBandit = StaticBanditDataMgr.getBanditMap().get(banditId);
 
-        for (Integer npcId : staticBandit.getForm()) {
-            StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : staticBandit.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (null == npc) {
-                LogUtil.error("NPCid未配置, npcId:", npcId);
+                LogUtil.error("NPCid未配置, npcId:", npcIdList.get(0));
                 // 部队返回
                 worldService.retreatArmy(player, army, now);
                 return;
@@ -1666,7 +1668,9 @@ public class MarchService {
                 airShip.getNpc().clear();
                 for (Force force : defender.forces) {
                     if (force.alive()) {
-                        airShip.getNpc().add(new NpcForce(force.id, force.hp, force.curLine));
+                        List<Integer> deputyList = Optional.ofNullable(force.assistantHeroList).map(list ->
+                                list.stream().map(ass -> ass.getHeroId()).collect(Collectors.toList())).orElse(null);
+                        airShip.getNpc().add(new NpcForce(force.id, force.hp, force.curLine, deputyList));
                     }
                 }
             }

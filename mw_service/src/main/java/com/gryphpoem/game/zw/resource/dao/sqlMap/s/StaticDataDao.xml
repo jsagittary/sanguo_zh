@@ -97,21 +97,21 @@
         <result column="posList" property="posList"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_first" property="firstForm"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_combine" property="combineForm"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_combinefirst" property="combineFirstForm"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_11" property="form_11"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_11first" property="form_11first"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_12" property="form_12"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_12first" property="form_12first"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="dropList" property="dropList"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="levy" property="levy"
@@ -157,7 +157,7 @@
     <resultMap id="banditMap" type="StaticBandit">
         <id column="lv" property="lv"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="awardBase" property="awardBase"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="awardDrawing" property="awardDrawing"
@@ -520,9 +520,9 @@
     <resultMap id="combatMap" type="StaticCombat">
         <id column="combatId" property="combatId"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
-        <result column="firstform" property="firstform"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
+        <result column="firstform" property="firstForm"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="randomAward" property="randomAward"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="winAward" property="winAward"
@@ -542,9 +542,9 @@
     <resultMap id="stoneCombatMap" type="StaticStoneCombat">
         <id column="combatId" property="combatId"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
-        <result column="firstform" property="firstform"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
+        <result column="firstform" property="firstForm"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="winAward1" property="winAward1"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="winAward2" property="winAward2"
@@ -1192,7 +1192,7 @@
     <resultMap id="staticGestapo" type="StaticGestapoPlan">
         <id column="gestapoId" property="gestapoId"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="awardProp" property="awardProp"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="costProp" property="costProp"
@@ -1435,9 +1435,9 @@
     <resultMap id="staticBerlinWarMap" type="StaticBerlinWar">
         <id column="typeId" property="typeId"/>
         <result column="firstForm" property="firstForm"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="npcForm" property="npcForm"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="posList" property="posList"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="schedule" property="schedule"
@@ -1761,7 +1761,7 @@
         <result column="award" property="award"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="from" property="from"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
     <select id="selectRebelRoundMap" resultMap="staticRebelRoundMap">
         SELECT * FROM
@@ -1833,7 +1833,7 @@
         <result column="winAward" property="winAward"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
 
     <select id="selectPitchCombatMap" resultMap="staticPitchCombatMap">
@@ -1942,7 +1942,7 @@
         <result column="teamAward" property="teamAward"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
     <select id="selectMultCombatMap" resultMap="staticMultCombatMap">
         SELECT * FROM
@@ -1979,7 +1979,7 @@
     <resultMap id="staticAirshipMap" type="StaticAirship">
         <id column="id" property="id"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="awardRegular" property="awardRegular"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="awardExtra" property="awardExtra"
@@ -2043,7 +2043,7 @@
         <result column="goal" property="goal"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="bossForm" property="bossForm"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="attckCity" property="attckCity"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="bossDrop" property="bossDrop"
@@ -2616,7 +2616,7 @@
         <result column="neighbor" property="neighbor"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
     <select id="selectStaticCrossFortMap" resultMap="staticCrossFortMap">
         SELECT * FROM s_cross_fort

@@ -295,8 +295,8 @@ public class CombatService {
         Combat combat = player.combats.get(combatId);
         boolean isFristDo = combat == null;
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
-        Fighter defender = fightService.createNpcFighter(isFristDo && !CheckNull.isEmpty(staticCombat.getFirstform())
-                ? staticCombat.getFirstform() : staticCombat.getForm());
+        Fighter defender = fightService.createNpcFighter(isFristDo && !CheckNull.isEmpty(staticCombat.getFirstForm())
+                ? staticCombat.getFirstForm() : staticCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
         if (Constant.DONT_DODGE_CRIT_COMBATID.contains(combatId)) {
             fightLogic.setCareCrit(false);

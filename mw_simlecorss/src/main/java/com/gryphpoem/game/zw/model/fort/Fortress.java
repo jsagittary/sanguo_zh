@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.model.fort;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticCrossDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -9,6 +10,7 @@ import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossFort;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -53,11 +55,11 @@ public class Fortress {
         fortress.type = cfg.getType();
         fortress.camp = cfg.getCamp();
         if (!CheckNull.isEmpty(cfg.getForm())) {
-            for (Integer id : cfg.getForm()) {
-                StaticNpc staticNpc = StaticNpcDataMgr.getNpcMap().get(id);
-                if (staticNpc != null) {
-                    fortress.npcQueue.add(new NpcForce(id, staticNpc.getTotalArm()));
-                }
+            FightService fightService = DataResource.ac.getBean(FightService.class);
+            for (List<Integer> id : cfg.getForm()) {
+                NpcForce npcForce = fightService.createCacheNpcForce(id);
+                if (CheckNull.isNull(npcForce)) continue;
+                fortress.npcQueue.add(npcForce);
             }
         }
         fortress.reCalcCnt();
@@ -71,7 +73,7 @@ public class Fortress {
         fortress.camp = pb.getCamp();
         if (!CheckNull.isEmpty(pb.getNpcForceList())) {
             for (CommonPb.Force fPb : pb.getNpcForceList()) {
-                fortress.npcQueue.add(new NpcForce(fPb.getNpcId(), fPb.getHp()));
+                fortress.npcQueue.add(new NpcForce(fPb.getNpcId(), fPb.getHp(), fPb.getDeputyNpcList()));
             }
         }
         fortress.reCalcCnt();

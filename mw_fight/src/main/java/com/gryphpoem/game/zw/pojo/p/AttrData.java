@@ -46,11 +46,15 @@ public class AttrData {
     public int lowerLimitCharging;// 技能充能下限
     public int upperChargingLimit;// 技能充能上限
 
+    public AttrData() {
+    }
+
     public AttrData(CommonPb.SerAttrData attrData) {
         this.attack = attrData.getAttack();
         this.defend = attrData.getDefend();
         this.lead = attrData.getLead();
         this.line = attrData.getLead();
+        this.speed = attrData.getSpeed();
         this.critical = attrData.getCrit();
         this.criticalChance = attrData.getCritChance();
         this.criticalDef = attrData.getCritDef();
@@ -59,6 +63,8 @@ public class AttrData {
         this.atkExt = attrData.getAtkExt();
         this.defExt = attrData.getDefExt();
         this.evade = attrData.getEvade();
+        this.lowerLimitCharging = attrData.getLowerLimitCharging();
+        this.upperChargingLimit = attrData.getUpperChargingLimit();
     }
 
     public AttrData(int attack, int defend, int lead, int line, int critical, int criticalDef) {
@@ -74,6 +80,27 @@ public class AttrData {
         for (Map.Entry<Integer, Integer> entry : attrMap.entrySet()) {
             addValue(entry.getKey(), entry.getValue());
         }
+    }
+
+    public AttrData copy() {
+        AttrData attrData = new AttrData();
+        attrData.speed = this.speed;
+        attrData.attack = this.attack;
+        attrData.defend = this.defend;
+        attrData.lead = this.lead;
+        attrData.line = this.lead;
+        attrData.speed = this.speed;
+        attrData.critical = this.critical;
+        attrData.criticalChance = this.criticalChance;
+        attrData.criticalDef = this.criticalDef;
+        attrData.atkTown = this.atkTown;
+        attrData.defTown = this.defTown;
+        attrData.atkExt = this.atkExt;
+        attrData.defExt = this.defExt;
+        attrData.evade = this.evade;
+        attrData.lowerLimitCharging = this.lowerLimitCharging;
+        attrData.upperChargingLimit = this.upperChargingLimit;
+        return attrData;
     }
 
     /**
