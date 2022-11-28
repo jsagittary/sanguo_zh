@@ -2539,25 +2539,24 @@ public class RewardDataManager {
             // 初始化将领品阶数据
             hero.initHeroGrade();
             // 初始化武将内政属性(武将本身自带的及初始品阶对应)
-            List<List<Integer>> interiorAttr = new ArrayList<>(hero.getInteriorAttr());
+            Map<Integer, Integer> interiorAttr = hero.getInteriorAttr();
             // 武将本身自带的初始内政属性
             List<List<Integer>> staticHeroInterior = staticHero.getInterior();
             if (CheckNull.nonEmpty(staticHeroInterior)) {
                 for (List<Integer> attr : staticHeroInterior) {
-                    if (CheckNull.isEmpty(attr) || attr.size() <= 3) {
+                    if (CheckNull.isEmpty(attr) || attr.size() < 3) {
                         continue;
                     }
-                    List<Integer> list = interiorAttr.stream()
-                            .filter(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == attr.get(0).intValue())
+                    Entry<Integer, Integer> entry = interiorAttr.entrySet().stream()
+                            .filter(tmp -> tmp.getKey().intValue() == attr.get(0).intValue())
                             .findFirst()
                             .orElse(null);
-                    if (list == null) {
-                        interiorAttr.add(attr);
+                    if (entry == null) {
+                        interiorAttr.put(attr.get(0), attr.get(2));
                     } else {
-                        int newAttrValue = list.get(2) + attr.get(2);
-                        list.set(2, newAttrValue);
-                        interiorAttr.removeIf(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == list.get(0).intValue());
-                        interiorAttr.add(list);
+                        int newAttrValue = entry.getValue() + attr.get(2);
+                        entry.setValue(newAttrValue);
+                        interiorAttr.put(entry.getKey(), entry.getValue());
                     }
                 }
             }
@@ -2566,20 +2565,19 @@ public class RewardDataManager {
             StaticHeroGradeInterior sHeroGradeInterior = StaticHeroDataMgr.getStaticHeroGradeInterior(sHeroGrade.getGrade(), sHeroGrade.getLevel());
             if (sHeroGradeInterior != null && CheckNull.nonEmpty(sHeroGradeInterior.getAttr())) {
                 for (List<Integer> attr : sHeroGradeInterior.getAttr()) {
-                    if (CheckNull.isEmpty(attr) || attr.size() <= 3) {
+                    if (CheckNull.isEmpty(attr) || attr.size() < 3) {
                         continue;
                     }
-                    List<Integer> list = interiorAttr.stream()
-                            .filter(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == attr.get(0).intValue())
+                    Entry<Integer, Integer> entry = interiorAttr.entrySet().stream()
+                            .filter(tmp -> tmp.getKey().intValue() == attr.get(0).intValue())
                             .findFirst()
                             .orElse(null);
-                    if (list == null) {
-                        interiorAttr.add(attr);
+                    if (entry == null) {
+                        interiorAttr.put(attr.get(0), attr.get(2));
                     } else {
-                        int newAttrValue = list.get(2) + attr.get(2);
-                        list.set(2, newAttrValue);
-                        interiorAttr.removeIf(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == list.get(0).intValue());
-                        interiorAttr.add(list);
+                        int newAttrValue = entry.getValue() + attr.get(2);
+                        entry.setValue(newAttrValue);
+                        interiorAttr.put(entry.getKey(), entry.getValue());
                     }
                 }
             }

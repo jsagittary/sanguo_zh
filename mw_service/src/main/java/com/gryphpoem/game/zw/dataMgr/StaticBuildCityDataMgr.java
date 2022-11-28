@@ -87,6 +87,14 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
 
     }
 
+    public static StaticFoundationBuff getStaticFoundationBuffMap(int landType) {
+        return staticFoundationBuffMap.get(landType);
+    }
+
+    public static List<StaticHappiness> getStaticHappinessList() {
+        return staticHappinessList;
+    }
+
     public static List<StaticEconomicOrder> getStaticEconomicOrderList() {
         return staticEconomicOrderList;
     }

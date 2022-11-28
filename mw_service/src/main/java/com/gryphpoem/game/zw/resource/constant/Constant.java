@@ -1089,11 +1089,6 @@ public final class Constant {
     public static  int HAPPINESS_LOSS_SPEED;
 
     /**
-     * 土匪每日的刷新时间，持续时间, [整点数, 持续秒数]
-     */
-    public static List<Integer> BANDIT_REFRESH_CONFIG;
-
-    /**
      * 订单初始数量上限
      */
     public static int ORDER_INI_TOP_LIMIT;
@@ -1137,6 +1132,26 @@ public final class Constant {
      * 居民人口数量保底万分比
      */
     public static int RESIDENT_BOTTOM_LIMIT_COEFFICIENT;
+
+    /**
+     * 土匪每日刷新时间, 24小时制, [时, 分]
+     */
+    public static List<Integer> BANDIT_REFRESH_TIME;
+
+    /**
+     * 土匪持续时间
+     */
+    public static int BANDIT_REMAIN_TIME;
+
+    /**
+     * 土匪造成的资源减产debuff, [[buildingType,该类型建筑对应产出资源的单位产量减益万分比]]
+     */
+    public static List<List<Integer>> BANDIT_DEBUFF;
+
+    /**
+     * 人口恢复基础时间
+     */
+    public static int RESIDENT_RECOVERY_SPEED;
 
     /**
      * s_system表中定义的常量初始化
@@ -1453,7 +1468,6 @@ public final class Constant {
         HAPPINESS_RECOVERY_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_RECOVERY_SPEED, 0);
         HAPPINESS_RECOVERY_TOP_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_RECOVERY_TOP_LIMIT, 0);
         HAPPINESS_LOSS_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.HAPPINESS_LOSS_SPEED, 0);
-        BANDIT_REFRESH_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.BANDIT_REFRESH_CONFIG, "[]");
         ORDER_INI_TOP_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.ORDER_INI_TOP_LIMIT, 0);
         ORDER_TOP_LIMIT_INCREASE_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.ORDER_TOP_LIMIT_INCREASE_CONFIG, "[]");
         SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_ADDITION_IN_SINGLE_FOOD_BUILDING, 0);
@@ -1462,6 +1476,11 @@ public final class Constant {
         SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_ADDITION_IN_SINGLE_ORE_BUILDING, 0);
         SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT = SystemTabLoader.getIntegerSystemValue(SystemId.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT, 0);
         ORDER_ADDITION_BY_SAME_CAMP_PLACE = SystemTabLoader.getIntegerSystemValue(SystemId.ORDER_ADDITION_BY_SAME_CAMP_PLACE, 0);
+        RESIDENT_BOTTOM_LIMIT_COEFFICIENT = SystemTabLoader.getIntegerSystemValue(SystemId.RESIDENT_BOTTOM_LIMIT_COEFFICIENT, 0);
+        BANDIT_REFRESH_TIME = SystemTabLoader.getListIntSystemValue(SystemId.BANDIT_REFRESH_TIME, "[]");
+        BANDIT_REMAIN_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.BANDIT_REMAIN_TIME, 0);
+        BANDIT_DEBUFF = SystemTabLoader.getListListIntSystemValue(SystemId.BANDIT_DEBUFF, "[[]]");
+        RESIDENT_RECOVERY_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.RESIDENT_RECOVERY_SPEED, 0);
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

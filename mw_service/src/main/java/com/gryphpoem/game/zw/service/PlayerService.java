@@ -1069,6 +1069,8 @@ public class PlayerService implements GmCmdService {
             builder.addAllFoundationData(player.getFoundationData());
             builder.addAllResidentData(player.getResidentData());
             builder.setTestLong(Long.MAX_VALUE);
+            builder.setHappinessTime(playerDataManager.leftUpdateHappinessTime(player));
+            builder.setResidentTime(playerDataManager.leftRecoveryResidentTime(player));
             return builder.build();
         }
         return null;
@@ -1506,6 +1508,8 @@ public class PlayerService implements GmCmdService {
             // 恢复体力
             if (player.isActive()) {
                 playerDataManager.restoreProsAndPower(player, now);
+                playerDataManager.updateHappiness(player, now);
+                playerDataManager.recoveryResident(player, now);
             }
             // 检查挂机
             this.checkOnHook(player);

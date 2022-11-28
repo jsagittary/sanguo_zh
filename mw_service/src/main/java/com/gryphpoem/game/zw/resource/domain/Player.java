@@ -1026,6 +1026,19 @@ public class Player {
     }
 
     /**
+     * 最近一次人口恢复时间
+     */
+    private int residentTime;
+
+    public int getResidentTime() {
+        return residentTime;
+    }
+
+    public void setResidentTime(int residentTime) {
+        this.residentTime = residentTime;
+    }
+
+    /**
      * 幸福度
      */
     private int happiness;
@@ -1033,11 +1046,6 @@ public class Player {
     public int getHappiness() {
         return happiness;
     }
-
-    /**
-     * 记录玩家幸福度处于哪个档位, 方便幸福度值发生变化时, 判断是否需要更新对应的buff加成
-     */
-    public Map<Integer, List<Integer>> happinessRange;
 
     public void setHappiness(int happiness) {
         this.happiness = happiness;
@@ -1057,6 +1065,24 @@ public class Player {
      */
     public void subHappiness(int count) {
         this.happiness -= count;
+    }
+
+    /**
+     * 记录玩家幸福度处于哪个档位, 方便幸福度值发生变化时, 判断是否需要更新对应的buff加成
+     */
+    public Map<Integer, List<Integer>> happinessRange;
+
+    /**
+     * 最近一次幸福度更新时间
+     */
+    private int happinessTime;
+
+    public int getHappinessTime() {
+        return happinessTime;
+    }
+
+    public void setHappinessTime(int happinessTime) {
+        this.happinessTime = happinessTime;
     }
 
     /**
@@ -2495,6 +2521,10 @@ public class Player {
         for (Entry<Integer, Integer> e : peaceAndWelfareRecord.entrySet()) {
             ser.addPeaceAndWelfareRecord(PbHelper.createTwoIntPb(e.getKey(), e.getValue()));
         }
+        // 幸福度恢复时间
+        ser.setHappinessTime(this.happinessTime);
+        // 人口恢复时间
+        ser.setResidentTime(this.residentTime);
 
         return ser.build().toByteArray();
     }
@@ -3184,6 +3214,10 @@ public class Player {
         if (CheckNull.nonEmpty(ser.getPeaceAndWelfareRecordList())) {
             ser.getPeaceAndWelfareRecordList().forEach(tmp -> this.peaceAndWelfareRecord.put(tmp.getV1(), tmp.getV2()));
         }
+        // 幸福度恢复时间
+        this.happinessTime = ser.getHappinessTime();
+        // 人口恢复时间
+        this.residentTime = ser.getResidentTime();
     }
 
     private void dserTrophy(SerTrophy ser) {

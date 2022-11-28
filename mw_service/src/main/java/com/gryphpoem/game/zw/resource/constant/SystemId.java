@@ -2059,8 +2059,28 @@ public class SystemId {
     public static final int PEACE_WELFARE_TYPE2_CONFIG = 5020;
 
     /**
-     * 居民人口数量保底万分比
+     * 居民人口数量保底万分比, 当居民人数低于等于这个数量时，无法被掠夺
      */
-    public static final int RESIDENT_BOTTOM_LIMIT_COEFFICIENT = 5020;
+    public static final int RESIDENT_BOTTOM_LIMIT_COEFFICIENT = 5021;
+
+    /**
+     * 土匪每日刷新时间
+     */
+    public static final int BANDIT_REFRESH_TIME = 5022;
+
+    /**
+     * 土匪持续时间
+     */
+    public static final int BANDIT_REMAIN_TIME = 5023;
+
+    /**
+     * 土匪造成的资源减产debuff, [[buildingType,该类型建筑对应产出资源的单位产量减益万分比]]
+     */
+    public static final int BANDIT_DEBUFF = 5024;
+
+    /**
+     * 人口恢复基础时间
+     */
+    public static final int RESIDENT_RECOVERY_SPEED = 5025;
 
 }

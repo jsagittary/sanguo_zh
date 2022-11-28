@@ -134,10 +134,10 @@ public class LogicServer extends AbsLogicServer {
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new CheckTimer());
         // 延时执行定时器
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new DelayRunTimer());
-        // 定时更新玩家幸福度(自然恢复或损耗)
-        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new HappinessTimer());
-        // 定时恢复人口
-        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new ResidentTimer());
+        // // 定时更新玩家幸福度(自然恢复或损耗)
+        // threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new HappinessTimer());
+        // // 定时恢复人口
+        // threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new ResidentTimer());
 
     }
 

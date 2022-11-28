@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.service.buildHomeCity;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
@@ -8,6 +9,7 @@ import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.SmallIdManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
@@ -21,6 +23,7 @@ import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
@@ -28,6 +31,7 @@ import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.BuildingService;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.PlayerService;
@@ -60,6 +64,8 @@ public class BuildHomeCityService implements GmCmdService {
     private BuildingDataManager buildingDataManager;
     @Autowired
     private BuildingDao buildingDao;
+    @Autowired
+    private SmallIdManager smallIdManager;
 
     /**
      * 探索迷雾
@@ -299,16 +305,41 @@ public class BuildHomeCityService implements GmCmdService {
         int now = TimeHelper.getCurrentSecond();
         while (iterator.hasNext()) {
             Player player = iterator.next();
+            // TODO 防止开发环境旧账号报错, 线上删掉
+            BuildingState buildingState = player.getBuildingData().values().stream()
+                    .filter(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE)
+                    .findFirst()
+                    .orElse(null);
+            if (buildingState == null) {
+                DataResource.ac.getBean(BuildingService.class).clearSomeBuilding(player, BuildingType.SMALL_GAME_HOUSE);
+            }
             try {
                 int happinessRecoveryTopLimit = Constant.HAPPINESS_RECOVERY_TOP_LIMIT;
-                int happiness = player.getHappiness();
-                if (happiness < happinessRecoveryTopLimit) {
+                int oldHappiness = player.getHappiness();
+                int period = now - player.getHappinessTime();
+                if (oldHappiness < happinessRecoveryTopLimit) {
                     // 开始增长
-                } else if (happiness == happinessRecoveryTopLimit) {
+                    int happinessRecoverySpeed = Constant.HAPPINESS_RECOVERY_SPEED;
+                    // 计算戏台内政属性对幸福度恢复速度的加成
+                    int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.SMALL_GAME_HOUSE);
+                    happinessRecoverySpeed = new Double(Math.ceil(happinessRecoverySpeed * (1 - interiorEffect / Constant.TEN_THROUSAND))).intValue(); // 向上取整
+                    int addHappiness = period / happinessRecoverySpeed;
+                    if (addHappiness > 0) {
+                        player.setHappinessTime(Math.min(happinessRecoveryTopLimit, oldHappiness + addHappiness));
+                        player.setHappinessTime(player.getHappinessTime() + addHappiness * happinessRecoverySpeed);
+                    }
+                } else if (oldHappiness == happinessRecoveryTopLimit) {
                     // 不变
                 } else {
                     // 开始减少
+                    int happinessLossSpeed = Constant.HAPPINESS_LOSS_SPEED;
+                    int subHappiness = period / happinessLossSpeed;
+                    if (subHappiness > 0) {
+                        player.setHappinessTime(Math.max(happinessRecoveryTopLimit, oldHappiness - subHappiness));
+                        player.setHappinessTime(player.getHappinessTime() + subHappiness * happinessLossSpeed);
+                    }
                 }
+                player.setHappinessTime(now);
                 // 根据更新后的幸福度, 同步更新人口恢复速度、资源生产速度
             } catch (Exception e) {
                 LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
@@ -325,10 +356,50 @@ public class BuildHomeCityService implements GmCmdService {
         int now = TimeHelper.getCurrentSecond();
         while (iterator.hasNext()) {
             Player player = iterator.next();
+            // TODO 防止开发环境旧账号报错, 线上删掉
+            if (CheckNull.isEmpty(player.getResidentData()) || player.getResidentData().size() < 3) {
+                resetResidentData(player);
+            }
             try {
-
+                int period = now - player.getResidentTime();
+                int happiness = player.getHappiness();
+                int residentTopLimit = player.getResidentTopLimit();
+                int oldResidentTotalCnt = player.getResidentTotalCnt();
+                if (oldResidentTotalCnt < residentTopLimit) {
+                    int residentRecoverySpeed = Constant.RESIDENT_RECOVERY_SPEED;
+                    // 根据当前幸福度所属档位计算人口恢复时间
+                    List<StaticHappiness> staticHappinessList = StaticBuildCityDataMgr.getStaticHappinessList();
+                    if (CheckNull.nonEmpty(staticHappinessList)) {
+                        for (StaticHappiness sHappiness : staticHappinessList) {
+                            List<Integer> range = sHappiness.getRange();
+                            List<List<Integer>> effective = sHappiness.getEffective();
+                            if (CheckNull.isEmpty(range) || range.size() < 2 || CheckNull.isEmpty(effective)) {
+                                continue;
+                            }
+                            if (happiness >= range.get(0) && happiness <= range.get(1)) {
+                                List<Integer> happinessCoefficientForResidentRecovery = effective.get(0);
+                                if (CheckNull.isEmpty(happinessCoefficientForResidentRecovery) || happinessCoefficientForResidentRecovery.size() < 2) {
+                                    break;
+                                }
+                                int addOrSub = happinessCoefficientForResidentRecovery.get(0);
+                                int coefficient = happinessCoefficientForResidentRecovery.get(1);
+                                switch (addOrSub) {
+                                    case 0:
+                                        residentRecoverySpeed *= (1 + coefficient / Constant.TEN_THROUSAND);
+                                        break;
+                                    case 1:
+                                        residentRecoverySpeed *= (1 - coefficient / Constant.TEN_THROUSAND);
+                                }
+                            }
+                        }
+                    }
+                    int addResident = period / residentRecoverySpeed;
+                    player.addResidentTotalCnt(Math.min(oldResidentTotalCnt + addResident, residentTopLimit));
+                    player.addIdleResidentCnt(player.getResidentTotalCnt() - oldResidentTotalCnt);
+                }
+                player.setResidentTime(now);
             } catch (Exception e) {
-                LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+                LogUtil.error("居民恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
             }
         }
     }
@@ -416,144 +487,200 @@ public class BuildHomeCityService implements GmCmdService {
     @GmCmd("buildCity")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
-        List<Integer> foundationData = player.getFoundationData();
-        Map<Integer, BuildingState> buildingData = player.getBuildingData();
         switch (params[0]) {
             case "clearMapCell":
                 // 重置所有已探索的格子、已开垦的地基、已解锁的建筑
-                mapCellData.clear();
-                foundationData.clear();
-                buildingData.clear();
-                player.mills.clear();
-                player.buildingExts.clear();
-                StaticIniLord staticIniLord = StaticIniDataMgr.getLordIniData();
-                playerDataManager.initBuildingInfo(player, staticIniLord);
-                Building building = new Building();
-                building.setLordId(player.roleId);
-                Map<Integer, StaticBuildingInit> initBuildingMap = StaticBuildingDataMgr.getBuildingInitMap();
-                for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
-                    if (buildingData.get(buildingInit.getBuildingId()) == null) {
-                        BuildingState buildingState = new BuildingState(buildingInit.getBuildingId(), buildingInit.getBuildingType());
-                        buildingState.setBuildingLv(buildingInit.getInitLv());
-                        buildingData.put(buildingInit.getBuildingId(), buildingState);
-                    }
-                    if (BuildingDataManager.isResType(buildingInit.getBuildingType())) {
-                        player.mills.put(buildingInit.getBuildingId(), new Mill(buildingInit.getBuildingId(),
-                                buildingInit.getBuildingType(), buildingInit.getInitLv(), 0));
-                    } else {
-                        switch (buildingInit.getBuildingType()) {
-                            case BuildingType.COMMAND:
-                                building.setCommand(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.WALL:
-                                building.setWall(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.TECH:
-                                building.setTech(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.STOREHOUSE:
-                                building.setStoreHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.MALL:
-                                building.setMall(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.REMAKE_WEAPON_HOUSE:
-                                building.setRemakeWeaponHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.FACTORY_1:
-                                building.setFactory1(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.FACTORY_2:
-                                building.setFactory2(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.FACTORY_3:
-                                building.setFactory3(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.FERRY:
-                                building.setFerry(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.MAKE_WEAPON_HOUSE:
-                                building.setMakeWeaponHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.WAR_COLLEGE:
-                                building.setWarCollege(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.TRADE_CENTRE:
-                                building.setTradeCentre(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.WAR_FACTORY:
-                                building.setWarFactory(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.TRAIN_FACTORY_1:
-                                building.setTrainFactory1(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.TRAIN_FACTORY_2:
-                                building.setTrain2(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.AIR_BASE:
-                                building.setAirBase(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.SEASON_TREASURY:
-                                building.setSeasonTreasury(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.CIA:
-                                building.setCia(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.SMALL_GAME_HOUSE:
-                                building.setSmallGameHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.DRAW_HERO_HOUSE:
-                                building.setDrawHeroHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.SUPER_EQUIP_HOUSE:
-                                building.setSuperEquipHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.STATUTE:
-                                building.setSuperEquipHouse(buildingInit.getInitLv());
-                                break;
-                            case BuildingType.MEDAL_HOUSE:
-                                building.setSuperEquipHouse(buildingInit.getInitLv());
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-                buildingDao.updateBuilding(building);
-                player.building = building;
-                // 更新解锁解锁状态
-                buildingDataManager.updateBuildingLockState(player);
+                resetWholeMainCityMapAndBuilding(player);
                 break;
             case "fixFoundationData":
                 // 去除重复地基
-                List<Integer> newFoundationData = foundationData.stream().distinct().collect(Collectors.toList());
-                foundationData.clear();
-                foundationData.addAll(newFoundationData);
+                fixFoundationData(player);
                 break;
             case "openTheWholeMap":
                 // 一键解锁全部地图格和地基
-                List<StaticHomeCityCell> staticHomeCityCellList = StaticBuildCityDataMgr.getStaticHomeCityCellList();
-                for (StaticHomeCityCell sHomeCityCell : staticHomeCityCellList) {
-                    if (!mapCellData.containsKey(sHomeCityCell.getId())) {
-                        List<Integer> cellState = new ArrayList<>(2);
-                        cellState.add(1);
-                        cellState.add(sHomeCityCell.getHasBandit());
-                        mapCellData.put(sHomeCityCell.getId(), cellState);
-                    }
-                }
-                List<StaticHomeCityFoundation> staticHomeCityFoundationList = StaticBuildCityDataMgr.getStaticHomeCityFoundationList();
-                for (StaticHomeCityFoundation sHomeCityFoundation : staticHomeCityFoundationList) {
-                    if (!foundationData.contains(sHomeCityFoundation.getId())) {
-                        foundationData.add(sHomeCityFoundation.getId());
-                    }
-                }
+                openTheWholeMap(player);
                 break;
             case "clearBuildQue":
+                // 清除建筑队列
                 player.buildQue.clear();
                 break;
             default:
         }
         playerDataManager.syncRoleInfo(player);
+    }
+
+    /**
+     * 重置所有已探索的格子、已开垦的地基、已解锁的建筑
+     * @param player
+     */
+    public void resetWholeMainCityMapAndBuilding(Player player) {
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        List<Integer> foundationData = player.getFoundationData();
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        mapCellData.clear();
+        foundationData.clear();
+        buildingData.clear();
+        player.mills.clear();
+        player.buildingExts.clear();
+        StaticIniLord staticIniLord = StaticIniDataMgr.getLordIniData();
+        playerDataManager.initBuildingInfo(player, staticIniLord);
+        Building building = new Building();
+        building.setLordId(player.roleId);
+        Map<Integer, StaticBuildingInit> initBuildingMap = StaticBuildingDataMgr.getBuildingInitMap();
+        for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
+            if (buildingData.get(buildingInit.getBuildingId()) == null) {
+                BuildingState buildingState = new BuildingState(buildingInit.getBuildingId(), buildingInit.getBuildingType());
+                buildingState.setBuildingLv(buildingInit.getInitLv());
+                buildingData.put(buildingInit.getBuildingId(), buildingState);
+            }
+            if (BuildingDataManager.isResType(buildingInit.getBuildingType())) {
+                player.mills.put(buildingInit.getBuildingId(), new Mill(buildingInit.getBuildingId(),
+                        buildingInit.getBuildingType(), buildingInit.getInitLv(), 0));
+            } else {
+                switch (buildingInit.getBuildingType()) {
+                    case BuildingType.COMMAND:
+                        building.setCommand(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.WALL:
+                        building.setWall(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.TECH:
+                        building.setTech(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.STOREHOUSE:
+                        building.setStoreHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.MALL:
+                        building.setMall(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.REMAKE_WEAPON_HOUSE:
+                        building.setRemakeWeaponHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.FACTORY_1:
+                        building.setFactory1(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.FACTORY_2:
+                        building.setFactory2(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.FACTORY_3:
+                        building.setFactory3(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.FERRY:
+                        building.setFerry(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.MAKE_WEAPON_HOUSE:
+                        building.setMakeWeaponHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.WAR_COLLEGE:
+                        building.setWarCollege(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.TRADE_CENTRE:
+                        building.setTradeCentre(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.WAR_FACTORY:
+                        building.setWarFactory(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.TRAIN_FACTORY_1:
+                        building.setTrainFactory1(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.TRAIN_FACTORY_2:
+                        building.setTrain2(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.AIR_BASE:
+                        building.setAirBase(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.SEASON_TREASURY:
+                        building.setSeasonTreasury(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.CIA:
+                        building.setCia(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.SMALL_GAME_HOUSE:
+                        building.setSmallGameHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.DRAW_HERO_HOUSE:
+                        building.setDrawHeroHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.SUPER_EQUIP_HOUSE:
+                        building.setSuperEquipHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.STATUTE:
+                        building.setSuperEquipHouse(buildingInit.getInitLv());
+                        break;
+                    case BuildingType.MEDAL_HOUSE:
+                        building.setSuperEquipHouse(buildingInit.getInitLv());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        buildingDao.updateBuilding(building);
+        player.building = building;
+        // 更新解锁解锁状态
+        buildingDataManager.updateBuildingLockState(player);
+    }
+
+    /**
+     * 去除重复地基
+     * @param player
+     */
+    public void fixFoundationData(Player player) {
+        List<Integer> foundationData = player.getFoundationData();
+        List<Integer> newFoundationData = foundationData.stream().distinct().collect(Collectors.toList());
+        foundationData.clear();
+        foundationData.addAll(newFoundationData);
+    }
+
+    /**
+     * 一键解锁全部地图格和地基
+     * @param player
+     */
+    public void openTheWholeMap(Player player) {
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        List<Integer> foundationData = player.getFoundationData();
+        List<StaticHomeCityCell> staticHomeCityCellList = StaticBuildCityDataMgr.getStaticHomeCityCellList();
+        for (StaticHomeCityCell sHomeCityCell : staticHomeCityCellList) {
+            if (!mapCellData.containsKey(sHomeCityCell.getId())) {
+                List<Integer> cellState = new ArrayList<>(2);
+                cellState.add(1);
+                cellState.add(sHomeCityCell.getHasBandit());
+                mapCellData.put(sHomeCityCell.getId(), cellState);
+            }
+        }
+        List<StaticHomeCityFoundation> staticHomeCityFoundationList = StaticBuildCityDataMgr.getStaticHomeCityFoundationList();
+        for (StaticHomeCityFoundation sHomeCityFoundation : staticHomeCityFoundationList) {
+            if (!foundationData.contains(sHomeCityFoundation.getId())) {
+                foundationData.add(sHomeCityFoundation.getId());
+            }
+        }
+    }
+
+    /**
+     * 重置玩家人口数据
+     * @param player
+     */
+    public void resetResidentData(Player player) {
+        List<Integer> residentData = new ArrayList<>(player.getResidentData());
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        StaticIniLord staticIniLord = StaticIniDataMgr.getLordIniData();
+        List<Integer> residentCnt = staticIniLord.getResidentCnt();
+        residentData.clear();
+        if (CheckNull.nonEmpty(residentCnt)) {
+            residentData.add(residentCnt.get(1)); // 总数
+            residentData.add(residentCnt.get(1)); // 空闲数
+            residentData.add(residentCnt.get(0)); // 上限
+        } else {
+            residentData.add(4); // 总数
+            residentData.add(4); // 空闲数
+            residentData.add(4); // 上限
+        }
+        player.setResidentData(residentData);
+        // 获取已解锁的民居加成居民上限
+        int sum = buildingData.values().stream()
+                .filter(tmp -> tmp.getBuildingType() == BuildingType.RESIDENT_HOUSE && tmp.getBuildingLv() > 0)
+                .mapToInt(BuildingState::getResidentTopLimit)
+                .sum();
+        player.addResidentTopLimit(sum);
     }
 }

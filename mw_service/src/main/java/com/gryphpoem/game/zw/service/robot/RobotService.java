@@ -2,12 +2,15 @@ package com.gryphpoem.game.zw.service.robot;
 
 import com.gryphpoem.game.zw.core.executor.NonOrderedQueuePoolExecutor;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb.RobotDataRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.p.Robot;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.robot.work.RobotWorker;
@@ -239,7 +242,7 @@ public class RobotService {
     /**
      * 自动采矿
      *
-     * @param robot
+     * @param player
      */
     public void autoCollectMine(Player player) {
         Robot robot = robotDataManager.getRobot(player.roleId);
@@ -259,7 +262,7 @@ public class RobotService {
     /**
      * 自动采集个人资源点
      *
-     * @param robot
+     * @param player
      */
     public void autoAcauisition(Player player) {
         Robot robot = robotDataManager.getRobot(player.roleId);
@@ -275,7 +278,7 @@ public class RobotService {
     /**
      * 自动攻击流寇
      *
-     * @param robot
+     * @param player
      */
     public void autoAttackBandit(Player player) {
         Robot robot = robotDataManager.getRobot(player.roleId);
@@ -327,7 +330,14 @@ public class RobotService {
             if (resCnt > 0) {
                 mill.setResCnt(0);
                 mill.setResTime(now);
-                buildingService.gainResource(robot, mill.getType(), mill.getLv(), resCnt);
+                BuildingState buildingState = robot.getBuildingData().get(mill.getPos());
+                if (buildingState == null) {
+                    StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(mill.getPos());
+                    buildingState = new BuildingState(sBuildingInit.getBuildingId(), mill.getType());
+                    buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                    robot.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
+                }
+                buildingService.gainResource(robot, mill.getType(), mill.getLv(), resCnt, buildingState.getResidentCnt(), buildingState.getLandType());
                 if (robotLogSwitch()) {
                     LogUtil.robot("征收资源, type:" + mill.getType() + ", count:" + resCnt);
                 }
@@ -516,7 +526,7 @@ public class RobotService {
     /**
      * 添加机器人到指定的区域
      *
-     * @param serverId   区域ID
+     * @param areaId   区域ID
      * @param robotCount 需要加入的机器人数量
      */
     public void gmOpenRobotsExternalBehavior(int areaId, int robotCount) {

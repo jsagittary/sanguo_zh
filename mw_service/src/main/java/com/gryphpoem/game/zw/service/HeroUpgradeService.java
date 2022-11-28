@@ -106,24 +106,23 @@ public class HeroUpgradeService implements GmCmdService {
         checkConsume(player, preStaticData.getConsume(), staticData.getKeyId());
         hero.setGradeKeyId(staticData.getKeyId());
         // 英雄升阶, 更新属性内政
-        List<List<Integer>> interiorAttr = new ArrayList<>(hero.getInteriorAttr());
+        Map<Integer, Integer> interiorAttr = hero.getInteriorAttr();
         StaticHeroGradeInterior sHeroGradeInterior = StaticHeroDataMgr.getStaticHeroGradeInterior(staticData.getGrade(), staticData.getLevel());
         if (sHeroGradeInterior != null && CheckNull.nonEmpty(sHeroGradeInterior.getAttr())) {
             for (List<Integer> attr : sHeroGradeInterior.getAttr()) {
-                if (CheckNull.isEmpty(attr) || attr.size() <= 3) {
+                if (CheckNull.isEmpty(attr) || attr.size() < 3) {
                     continue;
                 }
-                List<Integer> list = interiorAttr.stream()
-                        .filter(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == attr.get(0).intValue())
+                Map.Entry<Integer, Integer> entry = interiorAttr.entrySet().stream()
+                        .filter(tmp -> tmp.getKey().intValue() == attr.get(0).intValue())
                         .findFirst()
                         .orElse(null);
-                if (list == null) {
-                    interiorAttr.add(attr);
+                if (entry == null) {
+                    interiorAttr.put(attr.get(0), attr.get(2));
                 } else {
-                    int newAttrValue = list.get(2) + attr.get(2);
-                    list.set(2, newAttrValue);
-                    interiorAttr.removeIf(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0).intValue() == list.get(0).intValue());
-                    interiorAttr.add(list);
+                    int newAttrValue = entry.getValue() + attr.get(2);
+                    entry.setValue(newAttrValue);
+                    interiorAttr.put(entry.getKey(), entry.getValue());
                 }
             }
         }

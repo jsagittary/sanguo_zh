@@ -597,6 +597,13 @@ public class PbHelper {
         }
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
+        builder.setIsDispatched(hero.getIsDispatched());
+        builder.setBuildingType(hero.getBuildingType());
+        if (CheckNull.nonEmpty(hero.getInteriorAttr())) {
+            for (Entry<Integer, Integer> entry : hero.getInteriorAttr().entrySet()) {
+                builder.addInteriorAttr(createTwoIntPb(entry.getKey(), entry.getValue()));
+            }
+        }
         return builder.build();
     }
 
@@ -718,6 +725,13 @@ public class PbHelper {
         }
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
+        builder.setIsDispatched(hero.getIsDispatched());
+        builder.setBuildingType(hero.getBuildingType());
+        if (CheckNull.nonEmpty(hero.getInteriorAttr())) {
+            for (Entry<Integer, Integer> entry : hero.getInteriorAttr().entrySet()) {
+                builder.addInteriorAttr(createTwoIntPb(entry.getKey(), entry.getValue()));
+            }
+        }
         return builder.build();
     }
 

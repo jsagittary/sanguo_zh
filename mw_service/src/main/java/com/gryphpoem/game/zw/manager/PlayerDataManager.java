@@ -59,6 +59,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
@@ -79,6 +80,8 @@ import com.gryphpoem.game.zw.resource.util.PushMessageUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
+import com.gryphpoem.game.zw.service.BuildingService;
+import com.gryphpoem.game.zw.service.buildHomeCity.BuildHomeCityService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
@@ -476,7 +479,7 @@ public class PlayerDataManager implements PlayerDM {
             // 初始化建筑信息、地图格子信息、已开垦的地基
             initBuildingInfo(player, staticIniLord);
 
-            // 初始化农民配置
+            // 初始化居民配置
             List<Integer> residentCnt = staticIniLord.getResidentCnt();
             List<Integer> residentData = new ArrayList<>(player.getResidentData());
             residentData.clear();
@@ -1562,5 +1565,181 @@ public class PlayerDataManager implements PlayerDM {
         return allPlayer;
     }
 
-    
+    /**
+     * 更新幸福度
+     *
+     * @param player
+     */
+    public void updateHappiness(Player player, int now) {
+        // TODO 防止开发环境旧账号报错, 线上删掉
+        BuildingState buildingState = player.getBuildingData().values().stream()
+                .filter(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE)
+                .findFirst()
+                .orElse(null);
+        if (buildingState == null) {
+            DataResource.ac.getBean(BuildingService.class).clearSomeBuilding(player, BuildingType.SMALL_GAME_HOUSE);
+        }
+        try {
+            // 校验戏台是否已解锁
+            boolean smallGameHouseUnlock = player.getBuildingData().values().stream()
+                    .anyMatch(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE && tmp.getBuildingLv() > 1);
+            if (!smallGameHouseUnlock) {
+                return;
+            }
+
+            int happinessRecoveryTopLimit = Constant.HAPPINESS_RECOVERY_TOP_LIMIT;
+            int oldHappiness = player.getHappiness();
+            int period = now - player.getHappinessTime();
+            if (oldHappiness < happinessRecoveryTopLimit) {
+                // 开始增长
+                int happinessRecoverySpeed = Constant.HAPPINESS_RECOVERY_SPEED;
+                // 计算戏台内政属性对幸福度恢复速度的加成
+                int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.SMALL_GAME_HOUSE);
+                happinessRecoverySpeed = new Double(Math.ceil(happinessRecoverySpeed * (1 - interiorEffect / Constant.TEN_THROUSAND))).intValue(); // 向上取整
+                int addHappiness = period / happinessRecoverySpeed;
+                if (addHappiness > 0) {
+                    player.setHappinessTime(Math.min(happinessRecoveryTopLimit, oldHappiness + addHappiness));
+                    player.setHappinessTime(player.getHappinessTime() + addHappiness * happinessRecoverySpeed);
+                }
+            } else if (oldHappiness == happinessRecoveryTopLimit) {
+                // 不变
+            } else {
+                // 开始减少
+                int happinessLossSpeed = Constant.HAPPINESS_LOSS_SPEED;
+                int subHappiness = period / happinessLossSpeed;
+                if (subHappiness > 0) {
+                    player.setHappinessTime(Math.max(happinessRecoveryTopLimit, oldHappiness - subHappiness));
+                    player.setHappinessTime(player.getHappinessTime() + subHappiness * happinessLossSpeed);
+                }
+            }
+            player.setHappinessTime(now);
+            // 根据更新后的幸福度, 同步更新人口恢复速度、资源生产速度
+        } catch (Exception e) {
+            LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+        }
+    }
+
+    /**
+     * 下一次更新幸福度剩余的时间
+     *
+     * @param player
+     * @return
+     */
+    public int leftUpdateHappinessTime(Player player) {
+        int now = TimeHelper.getCurrentSecond();
+        updateHappiness(player, now);
+        if (player.getHappiness() < Constant.HAPPINESS_RECOVERY_TOP_LIMIT) {
+            int happinessRecoverySpeed = Constant.HAPPINESS_RECOVERY_SPEED;
+            int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.SMALL_GAME_HOUSE);
+            happinessRecoverySpeed = new Double(Math.ceil(happinessRecoverySpeed * (1 - interiorEffect / Constant.TEN_THROUSAND))).intValue(); // 向上取整
+            return player.getHappinessTime() + happinessRecoverySpeed - now;
+        }
+
+        if (player.getHappiness() > Constant.HAPPINESS_RECOVERY_TOP_LIMIT) {
+            int happinessLossSpeed = Constant.HAPPINESS_LOSS_SPEED;
+            return player.getHappinessTime() + happinessLossSpeed - now;
+        }
+
+        return 0;
+    }
+
+    /**
+     * 恢复人口
+     *
+     * @param player
+     * @param now
+     */
+    public void recoveryResident(Player player, int now) {
+        // TODO 防止开发环境旧账号报错, 线上删掉
+        if (CheckNull.isEmpty(player.getResidentData()) || player.getResidentData().size() < 3) {
+            DataResource.ac.getBean(BuildHomeCityService.class).resetResidentData(player);
+        }
+        try {
+            int period = now - player.getResidentTime();
+            int happiness = player.getHappiness();
+            int residentTopLimit = player.getResidentTopLimit();
+            int oldResidentTotalCnt = player.getResidentTotalCnt();
+            if (oldResidentTotalCnt < residentTopLimit) {
+                int residentRecoverySpeed = Constant.RESIDENT_RECOVERY_SPEED;
+                // 根据当前幸福度所属档位计算人口恢复时间
+                List<StaticHappiness> staticHappinessList = StaticBuildCityDataMgr.getStaticHappinessList();
+                if (CheckNull.nonEmpty(staticHappinessList)) {
+                    for (StaticHappiness sHappiness : staticHappinessList) {
+                        List<Integer> range = sHappiness.getRange();
+                        List<List<Integer>> effective = sHappiness.getEffective();
+                        if (CheckNull.isEmpty(range) || range.size() < 2 || CheckNull.isEmpty(effective)) {
+                            continue;
+                        }
+                        if (happiness >= range.get(0) && happiness <= range.get(1)) {
+                            List<Integer> happinessCoefficientForResidentRecovery = effective.get(0);
+                            if (CheckNull.isEmpty(happinessCoefficientForResidentRecovery) || happinessCoefficientForResidentRecovery.size() < 2) {
+                                break;
+                            }
+                            int addOrSub = happinessCoefficientForResidentRecovery.get(0);
+                            int coefficient = happinessCoefficientForResidentRecovery.get(1);
+                            switch (addOrSub) {
+                                case 0:
+                                    residentRecoverySpeed *= (1 + coefficient / Constant.TEN_THROUSAND);
+                                    break;
+                                case 1:
+                                    residentRecoverySpeed *= (1 - coefficient / Constant.TEN_THROUSAND);
+                            }
+                        }
+                    }
+                }
+                int addResident = period / residentRecoverySpeed;
+                player.addResidentTotalCnt(Math.min(oldResidentTotalCnt + addResident, residentTopLimit));
+                player.addIdleResidentCnt(player.getResidentTotalCnt() - oldResidentTotalCnt);
+            }
+            player.setResidentTime(now);
+        } catch (Exception e) {
+            LogUtil.error("居民恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+        }
+    }
+
+    /**
+     * 下一次恢复人口剩余的时间
+     *
+     * @param player
+     * @return
+     */
+    public int leftRecoveryResidentTime(Player player) {
+        int now = TimeHelper.getCurrentSecond();
+        recoveryResident(player, now);
+
+        if (player.getResidentTotalCnt() >= player.getResidentTopLimit()) {
+            return 0;
+        } else {
+            int residentRecoverySpeed = Constant.RESIDENT_RECOVERY_SPEED;
+            // 根据当前幸福度所属档位计算人口恢复时间
+            int happiness = player.getHappiness();
+            List<StaticHappiness> staticHappinessList = StaticBuildCityDataMgr.getStaticHappinessList();
+            if (CheckNull.nonEmpty(staticHappinessList)) {
+                for (StaticHappiness sHappiness : staticHappinessList) {
+                    List<Integer> range = sHappiness.getRange();
+                    List<List<Integer>> effective = sHappiness.getEffective();
+                    if (CheckNull.isEmpty(range) || range.size() < 2 || CheckNull.isEmpty(effective)) {
+                        continue;
+                    }
+                    if (happiness >= range.get(0) && happiness <= range.get(1)) {
+                        List<Integer> happinessCoefficientForResidentRecovery = effective.get(0);
+                        if (CheckNull.isEmpty(happinessCoefficientForResidentRecovery) || happinessCoefficientForResidentRecovery.size() < 2) {
+                            break;
+                        }
+                        int addOrSub = happinessCoefficientForResidentRecovery.get(0);
+                        int coefficient = happinessCoefficientForResidentRecovery.get(1);
+                        switch (addOrSub) {
+                            case 0:
+                                residentRecoverySpeed *= (1 + coefficient / Constant.TEN_THROUSAND);
+                                break;
+                            case 1:
+                                residentRecoverySpeed *= (1 - coefficient / Constant.TEN_THROUSAND);
+                        }
+                    }
+                }
+            }
+            return player.getResidentTime() + residentRecoverySpeed - now;
+        }
+    }
+
 }

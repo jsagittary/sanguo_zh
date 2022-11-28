@@ -60,7 +60,7 @@ public class Hero {
     private Map<Integer, TalentData> talent; // 武将天赋信息：key, 天赋页索引; value, 天赋页详情
     private boolean showClient; // 是否在主界面显示英雄奖励
     private int gradeKeyId; // 英雄品阶keyId
-    private List<List<Integer>> interiorAttr; // 内政属性, [[建筑类型,属性,数值]]
+    private Map<Integer, Integer> interiorAttr; // 内政属性, [建筑类型, 数值]
     private boolean isDispatched; // 是否已被委任
     private int buildingType; // 武将被委任的建筑类型
 
@@ -87,7 +87,7 @@ public class Hero {
         awaken = new TreeMap<>(Integer::compareTo);
         showClient = true;
         talent = new TreeMap<>(Integer::compareTo);
-        interiorAttr = new ArrayList<>(2);
+        interiorAttr = new HashMap<>();
     }
 
     /**
@@ -223,6 +223,13 @@ public class Hero {
         }
         setGradeKeyId(hero.getGrade());
         this.setShowClient(hero.getShowClient());
+        this.isDispatched = hero.getIsDispatched();
+        this.buildingType = hero.getBuildingType();
+        if (CheckNull.nonEmpty(hero.getInteriorAttrList())) {
+            for (TwoInt twoInt : hero.getInteriorAttrList()) {
+                this.interiorAttr.put(twoInt.getV1(), twoInt.getV2());
+            }
+        }
     }
 
     public int getHeroType() {
@@ -885,11 +892,11 @@ public class Hero {
         totem[idx] = totemKey;
     }
 
-    public List<List<Integer>> getInteriorAttr() {
+    public Map<Integer, Integer> getInteriorAttr() {
         return interiorAttr;
     }
 
-    public void setInteriorAttr(List<List<Integer>> interiorAttr) {
+    public void setInteriorAttr(Map<Integer, Integer> interiorAttr) {
         this.interiorAttr = interiorAttr;
     }
 
