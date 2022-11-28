@@ -100,9 +100,11 @@ public class TreasureChallengePlayerService implements GmCmdService {
             challengeList = challengeListByRank(player, challengePlayer);
         }
 
+        // 挑战列表排除自己
+        challengeList.remove(player.lord.getLordId());
         // 全服就你一人，自己打自己吧
         if (challengeList.isEmpty()) {
-            return player.getLordId();
+            return -1;
         }
 
         // 前10次内不出现重复挑战对象
