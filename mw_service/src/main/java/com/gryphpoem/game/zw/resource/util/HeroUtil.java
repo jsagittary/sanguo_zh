@@ -47,6 +47,7 @@ public class HeroUtil {
         } else if (hero.getAcqPos() > 0) {
             onePb.setAcqPos(hero.getAcqPos());
         }
+        onePb.setPartnerPosIndex(hero.getPartnerPosIndex());
         return onePb;
     }
 
