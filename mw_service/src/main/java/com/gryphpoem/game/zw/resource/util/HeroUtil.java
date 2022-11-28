@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.resource.util;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
@@ -40,7 +39,7 @@ public class HeroUtil {
         onePb.setCount(hero.getCount());
         onePb.setDecorated(hero.getDecorated());
         onePb.setGradeKeyId(hero.getGradeKeyId());
-        onePb.setHeroRoleType(HeroConstant.HERO_ROLE_TYPE_PRINCIPAL);
+        onePb.setHeroRoleType(hero.getRoleType());
         if (hero.getPos() > 0) {
             onePb.setPos(hero.getPos());
         } else if (hero.getWallPos() > 0) {
