@@ -62,7 +62,7 @@ public class Force {
     /**
      * 副将列表
      */
-    public ArrayList<FightAssistantHero> assistantHeroList;
+    public ArrayList<FightAssistantHero> assistantHeroList = new ArrayList<>(1);
     /**
      * 战斗中的buff与效果
      */
