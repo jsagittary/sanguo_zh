@@ -58,7 +58,10 @@ public class TreasureChallengePlayerService implements GmCmdService {
         TreasureChallengePlayer challengePlayer = getAndRefreshChallengePlayerData(player);
 
         CommonPb.TreasureChallengePlayerData.Builder builder = CommonPb.TreasureChallengePlayerData.newBuilder();
-        builder.setChallengePlayerInfo(getChallengePlayerInfo(challengePlayer.getChallengePlayerId()));
+        CommonPb.TreasureChallengePlayerInfo challengePlayerInfo = getChallengePlayerInfo(challengePlayer.getChallengePlayerId());
+        if (Objects.nonNull(challengePlayerInfo)) {
+            builder.setChallengePlayerInfo(challengePlayerInfo);
+        }
         builder.setRemaining(challengePlayer.getRemaining());
         builder.setPurchaseNum(challengePlayer.getPurchaseNum());
         builder.setMaxPurchaseNum(CAN_PURCHASE_NUM);
@@ -102,7 +105,7 @@ public class TreasureChallengePlayerService implements GmCmdService {
 
         // 挑战列表排除自己
         challengeList.remove(player.lord.getLordId());
-        // 全服就你一人，自己打自己吧
+        // 全服就你一人
         if (challengeList.isEmpty()) {
             return -1;
         }
@@ -197,7 +200,8 @@ public class TreasureChallengePlayerService implements GmCmdService {
      * 获取要挑战的玩家信息
      */
     private CommonPb.TreasureChallengePlayerInfo getChallengePlayerInfo(long challengePlayerId) {
-        Player challengingPlayer = playerDataManager.checkPlayerIsExist(challengePlayerId);
+        Player challengingPlayer = playerDataManager.getPlayer(challengePlayerId);
+        if (CheckNull.isNull(challengingPlayer)) return null;
 
         CommonPb.TreasureChallengePlayerInfo.Builder builder = CommonPb.TreasureChallengePlayerInfo.newBuilder();
         builder.setRoleId(challengePlayerId);
