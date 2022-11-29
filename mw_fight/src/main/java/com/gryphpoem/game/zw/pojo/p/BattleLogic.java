@@ -325,7 +325,6 @@ public class BattleLogic {
         actionDirection.getDef().fighter.lost += damage;
         actionDirection.getDef().addRoundLost(damage);
         actionDirection.getDef().subHp(actionDirection.getAtk());
-        deductMorale(actionDirection, damage);
         if (actionDirection.getSkill() == null) {
             actionDirection.getAtk().addAttackDamage(damage, actionDirection.getCurAtkHeroId());
         } else {
@@ -343,44 +342,6 @@ public class BattleLogic {
 
         FightPbUtil.setActionResult(contextHolder, builder.build());
     }
-
-    /**
-     * 掉血时扣除士气值
-     *
-     * @param actionDirection
-     * @param damage
-     */
-    private void deductMorale(ActionDirection actionDirection, int damage) {
-//        Force force = actionDirection.getDef();
-//        int heroId = actionDirection.getCurDefHeroId();
-//        int beforeReducedMorale = force.morale;
-//        int reducedMorale = FightCalc.moraleCorrection(force, heroId, FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED,
-//                FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION, damage);
-//        force.morale -= reducedMorale;
-//        if (force.morale < 0)
-//            force.morale = 0;
-//        LogUtil.fight("扣血时, 执行士气扣除效果, 士气扣除方: ", force.ownerId,
-//                ", 武将: ", heroId, ", 扣除的士气: ", reducedMorale,
-//                ", 扣除前士气: ", beforeReducedMorale, ", 扣除后士气: ", force.morale);
-    }
-
-//    /**
-//     * 战斗开始时, 初始化武将士气
-//     */
-//    public void battleStart(FightContextHolder contextHolder) {
-//        initMorale(contextHolder.getAtkFighter());
-//        initMorale(contextHolder.getDefFighter());
-//    }
-//
-//    private void initMorale(Fighter fighter) {
-//        if (Objects.nonNull(fighter)) {
-//            if (!CheckNull.isEmpty(fighter.getForces())) {
-//                for (Force force : fighter.getForces()) {
-//                    force.morale = force.hp * 2;
-//                }
-//            }
-//        }
-//    }
 
     /**
      * 计算buff
