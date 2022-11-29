@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author TanDonghai
@@ -565,7 +566,8 @@ public class Force {
                 ", isIronBas=" + isIronBas +
                 ", skillList=" + skillList +
                 ", buffList=" + buffList +
-                ", assistantHeroList=" + assistantHeroList +
+                ", assistantHeroList=" + (CheckNull.isEmpty(assistantHeroList) ? "" :
+                assistantHeroList.stream().map(ass -> ass.getHeroId()).collect(Collectors.toList()).toString()) +
                 '}';
     }
 

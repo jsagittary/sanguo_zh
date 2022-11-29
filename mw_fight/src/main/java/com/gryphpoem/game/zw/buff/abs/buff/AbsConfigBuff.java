@@ -276,4 +276,14 @@ public abstract class AbsConfigBuff implements IFightBuff {
             LogUtil.fight("buff挂载者: ", this.force.ownerId, "-", this.forceId, ", buff消失, 消失的效果配置: ", Arrays.toString(effectList.toArray()));
         }
     }
+
+    @Override
+    public String toString() {
+        return "AbsConfigBuff{" +
+                "buffKeyId=" + buffKeyId +
+                ", forceId=" + forceId +
+                ", buffGiverId=" + buffGiverId +
+                ", staticBuff=" + staticBuff.getBuffId() +
+                '}';
+    }
 }

@@ -151,7 +151,7 @@ public class FightUtil {
             buffAttacker = contextHolder.getCurAttacker();
             buffDefender = contextHolder.getCurDefender();
         } else {
-            if (contextHolder.getCurAttacker().ownerId == fightBuff.getBuffGiver().ownerId) {
+            if (contextHolder.getCurAttacker().ownerId == fightBuff.getSkill().getSkillOwner().ownerId) {
                 buffAttacker = contextHolder.getCurAttacker();
                 buffDefender = contextHolder.getCurDefender();
             } else {
@@ -175,7 +175,7 @@ public class FightUtil {
                     if (CheckNull.isNull(fightBuff)) {
                         direction.getDefHeroList().add(contextHolder.getActionDirection().getCurDefHeroId());
                     } else {
-                        direction.getDefHeroList().add(fightBuff.getBuffGiverId());
+                        direction.getDefHeroList().add(fightBuff.getSkill().getSkillHeroId());
                     }
                 }
                 break;

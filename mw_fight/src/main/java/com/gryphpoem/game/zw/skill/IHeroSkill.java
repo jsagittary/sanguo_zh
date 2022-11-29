@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.skill;
 
 import com.gryphpoem.game.zw.buff.IUniqueId;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.pojo.p.Force;
 
 /**
  * Description: hero技能接口
@@ -53,4 +54,18 @@ public interface IHeroSkill extends IUniqueId {
      * @param damage
      */
     void addSkillDamage(int damage);
+
+    /**
+     * 获取技能拥有者
+     *
+     * @return
+     */
+    Force getSkillOwner();
+
+    /**
+     * 获取技能释放者武将id
+     *
+     * @return
+     */
+    int getSkillHeroId();
 }

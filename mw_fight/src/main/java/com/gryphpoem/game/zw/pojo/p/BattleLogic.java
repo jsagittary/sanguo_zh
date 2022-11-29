@@ -110,12 +110,15 @@ public class BattleLogic {
         IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
         fightBuff.setForce(actingForce);
         fightBuff.setForceId(actionDirection.getCurDefHeroId());
-        fightBuff.setBuffGiver(actionDirection.getAtk());
-        fightBuff.setBuffGiverId(actionDirection.getCurAtkHeroId());
+        fightBuff.setBuffGiver(CheckNull.isNull(actionDirection.getAtk()) ? heroSkill.getSkillOwner() :
+                actionDirection.getAtk());
+        fightBuff.setBuffGiverId(CheckNull.isNull(actionDirection.getAtk()) ? heroSkill.getSkillHeroId() :
+                actionDirection.getCurAtkHeroId());
         fightBuff.setSkill(heroSkill);
         contextHolder.addBuff(fightBuff);
 
-        LogUtil.fight("执行方: ", actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ",
+        LogUtil.fight("执行方: ", CheckNull.isNull(actionDirection.getAtk()) ? "无" :
+                        actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ",
                 actingForce.id, ", 加buff: ", fightBuff.getBuffConfig());
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BUFF_GROUP_EXISTS);
@@ -457,6 +460,18 @@ public class BattleLogic {
      * @param target
      */
     private void clearForceBuff(Force force, Force target, FightContextHolder contextHolder) {
+        // 死亡的武将触发buff清除
+        if (!CheckNull.isEmpty(force.buffList)) {
+            force.buffList.forEach(contextHolder::removeBuff);
+        }
+        if (!CheckNull.isEmpty(force.assistantHeroList)) {
+            force.assistantHeroList.forEach(ass -> {
+                if (CheckNull.isNull(ass) || CheckNull.isEmpty(ass.getBuffList())) return;
+                ass.getBuffList().forEach(contextHolder::removeBuff);
+            });
+        }
+
+        // 未死亡的武将清除死亡武将施加的buff
         Iterator<IFightBuff> it = target.buffList.iterator();
         while (it.hasNext()) {
             IFightBuff fightBuff = it.next();
@@ -506,7 +521,9 @@ public class BattleLogic {
      */
     public void releaseSingleBuff(LinkedList<IFightBuff> buffList, FightContextHolder contextHolder, int timing) {
         if (CheckNull.isEmpty(buffList)) return;
-        buffList.forEach(buff -> {
+        // 防止ConcurrentModificationException错误
+        LinkedList<IFightBuff> buffList_ = new LinkedList<>(buffList);
+        buffList_.forEach(buff -> {
             if (CheckNull.isNull(buff) || (timing != FightConstant.BuffEffectTiming.ROUND_START && timing !=
                     FightConstant.BuffEffectTiming.START_OF_DESIGNATED_ROUND))
                 return;

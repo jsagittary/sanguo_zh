@@ -949,14 +949,16 @@ public class FightService {
                 if (i == 0) return null;
                 continue;
             }
-            List<SimpleHeroSkill> skillList = createFightSkillList(npc.getActiveSkills(),
-                    npc.getOnStageSkills(), npc.getSkillLv());
             if (i == 0) {
                 attrData = new AttrData(npc.getAttr());
                 force = new Force(attrData, npc.getArmType(), npc.getLine(), npcId);
+                List<SimpleHeroSkill> skillList = createFightSkillList(force, npc.getActiveSkills(),
+                        npc.getOnStageSkills(), npc.getSkillLv(), npcId);
                 if (CheckNull.nonEmpty(skillList))
                     force.skillList = skillList;
             } else {
+                List<SimpleHeroSkill> skillList = createFightSkillList(force, npc.getActiveSkills(),
+                        npc.getOnStageSkills(), npc.getSkillLv(), npcId);
                 FightAssistantHero assistantHero = new FightAssistantHero(force, npcId, force.attrData.copy(), skillList);
                 force.assistantHeroList.add(assistantHero);
                 assistantHero.getAttrData().speed = npc.getSpeed();
@@ -974,14 +976,14 @@ public class FightService {
      * @param skillLv
      * @return
      */
-    public List<SimpleHeroSkill> createFightSkillList(List<Integer> activeSkills, List<Integer> onStageSkills, int skillLv) {
+    public List<SimpleHeroSkill> createFightSkillList(Force owner, List<Integer> activeSkills, List<Integer> onStageSkills, int skillLv, int heroId) {
         List<SimpleHeroSkill> skillList = null;
         if (CheckNull.nonEmpty(activeSkills)) {
             skillList = new ArrayList<>();
             for (Integer skillId : activeSkills) {
                 StaticHeroSkill staticConfig = StaticFightManager.getHeroSkill(skillId, skillLv);
                 if (Objects.nonNull(staticConfig)) {
-                    SimpleHeroSkill skill = new SimpleHeroSkill(staticConfig, false);
+                    SimpleHeroSkill skill = new SimpleHeroSkill(owner, staticConfig, false, heroId);
                     skillList.add(skill);
                 }
             }
@@ -991,7 +993,7 @@ public class FightService {
             for (Integer skillId : onStageSkills) {
                 StaticHeroSkill staticConfig = StaticFightManager.getHeroSkill(skillId, skillLv);
                 if (Objects.nonNull(staticConfig)) {
-                    SimpleHeroSkill skill = new SimpleHeroSkill(staticConfig, true);
+                    SimpleHeroSkill skill = new SimpleHeroSkill(owner, staticConfig, true, heroId);
                     skillList.add(skill);
                 }
             }
@@ -1122,7 +1124,7 @@ public class FightService {
             partnerHero.getDeputyHeroIdList().forEach(heroId -> {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) return;
-                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(force, hero_));
                 Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
@@ -1159,7 +1161,7 @@ public class FightService {
             // 添加所有副将
             partnerHero.getDeputyHeroList().forEach(hero_ -> {
                 if (CheckNull.isNull(hero_)) return;
-                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(force, hero_));
                 Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
@@ -1209,7 +1211,7 @@ public class FightService {
             partnerHero.getDeputyHeroIdList().forEach(heroId -> {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) return;
-                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(force, hero_));
                 Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);
@@ -1253,7 +1255,7 @@ public class FightService {
             StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, 1);
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
-            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, true);
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(force, staticHeroSkill, true, hero.getHeroId());
             if (CheckNull.isNull(skillList)) skillList = new ArrayList<>();
             skillList.add(simpleHeroSkill);
         }
@@ -1263,7 +1265,7 @@ public class FightService {
             StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, staticHeroUpgrade.getSkillLv());
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
-            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, false);
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(force, staticHeroSkill, false, hero.getHeroId());
             if (CheckNull.isNull(skillList)) skillList = new ArrayList<>();
             skillList.add(simpleHeroSkill);
         }
@@ -1277,7 +1279,7 @@ public class FightService {
      * @param hero
      * @return
      */
-    private List<SimpleHeroSkill> getHeroSkill(Hero hero) {
+    private List<SimpleHeroSkill> getHeroSkill(Force force, Hero hero) {
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
         if (CheckNull.isNull(staticHero))
             return null;
@@ -1289,7 +1291,7 @@ public class FightService {
             StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, 1);
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
-            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, true);
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(force, staticHeroSkill, true, hero.getHeroId());
             skillList.add(simpleHeroSkill);
         }
         for (Integer skillGroupId : staticHero.getActiveSkills()) {
@@ -1298,7 +1300,7 @@ public class FightService {
             StaticHeroSkill staticHeroSkill = StaticFightManager.getHeroSkill(skillGroupId, staticHeroUpgrade.getSkillLv());
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
-            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, false);
+            SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(force, staticHeroSkill, false, hero.getHeroId());
             skillList.add(simpleHeroSkill);
         }
 
@@ -1413,7 +1415,7 @@ public class FightService {
             partnerHeroIdPb.getDeputyHeroIdList().forEach(heroId -> {
                 Hero hero_ = player.heros.get(heroId);
                 if (CheckNull.isNull(hero_)) return;
-                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(hero_));
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, hero_.getHeroId(), new AttrData(attrMap), getHeroSkill(force, hero_));
                 Map<Integer, Integer> attrMap_ = CalculateUtil.processAttr(player, hero_);
                 fightAssistantHero.getAttrData().speed = attrMap_.getOrDefault(FightCommonConstant.AttrId.SPEED, 0);
                 force.assistantHeroList.add(fightAssistantHero);

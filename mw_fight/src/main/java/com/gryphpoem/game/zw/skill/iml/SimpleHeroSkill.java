@@ -11,6 +11,7 @@ import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.ActionDirection;
 import com.gryphpoem.game.zw.pojo.p.BattleLogic;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
@@ -48,16 +49,27 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
      */
     private int releaseCount;
 
+    /**
+     * 技能拥有者
+     */
+    private Force owner;
+    /**
+     * 属于的武将id
+     */
+    private int heroId;
+
     public SimpleHeroSkill(StaticHeroSkill s_skill) {
         super(s_skill);
         this.skillKeyId = FightUtil.uniqueId();
         this.curEnergy = s_skill.getDebutEnergy();
     }
 
-    public SimpleHeroSkill(StaticHeroSkill s_skill, boolean isOnStageSkill) {
+    public SimpleHeroSkill(Force owner, StaticHeroSkill s_skill, boolean isOnStageSkill, int heroId) {
         super(s_skill);
         this.isOnStageSkill = isOnStageSkill;
         this.curEnergy = s_skill.getDebutEnergy();
+        this.owner = owner;
+        this.heroId = heroId;
     }
 
     @Override
@@ -186,6 +198,16 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public void addSkillDamage(int damage) {
         this.skillDamage += damage;
+    }
+
+    @Override
+    public Force getSkillOwner() {
+        return owner;
+    }
+
+    @Override
+    public int getSkillHeroId() {
+        return this.heroId;
     }
 
     public int getReleaseCount() {

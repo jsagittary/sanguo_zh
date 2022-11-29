@@ -80,5 +80,6 @@ public class AddBuffEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
+        
     }
 }

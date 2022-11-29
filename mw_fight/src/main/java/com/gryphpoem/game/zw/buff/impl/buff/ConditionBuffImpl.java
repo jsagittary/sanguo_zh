@@ -62,7 +62,6 @@ public class ConditionBuffImpl extends AbsConditionBuff {
 
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);
         if (!CheckNull.isEmpty(this.staticBuff.getEffects())) {
-            // 此段代码目的在于 动作嵌套动作只能嵌套一层, 当前嵌套了动作时, 无法再次嵌套动作
             boolean canRelease = true;
             for (List<Integer> config : this.staticBuff.getEffects()) {
                 if (CheckNull.isEmpty(config) || config.size() < 3) continue;
@@ -79,6 +78,12 @@ public class ConditionBuffImpl extends AbsConditionBuff {
             }
         }
         if (!CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
+            List<Integer> triggerConfig = this.staticBuff.getBuffTriggerCondition().get(0);
+            if (!CheckNull.isEmpty(triggerConfig) && triggerConfig.size() >= 2) {
+                // 与第一个触发时机不匹配, 直接返回
+                if (triggerConfig.get(1) != timing) return;
+            }
+
             boolean canRelease = true;
             for (List<Integer> config : this.staticBuff.getBuffTriggerCondition()) {
                 if (CheckNull.isEmpty(config) || config.size() < 2) continue;
