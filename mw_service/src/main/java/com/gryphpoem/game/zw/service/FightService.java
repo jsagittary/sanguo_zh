@@ -949,10 +949,10 @@ public class FightService {
                 if (i == 0) return null;
                 continue;
             }
-            attrData = new AttrData(npc.getAttr());
             List<SimpleHeroSkill> skillList = createFightSkillList(npc.getActiveSkills(),
                     npc.getOnStageSkills(), npc.getSkillLv());
             if (i == 0) {
+                attrData = new AttrData(npc.getAttr());
                 force = new Force(attrData, npc.getArmType(), npc.getLine(), npcId);
                 if (CheckNull.nonEmpty(skillList))
                     force.skillList = skillList;
