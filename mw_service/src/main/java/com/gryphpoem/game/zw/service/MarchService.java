@@ -453,6 +453,7 @@ public class MarchService {
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
 
+        int totalRecovery = 0;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 兵力恢复
@@ -476,6 +477,8 @@ public class MarchService {
             medalDataManager.angelInWhite(attacker, recoverArmyAwardMap);
             //执行赛季天赋技能---伤病恢复
             seasonTalentService.execSeasonTalentEffect303(attacker, recoverArmyAwardMap);
+            // 打叛军损兵恢复
+            totalRecovery = fightService.recoverArmSpecifyBattle(attacker, WorldConstant.FIGHT_BANDIT_LOST_RECOVER_ARMS);
             if (!CheckNull.isEmpty(recoverArmyAwardMap)) {
                 List<CommonPb.Award> awards = recoverArmyAwardMap.get(player.roleId);
                 if (!CheckNull.isEmpty(awards)) {
@@ -493,8 +496,9 @@ public class MarchService {
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));
         rpt.setDefend(PbHelper.createRptBandit(banditId, pos));
-        rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, lord.getCamp(), lord.getNick(),
-                lord.getPortrait(), player.getDressUp().getCurPortraitFrame()));
+        CommonPb.RptSummary atkRptSummary = PbHelper.createRptSummary(attacker.total, attacker.lost, lord.getCamp(), lord.getNick(),
+                lord.getPortrait(), player.getDressUp().getCurPortraitFrame());
+        rpt.setAtkSum(atkRptSummary.toBuilder().setHealingArmy(totalRecovery).build());
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, 0, null, -1, -1));
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));

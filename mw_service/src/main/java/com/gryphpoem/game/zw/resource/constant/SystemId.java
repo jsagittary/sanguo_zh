@@ -1327,6 +1327,16 @@ public class SystemId {
     public static final int GUAN_PING_RESCUE_REWARD = 373;
 
     /**
+     * 打叛军损兵恢复
+     */
+    public static final int FIGHT_BANDIT_LOST_RECOVER_ARMS = 387;
+
+    /**
+     * 打营地损兵恢复
+     */
+    public static final int FIGHT_CAMP_CITY_LOST_RECOVER_ARMS = 388;
+
+    /**
      * 正常攻打副本及其他战斗经验系数
      */
     public static final int NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT = 389;

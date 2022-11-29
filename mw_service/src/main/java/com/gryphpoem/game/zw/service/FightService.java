@@ -1726,4 +1726,34 @@ public class FightService {
         if (CheckNull.isNull(npc)) return null;
         return new CityHero(npcIdList.get(0), npc.getTotalArm(), npcIdList.size() > 1 ? npcIdList.subList(1, npcIdList.size()) : null);
     }
+
+    /**
+     * 打叛军或打营地损兵恢复
+     *
+     * @param attacker
+     * @param configValue
+     * @return
+     */
+    public int recoverArmSpecifyBattle(Fighter attacker, int configValue) {
+        int totalRecovery = 0;
+        for (Force force : attacker.getForces()) {
+            Player player = playerDataManager.getPlayer(force.ownerId);
+            if (CheckNull.isNull(player)) continue;
+            if (force.totalLost > 0) {
+                int recovery = (int) (configValue / 10000d * force.totalLost);
+                if (recovery > 0) {
+                    Hero hero_ = player.heros.get(force.id);
+                    StaticHero staticHero_ = StaticHeroDataMgr.getHeroMap().get(hero_.getHeroId());
+                    if (Objects.nonNull(staticHero_)) {
+                        int max = hero_.getAttr()[HeroConstant.ATTR_LEAD];
+                        recovery = Math.min(recovery, max - hero_.getCount());
+                        hero_.addArm(recovery);
+                        totalRecovery += recovery;
+                    }
+                }
+            }
+        }
+
+        return totalRecovery;
+    }
 }

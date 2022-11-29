@@ -9,7 +9,10 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
-import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.manager.*;
@@ -686,6 +689,13 @@ public class WarService {
         // 执行勋章-以战养战特技逻辑
         medalDataManager.sustainTheWarByMeansOfWar(attacker, defender, recoverArmyAwardMap, atkSuccess);
 
+        int attackerRecovery = 0;
+        int defenderRecovery = 0;
+        if (Objects.nonNull(staticCity) && staticCity.getType() == 1) {
+            attackerRecovery = fightService.recoverArmSpecifyBattle(attacker, WorldConstant.FIGHT_CAMP_CITY_LOST_RECOVER_ARMS);
+            defenderRecovery = fightService.recoverArmSpecifyBattle(defender, WorldConstant.FIGHT_CAMP_CITY_LOST_RECOVER_ARMS);
+        }
+
         // 战斗记录
         int atkPosLord = battle.getAtkPos();
         String atkNick = battle.getAtkName();
@@ -718,10 +728,10 @@ public class WarService {
         // 记录发起进攻和防守方的信息
         rpt.setAttack(PbHelper.createRptMan(atkPosLord, atkNick, atkVip, atkLevel));
         // 记录双方汇总信息
-        rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, atkCamp, atkNick, atkPortrait, atkPortraitFrame));
+        rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, atkCamp, atkNick, atkPortrait, atkPortraitFrame, attackerRecovery));
         if (battle.isAtkNpc() || null == defLord) {
             rpt.setDefCity(PbHelper.createRptCityPb(cityId, pos));
-            rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, battle.getDefCamp(), null, 0, 0));
+            rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, battle.getDefCamp(), null, 0, 0, defenderRecovery));
         } else {
             if (cityId > 0) {
                 rpt.setDefCity(PbHelper.createRptCityPb(cityId, pos));
@@ -729,7 +739,7 @@ public class WarService {
             rpt.setDefMan(
                     PbHelper.createRptMan(defLord.getPos(), defLord.getNick(), defLord.getVip(), defLord.getLevel()));
             rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, defLord.getCamp(), defLord.getNick(),
-                    defLord.getPortrait(), battle.getDefencer().getDressUp().getCurPortraitFrame()));
+                    defLord.getPortrait(), battle.getDefencer().getDressUp().getCurPortraitFrame(), defenderRecovery));
         }
 
         Map<Long, FightRecord> recordMap = null;
@@ -1493,7 +1503,7 @@ public class WarService {
                     AwardFrom.CAMP_BATTLE_ATTACK);
             rewardDataManager.addAward(player, AwardType.RESOURCE, AwardType.Resource.ELE, eleC,
                     AwardFrom.CAMP_BATTLE_ATTACK);
-            
+
             dropList.add(PbHelper.createAwardPb(AwardType.RESOURCE, AwardType.Resource.OIL, oil));
             dropList.add(PbHelper.createAwardPb(AwardType.RESOURCE, AwardType.Resource.ELE, eleC));
 

@@ -576,8 +576,19 @@ public class WorldConstant {
     public static float K8; // 默认兵种克制
     public static float K9; // 阶级克制比
     public static float K10; // 阶级加成
+    /**
+     * 打叛军损兵恢复
+     */
+    public static int FIGHT_BANDIT_LOST_RECOVER_ARMS;
+
+    /**
+     * 打营地损兵恢复
+     */
+    public static int FIGHT_CAMP_CITY_LOST_RECOVER_ARMS;
 
     public static void loadSystem() {
+        FIGHT_CAMP_CITY_LOST_RECOVER_ARMS = SystemTabLoader.getIntegerSystemValue(SystemId.FIGHT_CAMP_CITY_LOST_RECOVER_ARMS, 5000);
+        FIGHT_BANDIT_LOST_RECOVER_ARMS = SystemTabLoader.getIntegerSystemValue(SystemId.FIGHT_BANDIT_LOST_RECOVER_ARMS, 9500);
         RAID_BATTLE_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.RAID_BATTLE_TIME, 180);
         EXPEDITION_BATTLE_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.EXPEDITION_BATTLE_TIME, 300);
         CITY_MAX_PRODUCE = SystemTabLoader.getIntegerSystemValue(SystemId.CITY_MAX_PRODUCE, 6);
