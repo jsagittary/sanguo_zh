@@ -1192,10 +1192,30 @@ public class BuildingDataManager {
             }
             change.addChangeType(AwardType.RESOURCE, AwardType.Resource.HUMAN);
         }
+        // 幸福度损失
+        List<Integer> happinessLostCoefficient = Constant.HAPPINESS_LOST_COEFFICIENT;
+        int loseHappiness = 0;
+        if (CheckNull.nonEmpty(happinessLostCoefficient) || happinessLostCoefficient.size() >= 2) {
+            int happiness = def.getHappiness();
+            loseHappiness = Math.max((int) Math.round(happiness * happinessLostCoefficient.get(0) / Constant.TEN_THROUSAND), happinessLostCoefficient.get(1));
+            loseHappiness = Math.min(happiness, loseHappiness);
+            def.subHappiness(loseHappiness);
+        }
+        // 居民损失
+        List<Integer> residentLostCoefficient = Constant.RESIDENT_LOST_COEFFICIENT;
+        int loseResident = 0;
+        if (CheckNull.nonEmpty(residentLostCoefficient) || residentLostCoefficient.size() >= 2) {
+            int idleResidentCnt = def.getIdleResidentCnt();
+            loseResident = Math.max((int) Math.round(idleResidentCnt * residentLostCoefficient.get(0) / Constant.TEN_THROUSAND), residentLostCoefficient.get(1));
+            loseResident = Math.min(idleResidentCnt, loseResident);
+            def.subIdleResidentCnt(loseResident);
+        }
         LogUtil.debug(def.roleId + ",城战失去资源oil=" + loseOil + ",food=" + loseFood + ",ele=" + loseEle + ",loseHuman="
-                + loseHuman + ",human=" + def.resource.getHuman());
+                + loseHuman + ",human=" + def.resource.getHuman() + ",loseHappiness=" + loseHappiness + ",loseResident=" + loseResident);
         // 向客户端同步玩家资源数据
         rewardDataManager.syncRoleResChanged(def, change);
+        // 同步领主幸福度和居民变化
+        DataResource.ac.getBean(PlayerDataManager.class).syncRoleInfo(def);
         processRebuild(def, loseOil, loseFood, loseEle, protect);
         // 荣耀日报信息记录
         processHonorDaily(atk, def, loseOil, loseFood, loseEle);

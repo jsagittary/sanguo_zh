@@ -510,6 +510,17 @@ public class PlayerDataManager implements PlayerDM {
             // 初始化订单数上限
             player.setEconomicOrderMaxCnt(Constant.ORDER_INI_TOP_LIMIT);
 
+            // 初始化安民济物记录
+            Map<Integer, Integer> peaceAndWelfareRecord = player.getPeaceAndWelfareRecord();
+            peaceAndWelfareRecord.put(1, 0);
+            peaceAndWelfareRecord.put(2, 0);
+
+            int now = TimeHelper.getCurrentSecond();
+            // 初始化幸福度恢复时间
+            player.setHappinessTime(now);
+            // 初始化人口恢复时间
+            player.setResidentTime(now);
+
             createBuilding(player);
             createResource(player, staticIniLord);
             createData(player);
@@ -1699,8 +1710,10 @@ public class PlayerDataManager implements PlayerDM {
                 int addResident = period / residentRecoverySpeed;
                 player.addResidentTotalCnt(Math.min(oldResidentTotalCnt + addResident, residentTopLimit));
                 player.addIdleResidentCnt(player.getResidentTotalCnt() - oldResidentTotalCnt);
+                player.setResidentTime(player.getResidentTime() + addResident * residentRecoverySpeed);
+            } else {
+                player.setResidentTime(now);
             }
-            player.setResidentTime(now);
         } catch (Exception e) {
             LogUtil.error("居民恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
         }
