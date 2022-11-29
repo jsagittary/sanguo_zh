@@ -113,7 +113,6 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -3482,7 +3481,7 @@ public class BuildingService implements GmCmdService {
 
             Map<Integer, BuildingState> buildingData = player.getBuildingData();
             List<BuildingState> buildingStateList = buildingData.values().stream()
-                    .filter(tmp -> tmp != null && CheckNull.nonEmpty(tmp.getCurProductCrop()) && tmp.getCurProductCrop().size() < 3)
+                    .filter(tmp -> tmp != null && CheckNull.nonEmpty(tmp.getCurProductCrop()) && tmp.getCurProductCrop().size() >= 3)
                     .collect(Collectors.toList());
             for (BuildingState buildingState : buildingStateList) {
                 boolean synFlag = false;
@@ -3516,7 +3515,7 @@ public class BuildingService implements GmCmdService {
                     curProductCrop.clear();
                     synFlag = true;
                 }
-                if (CheckNull.nonEmpty(buildingState.getCropIdInfo())) {
+                if (CheckNull.isEmpty(curProductCrop) && CheckNull.nonEmpty(buildingState.getCropIdInfo())) {
                     // 如果该建筑还有绑定的经济作物, 则继续生产下一个
                     cropId = buildingState.getCropIdInfo().get(1);
                     StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
@@ -3626,8 +3625,10 @@ public class BuildingService implements GmCmdService {
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
         // 全部可派遣居民的建筑居民上限总和
+        List<Integer> autoDispatchResidentBuilding = new ArrayList<>();
+
         int totalResidentTopLimit = buildingData.values().stream()
-                .filter(tmp -> tmp.getBuildingLv() >= 1 && Arrays.binarySearch(BuildingType.AUTO_DISPATCH_RESIDENT_BUILDING, tmp.getBuildingType()) >= 0)
+                .filter(tmp -> tmp.getBuildingLv() >= 1 && BuildingType.autoDispatchResidentBuilding.contains(tmp.getBuildingType()))
                 .mapToInt(BuildingState::getResidentTopLimit)
                 .sum();
         List<Integer> millIds = new ArrayList<>();
@@ -3686,54 +3687,74 @@ public class BuildingService implements GmCmdService {
                 // updateMillBaseResOut(player);
             }
         }*/
-        for (Integer buildingType : BuildingType.AUTO_DISPATCH_RESIDENT_BUILDING) {
-            if (player.getIdleResidentCnt() <= 0) {
-                break;
-            }
-            List<BuildingState> buildingStateList = buildingData.values().stream().filter(tmp -> tmp.getBuildingType() == buildingType).collect(Collectors.toList());
-            boolean dispatchFlag = false;
-            if (BuildingDataManager.isResType(buildingType) && buildingType != BuildingType.RESIDENT_HOUSE) {
-                // 资源建筑重新分配居民前, 先将已产出的资源征收了
-                millIds.addAll(buildingStateList.stream().map(BuildingState::getBuildingId).collect(Collectors.toList()));
-                forceGainResource(player, millIds);
-            }
-            // 每一类建筑的居民上限总和
-            int totalResidentLimitByBuildingType = buildingStateList.stream()
-                    .filter(tmp -> tmp.getBuildingLv() >= 1)
-                    .mapToInt(BuildingState::getBuildingLv)
-                    .sum();
-            // 每一类建筑可派遣的居民数量
-            int canDispatchNumByBuildingType = (int) Math.floor(player.getIdleResidentCnt() * ((double) totalResidentLimitByBuildingType / totalResidentTopLimit));
-            // 公式计算不足1个人口时, 则剩余的空闲居民数就是该类建筑可派遣的居民数
-            canDispatchNumByBuildingType = canDispatchNumByBuildingType == 0 ? player.getIdleResidentCnt() : canDispatchNumByBuildingType;
-            // 对每一类型下的建筑, 按照地貌buff倒序排序, 居民优先分配给有地貌buff加成的
-            List<BuildingState> sortedByLandBuff = buildingStateList.stream()
-                    .sorted(Comparator.comparing(BuildingState::getLandType).reversed())
-                    .collect(Collectors.toList());
-            for (BuildingState buildingState : sortedByLandBuff) {
-                if (canDispatchNumByBuildingType <= 0) {
+        List<Integer> changedBuildingIds = new ArrayList<>();
+        while (player.getIdleResidentCnt() > 0) {
+            for (Integer buildingType : BuildingType.AUTO_DISPATCH_RESIDENT_BUILDING) {
+                if (player.getIdleResidentCnt() <= 0) {
                     break;
                 }
-                int residentTopLimit = buildingState.getResidentTopLimit();
-                int oldResidentCnt = buildingState.getResidentCnt();
-                if (oldResidentCnt < residentTopLimit) {
-                    // 说明建筑有可派遣居民的空闲位置
-                    buildingState.setResidentCnt(Math.min((canDispatchNumByBuildingType + oldResidentCnt), residentTopLimit));
-                    canDispatchNumByBuildingType -= (buildingState.getResidentCnt() - oldResidentCnt);
-                    player.subIdleResidentCnt(Math.min(buildingState.getResidentCnt() - oldResidentCnt, idleResidentCnt));
-                    builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
-                    dispatchFlag = true;
+                List<BuildingState> buildingStateList = buildingData.values().stream()
+                        .filter(tmp -> tmp.getBuildingType() == buildingType)
+                        .collect(Collectors.toList());
+                boolean dispatchFlag = false;
+                if (BuildingDataManager.isResType(buildingType)) {
+                    // 资源建筑重新分配居民前, 先将已产出的资源征收了
+                    millIds.addAll(buildingStateList.stream().map(BuildingState::getBuildingId).collect(Collectors.toList()));
+                    forceGainResource(player, millIds);
                 }
-                if (buildingType == BuildingType.FERRY) {
-                    // 给渡口重新派遣居民时, 重新计算渡口的产出时间
-                    int ferryResidentEffect = Math.max(buildingState.getResidentCnt() - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
-                    DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
+                // 每一类建筑的居民上限总和
+                int totalResidentLimitByBuildingType = buildingStateList.stream()
+                        .filter(tmp -> tmp.getBuildingLv() >= 1)
+                        .mapToInt(BuildingState::getResidentTopLimit)
+                        .sum();
+                // 每一类建筑可派遣的居民数量
+                int canDispatchNumByBuildingType = (int) Math.floor(player.getIdleResidentCnt() * (totalResidentLimitByBuildingType * 1.00 / totalResidentTopLimit));
+                // 公式计算不足1个人口时, 则剩余的空闲居民数就是该类建筑可派遣的居民数
+                canDispatchNumByBuildingType = canDispatchNumByBuildingType == 0 ? player.getIdleResidentCnt() : canDispatchNumByBuildingType;
+                // 对每一类型下的建筑, 按照地貌buff倒序排序, 居民优先分配给有地貌buff加成的
+                List<BuildingState> sortedByLandBuff = buildingStateList.stream()
+                        .sorted(Comparator.comparing(BuildingState::getLandType).reversed())
+                        .collect(Collectors.toList());
+                for (BuildingState buildingState : sortedByLandBuff) {
+                    if (canDispatchNumByBuildingType <= 0) {
+                        break;
+                    }
+                    if (buildingState.getResidentTopLimit() <= 0) {
+                        continue;
+                    }
+                    int residentTopLimit = buildingState.getResidentTopLimit();
+                    int oldResidentCnt = buildingState.getResidentCnt();
+                    if (oldResidentCnt < residentTopLimit) {
+                        // 说明建筑有可派遣居民的空闲位置
+                        buildingState.setResidentCnt(Math.min((canDispatchNumByBuildingType + oldResidentCnt), residentTopLimit));
+                        canDispatchNumByBuildingType -= (buildingState.getResidentCnt() - oldResidentCnt);
+                        player.subIdleResidentCnt(Math.min(buildingState.getResidentCnt() - oldResidentCnt, player.getIdleResidentCnt()));
+                        // builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
+                        if (!changedBuildingIds.contains(buildingState.getBuildingId())) {
+                            changedBuildingIds.add(buildingState.getBuildingId());
+                        }
+                        dispatchFlag = true;
+                    }
+                    if (buildingType == BuildingType.FERRY) {
+                        // 给渡口重新派遣居民时, 重新计算渡口的产出时间
+                        int ferryResidentEffect = Math.max(buildingState.getResidentCnt() - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
+                        DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
+                    }
+                    buildingData.put(buildingState.getBuildingId(), buildingState);
                 }
-                buildingData.put(buildingState.getBuildingId(), buildingState);
+                if (dispatchFlag && BuildingDataManager.isResType(buildingType)) {
+                    // 更新资源建筑基础产量
+                    // updateMillBaseResOut(player);
+                }
             }
-            if (dispatchFlag && BuildingDataManager.isResType(buildingType)) {
-                // 更新资源建筑基础产量
-                // updateMillBaseResOut(player);
+        }
+        if (CheckNull.nonEmpty(changedBuildingIds)) {
+            for (Integer buildingId : changedBuildingIds) {
+                BuildingState buildingState = buildingData.get(buildingId);
+                if (buildingState == null) {
+                    continue;
+                }
+                builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingId, buildingState.getResidentCnt()));
             }
         }
     }
@@ -4120,4 +4141,8 @@ public class BuildingService implements GmCmdService {
         buildingDataManager.updateBuildingLockState(player);
     }
 
+    public static void main(String[] args) {
+        int canDispatchNumByBuildingType = (int) Math.floor(4 * ((double) 7 / 8));
+        System.out.println("canDispatchNumByBuildingType = " + canDispatchNumByBuildingType);
+    }
 }

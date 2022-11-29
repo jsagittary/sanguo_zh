@@ -1,5 +1,9 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class BuildingType {
     // 君王殿
     public static final int COMMAND = 1;
@@ -109,6 +113,8 @@ public class BuildingType {
      * 一键派遣居民的建筑类型
      */
     public static final int[] AUTO_DISPATCH_RESIDENT_BUILDING = { RES_FOOD, RES_ORE, RES_ELE, RES_OIL, FERRY };
+
+    public static final List<Integer> autoDispatchResidentBuilding = new ArrayList<>(Arrays.asList(RES_FOOD, RES_ORE, RES_ELE, RES_OIL, FERRY));
 
     /** 建筑可升级 */
     public static final int BUILD_CAN_UP_STATUS = 1;
