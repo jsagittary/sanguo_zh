@@ -1681,6 +1681,9 @@ public class PlayerService implements GmCmdService {
         if (mPlayer.lord.getCamp() != tPlayer.lord.getCamp()) {
             throw new MwException(GameError.COMPARE_NOTES_CAMP_ERROR.getCode(), "只有相同阵营才能切磋");
         }
+        if (roleId == targetId) {
+            throw new MwException(GameError.PARAM_ERROR, "切磋不可挑战自己");
+        }
 
         return warService.compareNotesFightLogic(mPlayer, tPlayer, heroIds);
     }
