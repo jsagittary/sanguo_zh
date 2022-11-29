@@ -308,7 +308,7 @@ public class Hero {
     }
 
     public void setCount(int count) {
-        if (this.count > 0 && this.roleType != HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
+        if (this.count > 0 && !isPrincipleHero()) {
             StringBuilder sb = new StringBuilder();
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             if (!ObjectUtils.isEmpty(stackTraceElements)) {
