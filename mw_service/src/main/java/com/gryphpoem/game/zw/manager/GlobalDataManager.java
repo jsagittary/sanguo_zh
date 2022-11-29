@@ -5,7 +5,10 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
-import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLightningWarDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.DataSaveConstant;
@@ -307,6 +310,7 @@ public class GlobalDataManager {
                     if (CheckNull.isNull(cityHero)) continue;
                     heroList.add(cityHero);
                 }
+                city.setFormList(heroList);
                 gameGlobal.getCityMap().put(city.getCityId(), city);
             }
         }
