@@ -147,6 +147,7 @@ public class FightService {
         for (NpcForce npcForce : npcForces) {
             if (!npcForce.alive()) continue;
             force = createCityNpcForce(npcForce.getNpcId(), npcForce.getHp());
+            if (CheckNull.isNull(force)) continue;
             force.roleType = Constant.Role.CITY;
             fighter.addRealForce(force);
         }
@@ -288,6 +289,7 @@ public class FightService {
         if (!CheckNull.isEmpty(npcForm)) {
             for (CityHero cityHero : npcForm) {
                 force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.CITY;
                 fighter.addForce(force);
             }
@@ -406,6 +408,7 @@ public class FightService {
             for (CityHero cityHero : npcForm) {
                 if (cityHero.getCurArm() <= 0) continue;
                 force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.GESTAPO;
                 force.attrData.addValue(nightEffect);
                 fighter.addForce(force);
@@ -491,6 +494,7 @@ public class FightService {
                     continue;
                 }
                 force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.CITY;
                 force.attrData.addValue(nightEffect);
                 fighter.addForce(force);
@@ -605,6 +609,7 @@ public class FightService {
             for (CityHero cityHero : npcForm) {
                 if (cityHero.getCurArm() <= 0) continue;
                 force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.CITY;
                 force.attrData.addValue(nightEffect);
                 fighter.addForce(force);
@@ -897,7 +902,9 @@ public class FightService {
         Fighter fighter = createFighter();
         for (List<Integer> npcIdList : npcIdListList) {
             if (CheckNull.isEmpty(npcIdList)) continue;
-            fighter.addForce(createNpcForce(npcIdList));
+            Force force = createNpcForce(npcIdList);
+            if (CheckNull.isNull(force)) continue;
+            fighter.addForce(force);
         }
         fighter.roleType = Constant.Role.BANDIT;
         return fighter;
@@ -915,7 +922,9 @@ public class FightService {
         }
         Fighter fighter = createFighter();
         for (List<Integer> npcId : npcIdList) {
-            fighter.addForce(createNpcForce(npcId));
+            Force force = createNpcForce(npcId);
+            if (CheckNull.isNull(force)) continue;
+            fighter.addForce(force);
         }
         fighter.roleType = Constant.Role.BANDIT;
         return fighter;
@@ -934,9 +943,12 @@ public class FightService {
         AttrData attrData;
         Force force = null;
         for (int i = 0; i < npcIdList.size(); i++) {
-            Integer npcId = npcIdList.get(0);
+            Integer npcId = npcIdList.get(i);
             npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            if (CheckNull.isNull(npc)) continue;
+            if (CheckNull.isNull(npc)) {
+                if (i == 0) return null;
+                continue;
+            }
             attrData = new AttrData(npc.getAttr());
             List<SimpleHeroSkill> skillList = createFightSkillList(npc.getActiveSkills(),
                     npc.getOnStageSkills(), npc.getSkillLv());
@@ -997,6 +1009,7 @@ public class FightService {
      */
     public Force createCityNpcForce(int npcId, int count) {
         StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        if (CheckNull.isNull(npc)) return null;
         AttrData attrData = new AttrData(npc.getAttr());
         return new Force(attrData, npc.getArmType(), count, attrData.lead, npcId, attrData.lead, npc.getLine());
     }
@@ -1230,6 +1243,7 @@ public class FightService {
      * @param hero
      */
     private void loadHeroSkill(Force force, Hero hero) {
+        List<SimpleHeroSkill> skillList = null;
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
         if (CheckNull.isNull(staticHero))
             return;
@@ -1240,7 +1254,8 @@ public class FightService {
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
             SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, true);
-            force.getSkillList(hero.getHeroId()).add(simpleHeroSkill);
+            if (CheckNull.isNull(skillList)) skillList = new ArrayList<>();
+            skillList.add(simpleHeroSkill);
         }
         for (Integer skillGroupId : staticHero.getActiveSkills()) {
             StaticHeroUpgrade staticHeroUpgrade = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
@@ -1249,8 +1264,11 @@ public class FightService {
             if (CheckNull.isNull(staticHeroSkill))
                 continue;
             SimpleHeroSkill simpleHeroSkill = new SimpleHeroSkill(staticHeroSkill, false);
-            force.getSkillList(hero.getHeroId()).add(simpleHeroSkill);
+            if (CheckNull.isNull(skillList)) skillList = new ArrayList<>();
+            skillList.add(simpleHeroSkill);
         }
+
+        force.setSkillList(hero.getHeroId(), skillList);
     }
 
     /**

@@ -197,7 +197,22 @@ public class Force {
         if (heroId == this.id) return this.skillList;
         if (CheckNull.isEmpty(this.assistantHeroList)) return null;
         return this.assistantHeroList.stream().filter(ass ->
-                ass.getHeroId() == heroId).map(ass -> ass.getSkillList()).findFirst().orElse(null);
+                        ass.getHeroId() == heroId).filter(ass -> !CheckNull.isEmpty(ass.getSkillList())).
+                map(ass -> ass.getSkillList()).findFirst().orElse(null);
+    }
+
+    public void setSkillList(int heroId, List<SimpleHeroSkill> skillList) {
+        if (CheckNull.isEmpty(skillList)) return;
+        if (heroId == this.id) {
+            this.skillList = skillList;
+            return;
+        }
+        if (CheckNull.isEmpty(this.assistantHeroList)) return;
+        FightAssistantHero assistantHero = this.assistantHeroList.stream().filter(ass -> ass.getHeroId() == heroId).
+                findFirst().orElse(null);
+        if (Objects.nonNull(assistantHero)) {
+            assistantHero.setSkillList(skillList);
+        }
     }
 
     public int armyTypeLv(int heroId) {
