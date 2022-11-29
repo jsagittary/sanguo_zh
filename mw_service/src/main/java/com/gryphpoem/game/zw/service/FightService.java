@@ -146,7 +146,7 @@ public class FightService {
         Force force;
         for (NpcForce npcForce : npcForces) {
             if (!npcForce.alive()) continue;
-            force = createCityNpcForce(npcForce.getNpcId(), npcForce.getHp());
+            force = createCityNpcForce(npcForce);
             if (CheckNull.isNull(force)) continue;
             force.roleType = Constant.Role.CITY;
             fighter.addRealForce(force);
@@ -288,7 +288,7 @@ public class FightService {
         // NPC阵容
         if (!CheckNull.isEmpty(npcForm)) {
             for (CityHero cityHero : npcForm) {
-                force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                force = createCityNpcForce(cityHero);
                 if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.CITY;
                 fighter.addForce(force);
@@ -407,7 +407,7 @@ public class FightService {
         if (!CheckNull.isEmpty(npcForm)) {
             for (CityHero cityHero : npcForm) {
                 if (cityHero.getCurArm() <= 0) continue;
-                force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                force = createCityNpcForce(cityHero);
                 if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.GESTAPO;
                 force.attrData.addValue(nightEffect);
@@ -493,7 +493,7 @@ public class FightService {
                 if (cityHero.getCurArm() <= 0) {
                     continue;
                 }
-                force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                force = createCityNpcForce(cityHero);
                 if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.CITY;
                 force.attrData.addValue(nightEffect);
@@ -608,7 +608,7 @@ public class FightService {
         if (!CheckNull.isEmpty(npcForm)) {
             for (CityHero cityHero : npcForm) {
                 if (cityHero.getCurArm() <= 0) continue;
-                force = createCityNpcForce(cityHero.getNpcId(), cityHero.getCurArm());
+                force = createCityNpcForce(cityHero);
                 if (CheckNull.isNull(force)) continue;
                 force.roleType = Constant.Role.CITY;
                 force.attrData.addValue(nightEffect);
@@ -1005,15 +1005,47 @@ public class FightService {
     /**
      * 创建Force对象
      *
-     * @param npcId
-     * @param count
+     * @param npcForce
      * @return
      */
-    public Force createCityNpcForce(int npcId, int count) {
+    public Force createCityNpcForce(Object npcForce) {
+        int hp = 0;
+        int npcId = 0;
+        List<Integer> deputyNpcIdList = null;
+        if (npcForce instanceof NpcForce) {
+            NpcForce nc = (NpcForce) npcForce;
+            npcId = nc.getNpcId();
+            hp = nc.getHp();
+            deputyNpcIdList = nc.getDeputyNpcIdList();
+        }
+        if (npcForce instanceof CityHero) {
+            CityHero cityHero = (CityHero) npcForce;
+            npcId = cityHero.getNpcId();
+            hp = cityHero.getCurArm();
+            deputyNpcIdList = cityHero.getDeputyIdList();
+        }
+        if (npcId == 0) return null;
+
         StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
         if (CheckNull.isNull(npc)) return null;
         AttrData attrData = new AttrData(npc.getAttr());
-        return new Force(attrData, npc.getArmType(), count, attrData.lead, npcId, attrData.lead, npc.getLine());
+        Force force = new Force(attrData, npc.getArmType(), hp, attrData.lead, npcId, attrData.lead, npc.getLine());
+        List<SimpleHeroSkill> skillList = createFightSkillList(force, npc.getActiveSkills(), npc.getOnStageSkills(), npc.getSkillLv(), npcId);
+        if (CheckNull.nonEmpty(skillList)) {
+            force.setSkillList(npcId, skillList);
+        }
+        if (CheckNull.nonEmpty(deputyNpcIdList)) {
+            for (Integer deputyNpcId : deputyNpcIdList) {
+                StaticNpc deputyNpc = StaticNpcDataMgr.getNpcMap().get(deputyNpcId);
+                if (CheckNull.isNull(deputyNpc)) continue;
+                skillList = createFightSkillList(force, npc.getActiveSkills(), npc.getOnStageSkills(), npc.getSkillLv(), deputyNpcId);
+                FightAssistantHero fightAssistantHero = new FightAssistantHero(force, deputyNpcId, force.attrData.copy(), skillList);
+                fightAssistantHero.getAttrData().speed = npc.getSpeed();
+                force.assistantHeroList.add(fightAssistantHero);
+            }
+        }
+
+        return force;
     }
 
     /**

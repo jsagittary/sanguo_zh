@@ -129,8 +129,6 @@ public class FightSettleLogic {
             }
             rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force,
                     player.lord.getNick(), hero.getLevel(), addExp, force.totalLost));
-            rptList.add(PbHelper.createRptHero(Constant.Role.PLAYER, force.killed, 0, force, player.lord.getNick(),
-                    hero.getLevel(), addExp, force.totalLost));
         }
         return rptList;
     }

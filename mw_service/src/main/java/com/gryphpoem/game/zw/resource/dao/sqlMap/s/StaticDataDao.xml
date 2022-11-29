@@ -133,9 +133,9 @@
         <result column="outAward" property="outAward"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="form_13" property="form_13"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="form_13first" property="form_13first"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="otherAward" property="otherAward"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
@@ -147,7 +147,7 @@
     <resultMap id="cityDevMap" type="StaticCityDev">
         <id column="lv" property="lv"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
 
     <select id="selectCityDevMap" resultMap="cityDevMap">
@@ -1250,7 +1250,7 @@
     <resultMap id="staticLightningWar" type="StaticLightningWar">
         <id column="keyId" property="keyId"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
         <result column="killAward" property="killAward"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
@@ -1794,7 +1794,7 @@
     <resultMap id="staticCounterAtkMap" type="StaticCounterAttack">
         <id column="autoId" property="autoId"/>
         <result column="form" property="form"
-                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
     </resultMap>
 
     <select id="selectCounterShopMap" resultMap="staticCounterShopMap">

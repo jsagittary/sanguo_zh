@@ -56,6 +56,14 @@ public class NpcForce {
         return hp > 0;
     }
 
+    public List<Integer> getDeputyNpcIdList() {
+        return deputyNpcIdList;
+    }
+
+    public void setDeputyNpcIdList(List<Integer> deputyNpcIdList) {
+        this.deputyNpcIdList = deputyNpcIdList;
+    }
+
     public CommonPb.Force toForcePb() {
         CommonPb.Force.Builder builder = CommonPb.Force.newBuilder();
         builder.setNpcId(npcId);
