@@ -4,8 +4,7 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -15,6 +14,7 @@ import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimCity;
@@ -32,7 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ import java.util.Map;
  * @Date: 2022/11/1 9:28
  */
 @Service
-public class LifeSimulatorService implements DelayInvokeEnvironment {
+public class LifeSimulatorService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -106,7 +108,9 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
                 delaySimulator.setType(delay.get(1));// 延时后执行哪一个模拟器
                 delaySimulator.setPauseTime(TimeHelper.getCurrentDay());
                 delaySimulator.setDelay(delay.get(0));// 延时时间
-                DELAY_QUEUE.add(new LifeSimulatorDelayRun(delaySimulator, player));
+                // DELAY_QUEUE.add(new LifeSimulatorDelayRun(delaySimulator, player));
+                List<LifeSimulatorInfo> lifeSimulatorInfos = player.getLifeSimulatorRecordMap().computeIfAbsent(4, k -> new ArrayList<>());
+                lifeSimulatorInfos.add(delaySimulator);
             }
         }
 
@@ -316,14 +320,47 @@ public class LifeSimulatorService implements DelayInvokeEnvironment {
         CommonPb.LifeSimulatorInfo lifeSimulatorInfoPb = lifeSimulatorInfo.ser();
         lifeSimulatorRecordBuilder.addLifeSimulatorInfo(lifeSimulatorInfoPb);
         builder.addLifeSimulatorRecord(lifeSimulatorRecordBuilder);
-        BasePb.Base msg = PbHelper.createSynBase(GamePb1.SyncSimulatorDelayStateRefreshRs.EXT_FIELD_NUMBER, GamePb1.SyncSimulatorDelayStateRefreshRs.ext, builder.build()).build();
-        playerService.syncMsgToPlayer(msg, player);
+        // BasePb.Base msg = PbHelper.createSynBase(GamePb1.SyncSimulatorDelayStateRefreshRs.EXT_FIELD_NUMBER, GamePb1.SyncSimulatorDelayStateRefreshRs.ext, builder.build()).build();
+        // playerService.syncMsgToPlayer(msg, player);
+        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SyncSimulatorDelayStateRefreshRs.EXT_FIELD_NUMBER, GamePb1.SyncSimulatorDelayStateRefreshRs.ext, builder.build());
+        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
     }
 
-    private DelayQueue<LifeSimulatorDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
-
-    @Override
-    public DelayQueue getDelayQueue() {
-        return DELAY_QUEUE;
+    /**
+     * 延时模拟器处理定时器逻辑
+     */
+    public void refreshDelayLifeSimulator() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            try {
+                List<LifeSimulatorInfo> delayLifeSimulatorList = player.getLifeSimulatorRecordMap().get(4);
+                if (CheckNull.nonEmpty(delayLifeSimulatorList)) {
+                    for (LifeSimulatorInfo lifeSimulatorInfo : delayLifeSimulatorList) {
+                        Date delayDate = TimeHelper.getSomeDayAfterOrBerfore(
+                                TimeHelper.getDate(TimeHelper.getDay(lifeSimulatorInfo.getPauseTime())),
+                                lifeSimulatorInfo.getDelay(),
+                                8,
+                                0,
+                                0
+                        );
+                        if (TimeHelper.dateToSecond(delayDate) < now) {
+                            SyncNewSimulatorToPlayer(player, lifeSimulatorInfo, 4);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LogUtil.error("延时模拟器处理定时器报错, lordId:" + player.lord.getLordId(), e);
+            }
+        }
     }
+
+
+    // private DelayQueue<LifeSimulatorDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+    //
+    // @Override
+    // public DelayQueue getDelayQueue() {
+    //     return DELAY_QUEUE;
+    // }
 }

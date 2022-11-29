@@ -3213,6 +3213,9 @@ public class Player {
         // 安民济物记录
         if (CheckNull.nonEmpty(ser.getPeaceAndWelfareRecordList())) {
             ser.getPeaceAndWelfareRecordList().forEach(tmp -> this.peaceAndWelfareRecord.put(tmp.getV1(), tmp.getV2()));
+        } else {
+            this.peaceAndWelfareRecord.put(1, 0);
+            this.peaceAndWelfareRecord.put(2, 0);
         }
         // 幸福度恢复时间
         this.happinessTime = ser.getHappinessTime();

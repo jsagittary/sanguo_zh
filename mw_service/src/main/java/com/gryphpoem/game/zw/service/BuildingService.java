@@ -10,8 +10,6 @@ import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
 import com.gryphpoem.game.zw.manager.ActivityDataManager;
 import com.gryphpoem.game.zw.manager.BattlePassDataManager;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
@@ -108,7 +106,6 @@ import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
-import com.gryphpoem.game.zw.service.buildHomeCity.GainEconomicCropDelayRun;
 import com.gryphpoem.game.zw.service.economicOrder.EconomicOrderService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +113,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -132,7 +130,7 @@ import java.util.stream.Collectors;
  * @author tyler
  */
 @Service
-public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
+public class BuildingService implements GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -1521,6 +1519,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
      * @param buildingType
      * @param buildingLv
      * @param resCnt
+     * @param residentCnt
+     * @param landBuffType
      * @return
      */
     public CommonPb.Award gainResource(Player player, int buildingType, int buildingLv, int resCnt, int residentCnt, int landBuffType) {
@@ -1722,6 +1722,11 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         int newType = buildQue.getNewType();
         int preBuildingLv = BuildingDataManager.getBuildingLv(buildingId, player);
         int buildingLv;
+        BuildingState buildingState = player.getBuildingData().get(buildingId);
+        if (buildingState == null) {
+            buildingState = new BuildingState(buildingId, buildingType);
+            player.getBuildingData().put(buildingId, buildingState);
+        }
         if (BuildingDataManager.isResType(buildQue.getBuildingType())) {//资源建筑
             buildingLv = upMillLv(player, buildQue);
         } else {
@@ -1755,8 +1760,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 }*/
             } else if (buildingId == BuildingType.TECH) {
                 activityRobinHoodService.updateTaskSchedule(player, ActivityConst.ACT_TASK_UNIVERSITY_LV, 1, buildingLv);
-            } else if (buildingId == BuildingType.SMALL_GAME_HOUSE) {
-                // TODO 戏台解锁, 开始可以自然恢复幸福度
             }
             playerDataManager.createRoleOpt(player, Constant.OptId.id_1, String.valueOf(buildingLv),
                     String.valueOf(buildQue.getBuildingType()));
@@ -1783,7 +1786,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         ActivityDiaoChanService.completeTask(player, ETask.BUILD_UP);
         TaskService.processTask(player, ETask.BUILD_UP);
 
-        BuildingState buildingState = player.getBuildingData().get(buildingId);
         // 新手指引更新
         if (preBuildingLv < 1) {
             // 0->1建造
@@ -1793,11 +1795,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             if (sGuide != null && BuildingDataManager.isResType(buildingType)) {
                 // 给一次征收
                 giveOnceGains(player, buildingId);
-            }
-            // 更新建筑状态
-            if (buildingState == null) {
-                buildingState = new BuildingState(buildingId, buildingType);
-                player.getBuildingData().put(buildingId, buildingState);
             }
             // 设置地基
             buildingState.setFoundationId(buildQue.getFoundationId());
@@ -2066,7 +2063,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         //修改资源田类型
         if (buildQue.getFromType() == 2) {//改建
             mill.setType(buildQue.getNewType());
-            ;
             player.mills.put(buildQue.getPos(), mill);
         }
 
@@ -3360,12 +3356,12 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         return builder.build();
     }
 
-    private DelayQueue<GainEconomicCropDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
-
-    @Override
-    public DelayQueue getDelayQueue() {
-        return DELAY_QUEUE;
-    }
+    // private DelayQueue<GainEconomicCropDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+    //
+    // @Override
+    // public DelayQueue getDelayQueue() {
+    //     return DELAY_QUEUE;
+    // }
 
     /**
      * 给资源建筑分配经济副作物
@@ -3447,8 +3443,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                     curProductCrop.add(now);
                     curProductCrop.add(now + sEconomicCrop.getProductTime());
                     buildingState.setCurProductCrop(curProductCrop);
-                    // 新分配的经济作物, 则创建经济作物延时任务、离线任务
-                    DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
+                    // // 新分配的经济作物, 则创建经济作物延时任务、离线任务
+                    // DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
                 }
             } else {
                 // 建筑当前不存在正在产出的经济作物
@@ -3459,8 +3455,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 curProductCrop.add(now);
                 curProductCrop.add(now + sEconomicCrop.getProductTime());
                 buildingState.setCurProductCrop(curProductCrop);
-                // 新分配的经济作物, 则创建经济作物延时任务、离线任务
-                DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
+                // // 新分配的经济作物, 则创建经济作物延时任务、离线任务
+                // DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
             }
         } else {
             // 重新分配经济作物时, 如果没有分配任何一个经济作物, 上一次分配正在生产的经济作物也不给奖励了
@@ -3476,58 +3472,69 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
     }
 
     /**
-     * 收取产出的经济作物
-     *
-     * @param player
-     * @param curProductCrop
-     * @param buildingId
+     * 收取产出的经济作物定时器处理器逻辑
      */
-    public void gainEconomicCrop(Player player, List<Integer> curProductCrop, int buildingId) {
-        BuildingState buildingState = player.getBuildingData().get(buildingId);
-        if (buildingState == null) {
-            return;
-        }
+    public void gainEconomicCrop() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
 
-        Map<Integer, Integer> cropIdInfo = buildingState.getCropIdInfo();
-        int cropId = curProductCrop.get(0);
-        if (cropIdInfo.get(1) == cropId) {
-            StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
-            Prop prop = player.props.get(cropId);
-            if (prop == null || prop.getCount() < sEconomicCrop.getMaxCnt()) {
-                // 获取经济作物道具并向客户端同步
-                rewardDataManager.sendRewardSignle(player, AwardType.PROP, cropId, sEconomicCrop.getMaxCnt() - sEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
-            }
-            cropIdInfo.remove(1); // 移除队列头生产结束的经济作物
-            buildingState.getCurProductCrop().clear();
-            // 更新分配的经济作物队列信息, 向前移动
-            Map<Integer, Integer> newCropIdInfo = new HashMap<>(3);
-            if (CheckNull.nonEmpty(cropIdInfo)) {
-                for (int i = 0; i < cropIdInfo.entrySet().size(); i++) {
-                    if (i <= 2) {
-                        newCropIdInfo.put(i + 1, cropIdInfo.get(i));
+            Map<Integer, BuildingState> buildingData = player.getBuildingData();
+            List<BuildingState> buildingStateList = buildingData.values().stream()
+                    .filter(tmp -> tmp != null && CheckNull.nonEmpty(tmp.getCurProductCrop()) && tmp.getCurProductCrop().size() < 3)
+                    .collect(Collectors.toList());
+            for (BuildingState buildingState : buildingStateList) {
+                boolean synFlag = false;
+                List<Integer> curProductCrop = buildingState.getCurProductCrop();
+                Map<Integer, Integer> cropIdInfo = buildingState.getCropIdInfo();
+                int cropId = curProductCrop.get(0);
+                if (cropIdInfo.get(1) == cropId) {
+                    // 正在产出的作物是作物队列的第一个作物时，才奖励
+                    if (curProductCrop.get(2) < now) {
+                        StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
+                        Prop prop = player.props.get(cropId);
+                        if (prop == null || prop.getCount() < sEconomicCrop.getMaxCnt()) {
+                            // 获取经济作物道具并向客户端同步
+                            rewardDataManager.sendRewardSignle(player, AwardType.PROP, cropId, sEconomicCrop.getMaxCnt() - sEconomicCrop.getProductCnt(), AwardFrom.ECONOMIC_CROP_PRODUCT, "");
+                        }
+                        cropIdInfo.remove(1); // 移除队列头生产结束的经济作物
+                        curProductCrop.clear();
+                        // 更新分配的经济作物队列信息, 向前移动
+                        Map<Integer, Integer> newCropIdInfo = new HashMap<>(3);
+                        if (CheckNull.nonEmpty(cropIdInfo)) {
+                            for (int i = 0; i < cropIdInfo.keySet().size(); i++) {
+                                if (i <= 2) {
+                                    newCropIdInfo.put(i + 1, cropIdInfo.get(i + 2));
+                                }
+                            }
+                        }
+                        buildingState.setCropIdInfo(newCropIdInfo);
+                        synFlag = true;
                     }
+                } else {
+                    curProductCrop.clear();
+                    synFlag = true;
+                }
+                if (CheckNull.nonEmpty(buildingState.getCropIdInfo())) {
+                    // 如果该建筑还有绑定的经济作物, 则继续生产下一个
+                    cropId = buildingState.getCropIdInfo().get(1);
+                    StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
+                    curProductCrop = new ArrayList<>(3);
+                    curProductCrop.add(cropId);
+                    curProductCrop.add(now);
+                    curProductCrop.add(now + sEconomicCrop.getProductTime());
+                    buildingState.setCurProductCrop(curProductCrop);
+                    synFlag = true;
+                }
+
+                buildingData.put(buildingState.getBuildingId(), buildingState);
+                // 向客户端同步建筑状态变化
+                if (synFlag) {
+                    synPlayerBuildingState(player, buildingState.getBuildingId());
                 }
             }
-            buildingState.setCropIdInfo(newCropIdInfo);
         }
-
-        // 如果经济作物中途从建筑上移除了, 则不予奖励
-        if (CheckNull.nonEmpty(buildingState.getCropIdInfo())) {
-            // 如果该建筑还有绑定的经济作物, 则继续生产下一个
-            cropId = buildingState.getCropIdInfo().get(1);
-            StaticEconomicCrop sEconomicCrop = StaticBuildCityDataMgr.getStaticEconomicCropByPropId(cropId);
-            curProductCrop = new ArrayList<>(3);
-            int now = TimeHelper.getCurrentSecond();
-            curProductCrop.add(cropId);
-            curProductCrop.add(now);
-            curProductCrop.add(now + sEconomicCrop.getProductTime());
-            buildingState.setCurProductCrop(curProductCrop);
-            // 新分配的经济作物, 则创建经济作物延时任务、离线任务
-            DELAY_QUEUE.add(new GainEconomicCropDelayRun(player, curProductCrop, buildingId));
-        }
-
-        // 向客户端同步建筑状态变化
-        synPlayerBuildingState(player, buildingId);
     }
 
     /**
@@ -3557,19 +3564,18 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         GamePb1.DispatchResidentRs.Builder builder = GamePb1.DispatchResidentRs.newBuilder();
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
-        int idleResidentCnt = player.getIdleResidentCnt();
-        if (idleResidentCnt <= 0) {
-            throw new MwException(GameError.NO_CONFIG, String.format("派遣居民时, 无空闲居民可派遣, roleId:%s", roleId));
-        }
         boolean autoDispatch = rq.getAutoDispatch();
         if (autoDispatch) {
-            // 一键派遣
+            // 一键派遣, 将剩余空闲的居民数派遣到各个建筑, 因此各建筑的居民数量不会在原基础上减少
             autoDispatchResident(player, builder);
         } else {
-            // 单个建筑派遣
+            // 单个建筑派遣, 将该建筑的居民数量重新设置, 因此需将该建筑就的居民数还回到空闲居民数, 再分配
             int buildingId = rq.getBuildingId();
             int newResidentCnt = rq.getResidentCnt(); // 指定建筑派遣时, 派遣的数量为最终值, 非增量值
-            if (newResidentCnt > idleResidentCnt) {
+            BuildingState buildingState = buildingData.get(buildingId);
+            int oldResidentCnt = buildingState.getResidentCnt();
+            player.addIdleResidentCnt(oldResidentCnt);
+            if (newResidentCnt > player.getIdleResidentCnt()) {
                 throw new MwException(GameError.NO_CONFIG, String.format("派遣居民时, 派遣数量超过了当前空闲居民数, roleId:%s", roleId));
             }
             StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
@@ -3589,9 +3595,8 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                 forceGainResource(player, millIds);
             }
             int residentTopLimit = sBuildingLevel.getResident();
-            BuildingState buildingState = buildingData.get(buildingId);
-            int oldResidentCnt = buildingState.getResidentCnt();
             buildingState.setResidentCnt(Math.min(newResidentCnt, residentTopLimit));
+            player.subIdleResidentCnt(newResidentCnt);
             builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
             if (BuildingDataManager.isResType(buildingType)) {
                 // 更新资源建筑基础产量
@@ -3604,7 +3609,133 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
             }
         }
 
+        playerDataManager.syncRoleInfo(player);
         return builder.build();
+    }
+
+    /**
+     * 一键派遣居民
+     *
+     * @param player
+     */
+    private void autoDispatchResident(Player player, GamePb1.DispatchResidentRs.Builder builder) {
+        int idleResidentCnt = player.getIdleResidentCnt();
+        if (idleResidentCnt <= 0) {
+            return;
+        }
+        Map<Integer, BuildingState> buildingData = player.getBuildingData();
+        // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
+        // 全部可派遣居民的建筑居民上限总和
+        int totalResidentTopLimit = buildingData.values().stream()
+                .filter(tmp -> tmp.getBuildingLv() >= 1 && Arrays.binarySearch(BuildingType.AUTO_DISPATCH_RESIDENT_BUILDING, tmp.getBuildingType()) >= 0)
+                .mapToInt(BuildingState::getResidentTopLimit)
+                .sum();
+        List<Integer> millIds = new ArrayList<>();
+        /*Map<Integer, List<BuildingState>> groupByBuildingType = buildingData.values().stream().collect(Collectors.groupingBy(BuildingState::getBuildingType));
+        for (Entry<Integer, List<BuildingState>> entry : groupByBuildingType.entrySet()) {
+            int buildingType = entry.getKey();
+            if (buildingType == BuildingType.RESIDENT_HOUSE) {
+                // 民居不可派遣居民
+                continue;
+            }
+            boolean dispatchFlag = false;
+            List<BuildingState> buildingStateListByBuildingType = entry.getValue();
+            if (BuildingDataManager.isResType(buildingType)) {
+                // 资源建筑重新分配居民前, 先将已产出的资源征收了
+                millIds.addAll(buildingStateListByBuildingType.stream().map(BuildingState::getBuildingId).collect(Collectors.toList()));
+                forceGainResource(player, millIds);
+            }
+            // 每一类建筑的居民上限总和
+            int totalResidentLimitByBuildingType = buildingStateListByBuildingType.stream()
+                    .filter(tmp -> tmp.getBuildingLv() >= 1)
+                    .mapToInt(BuildingState::getBuildingLv)
+                    .sum();
+            // 每一类建筑可派遣的居民数量
+            int canDispatchNumByBuildingType = idleResidentCnt * (totalResidentLimitByBuildingType / totalResidentTopLimit);
+            // 对每一类型下的建筑, 按照地貌buff倒序排序, 居民优先分配给有地貌buff加成的
+            List<BuildingState> sortedByLandBuff = buildingStateListByBuildingType.stream()
+                    .sorted(Comparator.comparing(BuildingState::getLandType).reversed())
+                    .collect(Collectors.toList());
+            for (BuildingState buildingState : sortedByLandBuff) {
+                if (canDispatchNumByBuildingType <= 0) {
+                    break;
+                }
+                StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(buildingType, buildingState.getBuildingLv());
+                if (sBuildingLevel == null) {
+                    throw new MwException(GameError.DATA_EXCEPTION, String.format("派遣居民时, 获取不到建筑的等级配置, roleId:%s, buildType:%s, buildingLv:%s", player.getLordId(), buildingType, buildingState.getBuildingLv()));
+                }
+                int residentTopLimit = sBuildingLevel.getResident();
+                int oldResidentCnt = buildingState.getResidentCnt();
+                if (oldResidentCnt < residentTopLimit) {
+                    // 说明建筑有可派遣居民的空闲位置
+                    buildingState.setResidentCnt(Math.min((canDispatchNumByBuildingType + oldResidentCnt), residentTopLimit));
+                    canDispatchNumByBuildingType -= (buildingState.getResidentCnt() - oldResidentCnt);
+                    buildingData.put(buildingState.getBuildingId(), buildingState);
+                    player.subIdleResidentCnt(Math.min(buildingState.getResidentCnt() - oldResidentCnt, idleResidentCnt));
+                    builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
+                    dispatchFlag = true;
+                }
+                if (buildingType == BuildingType.FERRY) {
+                    // 给渡口重新派遣居民时, 重新计算渡口的产出时间
+                    int ferryResidentEffect = Math.max(buildingState.getResidentCnt() - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
+                    DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
+                }
+            }
+            if (dispatchFlag && BuildingDataManager.isResType(buildingType)) {
+                // 更新资源建筑基础产量
+                // updateMillBaseResOut(player);
+            }
+        }*/
+        for (Integer buildingType : BuildingType.AUTO_DISPATCH_RESIDENT_BUILDING) {
+            if (player.getIdleResidentCnt() <= 0) {
+                break;
+            }
+            List<BuildingState> buildingStateList = buildingData.values().stream().filter(tmp -> tmp.getBuildingType() == buildingType).collect(Collectors.toList());
+            boolean dispatchFlag = false;
+            if (BuildingDataManager.isResType(buildingType) && buildingType != BuildingType.RESIDENT_HOUSE) {
+                // 资源建筑重新分配居民前, 先将已产出的资源征收了
+                millIds.addAll(buildingStateList.stream().map(BuildingState::getBuildingId).collect(Collectors.toList()));
+                forceGainResource(player, millIds);
+            }
+            // 每一类建筑的居民上限总和
+            int totalResidentLimitByBuildingType = buildingStateList.stream()
+                    .filter(tmp -> tmp.getBuildingLv() >= 1)
+                    .mapToInt(BuildingState::getBuildingLv)
+                    .sum();
+            // 每一类建筑可派遣的居民数量
+            int canDispatchNumByBuildingType = (int) Math.floor(player.getIdleResidentCnt() * ((double) totalResidentLimitByBuildingType / totalResidentTopLimit));
+            // 公式计算不足1个人口时, 则剩余的空闲居民数就是该类建筑可派遣的居民数
+            canDispatchNumByBuildingType = canDispatchNumByBuildingType == 0 ? player.getIdleResidentCnt() : canDispatchNumByBuildingType;
+            // 对每一类型下的建筑, 按照地貌buff倒序排序, 居民优先分配给有地貌buff加成的
+            List<BuildingState> sortedByLandBuff = buildingStateList.stream()
+                    .sorted(Comparator.comparing(BuildingState::getLandType).reversed())
+                    .collect(Collectors.toList());
+            for (BuildingState buildingState : sortedByLandBuff) {
+                if (canDispatchNumByBuildingType <= 0) {
+                    break;
+                }
+                int residentTopLimit = buildingState.getResidentTopLimit();
+                int oldResidentCnt = buildingState.getResidentCnt();
+                if (oldResidentCnt < residentTopLimit) {
+                    // 说明建筑有可派遣居民的空闲位置
+                    buildingState.setResidentCnt(Math.min((canDispatchNumByBuildingType + oldResidentCnt), residentTopLimit));
+                    canDispatchNumByBuildingType -= (buildingState.getResidentCnt() - oldResidentCnt);
+                    player.subIdleResidentCnt(Math.min(buildingState.getResidentCnt() - oldResidentCnt, idleResidentCnt));
+                    builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
+                    dispatchFlag = true;
+                }
+                if (buildingType == BuildingType.FERRY) {
+                    // 给渡口重新派遣居民时, 重新计算渡口的产出时间
+                    int ferryResidentEffect = Math.max(buildingState.getResidentCnt() - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
+                    DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
+                }
+                buildingData.put(buildingState.getBuildingId(), buildingState);
+            }
+            if (dispatchFlag && BuildingDataManager.isResType(buildingType)) {
+                // 更新资源建筑基础产量
+                // updateMillBaseResOut(player);
+            }
+        }
     }
 
     /**
@@ -3642,78 +3773,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         }
 
         return effect;
-    }
-
-    /**
-     * 一键派遣居民
-     *
-     * @param player
-     */
-    private void autoDispatchResident(Player player, GamePb1.DispatchResidentRs.Builder builder) {
-        int idleResidentCnt = player.getIdleResidentCnt();
-        Map<Integer, BuildingState> buildingData = player.getBuildingData();
-        // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
-        // 全部建筑居民上限总和(民居除外)
-        int totalResidentTopLimit = buildingData.values().stream()
-                .filter(tmp -> tmp.getBuildingLv() >= 1 && tmp.getBuildingType() != BuildingType.RESIDENT_HOUSE)
-                .mapToInt(BuildingState::getResidentTopLimit)
-                .sum();
-        Map<Integer, List<BuildingState>> groupByBuildingType = buildingData.values().stream().collect(Collectors.groupingBy(BuildingState::getBuildingType));
-        List<Integer> millIds = new ArrayList<>();
-        for (Entry<Integer, List<BuildingState>> entry : groupByBuildingType.entrySet()) {
-            int buildingType = entry.getKey();
-            if (buildingType == BuildingType.RESIDENT_HOUSE) {
-                // 民居不可派遣居民 TODO 后期被派遣的居民需要从民居中扣减
-                continue;
-            }
-            boolean dispatchFlag = false;
-            List<BuildingState> buildingStateListByBuildingType = entry.getValue();
-            if (BuildingDataManager.isResType(buildingType)) {
-                // 资源建筑重新分配居民前, 先将已产出的资源征收了
-                millIds.addAll(buildingStateListByBuildingType.stream().map(BuildingState::getBuildingId).collect(Collectors.toList()));
-                forceGainResource(player, millIds);
-            }
-            // 每一类建筑的居民上限总和
-            int totalResidentLimitByBuildingType = buildingStateListByBuildingType.stream()
-                    .filter(tmp -> tmp.getBuildingLv() >= 1)
-                    .mapToInt(BuildingState::getBuildingLv)
-                    .sum();
-            // 每一类建筑可派遣的居民数量
-            int canDispatchNumByBuildingType = idleResidentCnt * (totalResidentLimitByBuildingType / totalResidentTopLimit);
-            // 对每一类型下的建筑, 按照地貌buff倒序排序, 居民优先分配给有地貌buff加成的
-            List<BuildingState> sortedByLandBuff = buildingStateListByBuildingType.stream()
-                    .sorted(Comparator.comparing(BuildingState::getLandType).reversed())
-                    .collect(Collectors.toList());
-            for (BuildingState buildingState : sortedByLandBuff) {
-                if (canDispatchNumByBuildingType <= 0) {
-                    break;
-                }
-                StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(buildingType, buildingState.getBuildingLv());
-                if (sBuildingLevel == null) {
-                    throw new MwException(GameError.DATA_EXCEPTION, String.format("派遣居民时, 获取不到建筑的等级配置, roleId:%s, buildType:%s, buildingLv:%s", player.getLordId(), buildingType, buildingState.getBuildingLv()));
-                }
-                int residentTopLimit = sBuildingLevel.getResident();
-                int oldResidentCnt = buildingState.getResidentCnt();
-                if (oldResidentCnt < residentTopLimit) {
-                    // 说明建筑有可派遣居民的空闲位置
-                    buildingState.setResidentCnt(Math.min((canDispatchNumByBuildingType + oldResidentCnt), residentTopLimit));
-                    canDispatchNumByBuildingType -= (buildingState.getResidentCnt() - oldResidentCnt);
-                    idleResidentCnt -= (buildingState.getResidentCnt() - oldResidentCnt);
-                    buildingData.put(buildingState.getBuildingId(), buildingState);
-                    builder.addBuildingInfo(PbHelper.createTwoIntPb(buildingState.getBuildingId(), buildingState.getResidentCnt()));
-                    dispatchFlag = true;
-                }
-                if (buildingType == BuildingType.FERRY) {
-                    // 给渡口重新派遣居民时, 重新计算渡口的产出时间
-                    int ferryResidentEffect = Math.max(buildingState.getResidentCnt() - oldResidentCnt, 0) * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT;
-                    DataResource.ac.getBean(ChemicalService.class).updateFerryProductTime(player, ferryResidentEffect);
-                }
-            }
-            if (dispatchFlag && BuildingDataManager.isResType(buildingType)) {
-                // 更新资源建筑基础产量
-                // updateMillBaseResOut(player);
-            }
-        }
     }
 
     /**
@@ -3793,7 +3852,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         } else {
             int buildingType = rq.getBuildingType();
             Map<Integer, BuildingState> buildingData = player.getBuildingData();
-            BuildingState buildingState = buildingData.get(buildingType);
+            List<BuildingState> buildingStateList = buildingData.values().stream().filter(tmp -> tmp.getBuildingType() == buildingType).collect(Collectors.toList());
             // 校验该建筑委任槽的解锁条件
             Map<Integer, StaticBuildingInit> staticBuildingInitByType = StaticBuildingDataMgr.getBuildingByTypeMapByType(buildingType);
             StaticBuildingInit sBuildingInit = staticBuildingInitByType.values().stream().findAny().orElse(null);
@@ -3808,37 +3867,38 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
                     throw new MwException(GameError.INVALID_PARAM, "手动委任武将时, 武将未拥有或已被委任, roleId:%s, buildingType:%s", roleId, buildingType);
                 }
             }
-            Map<Integer, Integer> heroIdInfoMap = buildingState.getHeroIdInfo();
-            if (CheckNull.nonEmpty(heroIdInfoMap)) {
-                heroIdInfoMap.values().forEach(tmp -> {
-                    Hero hero = player.heros.get(tmp);
-                    if (hero != null) {
-                        hero.setIsDispatched(false);
-                        hero.setBuildingType(0);
-                    }
-                });
-            }
-            heroIdInfoMap.clear();
-            // 校验武将是否拥有、是否已分配
             boolean dispatchFlag = false;
-            if (CheckNull.nonEmpty(heroIdList)) {
-                for (int i = 0; i < heroIdList.size(); i++) {
-                    int index = i + 1;
-                    int heroId = heroIdList.get(i); // 为0表示该委任槽空着
-                    if (buildingState.getBuildingLv() >= sBuildingInit.getNeedBuildingLv().get(index - 1)) {
-                        // 第index个委任槽已解锁
-                        heroIdInfoMap.put(index, heroId);
-                        Hero hero = player.heros.get(heroId);
+            for (BuildingState buildingState : buildingStateList) {
+                Map<Integer, Integer> heroIdInfoMap = buildingState.getHeroIdInfo();
+                if (CheckNull.nonEmpty(heroIdInfoMap)) {
+                    heroIdInfoMap.values().forEach(tmp -> {
+                        Hero hero = player.heros.get(tmp);
                         if (hero != null) {
-                            hero.setIsDispatched(true);
-                            hero.setBuildingType(buildingType);
+                            hero.setIsDispatched(false);
+                            hero.setBuildingType(0);
                         }
-                        dispatchFlag = true;
-                        CommonPb.BuildingInfo.Builder buildingInfoBuilder = CommonPb.BuildingInfo.newBuilder();
-                        buildingInfoBuilder.setBuildingType(buildingType);
-                        buildingInfoBuilder.setIndex(index);
-                        buildingInfoBuilder.setHeroId(heroId);
-                        builder.addBuildingInfo(buildingInfoBuilder.build());
+                    });
+                }
+                heroIdInfoMap.clear();
+                if (CheckNull.nonEmpty(heroIdList)) {
+                    for (int i = 0; i < heroIdList.size(); i++) {
+                        int index = i + 1;
+                        int heroId = heroIdList.get(i); // 为0表示该委任槽空着
+                        if (buildingState.getBuildingLv() >= sBuildingInit.getNeedBuildingLv().get(index - 1)) {
+                            // 第index个委任槽已解锁
+                            heroIdInfoMap.put(index, heroId);
+                            Hero hero = player.heros.get(heroId);
+                            if (hero != null) {
+                                hero.setIsDispatched(true);
+                                hero.setBuildingType(buildingType);
+                            }
+                            dispatchFlag = true;
+                            CommonPb.BuildingInfo.Builder buildingInfoBuilder = CommonPb.BuildingInfo.newBuilder();
+                            buildingInfoBuilder.setBuildingType(buildingType);
+                            buildingInfoBuilder.setIndex(index);
+                            buildingInfoBuilder.setHeroId(heroId);
+                            builder.addBuildingInfo(buildingInfoBuilder.build());
+                        }
                     }
                 }
             }
@@ -3962,7 +4022,6 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
     }
 
     public void clearSomeBuilding(Player player, int buildingId) {
-        int buildingType = BuildingDataManager.getBuildingTypeById(buildingId);
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         Map<Integer, Mill> mills = player.mills;
         Map<Integer, BuildingExt> buildingExts = player.buildingExts;
@@ -3974,6 +4033,7 @@ public class BuildingService implements DelayInvokeEnvironment, GmCmdService {
         buildingData.remove(buildingId);
         BuildingState buildingState = new BuildingState(staticBuildingInit.getBuildingId(), staticBuildingInit.getBuildingType());
         buildingState.setBuildingLv(staticBuildingInit.getInitLv());
+        int buildingType = staticBuildingInit.getBuildingType();
         buildingData.put(buildingId, buildingState);
         if (BuildingDataManager.isResType(buildingType)) {
             mills.remove(buildingId);

@@ -1463,6 +1463,7 @@ public class PlayerDataManager implements PlayerDM {
             builder.addMapCellData(mapCell.build());
         });
         builder.addAllFoundationData(player.getFoundationData());
+        builder.setHappiness(player.getHappiness());
         if (player.ctx != null) {
             Base.Builder msg = PbHelper.createSynBase(SyncRoleInfoRs.EXT_FIELD_NUMBER, SyncRoleInfoRs.ext,
                     builder.build());
@@ -1580,17 +1581,19 @@ public class PlayerDataManager implements PlayerDM {
             DataResource.ac.getBean(BuildingService.class).clearSomeBuilding(player, BuildingType.SMALL_GAME_HOUSE);
         }
         try {
-            // 校验戏台是否已解锁
-            boolean smallGameHouseUnlock = player.getBuildingData().values().stream()
-                    .anyMatch(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE && tmp.getBuildingLv() > 1);
-            if (!smallGameHouseUnlock) {
-                return;
+            if (player.getHappinessTime() <= 0) {
+                player.setHappinessTime(now);
             }
-
             int happinessRecoveryTopLimit = Constant.HAPPINESS_RECOVERY_TOP_LIMIT;
             int oldHappiness = player.getHappiness();
             int period = now - player.getHappinessTime();
             if (oldHappiness < happinessRecoveryTopLimit) {
+                // 校验戏台是否已解锁
+                boolean smallGameHouseUnlock = player.getBuildingData().values().stream()
+                        .anyMatch(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE && tmp.getBuildingLv() > 0);
+                if (!smallGameHouseUnlock) {
+                    return;
+                }
                 // 开始增长
                 int happinessRecoverySpeed = Constant.HAPPINESS_RECOVERY_SPEED;
                 // 计算戏台内政属性对幸福度恢复速度的加成
@@ -1598,21 +1601,21 @@ public class PlayerDataManager implements PlayerDM {
                 happinessRecoverySpeed = new Double(Math.ceil(happinessRecoverySpeed * (1 - interiorEffect / Constant.TEN_THROUSAND))).intValue(); // 向上取整
                 int addHappiness = period / happinessRecoverySpeed;
                 if (addHappiness > 0) {
-                    player.setHappinessTime(Math.min(happinessRecoveryTopLimit, oldHappiness + addHappiness));
+                    player.setHappiness(Math.min(happinessRecoveryTopLimit, oldHappiness + addHappiness));
                     player.setHappinessTime(player.getHappinessTime() + addHappiness * happinessRecoverySpeed);
                 }
             } else if (oldHappiness == happinessRecoveryTopLimit) {
                 // 不变
+                player.setHappinessTime(now);
             } else {
                 // 开始减少
                 int happinessLossSpeed = Constant.HAPPINESS_LOSS_SPEED;
                 int subHappiness = period / happinessLossSpeed;
                 if (subHappiness > 0) {
-                    player.setHappinessTime(Math.max(happinessRecoveryTopLimit, oldHappiness - subHappiness));
+                    player.setHappiness(Math.max(happinessRecoveryTopLimit, oldHappiness - subHappiness));
                     player.setHappinessTime(player.getHappinessTime() + subHappiness * happinessLossSpeed);
                 }
             }
-            player.setHappinessTime(now);
             // 根据更新后的幸福度, 同步更新人口恢复速度、资源生产速度
         } catch (Exception e) {
             LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
@@ -1626,6 +1629,12 @@ public class PlayerDataManager implements PlayerDM {
      * @return
      */
     public int leftUpdateHappinessTime(Player player) {
+        // 校验戏台是否已解锁
+        boolean smallGameHouseUnlock = player.getBuildingData().values().stream()
+                .anyMatch(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE && tmp.getBuildingLv() > 0);
+        if (!smallGameHouseUnlock) {
+            return 0;
+        }
         int now = TimeHelper.getCurrentSecond();
         updateHappiness(player, now);
         if (player.getHappiness() < Constant.HAPPINESS_RECOVERY_TOP_LIMIT) {

@@ -1069,6 +1069,7 @@ public class PlayerService implements GmCmdService {
             builder.addAllFoundationData(player.getFoundationData());
             builder.addAllResidentData(player.getResidentData());
             builder.setTestLong(Long.MAX_VALUE);
+            builder.setHappiness(player.getHappiness());
             builder.setHappinessTime(playerDataManager.leftUpdateHappinessTime(player));
             builder.setResidentTime(playerDataManager.leftRecoveryResidentTime(player));
             return builder.build();

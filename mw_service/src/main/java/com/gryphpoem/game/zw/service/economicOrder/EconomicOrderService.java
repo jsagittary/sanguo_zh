@@ -2,10 +2,10 @@ package com.gryphpoem.game.zw.service.economicOrder;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
-import com.gryphpoem.game.zw.gameplay.local.util.DelayQueue;
 import com.gryphpoem.game.zw.manager.MsgDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
@@ -20,8 +20,10 @@ import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.AwardItem;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEconomicOrder;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.EconomicOrder;
 import com.gryphpoem.game.zw.resource.pojo.world.Area;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
@@ -30,12 +32,15 @@ import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.BuildingService;
+import com.gryphpoem.game.zw.service.GmCmd;
+import com.gryphpoem.game.zw.service.GmCmdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,7 +52,7 @@ import java.util.stream.Collectors;
  * @Date: 2022/11/16 18:48
  */
 @Service
-public class EconomicOrderService implements DelayInvokeEnvironment {
+public class EconomicOrderService implements GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -148,7 +153,7 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
      *
      * @param player
      */
-    public void randomNewPreOrder(Player player) {
+    public int randomNewPreOrder(Player player) {
         /**
          * 如果有预显示订单, 预显示时间结束后, 刷为可提交订单;
          * 如果没有预显示订单, 且有空余订单栏位置, 则随机新的预显示订单, 不论空余订单栏位置有多少, 最多刷新两个
@@ -158,12 +163,12 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
         int lordLv = player.lord.getLevel();
         // 如果可提交的经济订单已达上限, 则不随机新的订单
         if (canSubmitOrderData.size() >= economicOrderMaxCnt) {
-            return;
+            return 0;
         }
         // 预显示订单已经有2个了, 则不随机新的订单
         Map<Integer, EconomicOrder> preDisplayOrder = player.getPreDisplayOrderData();
         if (preDisplayOrder.size() >= 2) {
-            return;
+            return 0;
         }
 
         int randomCnt = 2 - preDisplayOrder.size();
@@ -186,6 +191,17 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
                 }
                 int quantity = sEconomicOrder.getQuantity();
                 // 计算内政属性加成, 品质3传说的权重增加，品质1普通的权重减少
+                Map<Integer, BuildingState> buildingData = player.getBuildingData();
+                BuildingState buildingState = buildingData.values().stream()
+                        .filter(tmp -> tmp.getBuildingType() == BuildingType.MALL)
+                        .findFirst()
+                        .orElse(null);
+                if (buildingState == null) {
+                    StaticBuildingInit sBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(BuildingType.MALL);
+                    buildingState = new BuildingState(sBuildingInit.getBuildingId(), BuildingType.MALL);
+                    buildingState.setBuildingLv(sBuildingInit.getInitLv());
+                    player.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
+                }
                 int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.MALL);
                 switch (quantity) {
                     case 1:
@@ -267,39 +283,58 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
 
                     preDisplayOrder.put(keyId, economicOrder);
                     // 创建延时任务：检查玩家的预显示订单预显示时间是否结束, 如果结束, 则将其跟改为可提交的订单
-                    DELAY_QUEUE.add(new RefreshEconomicOrderDelayRun(player, 1, keyId, now + sEconomicOrder.getPreDisplayTime()));
+                    // DELAY_QUEUE.add(new RefreshEconomicOrderDelayRun(player, 1, keyId, now + sEconomicOrder.getPreDisplayTime()));
                     cnt++;
                 }
             }
         }
+
+        return randomCnt;
     }
 
     /**
      * 刷新玩家经济订单：将预显示刷到可提交; 可提交订单有效期过了，则从订单列表中移除
      */
-    public void refreshEconomicOrder(Player player, int type, int keyId) {
-        Map<Integer, EconomicOrder> canSubmitOrderData = player.getCanSubmitOrderData();
-        Map<Integer, EconomicOrder> preDisplayOrderData = player.getPreDisplayOrderData();
+    public void refreshEconomicOrder() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            try {
+                boolean synFlag = false;
+                Map<Integer, EconomicOrder> preDisplayOrderData = player.getPreDisplayOrderData();
+                Map<Integer, EconomicOrder> canSubmitOrderData = player.getCanSubmitOrderData();
 
-        if (type == 1) {
-            // 将预显示订单刷新到可提交订单
-            EconomicOrder economicOrder = preDisplayOrderData.get(keyId);
-            economicOrder.setPreDisplay(0);
-            canSubmitOrderData.put(keyId, economicOrder);
-            preDisplayOrderData.remove(keyId);
-            // 创建清除过期订单的延时任务
-            DELAY_QUEUE.add(new RefreshEconomicOrderDelayRun(player, 2, keyId, economicOrder.getEndTime()));
+                Map<Integer, EconomicOrder> newPreSubmitOrderData = new HashMap<>();
+                for (EconomicOrder economicOrder : preDisplayOrderData.values()) {
+                    if (economicOrder.getStartTime() + economicOrder.getPreDisplay() < now) {
+                        // 预显示订单更改为可提交订单
+                        economicOrder.setPreDisplay(0);
+                        canSubmitOrderData.put(economicOrder.getKeyId(), economicOrder);
+                    } else {
+                        newPreSubmitOrderData.put(economicOrder.getKeyId(), economicOrder);
+                    }
+                    synFlag = true;
+                }
+                player.setPreDisplayOrderData(newPreSubmitOrderData);
 
-            // 随机新的预显示订单
-            randomNewPreOrder(player);
+                List<EconomicOrder> economicOrderList = canSubmitOrderData.values().stream()
+                        .filter(tmp -> tmp.getEndTime() >= now)
+                        .collect(Collectors.toList());
+                canSubmitOrderData.clear();
+                for (EconomicOrder economicOrder : economicOrderList) {
+                    canSubmitOrderData.put(economicOrder.getKeyId(), economicOrder);
+                }
+                synFlag = randomNewPreOrder(player) > 0;
+
+                if (synFlag) {
+                    synEconomicOrderChange(player);
+                }
+            } catch (Exception e) {
+                LogUtil.error("经济订单定时器报错, lordId:" + player.lord.getLordId(), e);
+            }
         }
 
-        if (type == 2) {
-            // 清除除过期订单
-            canSubmitOrderData.remove(keyId);
-        }
-
-        synEconomicOrderChange(player);
     }
 
     /**
@@ -413,10 +448,23 @@ public class EconomicOrderService implements DelayInvokeEnvironment {
         finalAwardItems.add(awardItem);
     }
 
-    private DelayQueue<RefreshEconomicOrderDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+    // private DelayQueue<RefreshEconomicOrderDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
+    //
+    // @Override
+    // public DelayQueue getDelayQueue() {
+    //     return DELAY_QUEUE;
+    // }
 
+    @GmCmd("economicOrder")
     @Override
-    public DelayQueue getDelayQueue() {
-        return DELAY_QUEUE;
+    public void handleGmCmd(Player player, String... params) throws Exception {
+        switch (params[0]) {
+            case "clearAllOrder":
+                // 重置所有已探索的格子、已开垦的地基、已解锁的建筑
+                player.getCanSubmitOrderData().clear();
+                player.getPreDisplayOrderData().clear();
+                break;
+            default:
+        }
     }
 }

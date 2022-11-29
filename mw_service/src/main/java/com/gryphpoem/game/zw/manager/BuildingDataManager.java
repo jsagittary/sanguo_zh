@@ -313,16 +313,16 @@ public class BuildingDataManager {
         // }
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         BuildingState buildingState = buildingData.get(pos);
-        if (buildingState != null) {
-            return buildingState.getBuildingLv();
-        } else {
-            buildingState = new BuildingState();
-            buildingState.setBuildingId(pos);
-            buildingState.setBuildingLv(0);
+        if (buildingState == null) {
+            StaticBuildingInit staticBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(pos);
+            if (staticBuildingInit == null) {
+                return 0;
+            }
+            buildingState = new BuildingState(pos, staticBuildingInit.getBuildingType());
+            buildingState.setBuildingLv(staticBuildingInit.getInitLv());
             buildingData.put(pos, buildingState);
-            return 0;
         }
-
+        return buildingState.getBuildingLv();
     }
 
     /**
@@ -1559,6 +1559,9 @@ public class BuildingDataManager {
         Iterator<Mill> it = player.mills.values().iterator();
         while (it.hasNext()) {
             Mill mill = it.next();
+            if (mill.getType() == BuildingType.RESIDENT_HOUSE) {
+                continue;
+            }
             if (checkMillCanGain(player, mill)) {
                 addResourceOutAndMax(mill.getType(), mill.getLv(), player.resource);
             }
@@ -1637,27 +1640,11 @@ public class BuildingDataManager {
      * @return
      */
     public static int getBuildingTypeById(int buildingId) {
-        if (buildingId >= 101 && buildingId <= 116) {
-            return BuildingType.RES_OIL;
+        StaticBuildingInit staticBuildingInit = StaticBuildingDataMgr.getBuildingInitMapById(buildingId);
+        if (staticBuildingInit != null) {
+            return staticBuildingInit.getBuildingType();
         }
-
-        if (buildingId >= 201 && buildingId <= 216) {
-            return BuildingType.RES_ELE;
-        }
-
-        if (buildingId >= 301 && buildingId <= 316) {
-            return BuildingType.RES_FOOD;
-        }
-
-        if (buildingId >= 401 && buildingId <= 416) {
-            return BuildingType.RES_FOOD;
-        }
-
-        if (buildingId >= 501 && buildingId <= 510) {
-            return BuildingType.RESIDENT_HOUSE;
-        }
-
-        return buildingId;
+        return 0;
     }
 
 }

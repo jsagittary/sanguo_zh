@@ -254,7 +254,7 @@ public class BuildHomeCityService implements GmCmdService {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         Map<Integer, Integer> peaceAndWelfareRecord = player.getPeaceAndWelfareRecord();
         int type = rq.getType();
-        Integer latestPlayTime = peaceAndWelfareRecord.get(type);
+        int latestPlayTime = peaceAndWelfareRecord.get(type);
         if (latestPlayTime > 0 && DateHelper.isToday(TimeHelper.getDate(latestPlayTime))) {
             throw new MwException(GameError.PARAM_ERROR, String.format("玩家今日已进行过安民济物, roleId:%s, type:%s, latestTime:%s", roleId, type, TimeHelper.getDate(latestPlayTime)));
         }
@@ -278,8 +278,8 @@ public class BuildHomeCityService implements GmCmdService {
         }
 
         rewardDataManager.checkAndSubPlayerResHasSync(player, consume.get(0), consume.get(1), consume.get(2), AwardFrom.COMMON, "");
-        player.setHappiness(player.getHappiness() + happinessAdd.get(0));
-        // TODO 重新计算幸福度的范围, 同步更新人口恢复速度与资源产出速度
+        int happinessTopLimit = Constant.HAPPINESS_TOP_LIMIT;
+        player.setHappiness(Math.min(happinessTopLimit, player.getHappiness() + happinessAdd.get(0)));
         int residentTopLimit = player.getResidentTopLimit();
         int residentTotalCnt = player.getResidentTotalCnt();
         int finalAddResident = residentTotalCnt + residentAdd.get(0) > residentTopLimit ? residentTopLimit - residentTotalCnt : residentAdd.get(0);
@@ -504,6 +504,14 @@ public class BuildHomeCityService implements GmCmdService {
                 // 清除建筑队列
                 player.buildQue.clear();
                 break;
+            case "resetResidentData":
+                // 重置居民数据
+                resetResidentData(player);
+                break;
+            case "resetHappinessTime":
+                // 重置幸福度恢复时间
+                player.setHappinessTime(0);
+                break;
             default:
         }
         playerDataManager.syncRoleInfo(player);
@@ -511,6 +519,7 @@ public class BuildHomeCityService implements GmCmdService {
 
     /**
      * 重置所有已探索的格子、已开垦的地基、已解锁的建筑
+     *
      * @param player
      */
     public void resetWholeMainCityMapAndBuilding(Player player) {
@@ -623,6 +632,7 @@ public class BuildHomeCityService implements GmCmdService {
 
     /**
      * 去除重复地基
+     *
      * @param player
      */
     public void fixFoundationData(Player player) {
@@ -634,6 +644,7 @@ public class BuildHomeCityService implements GmCmdService {
 
     /**
      * 一键解锁全部地图格和地基
+     *
      * @param player
      */
     public void openTheWholeMap(Player player) {
@@ -658,6 +669,7 @@ public class BuildHomeCityService implements GmCmdService {
 
     /**
      * 重置玩家人口数据
+     *
      * @param player
      */
     public void resetResidentData(Player player) {
@@ -681,6 +693,7 @@ public class BuildHomeCityService implements GmCmdService {
                 .filter(tmp -> tmp.getBuildingType() == BuildingType.RESIDENT_HOUSE && tmp.getBuildingLv() > 0)
                 .mapToInt(BuildingState::getResidentTopLimit)
                 .sum();
+        buildingData.values().forEach(buildingState -> buildingState.setResidentCnt(0));
         player.addResidentTopLimit(sum);
     }
 }
