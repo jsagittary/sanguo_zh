@@ -13,6 +13,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 
@@ -307,10 +308,25 @@ public class Hero {
     }
 
     public void setCount(int count) {
-        if (this.count > 0 && this.roleType == HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
-            LogUtil.error("副将不可补兵, heroId: ", heroId);
+        if (this.count > 0 && this.roleType != HeroConstant.HERO_ROLE_TYPE_PRINCIPAL) {
+            StringBuilder sb = new StringBuilder();
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            if (!ObjectUtils.isEmpty(stackTraceElements)) {
+                for (int i = 1; i < stackTraceElements.length; i++) {
+                    StackTraceElement element = stackTraceElements[i];
+                    if (Objects.nonNull(element)) {
+                        sb.append(element.getFileName().replace("java", "")).
+                                append(":").append(element.getLineNumber()).append("|");
+                        if (sb.length() >= 300) {
+                            break;
+                        }
+                    }
+                }
+            }
+            LogUtil.error("非主将不可补兵, heroId: ", heroId, ", 补兵来源: ", sb.toString());
             return;
         }
+
         // 兵力是否有变动
         boolean isChange = count != this.count;
         this.count = count;
@@ -501,6 +517,10 @@ public class Hero {
         } else {
             setStatus(HeroConstant.HERO_STATUS_IDLE);
         }
+    }
+
+    public boolean isPrincipleHero() {
+        return roleType == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL;
     }
 
     public int getRoleType() {

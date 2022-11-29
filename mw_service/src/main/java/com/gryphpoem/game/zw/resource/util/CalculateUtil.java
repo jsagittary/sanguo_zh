@@ -332,8 +332,7 @@ public class CalculateUtil {
         Map<Integer, Integer> attrMap = calcHeroAttr(player, hero, staticHero);
 
         // 重新计算战斗力
-        if (reCalcFight && hero.getRoleType() != HeroConstant.HERO_ROLE_TYPE_DEPUTY
-                && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
+        if (reCalcFight && hero.isPrincipleHero() && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
             CalculateUtil.reCalcFight(player);
         }
         // 兵力属性改变时返还兵力
@@ -1150,7 +1149,7 @@ public class CalculateUtil {
             // 重新计算总兵力
             tempMap.put(FightCommonConstant.AttrId.LEAD,
                     getFinalLead(player, hero, staticHero.getLine(), tempMap.getOrDefault(FightCommonConstant.AttrId.LEAD, 0)));
-            if (hero.getPos() > 0 || hero.getCommandoPos() > 0) {
+            if ((hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {
                 int fight = reCalcFight(tempMap);
                 Map<Integer, Integer> showFight = hero.getShowFight();
                 int oldFight = showFight.getOrDefault(fightId, 0);
@@ -1185,7 +1184,7 @@ public class CalculateUtil {
             // 重新计算总兵力
             tempMap.put(FightCommonConstant.AttrId.LEAD,
                     getFinalLead(player, hero, staticHero.getLine(), tempMap.getOrDefault(FightCommonConstant.AttrId.LEAD, 0)));
-            if (!CheckNull.isNull(hero) && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
+            if (!CheckNull.isNull(hero) && (hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {
                 Optional.ofNullable(hero.getShowFight()).
                         ifPresent(showFight -> showFight.merge(fightId, reCalcFight(tempMap), Integer::sum));
             }
@@ -1278,7 +1277,7 @@ public class CalculateUtil {
      * @param hero
      */
     public static void returnArmy(Player player, Hero hero) {
-        if (player != null && hero != null && hero.getAttr()[FightCommonConstant.AttrId.LEAD] < hero.getCount()) {
+        if (player != null && hero != null && hero.getAttr()[FightCommonConstant.AttrId.LEAD] < hero.getCount() && hero.isPrincipleHero()) {
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
             int subArmy = hero.getCount() - hero.getAttr()[FightCommonConstant.AttrId.LEAD];
             hero.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
@@ -1293,21 +1292,6 @@ public class CalculateUtil {
                 change.addChangeType(AwardType.ARMY, staticHero.getType());
                 // 向客户端同步玩家资源数据
                 rewardDataManager.syncRoleResChanged(player, change);
-
-//                int armyType = staticHero.getType();
-//                AwardFrom from = AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION;
-                //记录玩家兵力变化信息
-                // LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy, Constant.ACTION_SUB, armyType, hero.getQuality());
-
-                // 上报玩家兵力变化信息
-//                LogLordHelper.playerArm(
-//                        from,
-//                        player,
-//                        armyType,
-//                        Constant.ACTION_SUB,
-//                        -subArmy,
-//                        DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType)
-//                );
             }
         }
     }
@@ -1484,7 +1468,7 @@ public class CalculateUtil {
             return;
         }
         Cia cia = player.getCia();
-        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {// 上阵将领起作用
+        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {// 上阵将领起作用
             for (FemaleAgent fa : cia.getFemaleAngets().values()) {
                 // 好感度加成
                 Optional.ofNullable(StaticCiaDataMgr.getAgentConfByAgent(fa))
@@ -1568,7 +1552,7 @@ public class CalculateUtil {
     @Deprecated
     private static void addCityBuffEffect(Player player, Hero hero, Map<Integer, Integer> attrMap) {
         // 上阵将领加成
-        if (!CheckNull.isNull(hero) && hero.getPos() > 0) {
+        if (!CheckNull.isNull(hero) && hero.getPos() > 0 && hero.isPrincipleHero()) {
             WorldDataManager worldDataManager = DataResource.ac.getBean(WorldDataManager.class);
             CommonPb.TwoInt cityStatus = worldDataManager.checkCityBuffer(player.lord.getPos());
             if (!CheckNull.isNull(cityStatus)) {
@@ -1750,7 +1734,7 @@ public class CalculateUtil {
         }
         Map<Integer, Integer> tempMap = new HashMap<>();// 基础属性
         Cia cia = player.getCia();
-        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {// 上阵将领起作用
+        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {// 上阵将领起作用
             for (FemaleAgent fa : cia.getFemaleAngets().values()) {
                 // 星级加成
                 Optional.ofNullable(StaticCiaDataMgr.getStaticAgentStar(fa))

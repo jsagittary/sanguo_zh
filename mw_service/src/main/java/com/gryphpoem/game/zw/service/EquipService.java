@@ -776,7 +776,7 @@ public class EquipService implements GmCmdService {
         // 重新计算并更新将领属性
         if (equip.getHeroId() > 0) {
             Hero hero = player.heros.get(equip.getHeroId());
-            if (hero != null && (hero.getPos() > 0 || hero.getAcqPos() > 0 || hero.getWallPos() > 0 || hero.getCommandoPos() > 0)) {
+            if (hero != null) {
                 CalculateUtil.processAttr(player, hero);
                 CalculateUtil.returnArmy(player, hero);
             }
