@@ -1610,6 +1610,11 @@ public class PlayerDataManager implements PlayerDM {
                 // 计算戏台内政属性对幸福度恢复速度的加成
                 int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.SMALL_GAME_HOUSE);
                 happinessRecoverySpeed = new Double(Math.ceil(happinessRecoverySpeed * (1 - interiorEffect / Constant.TEN_THROUSAND))).intValue(); // 向上取整
+                if (happinessRecoverySpeed == 0) {
+                    LogUtil.error("幸福度自然恢复速度配置错误, 导致除0");
+                    player.setHappinessTime(now);
+                    return;
+                }
                 int addHappiness = period / happinessRecoverySpeed;
                 if (addHappiness > 0) {
                     player.setHappiness(Math.min(happinessRecoveryTopLimit, oldHappiness + addHappiness));
@@ -1621,6 +1626,11 @@ public class PlayerDataManager implements PlayerDM {
             } else {
                 // 开始减少
                 int happinessLossSpeed = Constant.HAPPINESS_LOSS_SPEED;
+                if (happinessLossSpeed == 0) {
+                    LogUtil.error("幸福度自然损耗速度配置错误, 导致除0");
+                    player.setHappinessTime(now);
+                    return;
+                }
                 int subHappiness = period / happinessLossSpeed;
                 if (subHappiness > 0) {
                     player.setHappiness(Math.max(happinessRecoveryTopLimit, oldHappiness - subHappiness));
@@ -1706,6 +1716,11 @@ public class PlayerDataManager implements PlayerDM {
                             }
                         }
                     }
+                }
+                if (residentRecoverySpeed == 0) {
+                    LogUtil.error("人口自然恢复速度配置错误, 导致除0");
+                    player.setResidentTime(now);
+                    return;
                 }
                 int addResident = period / residentRecoverySpeed;
                 player.addResidentTotalCnt(Math.min(oldResidentTotalCnt + addResident, residentTopLimit));
