@@ -1164,6 +1164,32 @@ public class Player {
     }
 
     /**
+     * 最近一次叛军入侵时间
+     */
+    private int rebelInvadeTime;
+
+    public int getRebelInvadeTime() {
+        return rebelInvadeTime;
+    }
+
+    public void setRebelInvadeTime(int rebelInvadeTime) {
+        this.rebelInvadeTime = rebelInvadeTime;
+    }
+
+    /**
+     * 最近一次被玩家攻击的时间
+     */
+    private int playerAttackTime;
+
+    public int getPlayerAttackTime() {
+        return playerAttackTime;
+    }
+
+    public void setPlayerAttackTime(int playerAttackTime) {
+        this.playerAttackTime = playerAttackTime;
+    }
+
+    /**
      * 是否第一次打造宝具
      */
     private MakeTreasureWare makeTreasureWare = new MakeTreasureWare();

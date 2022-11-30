@@ -41,6 +41,7 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
     private static List<StaticCharacterReward> staticCharacterRewardList; // 性格奖励
     private static List<StaticSimCity> staticSimCityList; // 性格奖励
     private static List<StaticHomeCityCell> staticHomeCityCellList; // 主城地图格
+    private static List<StaticHomeCityCell> canRefreshBanditCellList; // 主城地图格
     private static List<StaticHomeCityFoundation> staticHomeCityFoundationList; // 主城地基
     private static Map<Integer, List<Integer>> cellFoundationMap; // 格子对应可解锁的地基
     private static List<StaticEconomicOrder> staticEconomicOrderList; // 经济订单
@@ -85,6 +86,7 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         staticFoundationBuffMap = staticIniDao.selectStaticFoundationBuffMap();
         staticSimNpcMap = staticIniDao.selectStaticSimNpcMap();
         staticSimNpcList = new ArrayList<>(staticSimNpcMap.values());
+        canRefreshBanditCellList = staticHomeCityCellList.stream().filter(tmp -> tmp.getCanRefreshBandit() == 1).collect(Collectors.toList());
     }
 
     @Override
@@ -147,6 +149,10 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
 
     public static List<StaticHomeCityCell> getStaticHomeCityCellList() {
         return staticHomeCityCellList;
+    }
+
+    public static List<StaticHomeCityCell> getCanRefreshBanditCellList() {
+        return canRefreshBanditCellList;
     }
 
     public static StaticHomeCityCell getStaticHomeCityCellById(int id) {

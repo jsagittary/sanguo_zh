@@ -841,6 +841,7 @@ public class WorldService {
             set.add(battleId);
 
             LogUtil.debug("==player.battleMap===" + player.battleMap);
+            target.setPlayerAttackTime(now);
 
             // 通知被攻击玩家
             if (target.isLogin) {

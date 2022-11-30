@@ -26,6 +26,8 @@ public class StaticHomeCityCell {
 
     private int hasBandit;
 
+    private int canRefreshBandit;
+
     public int getId() {
         return id;
     }
@@ -88,5 +90,13 @@ public class StaticHomeCityCell {
 
     public void setHasBandit(int hasBandit) {
         this.hasBandit = hasBandit;
+    }
+
+    public int getCanRefreshBandit() {
+        return canRefreshBandit;
+    }
+
+    public void setCanRefreshBandit(int canRefreshBandit) {
+        this.canRefreshBandit = canRefreshBandit;
     }
 }

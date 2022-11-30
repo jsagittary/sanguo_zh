@@ -76,11 +76,11 @@ public class ScheduleManager {
         return result;
     }
 
-    public JobDetail getJobDetail(String group,String name){
+    public JobDetail getJobDetail(String group, String name) {
         try {
-            return sched.getJobDetail(JobKey.jobKey(name,group));
+            return sched.getJobDetail(JobKey.jobKey(name, group));
         } catch (SchedulerException e) {
-            LogUtil.error("获取JobDetail发生错误",e);
+            LogUtil.error("获取JobDetail发生错误", e);
             return null;
         }
     }
@@ -119,6 +119,10 @@ public class ScheduleManager {
 
         // 过期宝具定时清除
         addJob(sched, "DelTreasureWareJob", "DelTreasureWareJob", DelTreasureWareJob.class, "5 0 * * * ? *");// 整点处理, 有五秒的偏移, [21:00:5, 22:00:5, 23:00:5, 00:00:5]
+
+        // 定时刷新土匪
+        List<Integer> banditRefreshTime = Constant.BANDIT_REFRESH_TIME;
+        addJob(sched, "RefreshBanditJob", "RefreshBanditJob", RefreshBanditJob.class, "0 " + banditRefreshTime.get(1) + " " + banditRefreshTime.get(0) + " * * * *");
 
         initBerlinJob();
         initLightningWarJob();
@@ -249,7 +253,7 @@ public class ScheduleManager {
         QuartzHelper.removeJob(sched, WorldConstant.BL_LW_END_CALLBACK_NAME, DefultJob.DEFULT_GROUP);
     }
 
-/*    *//**
+    /*    *//**
      * 添加前线阵地定时任务
      *
      * @param battlefront
@@ -380,7 +384,7 @@ public class ScheduleManager {
         }
     }
 
-    public String getActBeginJobName(int actType,int actId,int keyId){
+    public String getActBeginJobName(int actType, int actId, int keyId) {
         return new StringBuilder().append(actType).append("_").append(actId).append("_").append(keyId).toString();
     }
 
@@ -417,16 +421,16 @@ public class ScheduleManager {
                 continue;
             }
             if (ab.getActivityType() == ActivityConst.ACT_CHRISTMAS || ab.getActivityType() == ActivityConst.ACT_REPAIR_CASTLE) {
-                ActivityChristmasService.addJob(sched,ab,nowDate);
-            } else if(ab.getActivityType() == ActivityConst.ACT_DIAOCHAN || ab.getActivityType() == ActivityConst.ACT_SEASON_HERO){
-                ActivityDiaoChanService.addScheduleJob(ab,nowDate,sched);
+                ActivityChristmasService.addJob(sched, ab, nowDate);
+            } else if (ab.getActivityType() == ActivityConst.ACT_DIAOCHAN || ab.getActivityType() == ActivityConst.ACT_SEASON_HERO) {
+                ActivityDiaoChanService.addScheduleJob(ab, nowDate, sched);
             } else if (ab.getActivityType() == ActivityConst.ACT_AUCTION) {
                 DataResource.getBean(ActivityAuctionService.class).addSchedule(ab, nowDate, sched, objects);
             }
             //新的常规活动按照新的方式处理
-            else if(Objects.nonNull(activityTemplateService.getActivityService(ab.getActivityType()))){
-                this.addActivityJob(ab,nowDate);
-            }else {
+            else if (Objects.nonNull(activityTemplateService.getActivityService(ab.getActivityType()))) {
+                this.addActivityJob(ab, nowDate);
+            } else {
                 if (jobTime.getTime() <= nowDate.getTime()) {
                     continue;
                 }
@@ -449,19 +453,18 @@ public class ScheduleManager {
     }
 
 
-
-    private void addActivityJob(ActivityBase activityBase,Date now){
+    private void addActivityJob(ActivityBase activityBase, Date now) {
         String jobName = activityBase.getActivityType() + "_" + activityBase.getActivityId() + "_" + activityBase.getPlan().getKeyId();
-        if(activityBase.getEndTime().after(now)){
-            QuartzHelper.removeJob(sched,jobName,ActJob.NAME_END);
-            QuartzHelper.addJob(sched,jobName,ActJob.NAME_END, ActEndJob.class,activityBase.getEndTime());
+        if (activityBase.getEndTime().after(now)) {
+            QuartzHelper.removeJob(sched, jobName, ActJob.NAME_END);
+            QuartzHelper.addJob(sched, jobName, ActJob.NAME_END, ActEndJob.class, activityBase.getEndTime());
         }
-        if(Objects.nonNull(activityBase.getDisplayTime()) && activityBase.getDisplayTime().after(now)){
-            QuartzHelper.removeJob(sched,jobName,ActJob.NAME_OVER);
-            QuartzHelper.addJob(sched,jobName,ActJob.NAME_OVER, ActOverJob.class,activityBase.getDisplayTime());
+        if (Objects.nonNull(activityBase.getDisplayTime()) && activityBase.getDisplayTime().after(now)) {
+            QuartzHelper.removeJob(sched, jobName, ActJob.NAME_OVER);
+            QuartzHelper.addJob(sched, jobName, ActJob.NAME_OVER, ActOverJob.class, activityBase.getDisplayTime());
         }
         ActivityTemplateService activityTemplateService = DataResource.getBean(ActivityTemplateService.class);
-        activityTemplateService.addOtherJob(activityBase,now);
+        activityTemplateService.addOtherJob(activityBase, now);
     }
 
     /**

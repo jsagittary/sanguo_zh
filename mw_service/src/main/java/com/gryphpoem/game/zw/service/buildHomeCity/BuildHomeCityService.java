@@ -51,7 +51,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -604,11 +606,107 @@ public class BuildHomeCityService implements GmCmdService {
         }
     }
 
+    /**
+     * 土匪每日刷新
+     */
+    public void refreshBanditJob() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        List<StaticHomeCityCell> canRefreshBanditCellList = StaticBuildCityDataMgr.getCanRefreshBanditCellList();
+        List<StaticSimNpc> npcList = StaticBuildCityDataMgr.getStaticSimNpcList().stream()
+                .filter(tmp -> tmp.getType() == 2)
+                .collect(Collectors.toList());
+        if (CheckNull.isEmpty(npcList)) {
+            return;
+        }
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            if (player.lord.getLevel() < 42 || DateHelper.isSameDate(player.account.getCreateDate(), new Date())) {
+                continue;
+            }
+            try {
+                Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+                List<Integer> ownCellIds = mapCellData.entrySet().stream()
+                        .filter(tmp -> CheckNull.nonEmpty(tmp.getValue()) && tmp.getValue().size() >= 4 && tmp.getValue().get(1) == 0)
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toList());
+                List<Integer> cellIds = canRefreshBanditCellList.stream()
+                        .map(StaticHomeCityCell::getId)
+                        .filter(ownCellIds::contains).collect(Collectors.toList());
+                if (CheckNull.isEmpty(cellIds)) {
+                    continue;
+                }
+                Collections.shuffle(cellIds);
+                int cellId = cellIds.get(0);
+                List<Integer> cellState = mapCellData.get(cellId);
+                Collections.shuffle(npcList);
+                StaticSimNpc staticSimNpc = npcList.get(0);
+                List<List<Integer>> simTypeList = staticSimNpc.getSimType();
+                int simType = 0;
+                if (CheckNull.nonEmpty(simTypeList)) {
+                    for (List<Integer> list : simTypeList) {
+                        if (CheckNull.isEmpty(list) || list.size() < 2) {
+                            continue;
+                        }
+                        int weight = list.get(1);
+                        boolean hit = RandomHelper.isHitRangeIn10000(weight);
+                        if (hit) {
+                            simType = list.get(0);
+                            break;
+                        }
+                    }
+                }
+                if (simType == 0) {
+                    continue;
+                }
+                cellState.set(1, staticSimNpc.getId());
+                cellState.set(2, simType);
+                cellState.set(3, now);
+                playerDataManager.syncRoleInfo(player);
+            } catch (Exception e) {
+                LogUtil.error("土匪每日刷新定时器报错, lordId:" + player.lord.getLordId(), e);
+            }
+        }
+    }
 
+    /**
+     * 叛军入侵定时器
+     */
+    public void rebelInvadeTimerLogic() {
+        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
+        int now = TimeHelper.getCurrentSecond();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            if (player.lord.getLevel() < 42 || player.lord.getLevel() > 63) {
+                continue;
+            }
+            try {
+                // 获取玩家最近一次被玩家攻击时间
+                int playerAttackTime = player.getPlayerAttackTime();
+                // 获取最近一次被叛军入侵时间
+                int rebelInvadeTime = player.getRebelInvadeTime();
+                if (now - playerAttackTime < 24 * 60 * 60 && now - rebelInvadeTime < 24 * 60 * 60) {
+                    continue;
+                }
+                // 如果二者都超过24小时, 进行叛军入侵
+                int maxCombatId = player.combats.values().stream()
+                        .mapToInt(Combat::getCombatId)
+                        .max()
+                        .orElse(0);
+                int combatId = StaticCombatDataMgr.getCombatMap().values().stream()
+                        .filter(tmp -> tmp.getCombatId() > maxCombatId)
+                        .mapToInt(StaticCombat::getCombatId)
+                        .min()
+                        .orElse(0);
+                if (combatId == 0) {
+                    continue;
+                }
+                StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
 
-    // 叛军入侵
-    public void rebelInvade(long roleId) {
-
+            } catch (Exception e) {
+                LogUtil.error("土匪过期清除定时器报错, lordId:" + player.lord.getLordId(), e);
+            }
+        }
     }
 
     @GmCmd("buildCity")

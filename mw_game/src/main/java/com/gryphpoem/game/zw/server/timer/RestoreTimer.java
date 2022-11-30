@@ -10,6 +10,8 @@ import com.gryphpoem.game.zw.service.PlayerService;
  * 3.检查内挂
  * 4.周年活动刷新彩蛋
  * 5.丰收转盘刷新
+ * 6.幸福度恢复
+ * 7.人口恢复
  * @author tyler
  *
  */
