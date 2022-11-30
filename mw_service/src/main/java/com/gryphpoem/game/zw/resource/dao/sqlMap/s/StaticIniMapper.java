@@ -45,6 +45,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticRelic;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicFraction;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicShop;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimCity;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSmallGame;
@@ -491,4 +492,12 @@ public interface StaticIniMapper {
     })
     @MapKey("landType")
     Map<Integer, StaticFoundationBuff> selectStaticFoundationBuffMap();
+
+    @Select("select * from s_sim_npc")
+    @Results({
+            @Result(column = "simType", property = "simType", typeHandler = ListListTypeHandler.class),
+            @Result(column = "npcLock", property = "npcLock", typeHandler = ListIntTypeHandler.class)
+    })
+    @MapKey("id")
+    Map<Integer, StaticSimNpc> selectStaticSimNpcMap();
 }

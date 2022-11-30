@@ -268,7 +268,7 @@ public class CombatService {
      * @param total
      * @return
      */
-    private int combatStarCalc(int lost, int total) {
+    public int combatStarCalc(int lost, int total) {
         int lostRatio = (int) ((lost * 1.0 / total) * Constant.TEN_THROUSAND);
         for (List<Integer> item : Constant.COMBAT_STAR_RULE) {
             if (item.get(1) <= lostRatio && lostRatio <= item.get(2)) {

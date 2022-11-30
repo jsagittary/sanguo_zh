@@ -250,4 +250,8 @@ public class StaticIniDao extends BaseDao {
     public Map<Integer, StaticFoundationBuff> selectStaticFoundationBuffMap() {
         return getMapper(StaticIniMapper.class).selectStaticFoundationBuffMap();
     }
+
+    public Map<Integer, StaticSimNpc> selectStaticSimNpcMap() {
+        return getMapper(StaticIniMapper.class).selectStaticSimNpcMap();
+    }
 }

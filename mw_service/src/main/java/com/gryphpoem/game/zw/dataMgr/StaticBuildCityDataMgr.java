@@ -12,6 +12,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimCity;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
@@ -47,6 +48,8 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
     private static Map<Integer, List<Integer>> staticEconomicCropMapByQuality; // 经济作物, key-作物档位, value-作物的propId
     private static List<StaticHappiness> staticHappinessList; // 幸福度
     private static Map<Integer, StaticFoundationBuff> staticFoundationBuffMap; // 地貌buff, key-地貌类型，对应s_foundation_buff的landType
+    private static Map<Integer, StaticSimNpc> staticSimNpcMap; // 城建NPC, key-id
+    private static List<StaticSimNpc> staticSimNpcList; // 城建NPC
 
     @Override
     public void load() {
@@ -80,11 +83,21 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         }
         staticHappinessList = staticIniDao.selectStaticHappinessList();
         staticFoundationBuffMap = staticIniDao.selectStaticFoundationBuffMap();
+        staticSimNpcMap = staticIniDao.selectStaticSimNpcMap();
+        staticSimNpcList = new ArrayList<>(staticSimNpcMap.values());
     }
 
     @Override
     public void check() {
 
+    }
+
+    public static List<StaticSimNpc> getStaticSimNpcList() {
+        return staticSimNpcList;
+    }
+
+    public static StaticSimNpc getStaticSimNpcById(int id) {
+        return staticSimNpcMap.get(id);
     }
 
     public static StaticFoundationBuff getStaticFoundationBuffMap(int landType) {

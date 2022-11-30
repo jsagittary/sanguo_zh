@@ -146,6 +146,7 @@ import com.gryphpoem.game.zw.handler.client.battlepass.BuyBattlePassLvHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.GetBattlePassHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveBPAwardHandler;
 import com.gryphpoem.game.zw.handler.client.battlepass.ReceiveTaskAwardHandler;
+import com.gryphpoem.game.zw.handler.client.buildHomeCity.ClearBanditHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.ExploreHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.PeaceAndWelfareHandler;
 import com.gryphpoem.game.zw.handler.client.buildHomeCity.ReclaimHandler;
@@ -2420,6 +2421,7 @@ public class MessagePool implements IMessagePool {
         registerC(ReclaimFoundationRq.EXT_FIELD_NUMBER, ReclaimFoundationRs.EXT_FIELD_NUMBER, ReclaimHandler.class);
         registerC(SwapBuildingPosRq.EXT_FIELD_NUMBER, SwapBuildingPosRs.EXT_FIELD_NUMBER, SwapBuildingPosHandler.class);
         registerC(PeaceAndWelfareRq.EXT_FIELD_NUMBER, PeaceAndWelfareRs.EXT_FIELD_NUMBER, PeaceAndWelfareHandler.class);
+        registerC(ClearBanditRq.EXT_FIELD_NUMBER, ClearBanditRs.EXT_FIELD_NUMBER, ClearBanditHandler.class);
         // 建造建筑
         registerC(CreateBuildingRq.EXT_FIELD_NUMBER, CreateBuildingRs.EXT_FIELD_NUMBER, CreateBuildingHandler.class);
         // 派遣居民

@@ -140,6 +140,8 @@ public class LogicServer extends AbsLogicServer {
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new DelayLifeSimulatorTimer());
         // 经济作物收取定时器
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new GainEconomicCropTimer());
+        // 土匪过期清除定时器
+        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new AutoDelBanditTimer());
     }
 
     public void addCommand(Handler handler) {

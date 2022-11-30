@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -20,25 +21,37 @@ import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Building;
 import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
+import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
+import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
+import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.service.BuildingService;
+import com.gryphpoem.game.zw.service.CombatService;
+import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
 import com.gryphpoem.game.zw.service.PlayerService;
+import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +79,10 @@ public class BuildHomeCityService implements GmCmdService {
     private BuildingDao buildingDao;
     @Autowired
     private SmallIdManager smallIdManager;
+    @Autowired
+    private LifeSimulatorService lifeSimulatorService;
+    @Autowired
+    private FightService fightService;
 
     /**
      * 探索迷雾
@@ -116,7 +133,9 @@ public class BuildHomeCityService implements GmCmdService {
         List<Integer> cellState = new ArrayList<>(2);
         // 新增解锁的地图格子
         cellState.add(0); // 未开垦
-        cellState.add(staticHomeCityCell.getHasBandit()); // 是否有土匪
+        cellState.add(staticHomeCityCell.getHasBandit()); // 土匪keyId
+        cellState.add(getBanditTalkSimulator(staticHomeCityCell.getHasBandit())); // 土匪对应的对话引导模拟器
+        cellState.add(-1); // 侦察出现的土匪不会自动过期消失
         newAddMapCellData.put(cellId, cellState);
         // 关联解锁的地图格子
         List<Integer> bindCellList = staticHomeCityCell.getBindCellList();
@@ -124,7 +143,9 @@ public class BuildHomeCityService implements GmCmdService {
             StaticHomeCityCell bindCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
             List<Integer> bindCellState = new ArrayList<>(2);
             bindCellState.add(0); // 未开垦
-            bindCellState.add(bindCell.getHasBandit()); // 是否有土匪
+            bindCellState.add(bindCell.getHasBandit()); // 土匪keyId
+            bindCellState.add(getBanditTalkSimulator(bindCell.getHasBandit())); // 土匪对应的对话引导模拟器
+            bindCellState.add(-1); // 侦察出现的土匪不会自动过期消失
             if (!mapCellData.containsKey(bindCellId)) {
                 newAddMapCellData.put(bindCellId, bindCellState);
             }
@@ -136,6 +157,10 @@ public class BuildHomeCityService implements GmCmdService {
             CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
             mapCell.setCellId(key);
             mapCell.addAllState(value);
+            mapCell.setReclaimed(value.get(0) == 1);
+            mapCell.setNpcId(value.get(1));
+            mapCell.setSimType(value.get(2));
+            mapCell.setBanditRefreshTime(value.get(3));
             builder.addMapCellData(mapCell.build());
         });
         return builder.build();
@@ -297,191 +322,293 @@ public class BuildHomeCityService implements GmCmdService {
     }
 
     /**
-     * 幸福度自然更新的定时器逻辑<br>
-     * 小于会恢复度上限开始增长; 大于恢复度上限开始损耗
+     * 给土匪随机对话引导模拟器
+     *
+     * @param banditId
+     * @return
      */
-    public void HappinessTimerLogic() {
-        Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
-        int now = TimeHelper.getCurrentSecond();
-        while (iterator.hasNext()) {
-            Player player = iterator.next();
-            // TODO 防止开发环境旧账号报错, 线上删掉
-            BuildingState buildingState = player.getBuildingData().values().stream()
-                    .filter(tmp -> tmp.getBuildingType() == BuildingType.SMALL_GAME_HOUSE)
-                    .findFirst()
-                    .orElse(null);
-            if (buildingState == null) {
-                DataResource.ac.getBean(BuildingService.class).clearSomeBuilding(player, BuildingType.SMALL_GAME_HOUSE);
+    public int getBanditTalkSimulator(int banditId) {
+        StaticSimNpc staticSimNpc = StaticBuildCityDataMgr.getStaticSimNpcById(banditId);
+        if (staticSimNpc == null) {
+            return 0;
+        }
+
+        List<List<Integer>> simTypeList = staticSimNpc.getSimType();
+        if (CheckNull.isEmpty(simTypeList)) {
+            return 0;
+        }
+        for (List<Integer> simType : simTypeList) {
+            if (CheckNull.isEmpty(simType) || simType.size() < 2) {
+                continue;
             }
-            try {
-                int happinessRecoveryTopLimit = Constant.HAPPINESS_RECOVERY_TOP_LIMIT;
-                int oldHappiness = player.getHappiness();
-                int period = now - player.getHappinessTime();
-                if (oldHappiness < happinessRecoveryTopLimit) {
-                    // 开始增长
-                    int happinessRecoverySpeed = Constant.HAPPINESS_RECOVERY_SPEED;
-                    // 计算戏台内政属性对幸福度恢复速度的加成
-                    int interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.SMALL_GAME_HOUSE);
-                    happinessRecoverySpeed = new Double(Math.ceil(happinessRecoverySpeed * (1 - interiorEffect / Constant.TEN_THROUSAND))).intValue(); // 向上取整
-                    int addHappiness = period / happinessRecoverySpeed;
-                    if (addHappiness > 0) {
-                        player.setHappinessTime(Math.min(happinessRecoveryTopLimit, oldHappiness + addHappiness));
-                        player.setHappinessTime(player.getHappinessTime() + addHappiness * happinessRecoverySpeed);
-                    }
-                } else if (oldHappiness == happinessRecoveryTopLimit) {
-                    // 不变
-                } else {
-                    // 开始减少
-                    int happinessLossSpeed = Constant.HAPPINESS_LOSS_SPEED;
-                    int subHappiness = period / happinessLossSpeed;
-                    if (subHappiness > 0) {
-                        player.setHappinessTime(Math.max(happinessRecoveryTopLimit, oldHappiness - subHappiness));
-                        player.setHappinessTime(player.getHappinessTime() + subHappiness * happinessLossSpeed);
-                    }
-                }
-                player.setHappinessTime(now);
-                // 根据更新后的幸福度, 同步更新人口恢复速度、资源生产速度
-            } catch (Exception e) {
-                LogUtil.error("幸福度恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+            boolean hit = RandomHelper.isHitRangeIn10000(simType.get(1));
+            if (hit) {
+                return simType.get(0);
             }
         }
+
+        return 0;
     }
 
     /**
-     * 人口恢复的定时器逻辑<br>
-     * 人口总数小于人口上限就开始恢复
+     * 清剿土匪
+     *
+     * @param roleId
+     * @param rq
+     * @return
      */
-    public void ResidentTimerLogic() {
+    public GamePb1.ClearBanditRs clearBandit(long roleId, GamePb1.ClearBanditRq rq) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        GamePb1.ClearBanditRs.Builder builder = GamePb1.ClearBanditRs.newBuilder();
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        int cellId = rq.getCellId();
+        if (!mapCellData.containsKey(cellId)) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("清剿土匪时, 地图格不存在或未解锁, roleId:%s, cellId:%s", roleId, cellId));
+        }
+        int clearType = rq.getClearType();
+        CommonPb.Award addAward = null;
+        CommonPb.Award subAward = null;
+        // 模拟器结算
+        if (clearType == 1) {
+            List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = rq.getLifeSimulatorStepList();
+            if (CheckNull.nonEmpty(lifeSimulatorStepList)) {
+                // 标识模拟器是否结束
+                boolean isEnd = false;
+                List<List<Integer>> finalRewardList = new ArrayList<>();
+                List<List<Integer>> finalCharacterFixList = new ArrayList<>();
+                List<Integer> delay = null;
+                for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
+                    int chooseId = lifeSimulatorStep.getChooseId();
+                    if (chooseId > 0) {
+                        StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
+                        // 性格值变化
+                        List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
+                        finalCharacterFixList.addAll(characterFix);
+                        // 奖励变化
+                        List<List<Integer>> rewardList = sSimulatorChoose.getRewardList();
+                        finalRewardList.addAll(rewardList);
+                        // TODO buff增益
+                        List<List<Integer>> buff = sSimulatorChoose.getBuff();
+                    }
+                    long stepId = lifeSimulatorStep.getStepId();
+                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
+                    // 根据配置, 如果没有下一步, 则模拟器结束
+                    long nextId = staticSimulatorStep.getNextId();
+                    List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
+                    List<Long> playerChoose = new ArrayList<>();
+                    if (CheckNull.nonEmpty(staticChooseList)) {
+                        playerChoose = staticChooseList.stream().filter(tmp -> tmp.size() == 3 && tmp.get(0) == (long) chooseId && tmp.get(1) != 0L).findFirst().orElse(null);
+                    }
+                    if (CheckNull.nonEmpty(playerChoose)) {
+                        nextId = playerChoose.get(1);
+                    }
+                    if (!isEnd) {
+                        isEnd = nextId == 0L;
+                    }
+                    // 如果该步有延时执行, 新增模拟器器延时任务
+                    delay = staticSimulatorStep.getDelay();
+                    if (CheckNull.nonEmpty(delay)) {
+                        LifeSimulatorInfo delaySimulator = new LifeSimulatorInfo();
+                        delaySimulator.setType(delay.get(1));// 延时后执行哪一个模拟器
+                        delaySimulator.setPauseTime(TimeHelper.getCurrentDay());
+                        delaySimulator.setDelay(delay.get(0));// 延时时间
+                        List<LifeSimulatorInfo> lifeSimulatorInfos = player.getLifeSimulatorRecordMap().computeIfAbsent(4, k -> new ArrayList<>());
+                        lifeSimulatorInfos.add(delaySimulator);
+                    }
+                }
+                if (!isEnd) {
+                    throw new MwException(GameError.SIMULATOR_IS_NOT_END, String.format("记录模拟器结果时, 模拟器未结束, roleId:%s", roleId));
+                }
+                // 更新性格值并发送对应奖励
+                if (CheckNull.nonEmpty(finalCharacterFixList)) {
+                    if (CheckNull.isEmpty(player.getCharacterData())) {
+                        player.setCharacterData(new HashMap<>(6));
+                    }
+                    if (CheckNull.isEmpty(player.getCharacterRewardRecord())) {
+                        player.setCharacterRewardRecord(new HashMap<>(8));
+                    }
+                    for (List<Integer> characterChange : finalCharacterFixList) {
+                        int index = characterChange.get(0);
+                        int value = characterChange.get(1);
+                        int addOrSub = characterChange.get(0);
+                        lifeSimulatorService.updateCharacterData(player.getCharacterData(), index, value, addOrSub);
+                    }
+                    lifeSimulatorService.checkAndSendCharacterReward(player);
+                    // 同步领主性格变化
+                    playerDataManager.syncRoleInfo(player);
+                }
+                // 更新对应奖励变化
+                if (CheckNull.nonEmpty(finalRewardList)) {
+                    for (List<Integer> reward : finalRewardList) {
+                        int awardType = reward.get(0);
+                        int awardId = reward.get(1);
+                        int awardCount = reward.get(2);
+                        int addOrSub = reward.get(3);
+                        switch (addOrSub) {
+                            case 1:
+                                rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
+                                break;
+                            case 0:
+                                // 如果资源不足则扣减至0
+                                rewardDataManager.subPlayerResCanSubCount(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
+                                break;
+                        }
+                    }
+                }
+            }
+            if (!rq.getClearResult()) {
+                return builder.build();
+            }
+        }
+
+        // 小游戏结算
+        if (clearType == 2) {
+            if (!rq.getClearResult()) {
+                return builder.build();
+            }
+            int miniGameId = rq.getMiniGameId();
+            // TODO 获取小游戏奖励
+        }
+
+        // 战斗结算
+        boolean combatResult = false;
+        if (clearType == 3) {
+            List<Integer> heroIdList = rq.getHeroIdList();
+            if (CheckNull.isEmpty(heroIdList)) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("战斗方式清剿土匪时, 上阵将领为空, roleId:%s, cellId:%s", roleId, cellId));
+            }
+            // 采用当前玩家通关的战役的最后一关的配置
+            Combat combat = player.combats.values().stream().max(Comparator.comparingInt(Combat::getCombatId)).orElse(null);
+            if (combat != null) {
+                StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combat.getCombatId());
+                combatResult = doCombat(player, staticCombat, heroIdList, builder);
+            }
+        }
+
+        // 清剿成功, 清除地图土匪状态
+        if (rq.getClearResult() || combatResult) {
+            delBanditStateOfCell(player, cellId);
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * 战斗清剿土匪
+     *
+     * @param player
+     * @param staticCombat
+     * @param heroIds
+     * @param builder
+     * @return
+     * @throws MwException
+     */
+    private boolean doCombat(Player player, StaticCombat staticCombat, List<Integer> heroIds, GamePb1.ClearBanditRs.Builder builder)
+            throws MwException {
+        int combatId = staticCombat.getCombatId();
+        Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
+        Fighter defender = fightService.createNpcFighter(staticCombat.getForm());
+        FightLogic fightLogic = new FightLogic(attacker, defender, true);
+        if (Constant.DONT_DODGE_CRIT_COMBATID.contains(combatId)) {
+            fightLogic.setCareCrit(false);
+            fightLogic.setCareDodge(false);
+        }
+        fightLogic.fight();
+        builder.setCombatResult(fightLogic.getWinState());
+        if (fightLogic.getWinState() == 1) {
+            int star = DataResource.ac.getBean(CombatService.class).combatStarCalc(attacker.getLost(), attacker.getTotal());
+            builder.setStar(star);
+        }
+
+        // 进攻方hero信息
+        List<CommonPb.RptHero> attackHeroInfo = attacker.forces.stream()
+                .map(force -> PbHelper.createRptHero(
+                        Constant.Role.PLAYER,
+                        force.killed,
+                        0,
+                        force.id,
+                        null,
+                        0,
+                        0,
+                        force.totalLost
+                )).collect(Collectors.toList());
+        builder.addAllAtkHero(attackHeroInfo);
+        // 防守方hero信息
+        List<CommonPb.RptHero> defendHeroInfo = defender.forces.stream()
+                .map(force -> PbHelper.createRptHero(
+                        Constant.Role.BANDIT,
+                        force.killed,
+                        0,
+                        force.id,
+                        null,
+                        0,
+                        0,
+                        force.totalLost
+                )).collect(Collectors.toList());
+        builder.addAllDefHero(defendHeroInfo);
+
+        CommonPb.Record record = fightLogic.generateRecord();
+        builder.setRecord(record);
+
+        return fightLogic.getWinState() == 1;
+    }
+
+    /**
+     * 清除地图土匪状态
+     *
+     * @param player
+     * @param cellId
+     */
+    private void delBanditStateOfCell(Player player, int cellId) {
+        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        List<Integer> cellState = mapCellData.get(cellId);
+        if (CheckNull.isEmpty(cellState)) {
+            return;
+        }
+        int isReclaimed = cellState.get(0);
+        cellState.clear();
+        cellState.add(isReclaimed);
+        cellState.add(0); // 土匪id清空
+        cellState.add(0); // 对话引导模拟器类型清空
+    }
+
+    /**
+     * 土匪过期清除定时器
+     */
+    public void autoDelBanditTimerLogic() {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
         while (iterator.hasNext()) {
             Player player = iterator.next();
-            // TODO 防止开发环境旧账号报错, 线上删掉
-            if (CheckNull.isEmpty(player.getResidentData()) || player.getResidentData().size() < 3) {
-                resetResidentData(player);
-            }
             try {
-                int period = now - player.getResidentTime();
-                int happiness = player.getHappiness();
-                int residentTopLimit = player.getResidentTopLimit();
-                int oldResidentTotalCnt = player.getResidentTotalCnt();
-                if (oldResidentTotalCnt < residentTopLimit) {
-                    int residentRecoverySpeed = Constant.RESIDENT_RECOVERY_SPEED;
-                    // 根据当前幸福度所属档位计算人口恢复时间
-                    List<StaticHappiness> staticHappinessList = StaticBuildCityDataMgr.getStaticHappinessList();
-                    if (CheckNull.nonEmpty(staticHappinessList)) {
-                        for (StaticHappiness sHappiness : staticHappinessList) {
-                            List<Integer> range = sHappiness.getRange();
-                            List<List<Integer>> effective = sHappiness.getEffective();
-                            if (CheckNull.isEmpty(range) || range.size() < 2 || CheckNull.isEmpty(effective)) {
-                                continue;
-                            }
-                            if (happiness >= range.get(0) && happiness <= range.get(1)) {
-                                List<Integer> happinessCoefficientForResidentRecovery = effective.get(0);
-                                if (CheckNull.isEmpty(happinessCoefficientForResidentRecovery) || happinessCoefficientForResidentRecovery.size() < 2) {
-                                    break;
-                                }
-                                int addOrSub = happinessCoefficientForResidentRecovery.get(0);
-                                int coefficient = happinessCoefficientForResidentRecovery.get(1);
-                                switch (addOrSub) {
-                                    case 0:
-                                        residentRecoverySpeed *= (1 + coefficient / Constant.TEN_THROUSAND);
-                                        break;
-                                    case 1:
-                                        residentRecoverySpeed *= (1 - coefficient / Constant.TEN_THROUSAND);
-                                }
-                            }
-                        }
-                    }
-                    int addResident = period / residentRecoverySpeed;
-                    player.addResidentTotalCnt(Math.min(oldResidentTotalCnt + addResident, residentTopLimit));
-                    player.addIdleResidentCnt(player.getResidentTotalCnt() - oldResidentTotalCnt);
-                }
-                player.setResidentTime(now);
+                Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+                mapCellData.entrySet().stream()
+                        .filter(tmp ->
+                                CheckNull.nonEmpty(tmp.getValue())
+                                        && tmp.getValue().size() >= 4
+                                        && tmp.getValue().get(1) > 0
+                                        && tmp.getValue().get(3) != -1 && now > tmp.getValue().get(3)
+                        )
+                        .forEach(entry -> {
+                            int reclaimed = entry.getValue().get(0);
+                            List<Integer> newCellState = new ArrayList<>(4);
+                            newCellState.add(reclaimed);
+                            newCellState.add(0);
+                            newCellState.add(0);
+                            newCellState.add(0);
+                            entry.setValue(newCellState);
+                        });
             } catch (Exception e) {
-                LogUtil.error("居民恢复的逻辑定时器报错, lordId:" + player.lord.getLordId(), e);
+                LogUtil.error("土匪过期清除定时器报错, lordId:" + player.lord.getLordId(), e);
             }
         }
     }
 
-    // 清剿土匪
-    public void clearBandit(long roleId) {
 
-    }
 
     // 叛军入侵
     public void rebelInvade(long roleId) {
 
-    }
-
-    /**
-     * 迷雾探索结束时要做的事
-     *
-     * @param cellId
-     * @param player
-     * @param scoutIndex
-     */
-    public void doAtExploreEnd(Integer cellId, int scoutIndex, Player player) {
-        /*Map<Integer, Integer> mapCellData = player.getMapCellData();
-        // 新增解锁的地图格子
-        mapCellData.put(cellId, 0);
-        // 关联解锁的地图格子
-        StaticHomeCityCell staticHomeCityCell = StaticDataMgr.getStaticHomeCityCellById(cellId);
-        List<Integer> bindCellList = staticHomeCityCell.getBindCellList();
-        for (Integer bindCellId : bindCellList) {
-            if (!mapCellData.containsKey(bindCellId)) {
-                mapCellData.put(bindCellId, 0);
-            }
-        }
-        // 恢复探索的侦察兵状态为空闲, 并向客户端同步
-        player.getScoutData().put(scoutIndex, 0);
-        playerDataManager.syncRoleInfo(player);
-        // 移除探索队列
-        player.getExploreQue().remove(scoutIndex);
-        // 向客户端同步探索完成的格子
-        GamePb1.SynExploreOrReclaimRs.Builder builder = GamePb1.SynExploreOrReclaimRs.newBuilder();
-        builder.setType(1);
-        builder.setCellId(cellId);
-        builder.setFinishedExploreQueIndex(scoutIndex);
-        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynExploreOrReclaimRs.EXT_FIELD_NUMBER, GamePb1.SynExploreOrReclaimRs.ext, builder.build());
-        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));*/
-    }
-
-    /**
-     * 地基开垦结束时要做的事
-     *
-     * @param cellId
-     * @param farmerCnt
-     * @param player
-     */
-    public void doAtReclaimEnd(Integer cellId, int farmerCnt, Player player, Integer reclaimIndex) {
-        /*// 获取玩家新增解锁的地基id, 解锁地基需要该地基所占的格子全部被开垦完成
-        List<Integer> foundationIdList = StaticDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
-        List<Integer> unlockFoundationIdList = new ArrayList<>();
-        // 获取玩家已开垦的格子
-        List<Integer> reclaimedCellIdList = (List<Integer>) player.getMapCellData().entrySet().stream().filter(entry -> entry.getValue() == 1).map(Map.Entry::getKey);
-        for (Integer foundationId : foundationIdList) {
-            // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-            StaticHomeCityFoundation staticFoundation = StaticDataMgr.getStaticHomeCityFoundationById(foundationId);
-            if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                unlockFoundationIdList.add(foundationId);
-            }
-        }
-        // 玩家新增解锁的地基
-        player.getFoundationData().addAll(foundationIdList);
-        // 释放开垦的农民, 并向客户端同步
-        player.addIdleFarmerCount(farmerCnt);
-        playerDataManager.syncRoleInfo(player);
-        // 移除开垦队列
-        player.getReclaimQue().remove(reclaimIndex);
-        // 向客户端同步开垦出的地基
-        GamePb1.SynExploreOrReclaimRs.Builder builder = GamePb1.SynExploreOrReclaimRs.newBuilder();
-        builder.setType(2);
-        builder.setCellId(cellId);
-        builder.addAllFoundationId(unlockFoundationIdList);
-        builder.setFinishedReclaimQueIndex(reclaimIndex);
-        BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynExploreOrReclaimRs.EXT_FIELD_NUMBER, GamePb1.SynExploreOrReclaimRs.ext, builder.build());
-        MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));*/
     }
 
     @GmCmd("buildCity")
