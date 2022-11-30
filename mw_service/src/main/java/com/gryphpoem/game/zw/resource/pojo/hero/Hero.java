@@ -9,12 +9,19 @@ import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.constant.MedalConst;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author TanDonghai
@@ -189,22 +196,19 @@ public class Hero {
             });
         } else {
             // 由于新天赋功能上线前，线上玩家武将已进行觉醒过，需要给其初始化天赋页，否则客户端页面显示报错
-            if (hero.hasQuality() && hero.getQuality() != 3) {
-                if (decorated > 0) {
-                    int maxPart;
-                    switch (hero.getQuality()) {
-                        case HeroConstant.QUALITY_PURPLE_HERO:
-                            maxPart = HeroConstant.TALENT_PART_MAX_OF_PURPLE_HERO;
-                            break;
-                        case HeroConstant.QUALITY_ORANGE_HERO:
-                            maxPart = HeroConstant.TALENT_PART_MAX_OF_ORANGE_HERO;
-                            break;
-                        default:
-                            throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, heroId:", heroId);
+            StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
+            if (sHero != null && sHero.getActivate() == 1 && CheckNull.nonEmpty(sHero.getEvolveGroup())) {
+                for (int i = 1; i <= sHero.getEvolveGroup().size(); i++) {
+                    // 暂时把武将的天赋组个数作为天赋页页数
+                    Integer maxPart = StaticHeroDataMgr.getHeroEvolve(sHero.getEvolveGroup().get(i - 1)).stream()
+                            .map(StaticHeroEvolve::getPart)
+                            .distinct()
+                            .max(Integer::compareTo)
+                            .orElse(null);
+                    if (maxPart == null) {
+                        throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, heroId: ", heroId);
                     }
-                    for (int i = 1; i <= decorated; i++) {
-                        this.talent.put(i, new TalentData(0, i, maxPart));
-                    }
+                    this.talent.put(i, new TalentData(0, i, maxPart));
                 }
             }
         }

@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.chat.Chat;
 import com.gryphpoem.game.zw.resource.pojo.chat.SystemChat;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
@@ -2598,6 +2599,22 @@ public class RewardDataManager {
                 //获得英雄发聊天公告
                 chatDataManager.sendSysChat(ChatConst.SEASON_GET_HERO, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), hero.getHeroId());
             }
+            // 初始化武将天赋
+            if (staticHero.getActivate() == 1 && CheckNull.nonEmpty(staticHero.getEvolveGroup())) {
+                for (int i = 1; i <= staticHero.getEvolveGroup().size(); i++) {
+                    Integer maxPart = StaticHeroDataMgr.getHeroEvolve(staticHero.getEvolveGroup().get(i - 1)).stream()
+                            .map(StaticHeroEvolve::getPart)
+                            .distinct()
+                            .max(Integer::compareTo)
+                            .orElse(null);
+                    if (maxPart == null) {
+                        throw new MwException(GameError.NO_CONFIG.getCode(), "武将天赋球个数配置错误, heroId: ", heroId);
+                    }
+                    // 暂时把武将的天赋组个数作为天赋页页数
+                    hero.getTalent().put(i, new TalentData(0, i, maxPart));
+                }
+            }
+
             CalculateUtil.processAttr(player, hero);
             player.heros.put(heroId, hero);
             // 获取没有的武将, 处理救援奖励邮件
@@ -3228,6 +3245,7 @@ public class RewardDataManager {
 
     /**
      * 扣减古籍
+     *
      * @param player
      * @param sub
      * @param from

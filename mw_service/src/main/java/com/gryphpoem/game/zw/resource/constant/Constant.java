@@ -1154,6 +1154,11 @@ public final class Constant {
     public static int RESIDENT_RECOVERY_SPEED;
 
     /**
+     * 天赋开启需求武将等级
+     */
+    public static int HERO_LEVEL_OF_OPEN_TALENT;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
@@ -1481,6 +1486,7 @@ public final class Constant {
         BANDIT_REMAIN_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.BANDIT_REMAIN_TIME, 0);
         BANDIT_DEBUFF = SystemTabLoader.getListListIntSystemValue(SystemId.BANDIT_DEBUFF, "[[]]");
         RESIDENT_RECOVERY_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.RESIDENT_RECOVERY_SPEED, 0);
+        HERO_LEVEL_OF_OPEN_TALENT = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_LEVEL_OF_OPEN_TALENT, 0);
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {

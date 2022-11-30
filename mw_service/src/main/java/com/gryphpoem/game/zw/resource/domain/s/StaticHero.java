@@ -42,6 +42,7 @@ public class StaticHero {
     private List<Integer> evolveGroup;// 技能组，链接到 hero_evolve表格中的group字段
     private List<List<Integer>> recombination;// 重组的消耗
     protected List<Integer> activateFight; // 天赋激活加成战力
+    private int activate; // 1为可以觉醒 0为无法觉醒
     private int chips; // 合成英雄需要的碎片数量
     private List<List<Integer>> interior; // 内政属性
 
@@ -303,6 +304,14 @@ public class StaticHero {
 
     public void setActivateFight(List<Integer> activateFight) {
         this.activateFight = activateFight;
+    }
+
+    public int getActivate() {
+        return activate;
+    }
+
+    public void setActivate(int activate) {
+        this.activate = activate;
     }
 
     public List<List<Integer>> getInterior() {
