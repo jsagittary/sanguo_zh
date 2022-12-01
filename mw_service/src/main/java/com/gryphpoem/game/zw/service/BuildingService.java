@@ -154,7 +154,7 @@ public class BuildingService implements GmCmdService {
                         buildingBase
                                 .setUnlock(buildingDataManager.checkBuildingLock(player, buildingType))
                                 .setId(buildingType)
-                                .setType(buildingType)
+                                .setType(buildingState.getBuildingType())
                                 .setLv(buildingState.getBuildingLv())
                                 .setResidentCnt(buildingState.getResidentCnt())
                                 .setFoundationId(buildingState.getFoundationId())
@@ -1749,6 +1749,10 @@ public class BuildingService implements GmCmdService {
                 DataResource.ac.getBean(EconomicOrderService.class).randomNewPreOrder(player);
                 DataResource.ac.getBean(EconomicOrderService.class).synEconomicOrderChange(player);
             }
+
+            if (buildingId == BuildingType.TRAIN_FACTORY_1 || buildingId == BuildingType.TRAIN_FACTORY_2 || buildingId == BuildingType.TRAIN_FACTORY_3) {
+                buildingState.setBuildingType(0);
+            }
         }
 
         // 更新建筑等级
@@ -3128,6 +3132,11 @@ public class BuildingService implements GmCmdService {
             throw new MwException(GameError.COMMAND_LV_NOT_ENOUGH.getCode(), "建造建筑时, 需要的其他建筑等级不足, roleId:" + roleId + ",buildingType:" + buildingType, ",buildingLv:" + buildingLv);
         }
 
+        int finalBuildingType = buildingType;
+        if (buildingType == BuildingType.TRAIN_FACTORY_1 || buildingType == BuildingType.TRAIN_FACTORY_2 || buildingType == BuildingType.TRAIN_FACTORY_3) {
+            finalBuildingType = 0;
+        }
+
         float factor = 0;
         int needTime = calcBuildTime(player, staticBuildingLevel.getUpTime()); // 耗时
 
@@ -3179,7 +3188,7 @@ public class BuildingService implements GmCmdService {
         if (immediate || needTime <= 0) {
             // 立即完成, 不添加进入队列
             // 这里手动设置索引999, 并不存入队列, 但使用处理队列的方式立即处理
-            BuildQue que = createQue(player, 999, buildingType, buildingId, needTime, now + needTime);
+            BuildQue que = createQue(player, 999, finalBuildingType, buildingId, needTime, now + needTime);
             // 设置结束时间
             que.setEndTime(now);
             que.setFoundationId(foundationId);
@@ -3192,7 +3201,7 @@ public class BuildingService implements GmCmdService {
             // 非立即完成, 放入队列开始处理
             for (int i = 1; i <= queCnt; i++) {
                 if (!buildQue.containsKey(i)) {
-                    BuildQue que = createQue(player, i, buildingType, buildingId, needTime, now + needTime);
+                    BuildQue que = createQue(player, i, finalBuildingType, buildingId, needTime, now + needTime);
                     que.setFoundationId(foundationId);
                     que.setIsCreate(true);
                     buildQue.put(i, que);

@@ -1447,8 +1447,10 @@ public class BuildingDataManager {
     private void unLockMill(Player player, Mill mill, boolean unlock) {
         if (unlock && !mill.isUnlock()) {
             mill.setUnlock(unlock);
-            mill.setResTime(TimeHelper.getCurrentSecond());
-            mill.setResCnt(1);
+            if (mill.getType() != BuildingType.RESIDENT_HOUSE) {
+                mill.setResTime(TimeHelper.getCurrentSecond());
+                mill.setResCnt(1);
+            }
             synGainResRs(player, mill);
         }
     }
