@@ -1661,13 +1661,36 @@ public class RewardDataManager {
             case AwardType.Money.ANCIENT_BOOK:
                 addAncientBook(player, (int) count, from, param);
                 break;
+            case AwardType.Money.RESIDENT:
+                addResident(player, (int) count, from, param);
             default:
                 break;
         }
     }
 
     /**
-     * 新增古籍
+     * 增加人口
+     *
+     * @param player
+     * @param count
+     * @param awardFrom
+     * @param param
+     */
+    private void addResident(Player player, int count, AwardFrom awardFrom, Object[] param) {
+        int residentTotalCnt = player.getResidentTotalCnt();
+        int residentTopLimit = player.getResidentTopLimit();
+        int realAdd = residentTotalCnt + count > residentTopLimit ? residentTopLimit - residentTotalCnt : count;
+        player.addResidentTotalCnt(realAdd);
+        player.addIdleResidentCnt(realAdd);
+    }
+
+    /**
+     * 增加古籍
+     *
+     * @param player
+     * @param add
+     * @param from
+     * @param param
      */
     private void addAncientBook(Player player, int add, AwardFrom from, Object[] param) {
         if (add > 0) {

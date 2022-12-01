@@ -1713,7 +1713,7 @@ public class BuildingService implements GmCmdService {
             // 更新建筑部分的
             updateBuidingGuide(player, buildingId, false);
             StaticGuideBuild sGuide = StaticBuildingDataMgr.getGuideBuildMapById(buildingId);
-            if (sGuide != null && BuildingDataManager.isResType(buildingType)) {
+            if (sGuide != null && BuildingDataManager.isResType(buildingType) && buildingType != BuildingType.RESIDENT_HOUSE) {
                 // 给一次征收
                 giveOnceGains(player, buildingId);
             }
@@ -1975,7 +1975,7 @@ public class BuildingService implements GmCmdService {
         // }
         // return mill.getLv();
         Mill mill = player.mills.get(buildQue.getPos());
-        if (mill.getLv() == 0) {
+        if (mill.getLv() == 0 || mill.getType() != BuildingType.RESIDENT_HOUSE) {
             // 从0-1
             mill.setResTime(TimeHelper.getCurrentSecond());
         }
@@ -2039,6 +2039,10 @@ public class BuildingService implements GmCmdService {
         for (Entry<Integer, Mill> kv : player.mills.entrySet()) {
             mill = kv.getValue();
             if (mill != null && mill.getResCnt() >= Constant.RES_GAIN_MAX) {
+                continue;
+            }
+
+            if (mill.getType() == BuildingType.RESIDENT_HOUSE) {
                 continue;
             }
 
