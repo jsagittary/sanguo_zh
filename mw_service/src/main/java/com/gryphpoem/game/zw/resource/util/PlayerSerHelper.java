@@ -1,23 +1,22 @@
 package com.gryphpoem.game.zw.resource.util;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb.SerMail;
 import com.gryphpoem.game.zw.pb.SerializePb.SerReport;
-import com.gryphpoem.game.zw.resource.domain.ActivityAuctionParam;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.MailData;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.MailReportMap;
 import org.springframework.util.ObjectUtils;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
+ * @author QiuKun
  * @ClassName PlayerMailSerHelper.java
  * @Description 玩家序列化 与反序列化帮助类
- * @author QiuKun
  * @date 2019年4月18日
  */
 public class PlayerSerHelper {
@@ -65,7 +64,7 @@ public class PlayerSerHelper {
 
     /**
      * 反序列化玩家邮件数据
-     * 
+     *
      * @param player
      * @param data
      * @throws InvalidProtocolBufferException
@@ -109,7 +108,7 @@ public class PlayerSerHelper {
 
     private static void dserReports(Map<Integer, Mail> mails, Player player, SerReport ser) {
         if (ObjectUtils.isEmpty(ser.getReportList())) {
-           return;
+            return;
         }
 
         List<CommonPb.Report> list = ser.getReportList().stream().sorted(Comparator.
@@ -119,7 +118,7 @@ public class PlayerSerHelper {
             if (CheckNull.isNull(mail))
                 continue;
 
-            player.addReport(mail.getMoldId(), report, mails);
+            player.addReport(mail.getMoldId(), mail.getKeyId(), report, mails);
         }
     }
 }

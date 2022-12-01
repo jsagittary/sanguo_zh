@@ -136,6 +136,11 @@ public class MailConstant {
      */
     public static final int EXPIRED_REPORT = 1;
 
+    /**
+     * 邮件存在战报
+     */
+    public static final int EXISTENCE_REPORT = 2;
+    
     /************* 邮件模版id开始 **************/
     /**
      * 攻击流寇成功战报
@@ -990,7 +995,6 @@ public class MailConstant {
     public static final int RELIC_OVER_SCORE_AWARD = 908;
 
 
-
     /**
      * 限时活动物品自动兑换
      */
@@ -1086,7 +1090,6 @@ public class MailConstant {
 
     // 叛军入侵防守成功
     public static final int DEFEND_REBEL_INVADE_SUCCESS = 3002;
-
 
 
     /**

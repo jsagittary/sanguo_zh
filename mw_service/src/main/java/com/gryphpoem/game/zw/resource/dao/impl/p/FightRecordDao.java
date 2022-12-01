@@ -20,7 +20,8 @@ public class FightRecordDao extends BaseDao {
         return this.getMapper(FightRecordMapper.class).update(dbFightRecord);
     }
 
-    public void deleteFightRecord(DbFightRecord dbFightRecord) {
+    public int deleteFightRecord(DbFightRecord dbFightRecord) {
+        return this.getMapper(FightRecordMapper.class).delete(dbFightRecord);
     }
 
     public void replaceFightRecord(DbFightRecord dbFightRecord) {
