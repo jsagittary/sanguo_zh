@@ -822,7 +822,7 @@ public class BuildHomeCityService implements GmCmdService {
             mailDataManager.sendReportMail(defPlayer, report, MailConstant.DEFEND_REBEL_INVADE_FAIL, dropList, now,
                     null, params);
         }
-        LogLordHelper.commonLog("rebelInvade", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, defSuccess);
+        LogLordHelper.commonLog("rebelInvade", AwardFrom.REBEL_INVADE_DEFEND, defPlayer, defSuccess);
         // 日志记录
         warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getDefHeroList(), rpt.getAtkHeroList());
     }
@@ -932,6 +932,8 @@ public class BuildHomeCityService implements GmCmdService {
                 // 重置幸福度恢复时间
                 player.setHappinessTime(0);
                 break;
+            case "resetHappiness":
+                player.setHappiness(50);
             default:
         }
         playerDataManager.syncRoleInfo(player);

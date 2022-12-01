@@ -3554,13 +3554,13 @@ public class BuildingService implements GmCmdService {
                 .map(BuildingState::getBuildingId)
                 .collect(Collectors.toList());
         forceGainResource(player, millIds);
-        // 计算每一类建筑可派遣居民的数量 = 空闲居民数 * (每一类建筑的居民上限总和 / 全部建筑居民上限总和)
-        // 全部可派遣居民的建筑居民上限总和
+        // 所有可分配居民的建筑居民上限总和
         int totalResidentTopLimit = buildingData.values().stream()
                 .filter(tmp -> tmp.getBuildingLv() >= 1 && BuildingType.autoDispatchResidentBuilding.contains(tmp.getBuildingType()))
                 .mapToInt(BuildingState::getResidentTopLimit)
                 .sum();
         if (totalResidentTopLimit <= 0) {
+            // 没有可派遣的建筑
             return;
         }
         List<Integer> changedBuildingIds = new ArrayList<>();
@@ -3577,7 +3577,7 @@ public class BuildingService implements GmCmdService {
                     .filter(tmp -> tmp.getBuildingLv() >= 1)
                     .mapToInt(BuildingState::getResidentTopLimit)
                     .sum();
-            // 每一类建筑可派遣的居民数量
+            // 每一类建筑可派遣的居民数量 = 初始初始空闲居民数 * (每一类建筑居民上限 / 所有可分配居民的建筑居民上限总和) , 向下取整
             int canDispatchNumByBuildingType = (int) Math.floor(initIdleResidentCnt * (totalResidentLimitByBuildingType * 1.00 / totalResidentTopLimit));
             // 公式计算不足1个人口时, 则剩余的空闲居民数就是该类建筑可派遣的居民数
             canDispatchNumByBuildingType = canDispatchNumByBuildingType == 0 ? player.getIdleResidentCnt() : canDispatchNumByBuildingType;

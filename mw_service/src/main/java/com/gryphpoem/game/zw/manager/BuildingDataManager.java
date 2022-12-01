@@ -1202,13 +1202,20 @@ public class BuildingDataManager {
             def.subHappiness(loseHappiness);
         }
         // 居民损失
-        List<Integer> residentLostCoefficient = Constant.RESIDENT_LOST_COEFFICIENT;
+        int residentBottomLimitCoefficient = Constant.RESIDENT_BOTTOM_LIMIT_COEFFICIENT; // 居民数量保底, 总居民数低于上限居民数的这个万分比, 无法被掠夺
         int loseResident = 0;
-        if (CheckNull.nonEmpty(residentLostCoefficient) || residentLostCoefficient.size() >= 2) {
-            int idleResidentCnt = def.getIdleResidentCnt();
-            loseResident = Math.max((int) Math.round(idleResidentCnt * residentLostCoefficient.get(0) / Constant.TEN_THROUSAND), residentLostCoefficient.get(1));
-            loseResident = Math.min(idleResidentCnt, loseResident);
-            def.subIdleResidentCnt(loseResident);
+        if (def.getResidentTotalCnt() > def.getResidentTopLimit() * (residentBottomLimitCoefficient / Constant.TEN_THROUSAND)) {
+            List<Integer> residentLostCoefficient = Constant.RESIDENT_LOST_COEFFICIENT; // [损失系数万分比, 损失最小值]
+            if (CheckNull.nonEmpty(residentLostCoefficient) || residentLostCoefficient.size() >= 2) {
+                int idleResidentCnt = def.getIdleResidentCnt();
+                loseResident = Math.max((int) Math.round(idleResidentCnt * residentLostCoefficient.get(0) / Constant.TEN_THROUSAND), residentLostCoefficient.get(1));
+                loseResident = Math.min(idleResidentCnt, loseResident);
+                def.subIdleResidentCnt(loseResident);
+            }
+        }
+        if (loseResident > 0) {
+            list.add(Award.newBuilder().setType(AwardType.MONEY).setId(AwardType.Money.RESIDENT).setCount(loseResident)
+                    .build());
         }
         LogUtil.debug(def.roleId + ",城战失去资源oil=" + loseOil + ",food=" + loseFood + ",ele=" + loseEle + ",loseHuman="
                 + loseHuman + ",human=" + def.resource.getHuman() + ",loseHappiness=" + loseHappiness + ",loseResident=" + loseResident);
