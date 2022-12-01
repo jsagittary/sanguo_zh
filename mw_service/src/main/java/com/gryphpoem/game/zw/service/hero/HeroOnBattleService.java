@@ -273,7 +273,7 @@ public class HeroOnBattleService implements GmCmdService {
         boolean swapMedal = req.hasSwapMedal() && req.getSwapMedal();
         boolean swapTreasure = req.hasSwapTreasure() && req.getSwapTreasure();
 
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(0)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(0)) {
             // 内阁等级小于1级禁止开放
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
         }
@@ -466,7 +466,7 @@ public class HeroOnBattleService implements GmCmdService {
     public GamePb1.WallSetRs doWallSet(long roleId, GamePb1.WallSetRq req) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         // 检测是否满足开启天策府
-        if (player.building.getWar() < Constant.CABINET_CONDITION.get(1)) {
+        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(1)) {
             // 内阁等级小于3级禁止开发
             throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
         }

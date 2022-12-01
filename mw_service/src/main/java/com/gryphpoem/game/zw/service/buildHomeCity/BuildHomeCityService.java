@@ -3,11 +3,11 @@ package com.gryphpoem.game.zw.service.buildHomeCity;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.MsgDataManager;
@@ -16,15 +16,16 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.WarDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb2;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -39,23 +40,16 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
-import com.gryphpoem.game.zw.resource.domain.s.StaticRebelRound;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.CombatService;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.GmCmd;
@@ -68,7 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -542,7 +535,7 @@ public class BuildHomeCityService implements GmCmdService {
             fightLogic.setCareCrit(false);
             fightLogic.setCareDodge(false);
         }
-        fightLogic.fight();
+        fightLogic.start();
         builder.setCombatResult(fightLogic.getWinState());
         if (fightLogic.getWinState() == 1) {
             int star = DataResource.ac.getBean(CombatService.class).combatStarCalc(attacker.getLost(), attacker.getTotal());
@@ -555,7 +548,7 @@ public class BuildHomeCityService implements GmCmdService {
                         Constant.Role.PLAYER,
                         force.killed,
                         0,
-                        force.id,
+                        force,
                         null,
                         0,
                         0,
@@ -568,7 +561,7 @@ public class BuildHomeCityService implements GmCmdService {
                         Constant.Role.BANDIT,
                         force.killed,
                         0,
-                        force.id,
+                        force,
                         null,
                         0,
                         0,
@@ -576,9 +569,8 @@ public class BuildHomeCityService implements GmCmdService {
                 )).collect(Collectors.toList());
         builder.addAllDefHero(defendHeroInfo);
 
-        // CommonPb.Record record = fightLogic.generateRecord();
-        // builder.setRecord(record);
-
+        BattlePb.BattleRoundPb battleRoundPb = fightLogic.generateRecord();
+        builder.setRecord(battleRoundPb);
         return fightLogic.getWinState() == 1;
     }
 
@@ -760,56 +752,52 @@ public class BuildHomeCityService implements GmCmdService {
 
     // 叛军入侵的战斗逻辑
     public void rebelInvadeFightLogic(Battle battle, int now, Set<Integer> removeBattleIdSet) {
-        int roundId = battle.getBattleType();
-        StaticRebelRound sRound = StaticWorldDataMgr.getRebelRoundById(roundId);
-        if (sRound == null) {
-            LogUtil.error("匪军叛乱战斗时未找到配置 roundId", roundId);
-            return;
-        }
-
-        // 防守者,兵力 添加
-        warService.addCityDefendRoleHeros(battle);
-        Fighter attacker = fightService.createNpcFighter(sRound.getFrom()); // npc攻击
-        Fighter defender = fightService.createCampBattleDefencer(battle, null);
-        FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
-        warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();
-
-        boolean defSuccess = !(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
-
-        long defRoleId = battle.getDefencerId();
-        Player defPlayer = playerDataManager.getPlayer(defRoleId);
-        // 兵力恢复
-        Map<Long, List<CommonPb.Award>> recoverArmyAwardMap = new HashMap<>();
-
-        // 战报信息
-        CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(roundId, attacker, defender, fightLogic, defSuccess, defPlayer);
-        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
-
-        List<CommonPb.Award> dropList = new ArrayList<>();
-        if (!defSuccess) {
-            // 防守失败
-            subResAfterFailDefendRebel();
-        }
-
-        // 发送邮件
-        Turple<Integer, Integer> xy = MapHelper.reducePos(defPlayer.lord.getPos());
-        int defX = xy.getA();
-        int defY = xy.getB();
-        Object[] param = {defPlayer.lord.getNick(), defPlayer.lord.getNick(), defX, defY};
-        if (defSuccess) {
-            // 防守成功，没有损失
-            mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_SUCC, null, now,
-                    recoverArmyAwardMap, param);
-        } else {
-            Object[] params = Arrays.copyOf(param, param.length + 1);
-            params[param.length] = battle.getDefencer().lord.getNick();
-            mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_FAIL, dropList, now,
-                    recoverArmyAwardMap, params);
-        }
-        LogLordHelper.commonLog("rebelInvade", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, defSuccess);
-        // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        // int combatId = battle.getBattleType();
+        // StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
+        //
+        // // 防守者,兵力 添加
+        // warService.addCityDefendRoleHeros(battle);
+        // Fighter attacker = fightService.createNpcFighter(staticCombat.getForm()); // npc攻击
+        // Fighter defender = fightService.createCampBattleDefencer(battle, null);
+        // FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
+        // warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
+        // fightLogic.start();
+        //
+        // boolean defSuccess = !(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
+        //
+        // long defRoleId = battle.getDefencerId();
+        // Player defPlayer = playerDataManager.getPlayer(defRoleId);
+        // // 兵力恢复
+        // Map<Long, List<CommonPb.Award>> recoverArmyAwardMap = new HashMap<>();
+        //
+        // // 战报信息
+        // CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(roundId, attacker, defender, fightLogic, defSuccess, defPlayer);
+        // CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
+        //
+        // List<CommonPb.Award> dropList = new ArrayList<>();
+        // if (!defSuccess) {
+        //     // 防守失败
+        //     subResAfterFailDefendRebel();
+        // }
+        //
+        // // 发送邮件
+        // Turple<Integer, Integer> xy = MapHelper.reducePos(defPlayer.lord.getPos());
+        // int defX = xy.getA();
+        // int defY = xy.getB();
+        // Object[] param = {defPlayer.lord.getNick(), defPlayer.lord.getNick(), defX, defY};
+        // if (defSuccess) {
+        //     // 防守成功，没有损失
+        //     mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_SUCC, null, now,
+        //             recoverArmyAwardMap, param);
+        // } else {
+        //     Object[] params = Arrays.copyOf(param, param.length + 1);
+        //     params[param.length] = battle.getDefencer().lord.getNick();
+        //     mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_FAIL, dropList, now,
+        //             recoverArmyAwardMap, params);
+        // }
+        // LogLordHelper.commonLog("rebelInvade", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, defSuccess);
+        // // 日志记录
+        // warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         removeBattleIdSet.add(battle.getBattleId());
     }
 
