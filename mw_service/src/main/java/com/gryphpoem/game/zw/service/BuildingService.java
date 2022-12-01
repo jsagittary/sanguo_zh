@@ -167,7 +167,7 @@ public class BuildingService implements GmCmdService {
                     continue;
                 }
 
-                if (buildingType == BuildingType.TRAIN_FACTORY_2) {
+                /*if (buildingType == BuildingType.TRAIN_FACTORY_2) {
                     BuildingExt train2 = player.buildingExts.get(BuildingType.TRAIN_FACTORY_2);
                     if (building.getTrain2() <= 0) {
                         StaticBuildingInit init = StaticBuildingDataMgr.getBuildingInitMap().get(BuildingType.TRAIN_FACTORY_2);
@@ -189,7 +189,7 @@ public class BuildingService implements GmCmdService {
                         }
                     }
                     continue;
-                }
+                }*/
 
                 buildingBase
                         .setUnlock(buildingDataManager.checkBuildingLock(player, buildingType))
