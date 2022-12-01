@@ -481,7 +481,7 @@ public class AppGameServer extends Server {
      */
     private boolean allSaveDone() {
         if (savePlayerServer.saveDone() && saveGlobalServer.saveDone() && savePartyServer.saveDone()
-                && saveActivityServer.saveDone() && saveCrossMapServer.saveDone()) { //&& sendEventDataServer.sendDone()
+                && saveActivityServer.saveDone() && saveCrossMapServer.saveDone() && saveMailReportServer.saveDone()) { //&& sendEventDataServer.sendDone()
             return true;
         }
 
@@ -547,6 +547,9 @@ public class AppGameServer extends Server {
 //                saveCrossMapServer.saveAll();
 //                saveCrossMapServer.stop();
                 saveCrossMapServer.stopServer();
+            }
+            if (saveMailReportServer != null) {
+                saveMailReportServer.stopServer();
             }
             if (sendEventDataServer != null) {
                 sendEventDataServer.setLogFlag();
