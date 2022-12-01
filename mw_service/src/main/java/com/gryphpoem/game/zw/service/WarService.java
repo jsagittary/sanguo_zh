@@ -17,7 +17,6 @@ import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDaily
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
@@ -64,6 +63,8 @@ import java.util.stream.Collectors;
 @Service
 public class WarService {
 
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
     @Autowired
     private PlayerDataManager playerDataManager;
     @Autowired
@@ -296,10 +297,8 @@ public class WarService {
             atkPortrait = atkLord.getPortrait();
             atkPortraitFrame = atkPlayer.getDressUp().getCurPortraitFrame();
         }
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
         // 记录发起进攻和防守方的信息
         rpt.setAttack(PbHelper.createRptMan(atkPosLord, atkNick, atkVip, atkLevel));
         // 记录双方汇总信息
@@ -372,7 +371,7 @@ public class WarService {
             // 移除
             removeBattleIdSet.add(battle.getBattleId());
 
-            CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+            CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
             // 发送邮件通知
             sendGestapoBattleMail(battle, staticGestapoPlan, atkSuccess, report, awardProp, now, recoverArmyAwardMap);
 
@@ -402,7 +401,7 @@ public class WarService {
      * @param recoverArmyAwardMap
      */
     private void sendGestapoBattleMail(Battle battle, StaticGestapoPlan staticGestapoPlan, boolean atkSuccess,
-                                       CommonPb.Report.Builder report, List<Award> awardProp, int now,
+                                       CommonPb.Report report, List<Award> awardProp, int now,
                                        Map<Long, List<Award>> recoverArmyAwardMap) {
 
         List<BattleRole> atkList = battle.getAtkList();
@@ -495,10 +494,8 @@ public class WarService {
         // ----------------------------- 兵力处理 -----------------------------
 
         // 战斗记录
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
         // 双方的玩家信息
         rpt.setAttack(PbHelper.createRptMan(atkPlayer.lord.getPos(), atkPlayer.lord.getNick(), atkPlayer.lord.getVip(),
                 atkPlayer.lord.getLevel()));
@@ -518,7 +515,7 @@ public class WarService {
 
         Turple<Integer, Integer> atkPos = MapHelper.reducePos(atkPlayer.lord.getPos());
         Turple<Integer, Integer> defPos = MapHelper.reducePos(defencer.lord.getPos());
-        CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         if (atkSuccess) {
             // 进攻方胜利，防守方玩家被击飞，重新随机坐标
@@ -728,10 +725,8 @@ public class WarService {
         if (null != battle.getDefencer()) {
             defLord = battle.getDefencer().lord;
         }
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
         // 记录发起进攻和防守方的信息
         rpt.setAttack(PbHelper.createRptMan(atkPosLord, atkNick, atkVip, atkLevel));
         // 记录双方汇总信息
@@ -812,7 +807,7 @@ public class WarService {
 
         Turple<Integer, Integer> atkPos = MapHelper.reducePos(atkPosLord);
         Turple<Integer, Integer> defPos = MapHelper.reducePos(battle.getPos());
-        CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         String firstBloodCity = LogParamConstant.NO_FIRST_KILL_CITY;
         LinkedList<Battle> list = warDataManager.getBattlePosMap().get(battle.getPos());
@@ -1946,7 +1941,7 @@ public class WarService {
      */
     public void sendCityBattleMail(Battle battle, int cityId, Lord atkLord, Lord defLord,
                                    Turple<Integer, Integer> atkPos, Turple<Integer, Integer> defPos, boolean atkSuccess,
-                                   CommonPb.Report.Builder report, List<Award> dropList, List<Award> loseList, int now,
+                                   CommonPb.Report report, List<Award> dropList, List<Award> loseList, int now,
                                    Map<Long, List<Award>> recoverArmyAwardMap) {
         // 进攻方邮件
         sendCityBattleAtkMails(battle, atkSuccess, report, dropList, now, recoverArmyAwardMap, atkLord.getNick(),
@@ -1976,7 +1971,7 @@ public class WarService {
      */
     public void sendCampBattleMail(Battle battle, int cityId, Lord atkLord, Lord defLord,
                                    Turple<Integer, Integer> atkPos, Turple<Integer, Integer> defPos, boolean atkSuccess,
-                                   CommonPb.Report.Builder report, Map<Long, List<Award>> dropMap, int now,
+                                   CommonPb.Report report, Map<Long, List<Award>> dropMap, int now,
                                    Map<Long, List<Award>> recoverArmyAwardMap) {
         if (null == defLord) {// 城池没有所属者
             // 进攻方邮件
@@ -2037,7 +2032,7 @@ public class WarService {
      * @param now
      * @param param
      */
-    private void sendCityBattleDefMails(Battle battle, boolean defSuccess, CommonPb.Report.Builder report,
+    private void sendCityBattleDefMails(Battle battle, boolean defSuccess, CommonPb.Report report,
                                         List<Award> dropList, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
         List<BattleRole> list = battle.getDefList();
         LogUtil.debug("发送城战防守方战斗报告邮件, playerNum:", list.size());
@@ -2074,7 +2069,7 @@ public class WarService {
      * @param now
      * @param param
      */
-    private void sendCityBattleAtkMails(Battle battle, boolean atkSuccess, CommonPb.Report.Builder report,
+    private void sendCityBattleAtkMails(Battle battle, boolean atkSuccess, CommonPb.Report report,
                                         List<Award> dropList, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
         List<BattleRole> list = battle.getAtkList();
         LogUtil.debug("发送城战进攻方战斗报告邮件, playerNum:", list.size());
@@ -2116,7 +2111,7 @@ public class WarService {
      * @param param
      */
     private void sendCampBattleDefMails(Battle battle, List<BattleRole> list, long defender, boolean defSuccess,
-                                        CommonPb.Report.Builder report, Map<Long, List<Award>> dropMap, int now,
+                                        CommonPb.Report report, Map<Long, List<Award>> dropMap, int now,
                                         Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
         LogUtil.debug("发送阵营战防守方战报邮件, playerNum:", list.size());
         List<Award> dropList;
@@ -2178,7 +2173,7 @@ public class WarService {
      * @param param
      */
     private void sendCampBattleAtkMails(Battle battle, List<BattleRole> list, boolean atkSuccess,
-                                        CommonPb.Report.Builder report, Map<Long, List<Award>> dropMap, int now,
+                                        CommonPb.Report report, Map<Long, List<Award>> dropMap, int now,
                                         Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
         LogUtil.debug("发送阵营战进攻方战报邮件, playerNum:", list.size());
         List<Award> dropList;
@@ -2707,11 +2702,9 @@ public class WarService {
         fightLogic.start();
         GamePb4.CompareNotesRs.Builder builder = GamePb4.CompareNotesRs.newBuilder();
         // 战斗记录
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
-        rpt.setRecord(record);
         // 双方的玩家信息
         rpt.setAttack(PbHelper.createRptMan(mPlayer.lord.getPos(), mPlayer.lord.getNick(), mPlayer.lord.getVip(),
                 mPlayer.lord.getLevel()));

@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.core.work;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.AbsClientHandler;
+import com.gryphpoem.game.zw.core.handler.AsyncGameHandler;
 import com.gryphpoem.game.zw.core.intercept.InterceptAspect;
 import com.gryphpoem.game.zw.core.message.MessagePool;
 import com.gryphpoem.game.zw.core.net.ConnectServer;
@@ -14,7 +15,6 @@ import com.gryphpoem.game.zw.pb.GamePb1.CreateRoleRq;
 import com.gryphpoem.game.zw.pb.GamePb1.GetNamesRq;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.server.AppGameServer;
-
 import io.netty.channel.ChannelHandlerContext;
 
 public class RWork extends AbstractWork {
@@ -51,6 +51,8 @@ public class RWork extends AbstractWork {
             if (cmd == BeginGameRq.EXT_FIELD_NUMBER || cmd == GetNamesRq.EXT_FIELD_NUMBER) {
                 connectServer.actionExcutor.execute(handler);
             } else if (handler instanceof DirectForwardClientHandler) { // 直接转发的handler
+                connectServer.actionExcutor.execute(handler);
+            } else if (handler instanceof AsyncGameHandler) {
                 connectServer.actionExcutor.execute(handler);
             } else {
                 // 所有玩家逻辑进入主线程执行队列

@@ -10,10 +10,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.AirshipMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.MedalDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -163,7 +160,7 @@ public class AirshipArmy extends BaseArmy {
         Player firstAttackPlayer = playerDataManager.getPlayer(battleRoles.get(0).getRoleId());
         CommonPb.RptAtkPlayer.Builder rpt = marchService.createAirShipRptBuilder(camp, attacker, defender, fightLogic,
                 atkSuccess, firstAttackPlayer, airShipId, airShipPos);
-        CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+        CommonPb.Report report = DataResource.ac.getBean(FightRecordDataManager.class).generateReport(rpt.build(), fightLogic, now);
 
         StaticAirship sAirShip = StaticWorldDataMgr.getAirshipMap().get(airShipId);
 

@@ -20,7 +20,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.NewYorkWar;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Report;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -148,11 +147,9 @@ public class NewYorkWarBattle extends AbsCommonBattle {
         // 战报生成
         SolarTermsDataManager solarTermsDataManager = DataResource.ac.getBean(SolarTermsDataManager.class);
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         // 节气
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
         // 记录双方汇总信息
         int cityId = city.getCityId();
         rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, -1, null, 0, 0));
@@ -211,9 +208,7 @@ public class NewYorkWarBattle extends AbsCommonBattle {
         warService.addBattleHeroExp(defender.forces, AwardFrom.NEWYORK_WAR_JOIN_AWARD, rpt, false, false,
                 battle.isCityBattle(), changeMap, true, exploitAwardMap);
         // report
-        Report.Builder report = Report.newBuilder();
-        report.setTime(now);
-        report.setRptPlayer(rpt);
+        Report report = DataResource.ac.getBean(FightRecordDataManager.class).generateReport(rpt.build(), fightLogic, now);
         // recordMap
         Map<Long, FightRecord> recordMap = new HashMap<>(8);
         recordRoleFight(recordMap, attacker.forces, true);
@@ -297,7 +292,7 @@ public class NewYorkWarBattle extends AbsCommonBattle {
     /**
      * 发送纽约争霸战报
      */
-    private void sendNewYorkWarBattleMail(Battle battle, boolean atkSuccess, Report.Builder report
+    private void sendNewYorkWarBattleMail(Battle battle, boolean atkSuccess, Report report
             , Map<Long, FightRecord> recordMap, Map<Long, List<CommonPb.Award>> dropMap, int now
             , Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Turple<Integer, Integer> atkPos, long aliveForceLordId) {
         MailDataManager mailDataManager = DataResource.ac.getBean(MailDataManager.class);

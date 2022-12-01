@@ -1,7 +1,6 @@
 package com.gryphpoem.game.zw.resource.pojo;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.springframework.util.ObjectUtils;
@@ -23,22 +22,22 @@ public class MailReportMap {
     }
 
     public void addReport(CommonPb.Report report, Map<Integer, Mail> mails) {
-        if (CheckNull.isNull(report))
-            return;
-
-        lock.writeLock().lock();
-        try {
-            this.reportMap.put(report.getKeyId(), report);
-            if (!GameGlobal.closeExpiredReport) {
-                headReport.offer(report.getKeyId());
-                if (headReport.size() > Constant.MAIL_MAX_SAVE_COUNT) {
-                    Integer removeKeyId = headReport.removeFirst();
-                    handleExpiredReport(removeKeyId, mails.get(removeKeyId));
-                }
-            }
-        } finally {
-            lock.writeLock().unlock();
-        }
+//        if (CheckNull.isNull(report))
+//            return;
+//
+//        lock.writeLock().lock();
+//        try {
+//            this.reportMap.put(report.getKeyId(), report);
+//            if (!GameGlobal.closeExpiredReport) {
+//                headReport.offer(report.getKeyId());
+//                if (headReport.size() > Constant.MAIL_MAX_SAVE_COUNT) {
+//                    Integer removeKeyId = headReport.removeFirst();
+//                    handleExpiredReport(removeKeyId, mails.get(removeKeyId));
+//                }
+//            }
+//        } finally {
+//            lock.writeLock().unlock();
+//        }
     }
 
     public CommonPb.Report getReport(int keyId) {

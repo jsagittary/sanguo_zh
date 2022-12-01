@@ -13,7 +13,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.WFCityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
@@ -193,11 +192,9 @@ public class AttackWFCityArmy extends AttackCityArmy {
         // 战报生成
         SolarTermsDataManager solarTermsDataManager = DataResource.ac.getBean(SolarTermsDataManager.class);
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         // 节气
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
 
         Lord atkLord = armyPlayer.lord;
         // 记录发起进攻和防守方的信息

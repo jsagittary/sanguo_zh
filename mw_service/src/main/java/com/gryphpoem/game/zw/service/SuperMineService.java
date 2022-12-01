@@ -7,7 +7,6 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackSuperMineRq;
@@ -52,6 +51,8 @@ import java.util.stream.Collectors;
  */
 @Component
 public class SuperMineService {
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
     @Autowired
     private WorldDataManager worldDataManager;
     @Autowired
@@ -944,7 +945,6 @@ public class SuperMineService {
 
                 // 战斗记录
                 CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-                BattlePb.BattleRoundPb record = fightLogic.generateRecord();
                 rpt.setResult(atkSuccess);
                 rpt.setAttack(PbHelper.createRptMan(player.lord.getPos(), player.lord.getNick(), player.lord.getVip(),
                         player.lord.getLevel()));// 进攻方的信息
@@ -955,10 +955,8 @@ public class SuperMineService {
                 // 计算军工
                 addHeroExploit(attacker.forces, rpt, AwardFrom.SUPER_MINE_BATTLE, true, changeMap);
                 addHeroExploit(defender.forces, rpt, AwardFrom.SUPER_MINE_BATTLE, false, changeMap);
-                // 回合战报
-                rpt.setRecord(record);
 
-                CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now); // 战报
+                CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now); // 战报
 
                 Turple<Integer, Integer> atkXy = MapHelper.reducePos(player.lord.getPos());
 

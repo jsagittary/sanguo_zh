@@ -243,7 +243,7 @@ public class MailDataManager {
      * @param param      邮件额外参数，包括邮件标题和内容的所有参数，按参数顺序排列
      * @return
      */
-    public Mail sendCollectMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
+    public Mail sendCollectMail(Player recvPlayer, CommonPb.Report report, int moldId,
                                 CommonPb.MailCollect collect, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
                                 Object... param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
@@ -261,9 +261,6 @@ public class MailDataManager {
         mail.settParam(tParam);
         mail.setcParam(cParam);
 
-        if (null != report) {
-            report.setKeyId(mail.getKeyId());
-        }
         if (null != collect) {
             List<CommonPb.Award> grabList = collect.getGrabList();
             if (!CheckNull.isEmpty(grabList)) {
@@ -286,7 +283,7 @@ public class MailDataManager {
             mail.setRecoverList(recoverList);
         }
 
-        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report.build());
+        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report);
 
         // 发送采集邮件
         synMailToPlayer(recvPlayer, mail);
@@ -294,7 +291,7 @@ public class MailDataManager {
         return mail;
     }
 
-    public Mail sendCrossCollectMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
+    public Mail sendCrossCollectMail(Player recvPlayer, CommonPb.Report report, int moldId,
                                      CommonPb.MailCollect collect, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
                                      List<String> param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
@@ -312,9 +309,6 @@ public class MailDataManager {
         mail.settParam(tParam);
         mail.setcParam(cParam);
 
-        if (null != report) {
-            report.setKeyId(mail.getKeyId());
-        }
         if (null != collect) {
             List<CommonPb.Award> grabList = collect.getGrabList();
             if (!CheckNull.isEmpty(grabList)) {
@@ -334,7 +328,7 @@ public class MailDataManager {
             mail.setRecoverList(recoverList);
         }
 
-        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report.build());
+        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report);
         mail.setCross(true);
         // 发送采集邮件
         synMailToPlayer(recvPlayer, mail);
@@ -353,7 +347,7 @@ public class MailDataManager {
      * @param param
      * @return
      */
-    public Mail sendCollectMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
+    public Mail sendCollectMail(Player recvPlayer, CommonPb.Report report, int moldId,
                                 CommonPb.MailCollect collect, int now, Object... param) {
         return sendCollectMail(recvPlayer, report, moldId, collect, now, null, param);
     }
@@ -459,7 +453,7 @@ public class MailDataManager {
      * @param param               邮件额外参数，包括邮件标题和内容的所有参数，按参数顺序排列
      * @return 返回邮件对象
      */
-    public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int mailId, List<CommonPb.Award> drop,
+    public Mail sendReportMail(Player recvPlayer, CommonPb.Report report, int mailId, List<CommonPb.Award> drop,
                                int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
         Turple<Integer, Integer> paramNum = MailHelper.getMailParamNum(mailId);
         List<String> tParam = new ArrayList<>();
@@ -497,7 +491,7 @@ public class MailDataManager {
      * @param param
      * @return
      */
-    public Mail sendCrossReportMail(Player recvPlayer, CommonPb.Report.Builder report, int mailId, List<CommonPb.Award> drop,
+    public Mail sendCrossReportMail(Player recvPlayer, CommonPb.Report report, int mailId, List<CommonPb.Award> drop,
                                     int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, List<String> param) {
         Turple<Integer, Integer> paramNum = MailHelper.getMailParamNum(mailId);
         List<String> tParam = new ArrayList<>();
@@ -534,7 +528,7 @@ public class MailDataManager {
      * @param param
      * @return
      */
-    public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int mailId, List<CommonPb.Award> drop,
+    public Mail sendReportMail(Player recvPlayer, CommonPb.Report report, int mailId, List<CommonPb.Award> drop,
                                int now, Object... param) {
         return sendReportMail(recvPlayer, report, mailId, drop, now, null, param);
     }
@@ -551,7 +545,7 @@ public class MailDataManager {
      * @param cParam     邮件内容参数
      * @return
      */
-    public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId, List<CommonPb.Award> drop,
+    public Mail sendReportMail(Player recvPlayer, CommonPb.Report report, int moldId, List<CommonPb.Award> drop,
                                int now, List<String> tParam, List<String> cParam) {
         return sendReportMail(recvPlayer, report, moldId, drop, now, tParam, cParam, null);
     }
@@ -569,7 +563,7 @@ public class MailDataManager {
      * @param recover    恢复物品, 仅用于客户端显示
      * @return
      */
-    public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId, List<CommonPb.Award> drop,
+    public Mail sendReportMail(Player recvPlayer, CommonPb.Report report, int moldId, List<CommonPb.Award> drop,
                                int now, List<String> tParam, List<String> cParam, List<CommonPb.Award> recover) {
         Mail mail = createReportMail(recvPlayer, report, moldId, drop, now, tParam, cParam, recover);
 
@@ -581,7 +575,7 @@ public class MailDataManager {
         return mail;
     }
 
-    public Mail sendCrossReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId, List<CommonPb.Award> drop,
+    public Mail sendCrossReportMail(Player recvPlayer, CommonPb.Report report, int moldId, List<CommonPb.Award> drop,
                                     int now, List<String> tParam, List<String> cParam, List<CommonPb.Award> recover) {
         Mail mail = createCrossReportMail(recvPlayer, report, moldId, drop, now, tParam, cParam, recover);
 
@@ -593,7 +587,7 @@ public class MailDataManager {
         return mail;
     }
 
-    public Mail createCrossReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
+    public Mail createCrossReportMail(Player recvPlayer, CommonPb.Report report, int moldId,
                                       List<CommonPb.Award> drop, int now, List<String> tParam, List<String> cParam,
                                       List<CommonPb.Award> recover) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
@@ -614,9 +608,6 @@ public class MailDataManager {
             mail.setcParam(cParam);
         }
 
-        if (report != null) {
-            report.setKeyId(mail.getKeyId());
-        }
         if (null != drop) {
             mail.setDropList(drop);
         }
@@ -625,7 +616,7 @@ public class MailDataManager {
         }
         mail.setCross(true);
 
-        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report.build());
+        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report);
         return mail;
     }
 
@@ -643,7 +634,7 @@ public class MailDataManager {
      * @param recover
      * @return 返回邮件对象
      */
-    public Mail createReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
+    public Mail createReportMail(Player recvPlayer, CommonPb.Report report, int moldId,
                                  List<CommonPb.Award> drop, int now, List<String> tParam, List<String> cParam,
                                  List<CommonPb.Award> recover) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
@@ -664,9 +655,6 @@ public class MailDataManager {
             mail.setcParam(cParam);
         }
 
-        if (report != null) {
-            report.setKeyId(mail.getKeyId());
-        }
         if (null != drop) {
             mail.setDropList(drop);
         }
@@ -674,7 +662,7 @@ public class MailDataManager {
             mail.setRecoverList(recover);
         }
 
-        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report.build());
+        recvPlayer.addMail(mail, CheckNull.isNull(report) ? null : report);
         return mail;
     }
 

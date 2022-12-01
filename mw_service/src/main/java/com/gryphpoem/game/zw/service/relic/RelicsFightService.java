@@ -5,10 +5,7 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.GlobalDataManager;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -58,6 +55,8 @@ public class RelicsFightService {
     private WarService warService;
     @Autowired
     private WorldService worldService;
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
     @Autowired
     private RelicService relicService;
     @Autowired
@@ -213,7 +212,7 @@ public class RelicsFightService {
             }
 
             //创建战报
-            CommonPb.Report.Builder report = createFightReport(fightLogic, attackPlayer, defendPlayer, recoverMap, nowSec, changeMap);
+            CommonPb.Report report = createFightReport(fightLogic, attackPlayer, defendPlayer, recoverMap, nowSec, changeMap);
             // 通知客户端玩家兵力/战功等资源变化
             warService.sendRoleResChange(changeMap);
             boolean attackSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
@@ -270,7 +269,7 @@ public class RelicsFightService {
         }
     }
 
-    private CommonPb.Report.Builder createFightReport(FightLogic fightLogic, Player attackPlayer, Player defendPlayer, Map<Long, Integer> recoverMap, int nowSec, Map<Long, ChangeInfo> changeMap) {
+    private CommonPb.Report createFightReport(FightLogic fightLogic, Player attackPlayer, Player defendPlayer, Map<Long, Integer> recoverMap, int nowSec, Map<Long, ChangeInfo> changeMap) {
         // 战斗记录
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         BattlePb.BattleRoundPb record = fightLogic.generateRecord();
@@ -302,11 +301,11 @@ public class RelicsFightService {
         }
         // 回合战报
         rpt.setRecord(record);
-        return worldService.createAtkPlayerReport(rpt.build(), nowSec); // 战报
+        return fightRecordDataManager.generateReport(rpt.build(), fightLogic, nowSec); // 战报
     }
 
 
-    private void attackFightSuccess(FightLogic fightLogic, RelicEntity rlc, CommonPb.Report.Builder report, Player attackPlayer, Army army,
+    private void attackFightSuccess(FightLogic fightLogic, RelicEntity rlc, CommonPb.Report report, Player attackPlayer, Army army,
                                     Player defendPlayer, int nowSec) {
         try {
             army.setState(ArmyConstant.ARMY_STATE_RELIC_BATTLE);
@@ -331,7 +330,7 @@ public class RelicsFightService {
         }
     }
 
-    private void attackFightFailure(FightLogic fightLogic, RelicEntity rlc, CommonPb.Report.Builder report, Player attackPlayer, Army army,
+    private void attackFightFailure(FightLogic fightLogic, RelicEntity rlc, CommonPb.Report report, Player attackPlayer, Army army,
                                     Player defendPlayer, int nowSec) {
         try {
             Lord atkLord = attackPlayer.lord;

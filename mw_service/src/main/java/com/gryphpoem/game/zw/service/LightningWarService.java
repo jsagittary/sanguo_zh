@@ -10,7 +10,6 @@ import com.gryphpoem.game.zw.dataMgr.StaticLightningWarDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.GamePb4;
@@ -51,6 +50,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class LightningWarService {
+
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
 
     @Autowired
     private FightService fightService;
@@ -377,10 +379,8 @@ public class LightningWarService {
             }
         }
 
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
         // // 记录双方汇总信息
         rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, 0, null, 0, 0));
         rpt.setDefCity(PbHelper.createRptCityPb(boss.getId(), pos));
@@ -444,7 +444,7 @@ public class LightningWarService {
             // 移除
             removeBattleIdSet.add(battle.getBattleId());
 
-            CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+            CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
             // 发送邮件通知
             sendLightningWarBattleMail(battle, staticCity, atkSuccess, report, awardProp, now, recoverArmyAwardMap);
 
@@ -475,7 +475,7 @@ public class LightningWarService {
      * @param recoverArmyAwardMap
      */
     private void sendLightningWarBattleMail(Battle battle, StaticCity staticCity, boolean atkSuccess,
-                                            CommonPb.Report.Builder report, Map<Long, List<CommonPb.Award>> awardProp, int now,
+                                            CommonPb.Report report, Map<Long, List<CommonPb.Award>> awardProp, int now,
                                             Map<Long, List<CommonPb.Award>> recoverArmyAwardMap) {
         List<CommonPb.BattleRole> atkList = battle.getAtkList();
         Set<Long> ids = new HashSet<>();

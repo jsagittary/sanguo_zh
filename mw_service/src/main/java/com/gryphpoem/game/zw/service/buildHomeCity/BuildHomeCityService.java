@@ -10,27 +10,11 @@ import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
-import com.gryphpoem.game.zw.manager.BuildingDataManager;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.MsgDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.WarDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.pb.BasePb;
-import com.gryphpoem.game.zw.pb.BattlePb;
-import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.GamePb1;
-import com.gryphpoem.game.zw.pb.GamePb2;
+import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.BuildingType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -38,45 +22,17 @@ import com.gryphpoem.game.zw.resource.domain.p.Building;
 import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
-import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
+import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.DateHelper;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.service.CombatService;
-import com.gryphpoem.game.zw.service.FightService;
-import com.gryphpoem.game.zw.service.GmCmd;
-import com.gryphpoem.game.zw.service.GmCmdService;
-import com.gryphpoem.game.zw.service.WallService;
-import com.gryphpoem.game.zw.service.WarService;
-import com.gryphpoem.game.zw.service.WorldService;
+import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,6 +62,8 @@ public class BuildHomeCityService implements GmCmdService {
     private WallService wallService;
     @Autowired
     private WorldService worldService;
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
     @Autowired
     private WorldDataManager worldDataManager;
     @Autowired
@@ -485,7 +443,7 @@ public class BuildHomeCityService implements GmCmdService {
                     }
                     clearResult = true;
                 }
-            } else if (staticSimulatorChoose.getCombatId() > 0){
+            } else if (staticSimulatorChoose.getCombatId() > 0) {
                 // 战斗结算
                 List<Integer> heroIdList = rq.getHeroIdList();
                 if (CheckNull.isEmpty(heroIdList)) {
@@ -799,7 +757,7 @@ public class BuildHomeCityService implements GmCmdService {
                 defSuccess,
                 defPlayer
         );
-        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         List<CommonPb.Award> dropList = null;
         if (!defSuccess) {

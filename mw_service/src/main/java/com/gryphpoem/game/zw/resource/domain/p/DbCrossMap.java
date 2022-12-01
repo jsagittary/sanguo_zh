@@ -1,12 +1,12 @@
 package com.gryphpoem.game.zw.resource.domain.p;
 
 /**
+ * @author QiuKun
  * @ClassName DbCrossMap.java
  * @Description 地图信息
- * @author QiuKun
  * @date 2019年4月2日
  */
-public class DbCrossMap implements DbSerializeId{
+public class DbCrossMap implements DbSerializeId {
     private int mapId;
     private byte[] city;
     private byte[] bandit;
@@ -81,7 +81,7 @@ public class DbCrossMap implements DbSerializeId{
     }
 
     @Override
-    public int getSerializeIdId() {
+    public long getSerializeIdId() {
         return mapId;
     }
 

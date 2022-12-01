@@ -1,11 +1,10 @@
 package com.gryphpoem.game.zw.resource.domain.p;
 
 /**
+ * @author TanDonghai
  * @ClassName DbGlobal.java
  * @Description 游戏公用数据
- * @author TanDonghai
  * @date 创建时间：2017年3月22日 下午7:26:41
- *
  */
 public class DbGlobal implements DbSerializeId {
     private int globalId;
@@ -127,7 +126,7 @@ public class DbGlobal implements DbSerializeId {
     }
 
     @Override
-    public int getSerializeIdId() {
+    public long getSerializeIdId() {
         return globalId;
     }
 }

@@ -1,84 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:tx="http://www.springframework.org/schema/tx"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
 
-	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
-		destroy-method="close">
-		<property name="driverClass" value="com.mysql.jdbc.Driver" />
-		<property name="jdbcUrl" value="#{serverConfig.jdbcUrl}" />
-		<property name="user" value="#{serverConfig.user}" />
-		<property name="password" value="#{serverConfig.password}" />
-		<property name="initialPoolSize" value="25" />
-		<property name="minPoolSize" value="25" />
-		<property name="maxPoolSize" value="250" />
-		<property name="maxIdleTime" value="14400" />
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="#{serverConfig.jdbcUrl}"/>
+        <property name="user" value="#{serverConfig.user}"/>
+        <property name="password" value="#{serverConfig.password}"/>
+        <property name="initialPoolSize" value="25"/>
+        <property name="minPoolSize" value="25"/>
+        <property name="maxPoolSize" value="250"/>
+        <property name="maxIdleTime" value="14400"/>
 
-		<property name="acquireIncrement" value="5" />
-		<property name="acquireRetryAttempts" value="30" />
-		<property name="acquireRetryDelay" value="500" />
+        <property name="acquireIncrement" value="5"/>
+        <property name="acquireRetryAttempts" value="30"/>
+        <property name="acquireRetryDelay" value="500"/>
 
-		<!-- <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection" 
-			value="100" /> -->
-		<property name="numHelperThreads" value="5" />
-		<property name="idleConnectionTestPeriod" value="600" />
-		<property name="testConnectionOnCheckout" value="false" />
-		<property name="testConnectionOnCheckin" value="false" />
-		<property name="preferredTestQuery" value="select 'x'" />
-	</bean>
+        <!-- <property name="maxStatements" value="1000" /> <property name="maxStatementsPerConnection"
+            value="100" /> -->
+        <property name="numHelperThreads" value="5"/>
+        <property name="idleConnectionTestPeriod" value="600"/>
+        <property name="testConnectionOnCheckout" value="false"/>
+        <property name="testConnectionOnCheckin" value="false"/>
+        <property name="preferredTestQuery" value="select 'x'"/>
+    </bean>
 
-	<!-- <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" 
-		init-method="init" destroy-method="close"> 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass 
-		<property name="driverClassName" value="com.mysql.jdbc.Driver" /> 基本属性 url、user、password 
-		<property name="url" value="jdbc:mysql://127.0.0.1:3306/html580?useUnicode=true&characterEncoding=utf-8" 
-		/> <property name="url" value="#{serverConfig.jdbcUrl}" /> <property name="username" 
-		value="#{serverConfig.user}" /> <property name="password" value="#{serverConfig.password}" 
-		/> 配置初始化大小、最小、最大 <property name="initialSize" value="20" /> <property name="minIdle" 
-		value="20" /> <property name="maxActive" value="100" /> 配置获取连接等待超时的时间 <property 
-		name="maxWait" value="60000" /> 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 <property 
-		name="timeBetweenEvictionRunsMillis" value="1000" /> 配置一个连接在池中最小生存的时间，单位是毫秒 
-		<property name="minEvictableIdleTimeMillis" value="300000" /> <property name="validationQuery" 
-		value="SELECT 'x'" /> <property name="testWhileIdle" value="true" /> <property 
-		name="testOnBorrow" value="false" /> <property name="testOnReturn" value="false" 
-		/> <property name="removeAbandoned" value="true" /> 打开removeAbandoned功能 <property 
-		name="removeAbandonedTimeout" value="3600" /> 1800秒，也就是30分钟 <property name="logAbandoned" 
-		value="true" /> 关闭abanded连接时输出错误日志 打开PSCache，并且指定每个连接上PSCache的大小（Oracle使用） 
-		<property name="poolPreparedStatements" value="true" /> <property name="maxPoolPreparedStatementPerConnectionSize" 
-		value="20" /> 配置监控统计拦截的filters <property name="filters" value="stat,slf4j" 
-		/> </bean> -->
+    <!-- <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+        init-method="init" destroy-method="close"> 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" /> 基本属性 url、user、password
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/html580?useUnicode=true&characterEncoding=utf-8"
+        /> <property name="url" value="#{serverConfig.jdbcUrl}" /> <property name="username"
+        value="#{serverConfig.user}" /> <property name="password" value="#{serverConfig.password}"
+        /> 配置初始化大小、最小、最大 <property name="initialSize" value="20" /> <property name="minIdle"
+        value="20" /> <property name="maxActive" value="100" /> 配置获取连接等待超时的时间 <property
+        name="maxWait" value="60000" /> 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 <property
+        name="timeBetweenEvictionRunsMillis" value="1000" /> 配置一个连接在池中最小生存的时间，单位是毫秒
+        <property name="minEvictableIdleTimeMillis" value="300000" /> <property name="validationQuery"
+        value="SELECT 'x'" /> <property name="testWhileIdle" value="true" /> <property
+        name="testOnBorrow" value="false" /> <property name="testOnReturn" value="false"
+        /> <property name="removeAbandoned" value="true" /> 打开removeAbandoned功能 <property
+        name="removeAbandonedTimeout" value="3600" /> 1800秒，也就是30分钟 <property name="logAbandoned"
+        value="true" /> 关闭abanded连接时输出错误日志 打开PSCache，并且指定每个连接上PSCache的大小（Oracle使用）
+        <property name="poolPreparedStatements" value="true" /> <property name="maxPoolPreparedStatementPerConnectionSize"
+        value="20" /> 配置监控统计拦截的filters <property name="filters" value="stat,slf4j"
+        /> </bean> -->
 
-	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"
-		p:configLocation="classpath:com/gryphpoem/game/zw/resource/dao/config/mybatisConfig.xml"
-		p:mapperLocations="classpath*:com/gryphpoem/game/zw/resource/dao/sqlMap/p/*Dao.xml"
-		p:dataSource-ref="dataSource" />
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"
+          p:configLocation="classpath:com/gryphpoem/game/zw/resource/dao/config/mybatisConfig.xml"
+          p:mapperLocations="classpath*:com/gryphpoem/game/zw/resource/dao/sqlMap/p/*Dao.xml"
+          p:dataSource-ref="dataSource"/>
 
-	<tx:annotation-driven transaction-manager="transactionManager" />
-	<bean name="transactionManager"
-		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="dataSource" />
-	</bean>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <bean name="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
 
-	<bean id="pBaseDao" class="com.gryphpoem.game.zw.resource.dao.BaseDao" abstract="true"
-		p:sqlSessionFactory-ref="sqlSessionFactory" />
+    <bean id="pBaseDao" class="com.gryphpoem.game.zw.resource.dao.BaseDao" abstract="true"
+          p:sqlSessionFactory-ref="sqlSessionFactory"/>
 
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.StaticParamDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.LordDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.ResourceDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PayDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.DataNewDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.SmallIdDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.GlobalDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CommonDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CampDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CampMemberDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.ActivityDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.RobotDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.MailDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CrossMapDao" parent="pBaseDao" />
-	<bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PlayerHeroDao" parent="pBaseDao" />
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.StaticParamDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.LordDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.ResourceDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PayDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.DataNewDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.SmallIdDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.GlobalDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CommonDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CampDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CampMemberDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.ActivityDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.RobotDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.MailDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.CrossMapDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.PlayerHeroDao" parent="pBaseDao"/>
+    <bean class="com.gryphpoem.game.zw.resource.dao.impl.p.FightRecordDao" parent="pBaseDao"/>
 </beans>
