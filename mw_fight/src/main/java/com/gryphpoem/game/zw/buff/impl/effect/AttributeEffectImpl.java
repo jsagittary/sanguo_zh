@@ -26,8 +26,7 @@ import java.util.Objects;
 public class AttributeEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
-        return new int[]{FightConstant.EffectLogicId.SKILL_DAMAGE,
-                FightConstant.EffectLogicId.ATTACK_INCREASED,
+        return new int[]{FightConstant.EffectLogicId.ATTACK_INCREASED,
                 FightConstant.EffectLogicId.REDUCED_ATTACK,
                 FightConstant.EffectLogicId.DEFENSE_INCREASED,
                 FightConstant.EffectLogicId.REDUCED_DEFENSE,
