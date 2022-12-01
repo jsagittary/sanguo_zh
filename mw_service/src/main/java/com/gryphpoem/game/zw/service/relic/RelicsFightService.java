@@ -6,7 +6,6 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
@@ -272,7 +271,6 @@ public class RelicsFightService {
     private CommonPb.Report createFightReport(FightLogic fightLogic, Player attackPlayer, Player defendPlayer, Map<Long, Integer> recoverMap, int nowSec, Map<Long, ChangeInfo> changeMap) {
         // 战斗记录
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setResult(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
         Lord atkLord = attackPlayer.lord;
         Lord defLord = defendPlayer.lord;
@@ -299,8 +297,6 @@ public class RelicsFightService {
                 rpt.addDefHero(rptHero);
             }
         }
-        // 回合战报
-        rpt.setRecord(record);
         return fightRecordDataManager.generateReport(rpt.build(), fightLogic, nowSec); // 战报
     }
 
