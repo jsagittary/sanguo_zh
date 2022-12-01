@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import org.springframework.util.ObjectUtils;
@@ -21,23 +22,23 @@ public class MailReportMap {
         this.headReport = new LinkedList<>();
     }
 
-    public void addReport(CommonPb.Report report, Map<Integer, Mail> mails) {
-//        if (CheckNull.isNull(report))
-//            return;
-//
-//        lock.writeLock().lock();
-//        try {
-//            this.reportMap.put(report.getKeyId(), report);
-//            if (!GameGlobal.closeExpiredReport) {
-//                headReport.offer(report.getKeyId());
-//                if (headReport.size() > Constant.MAIL_MAX_SAVE_COUNT) {
-//                    Integer removeKeyId = headReport.removeFirst();
-//                    handleExpiredReport(removeKeyId, mails.get(removeKeyId));
-//                }
-//            }
-//        } finally {
-//            lock.writeLock().unlock();
-//        }
+    public void addReport(int mailKeyId, CommonPb.Report report, Map<Integer, Mail> mails) {
+        if (CheckNull.isNull(report))
+            return;
+
+        lock.writeLock().lock();
+        try {
+            this.reportMap.put(mailKeyId, report);
+            if (!GameGlobal.closeExpiredReport) {
+                headReport.offer(mailKeyId);
+                if (headReport.size() > Constant.MAIL_MAX_SAVE_COUNT) {
+                    Integer removeKeyId = headReport.removeFirst();
+                    handleExpiredReport(removeKeyId, mails.get(removeKeyId));
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public CommonPb.Report getReport(int keyId) {
@@ -108,53 +109,8 @@ public class MailReportMap {
             return;
         }
 
-        CommonPb.Report.Builder report = builder.toBuilder();
-//        if (report.hasRptBandit()) {
-//            CommonPb.RptAtkBandit.Builder rptBandit = report.getRptBandit().toBuilder();
-//            if (!ObjectUtils.isEmpty(rptBandit.getRecord())) {
-//                CommonPb.Record.Builder record = rptBandit.getRecord().toBuilder();
-//                if (!ObjectUtils.isEmpty(record.getRoundList())) {
-//                    record.clearRound();
-//                }
-//                if (!ObjectUtils.isEmpty(record.getAuraList())) {
-//                    record.clearAura();
-//                }
-//
-//                rptBandit.setRecord(record.build());
-//                report.setRptBandit(rptBandit.build());
-//
-//                record = null;
-//            }
-//
-//            rptBandit = null;
-//        }
-
-//        if (report.hasRptPlayer()) {
-//            CommonPb.RptAtkPlayer.Builder rptAtkPlayer = report.getRptPlayer().toBuilder();
-//            if (!ObjectUtils.isEmpty(rptAtkPlayer.getRecord())) {
-//                CommonPb.Record.Builder record = rptAtkPlayer.getRecord().toBuilder();
-//                if (!ObjectUtils.isEmpty(record.getRoundList())) {
-//                    record.clearRound();
-//                }
-//                if (!ObjectUtils.isEmpty(record.getAuraList())) {
-//                    record.clearAura();
-//                }
-//
-//                rptAtkPlayer.setRecord(record.build());
-//                report.setRptPlayer(rptAtkPlayer.build());
-//
-//                record = null;
-//            }
-//
-//            rptAtkPlayer = null;
-//        }
-
         if (Objects.nonNull(mail)) {
             mail.setReportStatus(MailConstant.EXPIRED_REPORT);
         }
-
-        this.reportMap.put(removeReportKeyId, report.build());
-        builder = null;
-        report = null;
     }
 }

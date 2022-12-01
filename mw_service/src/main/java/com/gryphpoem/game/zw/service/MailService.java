@@ -16,12 +16,15 @@ import com.gryphpoem.game.zw.pb.GamePb3.SendCampMailRq;
 import com.gryphpoem.game.zw.pb.GamePb3.SendCampMailRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.dao.impl.p.FightRecordDao;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
+import com.gryphpoem.game.zw.resource.domain.p.DbFightRecord;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.server.SaveMailReportServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -51,6 +54,8 @@ public class MailService {
     private ServerSetting serverSetting;
     @Autowired
     private ActivityDataManager activityDataManager;
+    @Autowired
+    private FightRecordDao fightRecordDao;
 
     public void deleteCampMail(long lordId, int moldId) {
         GamePb3.SyncChatMailChangeRs.Builder syncBuilder = GamePb3.SyncChatMailChangeRs.newBuilder();
@@ -211,7 +216,7 @@ public class MailService {
                 int type = e.getType();
                 int id = e.getId();
                 int count = e.getCount();
-                if(type == AwardType.HERO && id == HeroConstant.GQS_HERO_ID){
+                if (type == AwardType.HERO && id == HeroConstant.GQS_HERO_ID) {
                     chatDataManager.sendSysChat(ChatConst.CHAT_FIRST_FLUSH, player.lord.getCamp(), 0,
                             player.lord.getCamp(), player.lord.getNick(), id);
                 }
@@ -373,8 +378,13 @@ public class MailService {
                     if (mail.getLock() == MailConstant.STARE_LOCK) {
                         continue;
                     } else {
+                        CommonPb.Report report = player.getMailReport(mail);
                         player.mails.remove(keyId);
-                        existKeyIdList.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                        if (Objects.nonNull(report)) {
+                            long reportId = Long.parseLong(report.getKeyId());
+                            existKeyIdList.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                            SaveMailReportServer.getIns().removeData(new DbFightRecord(reportId, null, null));
+                        }
                     }
                 }
             }
@@ -443,7 +453,7 @@ public class MailService {
         // 禁言只对普通聊天生效
         int silenceTime = player.lord.getSilence();
         if (silenceTime > 0) {
-            if (silenceTime == 1 ){
+            if (silenceTime == 1) {
                 throw new MwException(GameError.CHAT_SILENCE.getCode(), "玩家已被禁言，不能发送聊天, roleId:", roleId,
                         ", silence:", silenceTime);
             }
@@ -484,7 +494,7 @@ public class MailService {
             player.setMixtureData(PlayerConstant.DAILY_SEND_MAIL_CNT, player.getMixtureDataById(PlayerConstant.DAILY_SEND_MAIL_CNT) + 1);
         }
 
-        LogLordHelper.commonChat("campMail",AwardFrom.SEND_CAMP_MAIL, player.account, player.lord, content, serverSetting.getServerID());
+        LogLordHelper.commonChat("campMail", AwardFrom.SEND_CAMP_MAIL, player.account, player.lord, content, serverSetting.getServerID());
         // 创建聊天对象
         /*int channel = ChatConst.CHANNEL_PRIVATE;//私聊
         RoleChat chat = (RoleChat) createRoleChat(player, content);
@@ -625,7 +635,10 @@ public class MailService {
                 if (mail.getTime() <= mailExpiredTime) {
                     mailIt.remove();
                     delMailIds = delMailIds == null ? new HashMap<>() : delMailIds;
-                    delMailIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                    CommonPb.Report report = player.getMailReport(mail);
+                    if (Objects.nonNull(report)) {
+                        delMailIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                    }
                     //删除邮件，即删除战报
                     continue;
                 }
@@ -633,7 +646,10 @@ public class MailService {
                 reportExpiredTime = now - getExpiredTimeInterval(mail.getMoldId());
                 if (mail.getTime() <= reportExpiredTime && MailConstant.EXPIRED_REPORT != mail.getReportStatus()) {
                     delMailReportIds = delMailReportIds == null ? new HashMap<>() : delMailReportIds;
-                    delMailReportIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                    CommonPb.Report report = player.getMailReport(mail);
+                    if (Objects.nonNull(report)) {
+                        delMailReportIds.computeIfAbsent(mail.getMoldId(), list -> new ArrayList<>()).add(mail.getKeyId());
+                    }
                 }
             }
 
@@ -644,6 +660,9 @@ public class MailService {
             if (!ObjectUtils.isEmpty(delMailReportIds))
                 delMailReportIds.clear();
         }
+
+        Date expiredTime = TimeHelper.getSomeDayAfterOrBerfore(new Date(), -Constant.DEL_MAIL_DAY, 0, 0, 0);
+        fightRecordDao.deleteExpired(expiredTime);
     }
 
     private int getExpiredTimeInterval(int moldId) {
@@ -738,15 +757,15 @@ public class MailService {
     }
 
     // <editor-fold desc="GM 命令" defaultstate="collapsed">
-    public void gm(Player player,String...params){
+    public void gm(Player player, String... params) {
         String cmd = params[1];
-        if(cmd.equalsIgnoreCase("sendAward")){//mail sendAward [4,1937,1]
-            List<Integer> list = JSON.parseArray(params[2],Integer.class);
+        if (cmd.equalsIgnoreCase("sendAward")) {//mail sendAward [4,1937,1]
+            List<Integer> list = JSON.parseArray(params[2], Integer.class);
             List<Award> awards = new ArrayList<>();
             awards.add(PbHelper.createAward(list));
-            mailDataManager.sendAttachMail(player,awards,999999,AwardFrom.DO_SOME,TimeHelper.getCurrentSecond());
+            mailDataManager.sendAttachMail(player, awards, 999999, AwardFrom.DO_SOME, TimeHelper.getCurrentSecond());
         }
-        if(cmd.equalsIgnoreCase("clear")){
+        if (cmd.equalsIgnoreCase("clear")) {
             player.mails.clear();
         }
     }

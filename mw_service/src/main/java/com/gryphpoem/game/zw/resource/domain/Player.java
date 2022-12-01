@@ -3987,14 +3987,14 @@ public class Player {
 
     public void addMail(Mail mail, Report report) {
         mails.put(mail.getKeyId(), mail);
-        addReport(mail.getMoldId(), report, mails);
+        addReport(mail.getMoldId(), mail.getKeyId(), report, mails);
     }
 
-    public void addReport(int moldId, Report report, Map<Integer, Mail> mails) {
+    public void addReport(int moldId, int mailKeyId, Report report, Map<Integer, Mail> mails) {
         if (CheckNull.isNull(report)) {
             return;
         }
-        getMailReportMap(moldId).addReport(report, mails);
+        getMailReportMap(moldId).addReport(mailKeyId, report, mails);
     }
 
     public MailReportMap getMailReportMap(int moldId) {
