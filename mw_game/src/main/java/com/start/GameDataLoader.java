@@ -15,11 +15,10 @@ import com.hotfix.GameAgent;
 import java.util.Map;
 
 /**
+ * @author TanDonghai
  * @ClassName GameDataLoader.java
  * @Description 游戏数据统一加载类
- * @author TanDonghai
  * @date 创建时间：2017年3月17日 上午11:29:20
- *
  */
 public class GameDataLoader {
 
@@ -34,7 +33,7 @@ public class GameDataLoader {
 
     /**
      * 游戏启动时，按次序加载数据
-     * 
+     *
      * @throws MwException
      */
     public void loadGameData() throws MwException {
@@ -73,6 +72,7 @@ public class GameDataLoader {
         // 章节任务
         AppGameServer.ac.getBean(ChapterTaskDataManager.class).checkAllPlayerChapterTask();
         registerServiceEvent();
+        AppGameServer.ac.getBean(FightRecordDataManager.class).init();
     }
 
     /**
@@ -134,12 +134,12 @@ public class GameDataLoader {
 
             AppGameServer.ac.getBean(HotfixService.class).init();
             LogUtil.start("服务器热更已启动");
-            
+
             // 本地跨服数据加载
             AppGameServer.ac.getBean(CrossWorldMapDataManager.class).init();
             LogUtil.start("本地跨服数据加载");
-            
-            LogUtil.start("服务器热更钩子 game-agent : "+ GameAgent.inst);
+
+            LogUtil.start("服务器热更钩子 game-agent : " + GameAgent.inst);
         } catch (Exception e) {
             throw new MwException("加载玩家数据失败", e);
         }

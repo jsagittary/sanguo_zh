@@ -2147,4 +2147,13 @@ public class SystemId {
      */
     public static final int RESIDENT_RECOVERY_SPEED = 5025;
 
+    /**
+     * 战报缓存最大条目
+     */
+    public static final int MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE = 10000;
+
+    /**
+     * 战报缓存过期时间
+     */
+    public static final int EXPIRATION_TIME_OF_WAR_REPORT_CACHE = 10001;
 }

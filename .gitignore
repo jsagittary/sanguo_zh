@@ -48,3 +48,4 @@ log/
 
 
 *.hprof
+jdbc.properties

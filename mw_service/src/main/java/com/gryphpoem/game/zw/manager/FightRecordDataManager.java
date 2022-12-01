@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.resource.constant.WarConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.FightRecordDao;
 import com.gryphpoem.game.zw.resource.domain.p.DbFightRecord;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -35,15 +36,51 @@ public class FightRecordDataManager {
     /**
      * 战报一级缓存, 缓存时间5分钟, 过期会从cache中移除, 需要加载的时候根据战报id去数据库查询
      */
-    private final LoadingCache<Long, BattlePb.BattleRoundPb> recordCache;
+    private volatile LoadingCache<Long, BattlePb.BattleRoundPb> recordCache;
 
     @Autowired
     private FightRecordDao fightRecordDao;
 
-    public FightRecordDataManager() {
-        recordCache = Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES)// 5分钟后失效
-                .maximumSize(100)
+    /**
+     * 缓存的条目
+     */
+    private int cacheEntry;
+    /**
+     * 缓存的最大过期时间
+     */
+    private int cacheExpirationTime;
+
+    /**
+     * cache初始化
+     */
+    public void init() {
+        cacheEntry = WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE;
+        cacheExpirationTime = WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE;
+        recordCache = createLoadingCache();
+    }
+
+    /**
+     * cache配置重载
+     */
+    public void reload() {
+        if (cacheEntry != WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE || cacheExpirationTime != WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE) {
+            LoadingCache<Long, BattlePb.BattleRoundPb> recordCache_ = createLoadingCache();
+            recordCache_.putAll(recordCache.asMap());
+            this.recordCache = recordCache_;
+        }
+        cacheEntry = WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE;
+        cacheExpirationTime = WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE;
+    }
+
+    /**
+     * 创建loadingCache
+     *
+     * @return
+     */
+    private LoadingCache<Long, BattlePb.BattleRoundPb> createLoadingCache() {
+        return Caffeine.newBuilder()
+                .expireAfterWrite(WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE, TimeUnit.MINUTES)// 5分钟后失效
+                .maximumSize(WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE)
                 .removalListener((key, value, cause) -> {
                     // TODO: 2022/9/22 缓存卸载监听函数
                     LogUtil.common("[缓存卸载] remove removalCause={}, key=" + key + ", value=" + value);

@@ -82,6 +82,9 @@ import java.util.stream.Collectors;
 public class GmService {
 
     @Autowired
+    private FightRecordDataManager fightRecordDataManager;
+
+    @Autowired
     private ActivityDiaoChanService activityDiaoChanService;
 
     @Autowired
@@ -2345,6 +2348,8 @@ public class GmService {
             loadService.loadSystem();
             // ScheduleManager.loadWorldRule();
             sandTableContestService.resetContestDate4LoadSystem();
+            // 配置变更时
+            fightRecordDataManager.reload();
         } else if (str.equalsIgnoreCase("loadTable")) {
             loadService.loadAll();
             loadService.checkValid();
@@ -2353,6 +2358,8 @@ public class GmService {
             seasonService.gm_reload();
             activityService.syncActListChg();
             activityTemplateService.handleReloadActivityConfig();
+            // 配置变更时
+            fightRecordDataManager.reload();
             DataResource.getBean(CrossGamePlayService.class).initSchedule(ScheduleManager.getInstance().getSched());
         } else if (str.equalsIgnoreCase("loadBlackWords")) {
             loadService.loadChat();

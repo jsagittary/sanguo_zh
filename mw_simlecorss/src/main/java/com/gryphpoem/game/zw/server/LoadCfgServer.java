@@ -35,6 +35,8 @@ public class LoadCfgServer {
         StaticIniDataMgr.initSystem();
         Constant.loadSystem();
         LogUtil.common("------------------Constant加载完成------------------");
+        WarConstant.loadSystem();
+        LogUtil.common("------------------WarConstant加载完成------------------");
         ActParamConstant.loadSystem();
         LogUtil.common("------------------ActParamConstant加载完成-------------");
         HeroConstant.loadSystem();
