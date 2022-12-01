@@ -2,6 +2,11 @@ package com.gryphpoem.game.zw.gameplay.local.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
@@ -10,10 +15,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.BaseMapBattle;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
@@ -30,7 +31,10 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PartyLogHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.CampService;
 import com.gryphpoem.game.zw.service.CityService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
@@ -44,9 +48,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName CrossCityService.java
  * @Description 跨服城池逻辑相关处理
- * @author QiuKun
  * @date 2019年4月1日
  */
 @Component
@@ -75,7 +79,7 @@ public class CrossCityService {
 
     /**
      * 根据cityId获取mapId
-     * 
+     *
      * @param cityId
      * @return
      * @throws MwException
@@ -90,7 +94,7 @@ public class CrossCityService {
 
     /**
      * 跨服城池征收
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -195,7 +199,7 @@ public class CrossCityService {
 
     /**
      * 获取单个城池信息
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -216,7 +220,7 @@ public class CrossCityService {
 
     /**
      * 跨服城池重建
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -328,7 +332,7 @@ public class CrossCityService {
 
     /**
      * 跨服城池修复
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -375,7 +379,7 @@ public class CrossCityService {
 
     /**
      * 城池单次兵力修复
-     * 
+     *
      * @param city
      * @param staticCity
      * @param cMap
@@ -426,7 +430,7 @@ public class CrossCityService {
 
     /**
      * 跨服城主撤离城池
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -474,7 +478,7 @@ public class CrossCityService {
 
     /**
      * 推送partyCity
-     * 
+     *
      * @param city
      * @param staticCity
      * @param cMap
@@ -510,7 +514,6 @@ public class CrossCityService {
         }
     }
 
- 
 
     private void processRunSecCity(CrossWorldMap cMap, CityMapEntity cityEntity, int now) throws MwException {
         City city = cityEntity.getCity();
@@ -532,7 +535,7 @@ public class CrossCityService {
 
     /**
      * 城池竞选处理逻辑
-     * 
+     *
      * @param city
      * @param now
      * @param cMap
@@ -590,7 +593,7 @@ public class CrossCityService {
 
     /**
      * 获取城池竞选信息
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -629,7 +632,7 @@ public class CrossCityService {
 
     /**
      * 获取军团城池信息（只获取玩家所在分区的）
-     * 
+     *
      * @param player
      * @return
      * @throws MwException
@@ -643,11 +646,11 @@ public class CrossCityService {
         int myCmap = player.lord.getCamp();
         long myLordId = player.lord.getLordId();
         cityCollection.stream().filter(
-                cityEntity -> cityEntity.getCity().getCamp() == myCmap && cityEntity.getCity().getOwnerId() != myLordId)
+                        cityEntity -> cityEntity.getCity().getCamp() == myCmap && cityEntity.getCity().getOwnerId() != myLordId)
                 .forEach(cityEntity -> builder
                         .addCity(PbHelper.createPartyCityPb(cityEntity.getCity(), playerDataManager)));
         cityCollection.stream().filter(
-                cityEntity -> cityEntity.getCity().getCamp() == myCmap && cityEntity.getCity().getOwnerId() == myLordId)
+                        cityEntity -> cityEntity.getCity().getCamp() == myCmap && cityEntity.getCity().getOwnerId() == myLordId)
                 .findFirst().ifPresent(cityEntity -> builder
                         .addCity(PbHelper.createPartyCityPb(cityEntity.getCity(), playerDataManager)));
         return builder.build();
@@ -655,7 +658,7 @@ public class CrossCityService {
 
     /**
      * 获取军团战争信息
-     * 
+     *
      * @param player
      * @return
      * @throws MwException

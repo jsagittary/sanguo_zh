@@ -5,12 +5,8 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.RoleOpt;
@@ -18,67 +14,21 @@ import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncFightChgRs;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncRoleInfoRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.BuildingType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.constant.Constant.Camp;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
-import com.gryphpoem.game.zw.resource.constant.PushConstant;
-import com.gryphpoem.game.zw.resource.constant.SeasonConst;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.TechConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
-import com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.CommonDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.DataNewDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.LordDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.MailDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.PayDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.PlayerHeroDao;
-import com.gryphpoem.game.zw.resource.dao.impl.p.ResourceDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.*;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.Role;
-import com.gryphpoem.game.zw.resource.domain.p.Account;
-import com.gryphpoem.game.zw.resource.domain.p.Building;
-import com.gryphpoem.game.zw.resource.domain.p.Common;
-import com.gryphpoem.game.zw.resource.domain.p.DataNew;
-import com.gryphpoem.game.zw.resource.domain.p.DbPlayerHero;
-import com.gryphpoem.game.zw.resource.domain.p.Lord;
-import com.gryphpoem.game.zw.resource.domain.p.MailData;
-import com.gryphpoem.game.zw.resource.domain.p.PaySum;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
-import com.gryphpoem.game.zw.resource.domain.p.Resource;
-import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
-import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
-import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
+import com.gryphpoem.game.zw.resource.domain.p.*;
+import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.AccountHelper;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.DateHelper;
-import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.PlayerSerHelper;
-import com.gryphpoem.game.zw.resource.util.PushMessageUtil;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PlayerFormation;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.service.BuildingService;
 import com.gryphpoem.game.zw.service.buildHomeCity.BuildHomeCityService;
@@ -92,17 +42,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -724,9 +664,10 @@ public class PlayerDataManager implements PlayerDM {
 
     /**
      * 创建全服唯一的id
+     *
      * @param account 账号信息
-     * @param lord 角色信息
-     * @return long 由创建唯一id服务创建, 这里还有有重复的风险。例如单服单渠道的导入到上限了999999； null 没有获取到lordId 
+     * @param lord    角色信息
+     * @return long 由创建唯一id服务创建, 这里还有有重复的风险。例如单服单渠道的导入到上限了999999； null 没有获取到lordId
      */
     private Long createLordId(Account account, Lord lord) {
         Long lordId = null;
@@ -1208,7 +1149,7 @@ public class PlayerDataManager implements PlayerDM {
             } else {
                 lord.setPowerTime(now);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             LogUtil.error(e);
         }
     }
@@ -1265,6 +1206,7 @@ public class PlayerDataManager implements PlayerDM {
 
     /**
      * 赛季天赋优化增益
+     *
      * @param player
      * @return
      */
@@ -1324,13 +1266,16 @@ public class PlayerDataManager implements PlayerDM {
             int armType; // 记录将领所属兵种
             StaticHero staticHero;
             ChangeInfo change = ChangeInfo.newIns();
+            PlayerFormation playerFormation = player.getPlayerFormation();
+
             // 上阵将领 + 采集将领 自动补兵
-            int[] heroIds = new int[player.heroBattle.length + player.heroAcq.length + player.heroCommando.length];
-            System.arraycopy(player.heroBattle, 0, heroIds, 0, player.heroBattle.length);
-            System.arraycopy(player.heroAcq, 0, heroIds, player.heroBattle.length, player.heroAcq.length);
-            System.arraycopy(player.heroCommando, 0, heroIds, player.heroBattle.length + player.heroAcq.length, player.heroCommando.length);
-            for (int heroId : heroIds) {
-                hero = player.heros.get(heroId);
+            PartnerHero[] heroIds = new PartnerHero[playerFormation.getHeroBattle().length + playerFormation.getHeroAcq().length];
+            System.arraycopy(playerFormation.getHeroBattle(), 0, heroIds, 0, playerFormation.getHeroBattle().length);
+            System.arraycopy(playerFormation.getHeroAcq(), 0, heroIds, playerFormation.getHeroBattle().length, playerFormation.getHeroAcq().length);
+
+            for (PartnerHero partnerHero : heroIds) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                hero = partnerHero.getPrincipalHero();
                 if (hero == null) {
                     continue;
                 }
@@ -1339,6 +1284,7 @@ public class PlayerDataManager implements PlayerDM {
                     continue;
                 }
 
+                int heroId = hero.getHeroId();
                 max = hero.getAttr()[HeroConstant.ATTR_LEAD];
                 if (hero.getCount() >= max) {
                     hero.setCount(max);
@@ -1372,16 +1318,6 @@ public class PlayerDataManager implements PlayerDM {
                 }
                 // 增加武将兵力
                 hero.setCount(hero.getCount() + add);
-                // LogLordHelper.heroArm(AwardFrom.REPLENISH, player.account, player.lord, heroId, hero.getCount(), add, armType,
-                //         Constant.ACTION_ADD);
-
-                // 上报玩家兵力变化信息
-//                LogLordHelper.playerArm(
-//                        AwardFrom.REPLENISH,
-//                        player, armType,
-//                        Constant.ACTION_ADD,
-//                        add
-//                );
 
                 change.addChangeType(AwardType.ARMY, armType);
                 change.addChangeType(AwardType.HERO_ARM, heroId);

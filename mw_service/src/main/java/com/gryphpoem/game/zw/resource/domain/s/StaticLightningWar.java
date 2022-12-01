@@ -1,8 +1,11 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,7 +28,7 @@ public class StaticLightningWar {
     private int intervalTime;               // 战斗之间间隔时间，单位(秒)
     private String announceTime;            // 活动预告时间
     private int repeatTime;                 // 预告发出的的间隔时间，单位(秒)
-    private List<Integer> form;             // 阵型配置[]
+    private List<List<Integer>> form;             // 阵型配置[]
     private List<List<Integer>> killAward;  // 击杀奖励[[类型,id,数量],[类型,id,数量],……]// 城防军阵型
     private List<CityHero> formList;        // NPC守军阵营
 
@@ -59,9 +62,10 @@ public class StaticLightningWar {
             formList = new ArrayList<>();
         }
         formList.clear();
-        for (Integer npcId : getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        for (List<Integer> npcId : getForm()) {
+            hero = fightService.createCityHero(npcId);
+            if (CheckNull.isNull(hero)) continue;
             formList.add(hero);
         }
     }
@@ -137,11 +141,11 @@ public class StaticLightningWar {
 		this.repeatTime = repeatTime;
 	}
 
-	public List<Integer> getForm() {
+	public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

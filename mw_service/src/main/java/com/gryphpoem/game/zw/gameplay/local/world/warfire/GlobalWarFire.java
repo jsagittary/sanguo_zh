@@ -6,6 +6,9 @@ import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.rank.SimpleRank4SkipSet;
 import com.gryphpoem.game.zw.core.rank.SimpleRankComparatorFactory;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
@@ -17,13 +20,13 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.AttackPlayerBattle;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.map.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb5.SyncMapCloseRs;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -36,8 +39,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -544,7 +545,7 @@ public class GlobalWarFire {
         addPlayerScore(pwf, speedMin, AwardFrom.WAR_FIRE_SCORE_MINE_MINUTE_OUTPUT, wfMine.getRemainRes());
         updateMine(wfMine, speedMin);
         Army army = wfMine.getGuard() != null ? wfMine.getGuard().getArmy() : null;
-        int heroId = army != null ? army.getHero().get(0).getV1() : 0;
+        int heroId = army != null ? army.getHero().get(0).getPrincipleHeroId() : 0;
         if (heroId > 0) {
             pwf.addWarFireEvent(WarFireEvent.ETY_MINE_OUTPUT, wfMine.getCfgMine().getMineId(), wfMine.getPos(), heroId, speedMin);
         }
@@ -601,8 +602,8 @@ public class GlobalWarFire {
                 StaticTitle staticTitle = StaticLordDataMgr.getTitleMapById(StaticCastleSkin.WAR_FIRE_WINNER_TITLE_ID);
                 rewardDataManager.addAward(player, AwardType.TITLE, staticTitle.getId(), Math.toIntExact(staticTitle.getDuration()), AwardFrom.WAR_FIRE_PERSONAL_RANK_AWARD);
             }
-        }catch (Exception e){
-            LogUtil.error("对前三名发送称号",e);
+        } catch (Exception e) {
+            LogUtil.error("对前三名发送称号", e);
         }
         playerWarFireMap.forEach((k, v) -> {
             if (v.getStatus() == PlayerWarFire.NOT_REGISTRY_STATUS) {
@@ -1069,7 +1070,7 @@ public class GlobalWarFire {
             LogUtil.world(String.format("战火燎原 --- 玩家 :%d, 据点 :%d, 获得首杀积分 :%d, 当前累计首杀积分 :%d", lordId, cityId, playerFirstBloodScore, pwf.getFirstOccupyScore()));
             //记录首杀奖励Log
             AttackWFCityArmy army = CheckNull.isEmpty(armys) ? null : armys.get(0);
-            int heroId = army != null ? army.getArmy().getHero().get(0).getV1() : 0;
+            int heroId = army != null ? army.getArmy().getHero().get(0).getPrincipleHeroId() : 0;
             if (heroId > 0) {
                 pwf.addWarFireEvent(WarFireEvent.ETY_CITY_FIRST_BLOOD, cityId, wfCity.getPos(), heroId, playerFirstBloodScore);
             }
@@ -1116,7 +1117,7 @@ public class GlobalWarFire {
                     PlayerWarFire pwf = getPlayerWarFire(lordId);
                     addPlayerScore(pwf, addPlayerScore, AwardFrom.WAR_FIRE_SCORE_CITY_MINUTE_OUTPUT, cityId);
                     AttackWFCityArmy army = CheckNull.isEmpty(armys) ? null : armys.get(0);
-                    int heroId = army != null ? army.getArmy().getHero().get(0).getV1() : 0;
+                    int heroId = army != null ? army.getArmy().getHero().get(0).getPrincipleHeroId() : 0;
                     if (heroId > 0) {
                         pwf.addWarFireEvent(WarFireEvent.ETY_CITY_OUTPUT, cityId, wfCity.getPos(), heroId, staticWarFire.getPersonContinue());
                     }
@@ -1169,12 +1170,12 @@ public class GlobalWarFire {
         }
 
         //上报数数
-        EventDataUp.credits(player.account,player.lord,pwf.getScore(),addScore,CreditsConstant.WARFIRE,from);
-        
+        EventDataUp.credits(player.account, player.lord, pwf.getScore(), addScore, CreditsConstant.WARFIRE, from);
+
         //参与活动任务
         TaskService.handleTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.WAR_FIRE.getCategory());
-        ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY,FeatureCategory.WAR_FIRE.getCategory());
-        TaskService.processTask(player, ETask.JOIN_ACTIVITY,FeatureCategory.WAR_FIRE.getCategory());
+        ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.WAR_FIRE.getCategory());
+        TaskService.processTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.WAR_FIRE.getCategory());
     }
 
     private void updatePlayerScoreRank(Player player, PlayerWarFire pwf) {

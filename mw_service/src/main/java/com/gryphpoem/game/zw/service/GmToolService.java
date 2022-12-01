@@ -26,6 +26,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,7 @@ public class GmToolService {
 
     /**
      * 发送GM邮件
-     * 
+     *
      * @param making
      * @param type
      * @param channelNo
@@ -81,15 +82,15 @@ public class GmToolService {
      * @return
      */
     public boolean sendMailLogic(String making, int type, String channelNo, String childNo, int online, int moldId, String title,
-            String content, String award, String to, int alv, int blv, int avip, int bvip, String partys,int camp) {
+                                 String content, String award, String to, int alv, int blv, int avip, int bvip, String partys, int camp) {
         // 邮件内容
         Object[] params = null;
         if (!title.equals("") && !content.equals("")) {
-            params = new String[] { title, content };
+            params = new String[]{title, content};
         } else if (title.equals("") && !content.equals("")) {
-            params = new String[] { content };
+            params = new String[]{content};
         } else if (!title.equals("") && content.equals("")) {
-            params = new String[] { title };
+            params = new String[]{title};
         }
         int now = TimeHelper.getCurrentSecond();
 
@@ -130,10 +131,10 @@ public class GmToolService {
                 for (String nick : names) {
                     player = playerDataManager.getPlayer(nick);
                     if (null != player) {
-                        if(awardList.size()>0) {
+                        if (awardList.size() > 0) {
                             mailDataManager.sendAttachMail(player, awardList, moldId, AwardFrom.GM_SEND, now, params);
-                        }else {
-                            mailDataManager.sendNormalMail(player,moldId,now,params);
+                        } else {
+                            mailDataManager.sendNormalMail(player, moldId, now, params);
                         }
                     }
                 }
@@ -158,8 +159,8 @@ public class GmToolService {
                 if (player == null || player.account == null || !player.isActive() || player.lord == null) {
                     continue;
                 }
-                if ((channelNo.equals("0")) || (channelNoList.contains(player.account.getPlatNo()+","+player.account.getChildNo()))) {
-                    
+                if ((channelNo.equals("0")) || (channelNoList.contains(player.account.getPlatNo() + "," + player.account.getChildNo()))) {
+
                     Lord lord = player.lord;
                     if (alv != 0 && lord.getLevel() < alv) {
                         continue;
@@ -196,10 +197,10 @@ public class GmToolService {
                 for (String id : ids) {
                     player = playerDataManager.getPlayer(Long.valueOf(id));
                     if (null != player) {
-                        if(awardList.size()>0) {
+                        if (awardList.size() > 0) {
                             mailDataManager.sendAttachMail(player, awardList, moldId, AwardFrom.GM_SEND, now, params);
-                        }else {
-                            mailDataManager.sendNormalMail(player,moldId,now,params);
+                        } else {
+                            mailDataManager.sendNormalMail(player, moldId, now, params);
                         }
                     }
                 }
@@ -212,18 +213,18 @@ public class GmToolService {
 
     /**
      * 发送后台公告
-     * 
+     *
      * @param
      * @return
      */
     public boolean sendNoticeLogic(HttpPb.NoticeRq req) {
         Date now = new Date();
-        
+
         Date beginTime = DateHelper.parseDate(req.getBeginTime());
         ScheduleManager scheduleManager = ScheduleManager.getInstance();
         if (DateHelper.isAfterTime(now, beginTime)) {
             scheduleManager.addOrModifyDefultJob(DefultJob.createDefult("gmChatJob"),
-                    (job) -> chatService.sendSysChatOnWorld(req.getChatId(),req.getCamp(), req.getContent()), beginTime, req.getSeconds(), req.getCount());
+                    (job) -> chatService.sendSysChatOnWorld(req.getChatId(), req.getCamp(), req.getContent()), beginTime, req.getSeconds(), req.getCount());
         }
 //        chatService.sendSysChatOnWorld(Integer.parseInt(chatIdStr),campStr, content);
         return true;
@@ -260,7 +261,7 @@ public class GmToolService {
             if (player != null && player.account.getIsGm() == 0) {
                 player.lord.setSilence(0);
                 // 同步玩家禁言时间
-                rewardDataManager.syncRoleResChanged(player, rewardDataManager.createChangeInfoPb(-1,0, 0));
+                rewardDataManager.syncRoleResChanged(player, rewardDataManager.createChangeInfoPb(-1, 0, 0));
             }
         } else if (forbiddenId == 3) {
             Player player = playerDataManager.getPlayer(lordId);
@@ -305,10 +306,10 @@ public class GmToolService {
 
     /**
      * 获取玩家信息
-     * 
+     *
      * @param markging
      * @param lordId
-     * @param type 1.背包道具 2.背包装备 3.将领 4.建筑等级 5.超级武器 6.科技
+     * @param type     1.背包道具 2.背包装备 3.将领 4.建筑等级 5.超级武器 6.科技
      * @return
      */
     public Base.Builder backLordBaseLogic(String markging, long lordId, int type, List<String> params) {
@@ -316,7 +317,7 @@ public class GmToolService {
         BackLordBaseRq.Builder builder = BackLordBaseRq.newBuilder();
         builder.setMarking(markging);
         builder.setType(type);
-        if(type == 99){ ////获取活动下次开启时间
+        if (type == 99) { ////获取活动下次开启时间
             builder.setCode(200);
             PlayerInfo.Builder playerInfoBuilder = PlayerInfo.newBuilder();
             fillPlayerInfoData(player, playerInfoBuilder, type, params);
@@ -343,9 +344,9 @@ public class GmToolService {
 
     /**
      * 填充playerInfo数据
-     * 
+     *
      * @param builder
-     * @param type 1.背包道具 2.背包装备 3.将领 4.建筑等级 5.超级武器 6.科技
+     * @param type    1.背包道具 2.背包装备 3.将领 4.建筑等级 5.超级武器 6.科技
      */
     private void fillPlayerInfoData(Player player, PlayerInfo.Builder builder, int type, List<String> params) {
         switch (type) {
@@ -405,7 +406,7 @@ public class GmToolService {
                 int airshipNextTime = airshipNextOpenMap.getOrDefault(0, 0);
                 Map<Integer, Integer> counterAtkNextOpenMap = globalDataManager.getGameGlobal().getMixtureDataById(GlobalConstant.COUNTER_ATK_NEXT_OPEN_TIME);
                 int counterAtkNextTime = counterAtkNextOpenMap.getOrDefault(0, 0);
-                String nextTime = "{rebel:"+rebelNextTime+",airship:"+airshipNextTime+",counterAtk:"+counterAtkNextTime+"}";
+                String nextTime = "{rebel:" + rebelNextTime + ",airship:" + airshipNextTime + ",counterAtk:" + counterAtkNextTime + "}";
                 builder.setExt(nextTime);
                 break;
             default:
@@ -423,8 +424,8 @@ public class GmToolService {
         }
         try {
             String model = params.get(0);
-            if(model.equals("lord")){
-                return player.lord.getSilence()+","+player.account.getForbid();
+            if (model.equals("lord")) {
+                return player.lord.getSilence() + "," + player.account.getForbid();
             }
             Method method = ReflectionUtils.findMethod(Player.class, StrUtils.firstLowerCase(model));
             method.setAccessible(true);
@@ -489,13 +490,13 @@ public class GmToolService {
             if (value >= 0 && value <= StaticVipDataMgr.getMaxVipLv()) {
                 player.lord.setVipExp(StaticVipDataMgr.getVipMap(value).getExp());
 //                player.lord.setVip(value);
-                vipDataManager.setVip(player,value);
+                vipDataManager.setVip(player, value);
             }
         } else if (type == 2) {// 修改经验
             if (value >= 0) {
                 player.lord.setVipExp(value);
 //                player.lord.setVip(StaticVipDataMgr.calcVip(player.lord.getVipExp()));
-                vipDataManager.setVip(player,StaticVipDataMgr.calcVip(player.lord.getVipExp()));
+                vipDataManager.setVip(player, StaticVipDataMgr.calcVip(player.lord.getVipExp()));
             }
         }
         // 同步到客户端
@@ -587,9 +588,9 @@ public class GmToolService {
 
     /**
      * 清理小号功能
-     * 
+     *
      * @param lordId 指定清理
-     * @param lv 小于此等级
+     * @param lv     小于此等级
      */
     public void processSmallIdLogic(long lordId, int lv) {
         Iterator<Player> it = playerDataManager.getPlayers().values().iterator();
@@ -640,26 +641,20 @@ public class GmToolService {
                     h.setState(HeroConstant.HERO_STATE_IDLE);
                     h.setStatus(HeroConstant.HERO_STATUS_IDLE);
                 }
-                for (int heroId : player.heroBattle) {
-                    Hero h = player.heros.get(heroId);
-                    if (null != h) {
-                        h.setState(HeroConstant.HERO_STATE_IDLE);
-                        h.setStatus(HeroConstant.HERO_STATUS_BATTLE);
-                    }
+                for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+                    if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
+                    partnerHero.setStatus(HeroConstant.HERO_STATUS_BATTLE);
                 }
-                for (int heroId : player.heroWall) {
-                    Hero h = player.heros.get(heroId);
-                    if (null != h) {
-                        h.setState(HeroConstant.HERO_STATE_IDLE);
-                        h.setStatus(HeroConstant.HERO_STATUS_WALL_BATTLE);
-                    }
+                for (PartnerHero partnerHero : player.getPlayerFormation().getHeroWall()) {
+                    if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
+                    partnerHero.setStatus(HeroConstant.HERO_STATUS_WALL_BATTLE);
                 }
-                for (int heroId : player.heroAcq) {
-                    Hero h = player.heros.get(heroId);
-                    if (null != h) {
-                        h.setState(HeroConstant.HERO_STATE_IDLE);
-                        h.setStatus(HeroConstant.HERO_STATUS_COLLECT);
-                    }
+                for (PartnerHero partnerHero : player.getPlayerFormation().getHeroAcq()) {
+                    if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
+                    partnerHero.setStatus(HeroConstant.HERO_STATUS_COLLECT);
                 }
                 player.lord.setArea(-1);
                 player.lord.setPos(-1);

@@ -13,7 +13,7 @@ public class StaticTreasureCombat {
     private int sectionId;
     private List<List<Integer>> minuteAward;
     private List<List<Integer>> minuteRandomAward;
-    private List<Integer> form;
+    private List<List<Integer>> form;
     private List<List<Integer>> firstAward;
     private List<List<Integer>> sectionAward;
     private int preId;
@@ -44,11 +44,11 @@ public class StaticTreasureCombat {
         this.minuteRandomAward = minuteRandomAward;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

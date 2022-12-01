@@ -1,6 +1,9 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
@@ -10,12 +13,14 @@ import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.MineMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.MailCollect;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -25,9 +30,9 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.TaskService;
 import com.gryphpoem.game.zw.service.WorldService;
@@ -93,11 +98,11 @@ public class CollectArmy extends BaseArmy {
         Fighter attacker = fightService.createFighter(atkplayer, army.getHero());
         Fighter defender = fightService.createFighter(defPlayer, guard.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
@@ -144,9 +149,9 @@ public class CollectArmy extends BaseArmy {
         // 战斗记录
         Lord atkLord = atkplayer.lord;
         Lord defLord = defPlayer.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(atkLord.getPos(), atkLord.getNick(), atkLord.getVip(), atkLord.getLevel()));
@@ -210,7 +215,7 @@ public class CollectArmy extends BaseArmy {
             return;
         }
         MineMapEntity mineMapEntity = (MineMapEntity) baseWorldEntity;
-        int heroId = getArmy().getHero().get(0).getV1();
+        int heroId = getArmy().getHero().get(0).getPrincipleHeroId();
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
         int collectMaxTime = mineMapEntity.canCollectMaxTime(cMap, staticHero);
         Player armyPlayer = checkAndGetAmryHasPlayer(mapMarchArmy);
@@ -268,11 +273,11 @@ public class CollectArmy extends BaseArmy {
             List<Award> grab = mailCollect.getGrabList();
             boolean hasMine = cMap.getAllMap().containsKey(getTargetPos());
             Turple<Integer, Integer> xy = cMap.posToTurple(getTargetPos());
-            if (hasMine){
+            if (hasMine) {
                 //采集撤回邮件类型
                 mailDataManager.sendCollectMail(amryPlayer, null, MailConstant.MOLD_COLLECT_RETREAT, mailCollect, now,
                         staticMine.getLv(), staticMine.getMineId(), xy.getA(), xy.getB());
-            }else{//采集完成邮件类型
+            } else {//采集完成邮件类型
                 mailDataManager.sendCollectMail(amryPlayer, null, MailConstant.MOLD_COLLECT, mailCollect, now,
                         grab.get(0).getType(), grab.get(0).getId(), grab.get(0).getCount(), staticMine.getLv(),
                         staticMine.getMineId(), xy.getA(), xy.getB());
@@ -289,8 +294,8 @@ public class CollectArmy extends BaseArmy {
                     this.army.getCollectTime());
 
             //貂蝉任务-采集资源
-            ActivityDiaoChanService.completeTask(amryPlayer, ETask.COLLECT_RES,staticMine.getMineType(),grab.get(0).getCount());
-            TaskService.processTask(amryPlayer, ETask.COLLECT_RES,staticMine.getMineType(),grab.get(0).getCount());
+            ActivityDiaoChanService.completeTask(amryPlayer, ETask.COLLECT_RES, staticMine.getMineType(), grab.get(0).getCount());
+            TaskService.processTask(amryPlayer, ETask.COLLECT_RES, staticMine.getMineType(), grab.get(0).getCount());
         }
     }
 
@@ -311,7 +316,7 @@ public class CollectArmy extends BaseArmy {
         super.retreat(param);
     }
 
-    protected void afterFightMineGuard(MapMarch mapMarch, FightLogic fightLogic, Fighter attker, Fighter defer){
+    protected void afterFightMineGuard(MapMarch mapMarch, FightLogic fightLogic, Fighter attker, Fighter defer) {
         //等待别人调用
     }
 }

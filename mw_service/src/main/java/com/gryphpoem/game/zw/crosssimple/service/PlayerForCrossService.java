@@ -1,14 +1,5 @@
 package com.gryphpoem.game.zw.crosssimple.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -22,26 +13,11 @@ import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.Award;
-import com.gryphpoem.game.zw.pb.CommonPb.CrossAwardPb;
-import com.gryphpoem.game.zw.pb.CommonPb.CrossHeroPb;
+import com.gryphpoem.game.zw.pb.CommonPb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.CrossPlayerPb.Builder;
-import com.gryphpoem.game.zw.pb.CommonPb.FortHeroPb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.pb.CrossPb.ChoiceHeroRq;
-import com.gryphpoem.game.zw.pb.CrossPb.CrossAwardOpRq;
-import com.gryphpoem.game.zw.pb.CrossPb.CrossAwardOpRs;
-import com.gryphpoem.game.zw.pb.CrossPb.CrossHeroReviveRq;
-import com.gryphpoem.game.zw.pb.CrossPb.CrossLoginRq;
-import com.gryphpoem.game.zw.pb.CrossPb.CrossLoginRs;
+import com.gryphpoem.game.zw.pb.CrossPb.*;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.CrossPersonalData;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossWarRank;
@@ -52,11 +28,19 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.ArmyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName PlayerForCrossService.java
  * @Description 游戏服中使用, 操作玩家跨服相关操作
- * @author QiuKun
  * @date 2019年5月15日
  */
 @Component
@@ -75,7 +59,7 @@ public class PlayerForCrossService {
 
     /**
      * 客户端 ->游戏服 -> 跨服 进入跨服
-     * 
+     *
      * @param roleId
      * @param req
      * @throws MwException
@@ -98,7 +82,7 @@ public class PlayerForCrossService {
 
     /**
      * 登陆跨服
-     * 
+     *
      * @param player
      */
     public void loginCrossProcess(Player player) {
@@ -113,7 +97,7 @@ public class PlayerForCrossService {
 
     /**
      * 关闭跨服界面
-     * 
+     *
      * @param player
      * @throws MwException
      */
@@ -123,7 +107,7 @@ public class PlayerForCrossService {
 
     /**
      * 玩家离线
-     * 
+     *
      * @param player
      */
     public void offlinePlayerProcess(Player player) {
@@ -141,7 +125,7 @@ public class PlayerForCrossService {
 
     /**
      * 检测玩家是否在跨服中
-     * 
+     *
      * @param player
      * @throws MwException
      */
@@ -153,7 +137,7 @@ public class PlayerForCrossService {
 
     /**
      * 检测跨服条件
-     * 
+     *
      * @param player
      */
     private void checkEnterCrossCond(Player player) throws MwException {
@@ -165,7 +149,7 @@ public class PlayerForCrossService {
 
     /**
      * 选将领加入战斗
-     * 
+     *
      * @param roleId
      * @param req
      * @throws MwException
@@ -212,7 +196,7 @@ public class PlayerForCrossService {
 
     /**
      * cross服 -> 游戏服 CrossLoginRq 的回调
-     * 
+     *
      * @param lordId
      */
     public void crossLoginCallBack(long lordId, CrossLoginRs msg) {
@@ -226,7 +210,7 @@ public class PlayerForCrossService {
 
     /**
      * 跨服扣除资源处理
-     * 
+     *
      * @param lordId
      * @param msg
      * @return
@@ -276,7 +260,7 @@ public class PlayerForCrossService {
 
     /**
      * 将领复活的前置条件判断
-     * 
+     *
      * @param roleId
      * @param req
      * @throws MwException
@@ -328,7 +312,6 @@ public class PlayerForCrossService {
 
     /**
      * 同步将领信息
-     * 
      */
     public void syncFortHeroProcess(long roleId, SyncFortHeroRs req) {
         Player player = playerDataManager.getPlayer(roleId);
@@ -363,25 +346,25 @@ public class PlayerForCrossService {
 
     /**
      * 跨服结束玩家数据数据清除
-     * 
+     *
      * @param player
      */
     public void crossWarFinishClear(Player player) {
         if (player == null) return;
         // 将领状态清除
-        for (Hero hero : player.getAllOnBattleHeros()) {
-            if (hero != null && (hero.getState() == ArmyConstant.ARMY_STATE_CROSS
-                    || hero.getState() == ArmyConstant.ARMY_STATE_CROSS_REVIVAL)) {
-                hero.setState(ArmyConstant.ARMY_STATE_IDLE); // 设置空闲状态
-            }
-        }
+//        for (Hero hero : player.getAllOnBattleHeros()) {
+//            if (hero != null && (hero.getState() == ArmyConstant.ARMY_STATE_CROSS
+//                    || hero.getState() == ArmyConstant.ARMY_STATE_CROSS_REVIVAL)) {
+//                hero.setState(ArmyConstant.ARMY_STATE_IDLE); // 设置空闲状态
+//            }
+//        }
         // 将领复活次数重置
         player.getAndCreateCrossPersonalData().crossFinishClear();
     }
 
     /**
      * 跨服战结束处理
-     * 
+     *
      * @param roleId
      * @param req
      */

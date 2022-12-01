@@ -1,9 +1,9 @@
 package com.gryphpoem.game.zw.resource.constant;
 
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMedalAuraSkill;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
 
@@ -69,7 +69,7 @@ public class MedalConst {
 
         int GENERAL = 3;// 普通
 
-        int[] skillType = { AURA, SPECIAL, GENERAL };
+        int[] skillType = {AURA, SPECIAL, GENERAL};
     }
 
     public static void loadSystem() {
@@ -373,7 +373,7 @@ public class MedalConst {
                 // 战车光环-减伤
                 case WAR_CHARIOT_AURA_INJURY:
                 case INTENSIFY_WAR_CHARIOT_AURA_INJURY:
-                    meadlAuraSkillNum += auraSkillById.getSkillEffect() * cnt ;
+                    meadlAuraSkillNum += auraSkillById.getSkillEffect() * cnt;
                     break;
                 // 战车光环-绝境
                 case WAR_CHARIOT_AURA_CUL_DE_SAC:
@@ -431,24 +431,25 @@ public class MedalConst {
                     break;
             }
 
-        } return meadlAuraSkillNum;
+        }
+        return meadlAuraSkillNum;
     }
 
     /**
      * 增伤光环技能
      */
-    public static final int[] INCREASE_HURT_AURA = { WAR_CHARIOT_AURA_COUNTERSPELL, WAR_CHARIOT_AURA_CUL_DE_SAC,
+    public static final int[] INCREASE_HURT_AURA = {WAR_CHARIOT_AURA_COUNTERSPELL, WAR_CHARIOT_AURA_CUL_DE_SAC,
             TANK_AURA_PHANTOM, ROCKET_AURA_ANTICIPATION, ROCKET_AURA_WIND_HARP, INTENSIFY_WAR_CHARIOT_AURA_COUNTERSPELL,
-            INTENSIFY_WAR_CHARIOT_AURA_CUL_DE_SAC, INTENSIFY_TANK_AURA_PHANTOM, INTENSIFY_ROCKET_AURA_ANTICIPATION, INTENSIFY_ROCKET_AURA_WIND_HARP };
+            INTENSIFY_WAR_CHARIOT_AURA_CUL_DE_SAC, INTENSIFY_TANK_AURA_PHANTOM, INTENSIFY_ROCKET_AURA_ANTICIPATION, INTENSIFY_ROCKET_AURA_WIND_HARP};
     /**
      * 减伤光环技能
      */
-    public static final int[] REDUCE_HURT_AURA = { WAR_CHARIOT_AURA_INJURY, TANK_AURA_LINE_CHAN,
-            INTENSIFY_WAR_CHARIOT_AURA_INJURY, INTENSIFY_TANK_AURA_LINE_CHAN };
+    public static final int[] REDUCE_HURT_AURA = {WAR_CHARIOT_AURA_INJURY, TANK_AURA_LINE_CHAN,
+            INTENSIFY_WAR_CHARIOT_AURA_INJURY, INTENSIFY_TANK_AURA_LINE_CHAN};
     /**
      * 增暴击几率光环技能
      */
-    public static final int[] INCREASE_CRIT_AURA = { TANK_AURA_APOCALYPSE, RECKET_AURA_APOCALYPSE, INTENSIFY_TANK_AURA_APOCALYPSE, INTENSIFY_RECKET_AURA_APOCALYPSE };
+    public static final int[] INCREASE_CRIT_AURA = {TANK_AURA_APOCALYPSE, RECKET_AURA_APOCALYPSE, INTENSIFY_TANK_AURA_APOCALYPSE, INTENSIFY_RECKET_AURA_APOCALYPSE};
     /**
      * 击杀兵排数Key
      */

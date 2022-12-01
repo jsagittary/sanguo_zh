@@ -6,7 +6,6 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.GlobalDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
@@ -20,7 +19,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSeason;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSeasonSkill;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.pojo.season.GlobalSeasonData;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
@@ -97,14 +95,16 @@ public class SeasonHeroService {
         //技能不存在
         int skillId = req.getSkillId();
         TreeMap<Integer, StaticHeroSeasonSkill> lvMap = StaticHeroDataMgr.getHeroSkillMap(heroId, skillId);
-        if (Objects.isNull(lvMap) || !hero.getSkillLevels().containsKey(skillId)) {
+        if (Objects.isNull(lvMap)
+//                || !hero.getSkillLevels().containsKey(skillId)
+        ) {
             throw new MwException(GameError.PARAM_ERROR.getCode(), String.format("lordId :%d, heroId :%d, skillId :%d, not found!!!", lordId, heroId, skillId));
         }
 
-        int lv = hero.getSkillLevels().get(skillId);
-        StaticHeroSeasonSkill heroSkill = lvMap.get(lv + 1);
+//        int lv = hero.getSkillLevels().get(skillId);
+        StaticHeroSeasonSkill heroSkill = lvMap.get(2);
         if (Objects.isNull(heroSkill) || CheckNull.isEmpty(heroSkill.getUpgradeCost())) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), String.format("lordId :%d, heroId :%d, skill :%d, level :%d not found!!!", lordId, heroId, skillId, lv + 1));
+            throw new MwException(GameError.NO_CONFIG.getCode(), String.format("lordId :%d, heroId :%d, skill :%d, level :%d not found!!!", lordId, heroId, skillId, 1 + 1));
         }
 
         //升级技能所需英雄等级
@@ -112,15 +112,15 @@ public class SeasonHeroService {
             throw new MwException(GameError.HERO_LEVEL_NOT_ENOUGH.getCode(), String.format("lordId :%d, heroId :%d level not enough", lordId, heroId));
         }
 
-        rewardDataManager.checkAndSubPlayerRes(player, heroSkill.getUpgradeCost(), true, AwardFrom.SEASON_UPGRADE_HERO_SKILL, heroId, skillId, lv);
-        hero.getSkillLevels().merge(skillId, 1, Integer::sum);
+        rewardDataManager.checkAndSubPlayerRes(player, heroSkill.getUpgradeCost(), true, AwardFrom.SEASON_UPGRADE_HERO_SKILL, heroId, skillId, 1);
+//        hero.getSkillLevels().merge(skillId, 1, Integer::sum);
         //重新计算战力
         CalculateUtil.processAttr(player, hero);
 
         //任务 - 升级技能
         TaskService.handleTask(player, ETask.HERO_UPSKILL);
-        ActivityDiaoChanService.completeTask(player,ETask.HERO_UPSKILL);
-        TaskService.processTask(player,ETask.HERO_UPSKILL);
+        ActivityDiaoChanService.completeTask(player, ETask.HERO_UPSKILL);
+        TaskService.processTask(player, ETask.HERO_UPSKILL);
 
         if (hero.isOnBattle() || hero.isOnWall()) {
             List<Long> rolesId = new ArrayList<>();
@@ -196,8 +196,8 @@ public class SeasonHeroService {
         }
         //任务 - xx英雄升到x军职
         TaskService.handleTask(player, ETask.HERO_UPSTAR);
-        ActivityDiaoChanService.completeTask(player,ETask.HERO_UPSTAR);
-        TaskService.processTask(player,ETask.HERO_UPSTAR);
+        ActivityDiaoChanService.completeTask(player, ETask.HERO_UPSTAR);
+        TaskService.processTask(player, ETask.HERO_UPSTAR);
         GamePb4.UpgradeHeroCgyRs.Builder rsb = GamePb4.UpgradeHeroCgyRs.newBuilder();
         rsb.setHero(PbHelper.createHeroPb(hero, player));
         return rsb.build();

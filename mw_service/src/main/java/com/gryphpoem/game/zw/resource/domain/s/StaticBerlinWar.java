@@ -1,8 +1,11 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +22,8 @@ public class StaticBerlinWar {
     private int keyId;                  // cityId
     private String desc;                // 描述
     private int type;                   // 类型: 0柏林，1阵地
-    private List<Integer> firstForm;    // 守军阵容(初次进攻NPC阵容),格式：[npcId,npcId...]
-    private List<Integer> npcForm;      // 守军阵容(占领方NPC阵容),格式：[npcId,npcId...]
+    private List<List<Integer>> firstForm;    // 守军阵容(初次进攻NPC阵容),格式：[[npcId,副将1npcId,副将2npcId],...]
+    private List<List<Integer>> npcForm;      // 守军阵容(占领方NPC阵容),格式：[[npcId,副将1npcId,副将2npcId],...]
     private int award;                  // 占领后军费奖励
     private List<CityHero> formList;    // NPC守军阵营
     private List<CityHero> firstList;   // NPC首次守军阵营
@@ -38,9 +41,10 @@ public class StaticBerlinWar {
             formList = new ArrayList<>();
         }
         formList.clear();
-        for (Integer npcId : getNpcForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        for (List<Integer> npcId : getNpcForm()) {
+            hero = fightService.createCityHero(npcId);
+            if (CheckNull.isNull(hero)) continue;
             formList.add(hero);
         }
     }
@@ -66,9 +70,10 @@ public class StaticBerlinWar {
             firstList = new ArrayList<>();
         }
         firstList.clear();
-        for (Integer npcId : getFirstForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        for (List<Integer> npcId : getFirstForm()) {
+            hero = fightService.createCityHero(npcId);
+            if (CheckNull.isNull(hero)) continue;
             firstList.add(hero);
         }
     }
@@ -103,19 +108,19 @@ public class StaticBerlinWar {
         this.type = type;
     }
 
-    public List<Integer> getFirstForm() {
+    public List<List<Integer>> getFirstForm() {
         return firstForm;
     }
 
-    public void setFirstForm(List<Integer> firstForm) {
+    public void setFirstForm(List<List<Integer>> firstForm) {
         this.firstForm = firstForm;
     }
 
-    public List<Integer> getNpcForm() {
+    public List<List<Integer>> getNpcForm() {
         return npcForm;
     }
 
-    public void setNpcForm(List<Integer> npcForm) {
+    public void setNpcForm(List<List<Integer>> npcForm) {
         this.npcForm = npcForm;
     }
 

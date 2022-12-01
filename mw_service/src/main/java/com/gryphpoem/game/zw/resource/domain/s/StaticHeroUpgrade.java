@@ -15,6 +15,7 @@ public class StaticHeroUpgrade {
     private List<List<Integer>> consume;
     private List<List<Integer>> condition;
     private int level;
+    private int skillLv;
 
     public int getKeyId() {
         return keyId;
@@ -70,5 +71,13 @@ public class StaticHeroUpgrade {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public int getSkillLv() {
+        return skillLv;
+    }
+
+    public void setSkillLv(int skillLv) {
+        this.skillLv = skillLv;
     }
 }

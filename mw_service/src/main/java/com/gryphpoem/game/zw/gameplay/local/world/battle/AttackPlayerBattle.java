@@ -1,9 +1,10 @@
 package com.gryphpoem.game.zw.gameplay.local.world.battle;
 
-import com.gryphpoem.cross.fight.report.CrossFightReport;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
@@ -15,8 +16,11 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
@@ -24,14 +28,10 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
-import com.gryphpoem.game.zw.rpc.comsumer.RpcFighterConsumer;
 import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -40,9 +40,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName AttackPlayerBattle.java
  * @Description 打玩家的battle
- * @author QiuKun
  * @date 2019年3月23日
  */
 public class AttackPlayerBattle extends AbsCommonBattle {
@@ -81,14 +81,14 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         Fighter defender = fightService.createCampBattleDefencer(battle, null);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();// 战斗逻辑处理方法
+        fightLogic.start();// 战斗逻辑处理方法
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,true,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,true,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 结果处理
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 损兵处理
@@ -122,7 +122,7 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         // 战报生成
         SolarTermsDataManager solarTermsDataManager = DataResource.ac.getBean(SolarTermsDataManager.class);
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null); // 节气
         rpt.setResult(atkSuccess);
         rpt.setRecord(record);
@@ -270,7 +270,7 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         warService.sendRoleResChange(changeMap);
         // 战斗打日志
 //        int heroid = report.getRptPlayer().getAtkHero(0).getHeroId();
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 推送改点的信息
         mapWarData.getCrossWorldMap().publishMapEvent(MapEvent.mapEntity(battle.getPos(), MapCurdEvent.UPDATE));
         //战火燎原进攻玩家主城的战斗结束
@@ -279,7 +279,8 @@ public class AttackPlayerBattle extends AbsCommonBattle {
 
     /**
      * 玩家被击飞
-     *  @param cMap
+     *
+     * @param cMap
      * @param player
      * @param battleType
      * @param atkPlayer
@@ -379,7 +380,7 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         // 补给检测
         checkAndSubFood(param);
         BaseArmy baseArmy = createBaseArmy(param, now, ArmyConstant.ARMY_TYPE_ATK_PLAYER);
-        addBattleRole(param,AwardFrom.ATTACK_PLAYER_BATTLE);
+        addBattleRole(param, AwardFrom.ATTACK_PLAYER_BATTLE);
         // 事件通知
         CrossWorldMap crossWorldMap = param.getCrossWorldMap();
         crossWorldMap.publishMapEvent(baseArmy.createMapEvent(MapCurdEvent.CREATE),

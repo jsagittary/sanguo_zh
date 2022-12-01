@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
@@ -575,8 +576,19 @@ public class WorldConstant {
     public static float K8; // 默认兵种克制
     public static float K9; // 阶级克制比
     public static float K10; // 阶级加成
+    /**
+     * 打叛军损兵恢复
+     */
+    public static int FIGHT_BANDIT_LOST_RECOVER_ARMS;
+
+    /**
+     * 打营地损兵恢复
+     */
+    public static int FIGHT_CAMP_CITY_LOST_RECOVER_ARMS;
 
     public static void loadSystem() {
+        FIGHT_CAMP_CITY_LOST_RECOVER_ARMS = SystemTabLoader.getIntegerSystemValue(SystemId.FIGHT_CAMP_CITY_LOST_RECOVER_ARMS, 5000);
+        FIGHT_BANDIT_LOST_RECOVER_ARMS = SystemTabLoader.getIntegerSystemValue(SystemId.FIGHT_BANDIT_LOST_RECOVER_ARMS, 9500);
         RAID_BATTLE_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.RAID_BATTLE_TIME, 180);
         EXPEDITION_BATTLE_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.EXPEDITION_BATTLE_TIME, 300);
         CITY_MAX_PRODUCE = SystemTabLoader.getIntegerSystemValue(SystemId.CITY_MAX_PRODUCE, 6);
@@ -626,8 +638,9 @@ public class WorldConstant {
                 .getListListIntSystemValue(SystemId.BERLIN_OVERLORD_COMPENSATION_AWARD, "[[4,5044,1]]");
 
         K1 = SystemTabLoader.getFloatSystemValue(SystemId.K1, 1);
-        K2 = SystemTabLoader.getFloatSystemValue(SystemId.K2, 1);
+        StaticFightManager.K2 = K2 = SystemTabLoader.getFloatSystemValue(SystemId.K2, 1);
         K3 = SystemTabLoader.getFloatSystemValue(SystemId.K3, 1);
+        StaticFightManager.K3 = K3;
         K4 = SystemTabLoader.getFloatSystemValue(SystemId.K4, 1);
         K5 = SystemTabLoader.getFloatSystemValue(SystemId.K5, 1);
         K6 = SystemTabLoader.getFloatSystemValue(SystemId.K6, 1);
@@ -635,6 +648,9 @@ public class WorldConstant {
         K8 = SystemTabLoader.getFloatSystemValue(SystemId.K8, 0.05f);
         K9 = SystemTabLoader.getFloatSystemValue(SystemId.K9, 0.01f);
         K10 = SystemTabLoader.getFloatSystemValue(SystemId.K10, 0.01f);
+        StaticFightManager.K8 = K8;
+        StaticFightManager.K9 = K9;
+        StaticFightManager.K10 = K10;
 
         MARCH_UPPER_LIMIT_TIME = SystemTabLoader.getListIntSystemValue(SystemId.MARCH_UPPER_LIMIT_TIME, "[300,600,0]");
         CITY_BATTLE_INCREASE_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.CITY_BATTLE_INCREASE_TIME, 300);
@@ -1257,6 +1273,11 @@ public class WorldConstant {
      * 解救任务， 打匪军999级的
      */
     public static final int BANDIT_LV_999 = 999;
+
+
+    static {
+        StaticFightManager.CITY_BATTLE_TYPE = new int[]{BATTLE_TYPE_CITY};
+    }
 
     public static int berlinAoeExtHurt(int schdeule) {
         if (CheckNull.isEmpty(WorldConstant.BERLIN_BATTLE_FRENZY_EXT_HURT)) {

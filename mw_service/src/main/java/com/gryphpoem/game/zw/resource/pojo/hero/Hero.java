@@ -1,10 +1,10 @@
 package com.gryphpoem.game.zw.resource.pojo.hero;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
 import com.gryphpoem.game.zw.resource.constant.HeroConstant;
 import com.gryphpoem.game.zw.resource.constant.MedalConst;
@@ -14,14 +14,9 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author TanDonghai
@@ -39,12 +34,15 @@ public class Hero {
     private int[] equip; // 装备栏信息，记录装备id
     private volatile int status; // 将领所在队列，0 空闲，1 上阵，2 采集，3 防守 ,4城墙上阵
     private volatile int state; // 将领状态，0 空闲，1 出征，2 采集
+    /**
+     * 角色类型
+     */
+    private volatile int roleType;
     private int count; // 如果是上阵将领，当前兵力
     private int pos; // 如果是上阵将领，在上阵队列中的位置，1-4
     private int wallPos; // 如果是城墙将领，在上阵队列中的位置，1-4
     private int wallArmyTime;// 城墙上次补兵时间
     private int acqPos; // 如果是采集将领，在上阵队列中的位置，1-4
-    private int commandoPos; // 如果是特攻队将领, 在特攻队列中的位置, 1-4
     private int quality;// 品质
     private int breakExp;// 突破经验
     private int cgyStage;//神职等级(大)
@@ -55,25 +53,33 @@ public class Hero {
     private int decorated; // 将领授勋次数 没有授勋是0次
     private int medalKeyId;//勋章keyId  在勋章反序列化的时候赋值
     private List<Integer> medalKeys = new ArrayList<>(MedalConst.HERO_MEDAL_UP_CNT);
-    private List<Integer> warPlanes = new ArrayList<>(); // 战机信息, 记录战机Id
     private Map<Integer, Integer> showFight;// 显示战力, key见ConStant的ShowFightId
     private Map<Integer, AwakenData> awaken;
     private int sandTableState;//是否出战沙盘 1是 0否
     private int fightVal;//英雄战力值
-    private Map<Integer, Integer> skillLevels = new HashMap<>();// KEY:技能ID,VALUE:技能等级
     private boolean isOnBaitTeam;//是否在采集鱼饵队列
     private int[] totem;
     private Integer treasureWare;//宝具
     private Map<Integer, TalentData> talent; // 武将天赋信息：key, 天赋页索引; value, 天赋页详情
-    private boolean showClient; // 是否在主界面显示英雄奖励
-    private int gradeKeyId; // 英雄品阶keyId
+
+    /**
+     * 英雄品阶keyId
+     */
+    private int gradeKeyId;
+    /**
+     * 是否在主界面显示英雄奖励
+     */
+    private boolean showClient;
+    /**
+     * 作为副将是阵位索引
+     */
+    private int partnerPosIndex;
     private Map<Integer, Integer> interiorAttr; // 内政属性, [建筑类型, 数值]
     private boolean isDispatched; // 是否已被委任
     private int buildingType; // 武将被委任的建筑类型
 
     public Hero() {
         attr = new int[4];// 三种属性，对应1-3位，0位为补位，不用
-//        wash = new int[4];// 0位为总资质，1-3位为三种资质的值
         equip = new int[HeroConstant.HERO_EQUIP_NUM + 1];// 0位为补位，1-6为装备部位
         status = HeroConstant.HERO_STATUS_IDLE;
         state = HeroConstant.HERO_STATE_IDLE;
@@ -87,7 +93,6 @@ public class Hero {
         defPos = 0;
         extAttrs = new HashMap<>();
         decorated = 0;
-        commandoPos = 0;
         showFight = new HashMap<>();
         initMedalKeys();
         totem = new int[9];
@@ -112,7 +117,7 @@ public class Hero {
      */
     private void initMedalKeys() {
         for (int i = 0; i < MedalConst.HERO_MEDAL_UP_CNT; i++) {
-            modifyMedalKey(i,0);
+            modifyMedalKey(i, 0);
         }
     }
 
@@ -166,17 +171,10 @@ public class Hero {
             }
         }
 
-        for (TwoInt two : hero.getWashList()) {
-            wash[two.getV1()] = two.getV2();
-        }
-
         for (TwoInt two : hero.getEquipList()) {
             equip[two.getV1()] = two.getV2();
         }
         setDecorated(hero.getDecorated());
-        for (TwoInt twoInt : hero.getWarPlaneList()) {
-            warPlanes.add(twoInt.getV1());
-        }
         for (TwoInt two : hero.getShowFightList()) {
             showFight.put(two.getV1(), two.getV2());
         }
@@ -217,9 +215,6 @@ public class Hero {
         this.fightVal = hero.getFightVal();
         this.cgyStage = hero.getCgyStage();
         this.cgyLv = hero.getCgyLv();
-        for (TwoInt twoInt : hero.getSkillLevelList()) {
-            this.skillLevels.put(twoInt.getV1(), twoInt.getV2());
-        }
         this.isOnBaitTeam = hero.getIsOnBaitTeam() == 1 ? true : false;
         hero.getTotemList().forEach(o -> totem[o.getV1()] = o.getV2());
         if (hero.hasTreasureWare()) {
@@ -227,6 +222,10 @@ public class Hero {
         }
         setGradeKeyId(hero.getGrade());
         this.setShowClient(hero.getShowClient());
+        this.setRoleType(hero.getHeroRoleType());
+        if (hero.getPartnerPosIndex() > 0) {
+            this.partnerPosIndex = hero.getPartnerPosIndex();
+        }
         this.isDispatched = hero.getIsDispatched();
         this.buildingType = hero.getBuildingType();
         if (CheckNull.nonEmpty(hero.getInteriorAttrList())) {
@@ -318,6 +317,25 @@ public class Hero {
     }
 
     public void setCount(int count) {
+        if (this.count > 0 && !isPrincipleHero()) {
+            StringBuilder sb = new StringBuilder();
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            if (!ObjectUtils.isEmpty(stackTraceElements)) {
+                for (int i = 1; i < stackTraceElements.length; i++) {
+                    StackTraceElement element = stackTraceElements[i];
+                    if (Objects.nonNull(element)) {
+                        sb.append(element.getFileName().replace("java", "")).
+                                append(":").append(element.getLineNumber()).append("|");
+                        if (sb.length() >= 300) {
+                            break;
+                        }
+                    }
+                }
+            }
+            LogUtil.error("非主将不可补兵, heroId: ", heroId, ", 补兵来源: ", sb.toString());
+            return;
+        }
+
         // 兵力是否有变动
         boolean isChange = count != this.count;
         this.count = count;
@@ -325,6 +343,14 @@ public class Hero {
         if (isOnWall() && isChange) {
             setWallArmyTime(TimeHelper.getCurrentSecond());
         }
+    }
+
+    public int getPartnerPosIndex() {
+        return partnerPosIndex;
+    }
+
+    public void setPartnerPosIndex(int partnerPosIndex) {
+        this.partnerPosIndex = partnerPosIndex;
     }
 
     public int getPos() {
@@ -392,11 +418,10 @@ public class Hero {
     }
 
     public List<Integer> getWarPlanes() {
-        return warPlanes;
+        return Collections.EMPTY_LIST;
     }
 
     public void setWarPlanes(List<Integer> warPlanes) {
-        this.warPlanes = warPlanes;
     }
 
     public Integer getTreasureWare() {
@@ -422,20 +447,20 @@ public class Hero {
      * @param newPlane
      */
     public void planeRemould(int oldPlane, int newPlane) {
-        if (oldPlane <= 0 || oldPlane > Integer.MAX_VALUE || newPlane <= 0 || newPlane >= Integer.MAX_VALUE) {
-            return;
-        }
-        Iterator<Integer> it = warPlanes.iterator();
-        boolean suc = false;
-        while (it.hasNext()) {
-            if (it.next() == oldPlane) {
-                it.remove();
-                suc = true;
-            }
-        }
-        if (suc) {
-            warPlanes.add(newPlane);
-        }
+//        if (oldPlane <= 0 || oldPlane > Integer.MAX_VALUE || newPlane <= 0 || newPlane >= Integer.MAX_VALUE) {
+//            return;
+//        }
+//        Iterator<Integer> it = warPlanes.iterator();
+//        boolean suc = false;
+//        while (it.hasNext()) {
+//            if (it.next() == oldPlane) {
+//                it.remove();
+//                suc = true;
+//            }
+//        }
+//        if (suc) {
+//            warPlanes.add(newPlane);
+//        }
     }
 
     /**
@@ -483,15 +508,10 @@ public class Hero {
 
     /**
      * 特攻将领, 将领上阵、下阵，更新pos信息，并更新将领状态
+     *
      * @param pos
      */
     public void onCommando(int pos) {
-        setCommandoPos(pos);
-        if (pos >= HeroConstant.HERO_BATTLE_1 && pos <= Constant.COMMANDO_HERO_REQUIRE.size()) {
-            setStatus(HeroConstant.HERO_STATUS_COMMANDO);
-        } else {
-            setStatus(HeroConstant.HERO_STATUS_IDLE);
-        }
     }
 
     /**
@@ -508,6 +528,18 @@ public class Hero {
         }
     }
 
+    public boolean isPrincipleHero() {
+        return roleType == HeroConstant.HERO_ROLE_TYPE_PRINCIPAL;
+    }
+
+    public int getRoleType() {
+        return roleType;
+    }
+
+    public void setRoleType(int roleType) {
+        this.roleType = roleType;
+    }
+
     /**
      * 是否是武将上阵将领
      *
@@ -517,8 +549,8 @@ public class Hero {
         return status == HeroConstant.HERO_STATUS_BATTLE;
     }
 
-    public boolean isOnSandTable(){//status; // 将领所在队列，0 空闲，1 上阵，2 采集，3 防守 ,4城墙上阵
-        return sandTableState > 0 ;
+    public boolean isOnSandTable() {//status; // 将领所在队列，0 空闲，1 上阵，2 采集，3 防守 ,4城墙上阵
+        return sandTableState > 0;
     }
 
     /**
@@ -559,6 +591,7 @@ public class Hero {
 
     /**
      * 是否是特攻队的将领
+     *
      * @return
      */
     public boolean isCommando() {
@@ -606,6 +639,7 @@ public class Hero {
 
     /**
      * 将领是否穿戴了该宝具
+     *
      * @param treasureWareKeyId
      * @return
      */
@@ -628,38 +662,41 @@ public class Hero {
      * @return 是否上阵成功
      */
     public boolean downPlane(int planId) {
-        boolean downSuc = false;
-        if (planId <= 0 || planId >= Integer.MAX_VALUE) {
-            return downSuc;
-        }
-
-        Iterator<Integer> it = warPlanes.iterator();
-        while (it.hasNext()) {
-            if (it.next() == planId) {
-                it.remove();
-                downSuc = true;
-            }
-        }
-        return downSuc;
+//        boolean downSuc = false;
+//        if (planId <= 0 || planId >= Integer.MAX_VALUE) {
+//            return downSuc;
+//        }
+//
+//        Iterator<Integer> it = warPlanes.iterator();
+//        while (it.hasNext()) {
+//            if (it.next() == planId) {
+//                it.remove();
+//                downSuc = true;
+//            }
+//        }
+//        return downSuc;
+        return true;
     }
 
     /**
      * 战机上阵
-     * @param planId    上阵战机Id
-     * @param max       当前队列的解锁栏位
-     * @return          是否下阵成功
+     *
+     * @param planId 上阵战机Id
+     * @param max    当前队列的解锁栏位
+     * @return 是否下阵成功
      */
     public boolean upPlane(int planId, int max) {
-        boolean onSuc = false;
-        if (planId <= 0 || planId >= Integer.MAX_VALUE) {
-            return onSuc;
-        }
-
-        if (warPlanes.size() < max) {
-            warPlanes.add(planId);
-            onSuc = true;
-        }
-        return onSuc;
+//        boolean onSuc = false;
+//        if (planId <= 0 || planId >= Integer.MAX_VALUE) {
+//            return onSuc;
+//        }
+//
+//        if (warPlanes.size() < max) {
+//            warPlanes.add(planId);
+//            onSuc = true;
+//        }
+//        return onSuc;
+        return true;
     }
 
     /**
@@ -696,6 +733,7 @@ public class Hero {
 
     /**
      * 穿戴宝具
+     *
      * @param treasureWare
      */
     public void onTreasureWare(TreasureWare treasureWare) {
@@ -819,11 +857,10 @@ public class Hero {
     }
 
     public int getCommandoPos() {
-        return commandoPos;
+        return 0;
     }
 
     public void setCommandoPos(int commandoPos) {
-        this.commandoPos = commandoPos;
     }
 
     public Map<Integer, AwakenData> getAwaken() {
@@ -872,10 +909,6 @@ public class Hero {
         this.fightVal = fightVal;
     }
 
-    public Map<Integer, Integer> getSkillLevels() {
-        return skillLevels;
-    }
-
     public boolean isOnBaitTeam() {
         return isOnBaitTeam;
     }
@@ -888,11 +921,11 @@ public class Hero {
         return totem;
     }
 
-    public int getTotemKey(int idx){
+    public int getTotemKey(int idx) {
         return totem[idx];
     }
 
-    public void setTotemKey(int idx,int totemKey) {
+    public void setTotemKey(int idx, int totemKey) {
         totem[idx] = totemKey;
     }
 
@@ -937,7 +970,6 @@ public class Hero {
                 ", wallPos=" + wallPos +
                 ", wallArmyTime=" + wallArmyTime +
                 ", acqPos=" + acqPos +
-                ", commandoPos=" + commandoPos +
                 ", quality=" + quality +
                 ", breakExp=" + breakExp +
                 ", cgyStage=" + cgyStage +
@@ -948,12 +980,10 @@ public class Hero {
                 ", decorated=" + decorated +
                 ", medalKeyId=" + medalKeyId +
                 ", medalKeys=" + medalKeys +
-                ", warPlanes=" + warPlanes +
                 ", showFight=" + showFight +
                 ", awaken=" + awaken +
                 ", sandTableState=" + sandTableState +
                 ", fightVal=" + fightVal +
-                ", skillLevels=" + skillLevels +
                 ", isOnBaitTeam=" + isOnBaitTeam +
                 ", totem=" + Arrays.toString(totem) +
                 ", treasureWare=" + treasureWare +

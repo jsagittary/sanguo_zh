@@ -77,7 +77,7 @@ public class EventBus {
             subscriptionsByEventType.put(eventType, subscriptions);
         } else {
             if (subscriptions.contains(newSubscription)) {
-                LogUtil.error("Subscriber " + subscriber.getClass() + " already registered to event " + eventType);
+//                LogUtil.error("Subscriber " + subscriber.getClass() + " already registered to event " + eventType);
                 return;
                 // throw new EventBusException(
                 //         "Subscriber " + subscriber.getClass() + " already registered to event " + eventType);

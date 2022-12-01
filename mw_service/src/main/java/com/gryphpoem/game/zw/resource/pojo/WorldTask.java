@@ -1,21 +1,20 @@
 package com.gryphpoem.game.zw.resource.pojo;
 
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.domain.s.StaticWorldTask;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
-import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
-import com.gryphpoem.game.zw.resource.domain.s.StaticWorldTask;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-
 /**
  * 世界任务
- * 
- * @author tyler
  *
+ * @author tyler
  */
 public class WorldTask {
     private AtomicInteger worldTaskId;// 当前任务ID
@@ -40,7 +39,7 @@ public class WorldTask {
 
     /**
      * 获取当前的任务Id
-     * 
+     *
      * @return
      */
     private int getCurWorldTaskId() {

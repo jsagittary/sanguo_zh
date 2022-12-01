@@ -8,59 +8,60 @@ import java.util.Map;
 
 public class StaticDataDao extends BaseDao {
 
-    public Map<Integer,StaticPortraitFrame> selectPortraitFrameMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectPortraitFrameMap","id");
+    public Map<Integer, StaticPortraitFrame> selectPortraitFrameMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectPortraitFrameMap", "id");
     }
 
-    public Map<Integer,StaticNameplate> selectNameplateMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectNameplateMap","id");
+    public Map<Integer, StaticNameplate> selectNameplateMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectNameplateMap", "id");
     }
 
 
-    public List<StaticSeasonRank> selectStaticSeasonRankList(){
+    public List<StaticSeasonRank> selectStaticSeasonRankList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticSeasonRankList");
     }
 
-    public Map<Integer,StaticSeasonTaskScore> selectStaticSeasonTaskScoreMap(){
-        return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTaskScoreMap","id");
-    }
-    public Map<Integer,StaticSeasonTask> selectStaticSeasonTaskMap(){
-        return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTaskMap","taskId");
+    public Map<Integer, StaticSeasonTaskScore> selectStaticSeasonTaskScoreMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTaskScoreMap", "id");
     }
 
-    public Map<Integer,StaticSeasonTreasury> selectStaticSeasonTreasuryMap(){
-        return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTreasuryMap","taskId");
+    public Map<Integer, StaticSeasonTask> selectStaticSeasonTaskMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTaskMap", "taskId");
     }
 
-    public List<StaticSeasonTalentPlan> selectStaticSeasonTalentPlanList(){
+    public Map<Integer, StaticSeasonTreasury> selectStaticSeasonTreasuryMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTreasuryMap", "taskId");
+    }
+
+    public List<StaticSeasonTalentPlan> selectStaticSeasonTalentPlanList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticSeasonTalentPlanList");
     }
 
-    public List<StaticSeasonPlan> selectStaticSeasonPlanList(){
+    public List<StaticSeasonPlan> selectStaticSeasonPlanList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticSeasonPlanList");
     }
 
-    public Map<Integer, StaticSeasonTalent> selectStaticSeasonTalentMap(){
+    public Map<Integer, StaticSeasonTalent> selectStaticSeasonTalentMap() {
         return this.getSqlSession().selectMap("StaticDao.selectStaticSeasonTalentMap", "id");
     }
 
-    public List<StaticDiaoChanAward> selectStaticDiaoChanAwardList(){
+    public List<StaticDiaoChanAward> selectStaticDiaoChanAwardList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticDiaoChanAwardList");
     }
 
-    public List<StaticDiaoChanDay> selectStaticDiaoChanDayList(){
+    public List<StaticDiaoChanDay> selectStaticDiaoChanDayList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticDiaoChanDayList");
     }
 
-    public List<StaticDiaoChanDayTask> selectStaticDiaoChanDayTaskList(){
+    public List<StaticDiaoChanDayTask> selectStaticDiaoChanDayTaskList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticDiaoChanDayTaskList");
     }
 
-    public List<StaticDiaoChanRank> selectStaticDiaoChanRankList(){
+    public List<StaticDiaoChanRank> selectStaticDiaoChanRankList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticDiaoChanRankList");
     }
 
-    public List<StaticSandTableAward> selectStaticSandTableAwardList(){
+    public List<StaticSandTableAward> selectStaticSandTableAwardList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticSandTableAwardList");
     }
 
@@ -180,15 +181,15 @@ public class StaticDataDao extends BaseDao {
         return getSqlSession().selectList("StaticDao.selectHeroClergy");
     }
 
-    public Map<Integer, StaticHeroSeason> selectSeasonHeroMap(){
+    public Map<Integer, StaticHeroSeason> selectSeasonHeroMap() {
         return getSqlSession().selectMap("StaticDao.selectSeasonHero", "heroId");
     }
 
-    public List<StaticHeroSeasonSkill> selectHeroSeasonSkill(){
+    public List<StaticHeroSeasonSkill> selectHeroSeasonSkill() {
         return getSqlSession().selectList("StaticDao.selectHeroSeasonSkill");
     }
 
-    public Map<Integer, StaticSkillAction> selectSkillAction(){
+    public Map<Integer, StaticSkillAction> selectSkillAction() {
         return getSqlSession().selectMap("StaticDao.selectSkillAction", "id");
     }
 
@@ -428,7 +429,7 @@ public class StaticDataDao extends BaseDao {
         return getSqlSession().selectList("StaticDao.selectStaticGiftpackPlan");
     }
 
-    public List<StaticGiftPackTriggerPlan> selectStaticGiftPackTriggerPlan(){
+    public List<StaticGiftPackTriggerPlan> selectStaticGiftPackTriggerPlan() {
         return getSqlSession().selectList("StaticDao.selectStaticGiftPackTriggerPlan");
     }
 
@@ -551,6 +552,7 @@ public class StaticDataDao extends BaseDao {
     public Map<Integer, StaticRedPacket> selectRedPacket() {
         return getSqlSession().selectMap("StaticDao.selectRedPacket", "id");
     }
+
     public Map<Integer, StaticRedPacketMessage> selectRedPacketMessage() {
         return getSqlSession().selectMap("StaticDao.selectRedPacketMessage", "id");
     }
@@ -779,30 +781,30 @@ public class StaticDataDao extends BaseDao {
     }
 
     public Map<Integer, StaticAirship> selectStaticAirshipMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectStaticAirshipMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectStaticAirshipMap", "id");
     }
 
-    public Map<Integer,StaticAirshipArea> selectStaticAirshipAreaList() {
-        return this.getSqlSession().selectMap("StaticDao.selectStaticAirshipAreaList","keyId");
+    public Map<Integer, StaticAirshipArea> selectStaticAirshipAreaList() {
+        return this.getSqlSession().selectMap("StaticDao.selectStaticAirshipAreaList", "keyId");
     }
 
     public Map<Integer, StaticAirShipBuff> selectAirShipBuffMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectAirShipBuffMap","buffId");
+        return this.getSqlSession().selectMap("StaticDao.selectAirShipBuffMap", "buffId");
     }
 
     public Map<Integer, StaticPartySupply> selectPartySupplyMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectPartySupplyMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectPartySupplyMap", "id");
     }
 
     public Map<Integer, StaticPartySuperSupply> selectPartySuperSupplyMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectPartySuperSupplyMap","lv");
+        return this.getSqlSession().selectMap("StaticDao.selectPartySuperSupplyMap", "lv");
     }
 
-    public Map<Integer,StaticSchedule> selectScheduleMap() {
+    public Map<Integer, StaticSchedule> selectScheduleMap() {
         return this.getSqlSession().selectMap("StaticDao.selectScheduleMap", "id");
     }
 
-    public Map<Integer,StaticScheduleGoal> selectScheduleGoalMap() {
+    public Map<Integer, StaticScheduleGoal> selectScheduleGoalMap() {
         return this.getSqlSession().selectMap("StaticDao.selectScheduleGoalMap", "id");
     }
 
@@ -814,10 +816,11 @@ public class StaticDataDao extends BaseDao {
         return this.getSqlSession().selectList("StaticDao.selectScheduleRankMap");
     }
 
-    public Map<Integer, StaticWorldwarOpen>  selectWorldwarOpenMap() {
+    public Map<Integer, StaticWorldwarOpen> selectWorldwarOpenMap() {
         return this.getSqlSession().selectMap("StaticDao.selectWorldwarOpenMap", "id");
     }
-    public List<StaticWorldWarPlan>  selectWorldWarPlan() {
+
+    public List<StaticWorldWarPlan> selectWorldWarPlan() {
         return this.getSqlSession().selectList("StaticDao.selectWorldWarPlan");
     }
 
@@ -826,19 +829,19 @@ public class StaticDataDao extends BaseDao {
     }
 
     public Map<Integer, StaticJewel> selectJewelMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectJewelMap","level");
+        return this.getSqlSession().selectMap("StaticDao.selectJewelMap", "level");
     }
 
-    public Map<Integer,StaticWorldWarShop> selectWorldWarShopMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectWorldWarShopMap","id");
+    public Map<Integer, StaticWorldWarShop> selectWorldWarShopMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectWorldWarShopMap", "id");
     }
 
     public List<StaticWorldWarCampCityAward> selectWorldWarCampCityAwardList() {
         return this.getSqlSession().selectList("StaticDao.selectWorldWarCampCityAwardList");
     }
 
-    public Map<Integer,StaticWorldWarCampRank> selectWorldWarCampRankMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectWorldWarCampRankMap","id");
+    public Map<Integer, StaticWorldWarCampRank> selectWorldWarCampRankMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectWorldWarCampRankMap", "id");
     }
 
     public List<StaticWorldWarPersonalRank> selectWorldWarPersonalRankList() {
@@ -856,14 +859,16 @@ public class StaticDataDao extends BaseDao {
     public List<StaticWorldWarDailyTask> selectWorldWarDailyTaskList() {
         return this.getSqlSession().selectList("StaticDao.selectWorldWarDailyTaskList");
     }
-    public Map<Integer,StaticCastleSkin> selectCastleSkinMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectCastleSkinMap","id");
+
+    public Map<Integer, StaticCastleSkin> selectCastleSkinMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectCastleSkinMap", "id");
     }
 
-    public Map<Integer,StaticTitle> selectTitleMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectTitle","id");
+    public Map<Integer, StaticTitle> selectTitleMap() {
+        return this.getSqlSession().selectMap("StaticDao.selectTitle", "id");
     }
-    public List<StaticCastleSkinStar> selectCastleSkinStarList(){
+
+    public List<StaticCastleSkinStar> selectCastleSkinStarList() {
         return this.getSqlSession().selectList("StaticDao.selectCastleSkinStarList");
     }
 
@@ -879,15 +884,15 @@ public class StaticDataDao extends BaseDao {
         return this.getSqlSession().selectList("StaticDao.selectStaticActLoginList");
     }
 
-    public List<StaticNewYorkWarAchievement> selectStaticNewYorkWarAchievement(){
+    public List<StaticNewYorkWarAchievement> selectStaticNewYorkWarAchievement() {
         return this.getSqlSession().selectList("StaticDao.selectStaticNewYorkWarAchievement");
     }
 
-    public List<StaticNewYorkWarCampRank> selectStaticNewYorkWarCampRank(){
+    public List<StaticNewYorkWarCampRank> selectStaticNewYorkWarCampRank() {
         return this.getSqlSession().selectList("StaticDao.selectStaticNewYorkWarCampRank");
     }
 
-    public List<StaticNewYorkWarPersonalRank> selectStaticNewYorkWarPersonalRank(){
+    public List<StaticNewYorkWarPersonalRank> selectStaticNewYorkWarPersonalRank() {
         return this.getSqlSession().selectList("StaticDao.selectStaticNewYorkWarPersonalRank");
     }
 
@@ -913,7 +918,7 @@ public class StaticDataDao extends BaseDao {
     }
 
 
-    public List< StaticBattlePassLv> selectBattlePasslv() {
+    public List<StaticBattlePassLv> selectBattlePasslv() {
         return this.getSqlSession().selectList("StaticDao.selectBattlePasslv");
     }
 
@@ -957,52 +962,52 @@ public class StaticDataDao extends BaseDao {
         return getSqlSession().selectList("StaticDao.selectStaticMergeBannerList");
     }
 
-    public List<StaticChristmasAward> selectChristmasAwardList(){
+    public List<StaticChristmasAward> selectChristmasAwardList() {
         return this.getSqlSession().selectList("StaticDao.selectStaticChristmasAwardList");
     }
 
 
     public Map<Integer, StaticWarFire> selectWarFireList() {
-        return this.getSqlSession().selectMap("StaticDao.selectWarFireList","id");
+        return this.getSqlSession().selectMap("StaticDao.selectWarFireList", "id");
     }
 
     public Map<Integer, StaticWarFireBuff> selectWarFireBuffMap() {
         return getSqlSession().selectMap("StaticDao.selectWarFireBuffMap", "buffId");
     }
 
-    public Map<Integer, StaticWarFireRankGr> selectWarFireRankGr(){
-        return this.getSqlSession().selectMap("StaticDao.selectWarFireRankGr","gr");
+    public Map<Integer, StaticWarFireRankGr> selectWarFireRankGr() {
+        return this.getSqlSession().selectMap("StaticDao.selectWarFireRankGr", "gr");
     }
 
-    public Map<Integer, StaticWarFireRankCamp> selectWarFireRankCamp(){
-        return this.getSqlSession().selectMap("StaticDao.selectWarFireRankCamp","rankId");
+    public Map<Integer, StaticWarFireRankCamp> selectWarFireRankCamp() {
+        return this.getSqlSession().selectMap("StaticDao.selectWarFireRankCamp", "rankId");
     }
 
 
     public Map<Integer, StaticWarFireRange> selectWarFireRangeMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectWarFireRangeMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectWarFireRangeMap", "id");
     }
 
 
     public Map<Integer, StaticWarFireShop> selectWarFireShopMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectWarFireShopMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectWarFireShopMap", "id");
     }
 
 
     public Map<Integer, StaticAltarArea> selectAltarAreaMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectAltarAreaMap","areaOrder");
+        return this.getSqlSession().selectMap("StaticDao.selectAltarAreaMap", "areaOrder");
     }
 
 
     public Map<Integer, StaticMarchLine> selectMarchLineMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectMarchLineMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectMarchLineMap", "id");
     }
 
     /**
      * 喜悦金秋任务表
      */
     public Map<Integer, StaticActAutumnDayTask> selectActAutumnDayTaskMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectActAutumnDayTaskMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectActAutumnDayTaskMap", "id");
     }
 
     public List<StaticActQuestionnaire> selectActQuestionnaireList() {
@@ -1015,7 +1020,7 @@ public class StaticDataDao extends BaseDao {
 
 
     public Map<Integer, StaticHeroSearchExtAward> selectHeroSearchExtAward() {
-        return this.getSqlSession().selectMap("StaticDao.selectHeroSearchExtAward","id");
+        return this.getSqlSession().selectMap("StaticDao.selectHeroSearchExtAward", "id");
     }
 
     //---------------------跨服--------------------
@@ -1025,11 +1030,11 @@ public class StaticDataDao extends BaseDao {
     }
 
     public Map<Integer, StaticCrossFort> selectStaticCrossFortMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectStaticCrossFortMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectStaticCrossFortMap", "id");
     }
 
     public Map<Integer, StaticCrossBuff> selectStaticCrossBuffMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectStaticCrossBuffMap","buffId");
+        return this.getSqlSession().selectMap("StaticDao.selectStaticCrossBuffMap", "buffId");
     }
 
     public List<StaticCrossWarRank> selectStaticCrossWarRankList() {
@@ -1037,7 +1042,7 @@ public class StaticDataDao extends BaseDao {
     }
 
     public Map<Integer, StaticCrossPersonalTrophy> selectStaticCrossPersonalTrophyMap() {
-        return this.getSqlSession().selectMap("StaticDao.selectStaticCrossPersonalTrophyMap","id");
+        return this.getSqlSession().selectMap("StaticDao.selectStaticCrossPersonalTrophyMap", "id");
     }
 
     public List<StaticChannelMail> selectChannelMailList() {
@@ -1058,6 +1063,22 @@ public class StaticDataDao extends BaseDao {
 
     public List<StaticHeroAppoint> selectHeroAppointList() {
         return getSqlSession().selectList("StaticDao.selectHeroAppointList");
+    }
+
+    public Map<Integer, StaticBuff> selectBattleBuffMap() {
+        return getSqlSession().selectMap("StaticDao.selectBattleBuffMap", "buffId");
+    }
+
+    public List<StaticHeroSkill> selectHeroSkill() {
+        return getSqlSession().selectList("StaticDao.selectHeroSkill");
+    }
+
+    public Map<Integer, StaticEffectRule> selectEffectRule() {
+        return getSqlSession().selectMap("StaticDao.selectEffectRule", "effectId");
+    }
+
+    public Map<Integer, StaticAttribute> selectStaticAttribute() {
+        return getSqlSession().selectMap("StaticDao.selectStaticAttribute", "attributeId");
     }
 
     public List<StaticHeroGradeInterior> selectHeroGradeInteriorList() {

@@ -1,8 +1,6 @@
 package com.gryphpoem.game.zw.resource.constant;
 
-import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;

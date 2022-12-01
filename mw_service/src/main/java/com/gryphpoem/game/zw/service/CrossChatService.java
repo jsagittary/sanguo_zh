@@ -24,7 +24,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
 import com.gryphpoem.game.zw.resource.pojo.chat.RoleChat;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +53,7 @@ public class CrossChatService implements GmCmdService {
 
     /**
      * 删除跨服上指定玩家的所有聊天记录
+     *
      * @param player 玩家
      */
     public void deleteChatByRoleId(Player player) {
@@ -81,8 +82,8 @@ public class CrossChatService implements GmCmdService {
             CommonPb.Friend.Builder builder = CommonPb.Friend.newBuilder();
             CommonPb.Man man = PbHelper.createManPbByLord(targetPlayer);
             builder.setMan(man.toBuilder().setServerId(serverSetting.getServerID()).build());
-            for (Hero h : targetPlayer.getAllOnBattleHeros()) {
-                builder.addHero(PbHelper.createFriendAndHeroPb(h, targetPlayer));
+            for (PartnerHero partnerHero : targetPlayer.getAllOnBattleHeroList()) {
+                builder.addHero(partnerHero.createPb(false));
             }
             GamePb7.GetCrossPlayerShowRs.Builder rspBuilder = GamePb7.GetCrossPlayerShowRs.newBuilder();
             rspBuilder.setFriend(builder);

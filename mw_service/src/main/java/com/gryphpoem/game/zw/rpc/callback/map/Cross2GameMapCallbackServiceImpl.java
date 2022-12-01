@@ -174,7 +174,7 @@ public class Cross2GameMapCallbackServiceImpl extends CrossErrorCallback impleme
                         worldService.retreatArmyByDistance(tPlayer, army, now);
                         worldService.synRetreatArmy(tPlayer, army, now);
                         worldDataManager.removePlayerGuard(army.getTarget(), army);
-                        int heroId = army.getHero().get(0).getV1();
+                        int heroId = army.getHero().get(0).getPrincipleHeroId();
                         mailDataManager.sendNormalMail(tPlayer, MailConstant.MOLD_GARRISON_RETREAT, now, player.lord.getNick(),
                                 heroId, player.lord.getNick(), heroId);
                     }

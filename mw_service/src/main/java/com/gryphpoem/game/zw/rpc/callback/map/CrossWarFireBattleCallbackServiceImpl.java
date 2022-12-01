@@ -26,6 +26,7 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.ListUtils;
 import com.gryphpoem.game.zw.resource.util.LogLordHelper;
@@ -287,12 +288,13 @@ public class CrossWarFireBattleCallbackServiceImpl extends CrossErrorCallback im
                                 (int) res.getArm1(), (int) res.getArm2(), (int) res.getArm3());
                         if (ret >= WorldConstant.SCOUT_RET_SUCC3) {
                             // 获取资源、城池、将领信息
-                            List<Hero> defenderHeroes = target.getAllOnBattleHeros();
+                            List<PartnerHero> defenderHeroes = target.getAllOnBattleHeroList();
                             // 玩家所有上阵将领信息
                             sHeroList = new ArrayList<>();
                             int state;
                             int source;
-                            for (Hero hero : defenderHeroes) {
+                            for (PartnerHero partnerHero : defenderHeroes) {
+                                Hero hero = partnerHero.getPrincipalHero();
                                 source = WorldConstant.HERO_SOURCE_BATTLE;
                                 state = DataResource.getBean(WorldService.class).getScoutHeroState(source, hero.getState());
                                 sHeroList.add(PbHelper.createScoutHeroPb(hero, source, state, target));

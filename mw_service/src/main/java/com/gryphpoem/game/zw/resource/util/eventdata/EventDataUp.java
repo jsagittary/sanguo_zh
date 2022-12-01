@@ -5,12 +5,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -22,13 +25,10 @@ import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.server.SendEventDataServer;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -404,9 +404,9 @@ public class EventDataUp {
             Map<String, Map<Integer, Integer>> exploitMap = new HashMap<>();
             if (CheckNull.nonEmpty(rptHeroList)) {
                 for (CommonPb.RptHero rptHero : rptHeroList) {
-                    if (CheckNull.isNull(rptHero) || rptHero.getType() != Constant.Role.PLAYER)
-                        continue;
-                    exploitMap.computeIfAbsent(rptHero.getOwner(), map -> new HashMap<>()).put(rptHero.getHeroId(), rptHero.getAward());
+//                    if (CheckNull.isNull(rptHero) || rptHero.getType() != Constant.Role.PLAYER)
+//                        continue;
+//                    exploitMap.computeIfAbsent(rptHero.getOwner(), map -> new HashMap<>()).put(rptHero.getHeroId(), rptHero.getAward());
                 }
             }
 
@@ -826,8 +826,8 @@ public class EventDataUp {
             StaticHeroUpgrade upgradeStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
             common.put("hero_quality", Objects.nonNull(upgradeStaticData) ? upgradeStaticData.getGrade() * 1000 + upgradeStaticData.getLevel() : 0);
             common.put("hero_awaken_times", hero.getDecorated());
-            Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
-            common.put("hero_skill", Objects.nonNull(skillLvMap) ? skillLvMap.getValue() : 0);
+//            Map.Entry<Integer, Integer> skillLvMap = hero.getSkillLevels().entrySet().stream().findFirst().orElse(null);
+//            common.put("hero_skill", 0);
             Map<String, Object> propertyMap = new HashMap<>(); //固定格式，只改name
             propertyMap.put("name", "hero_level_up");
             propertyMap.put("time", TimeHelper.getCurrentSecond());

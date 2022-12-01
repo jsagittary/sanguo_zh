@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -9,14 +10,15 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,14 +58,17 @@ public class TreasureChallengePlayerService implements GmCmdService {
         TreasureChallengePlayer challengePlayer = getAndRefreshChallengePlayerData(player);
 
         CommonPb.TreasureChallengePlayerData.Builder builder = CommonPb.TreasureChallengePlayerData.newBuilder();
-        builder.setChallengePlayerInfo(getChallengePlayerInfo(challengePlayer.getChallengePlayerId()));
+        CommonPb.TreasureChallengePlayerInfo challengePlayerInfo = getChallengePlayerInfo(challengePlayer.getChallengePlayerId());
+        if (Objects.nonNull(challengePlayerInfo)) {
+            builder.setChallengePlayerInfo(challengePlayerInfo);
+        }
         builder.setRemaining(challengePlayer.getRemaining());
         builder.setPurchaseNum(challengePlayer.getPurchaseNum());
         builder.setMaxPurchaseNum(CAN_PURCHASE_NUM);
         builder.setRemainingForPlayer(challengePlayer.getRemainingForPlayer());
         builder.setRemainingRefreshTime(challengePlayer.getRemainingRefreshTime());
         builder.setNeedRefreshChallengePlayer(challengePlayer.isNeedRefreshChallengePlayer());
-        List<Integer> battlePos = player.heroBattlePos.get(HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE);
+        List<Integer> battlePos = player.getPlayerFormation().getHeroBattlePos().get(HeroConstant.CHANGE_TREASURE_WARE_POS_TYPE);
         if (Objects.nonNull(battlePos))
             builder.addAllBattleHero(battlePos);
         return builder.build();
@@ -98,9 +103,11 @@ public class TreasureChallengePlayerService implements GmCmdService {
             challengeList = challengeListByRank(player, challengePlayer);
         }
 
-        // 全服就你一人，自己打自己吧
+        // 挑战列表排除自己
+        challengeList.remove(player.lord.getLordId());
+        // 全服就你一人
         if (challengeList.isEmpty()) {
-            return player.getLordId();
+            return -1;
         }
 
         // 前10次内不出现重复挑战对象
@@ -179,11 +186,10 @@ public class TreasureChallengePlayerService implements GmCmdService {
 
             Player player = playerDataManager.getPlayer(lordId);
             if (player != null) {
-                for (int heroId : player.heroBattle) {
-                    if (heroId > 0) {
-                        result.add(lordId);
-                        break;
-                    }
+                for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+                    if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                    result.add(lordId);
+                    break;
                 }
             }
         }
@@ -194,7 +200,8 @@ public class TreasureChallengePlayerService implements GmCmdService {
      * 获取要挑战的玩家信息
      */
     private CommonPb.TreasureChallengePlayerInfo getChallengePlayerInfo(long challengePlayerId) {
-        Player challengingPlayer = playerDataManager.checkPlayerIsExist(challengePlayerId);
+        Player challengingPlayer = playerDataManager.getPlayer(challengePlayerId);
+        if (CheckNull.isNull(challengingPlayer)) return null;
 
         CommonPb.TreasureChallengePlayerInfo.Builder builder = CommonPb.TreasureChallengePlayerInfo.newBuilder();
         builder.setRoleId(challengePlayerId);
@@ -204,20 +211,21 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.setCamp(challengingPlayer.lord.getCamp());
         builder.setIcon(challengingPlayer.lord.getPortrait());
         builder.setPortraitFrame(challengingPlayer.getDressUp().getCurPortraitFrame());
-        challengingPlayer.getAllOnBattleHeros().forEach(h -> builder.addHero(createChallengeHero(h)));
+        challengingPlayer.getAllOnBattleHeroList().forEach(h -> builder.addHero(h.createPb(false)));
         return builder.build();
     }
 
-    private CommonPb.ChallengeHero createChallengeHero(Hero hero) {
-        CommonPb.ChallengeHero.Builder builder = CommonPb.ChallengeHero.newBuilder();
-        builder.setHeroId(hero.getHeroId());
-        builder.setLevel(hero.getLevel());
-        builder.setCount(hero.getAttr()[Constant.AttrId.LEAD]);
-        builder.setPos(hero.getPos());
-        builder.setGradeKeyId(hero.getGradeKeyId());
-        builder.setDecorated(hero.getDecorated());
-        return builder.build();
-    }
+//    private CommonPb.ChallengeHero createChallengeHero(PartnerHero partnerHero) {
+//        CommonPb.ChallengeHero.Builder builder = CommonPb.ChallengeHero.newBuilder();
+//
+//        builder.setHeroId(hero.getHeroId());
+//        builder.setLevel(hero.getLevel());
+//        builder.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
+//        builder.setPos(hero.getPos());
+//        builder.setGradeKeyId(hero.getGradeKeyId());
+//        builder.setDecorated(hero.getDecorated());
+//        return builder.build();
+//    }
 
     /**
      * 挑战玩家
@@ -234,10 +242,9 @@ public class TreasureChallengePlayerService implements GmCmdService {
      */
     private void checkChallengePlayer(Player player, List<Integer> heroIdList, TreasureChallengePlayer challengePlayer) {
         // 检测上阵英雄
-        List<Integer> battleHeroId = Arrays.stream(player.heroBattle)
-                .filter(i -> i > 0)
-                .boxed()
-                .collect(Collectors.toList());
+        List<Integer> battleHeroId = Arrays.stream(player.getPlayerFormation().getHeroBattle())
+                .filter(i -> !HeroUtil.isEmptyPartner(i))
+                .map(i -> i.getPrincipalHero().getHeroId()).collect(Collectors.toList());
 
         List<Integer> heroList = heroIdList.stream()
                 .filter(id -> id > 0)
@@ -271,9 +278,9 @@ public class TreasureChallengePlayerService implements GmCmdService {
         Player challengingPlayer = playerDataManager.checkPlayerIsExist(challengePlayerId);
 
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIdList);
-        Fighter defender = fightService.createCombatPlayerFighter(challengingPlayer, challengingPlayer.getAllOnBattleHeros().stream().map(Hero::getHeroId).collect(Collectors.toList()));
+        Fighter defender = fightService.createCombatPlayerFighterByPartnerHero(challengingPlayer, challengingPlayer.getAllOnBattleHeroList());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         challengePlayer.incChallengeForPlayerNum();
 
@@ -306,8 +313,8 @@ public class TreasureChallengePlayerService implements GmCmdService {
         builder.addAllDefHero(defender.forces.stream().map(force -> {
             Hero hero = challengingPlayer.heros.get(force.id);
             if (CheckNull.isNull(hero))
-                return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost);
-            return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, hero, null, 0, 0, force.totalLost);
+                return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost);
+            return PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost);
         }).collect(Collectors.toList()));
         if (Objects.nonNull(awards)) {
             builder.addAllAward(awards);

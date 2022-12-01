@@ -25,6 +25,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticActRobinHood;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEquip;
 import com.gryphpoem.game.zw.resource.domain.s.StaticStone;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -265,7 +266,7 @@ public class ActivityRobinHoodService {
         int sCondId = sConf.getCondId();
         int paramId = param.length > 0 ? param[0] : 0;
         switch (sConf.getCond()) {
-                // 主城升到xx等级
+            // 主城升到xx等级
             case ActivityConst.ACT_TASK_BUILDING:
                 // 使用指定xx道具
             case ActivityConst.ACT_TASK_USE_PROP:
@@ -283,7 +284,7 @@ public class ActivityRobinHoodService {
                     task.setSchedule(task.getSchedule() + schedule, sConf);
                 }
                 break;
-                // 击杀几级以上武装力量
+            // 击杀几级以上武装力量
             case ActivityConst.ACT_TASK_ATK_BANDIT:
                 // 累计消费多少金额
             case ActivityConst.ACT_TASK_COST_GOLD:
@@ -312,10 +313,11 @@ public class ActivityRobinHoodService {
             switch (sConf.getCond()) {
                 // 上阵将领指定部位(param里面填)穿戴xx品质的装备
                 case ActivityConst.ACT_TASK_EQUIP_QUALITY_CNT:
-                    int schedule = (int) player.getAllOnBattleHeros().stream()
-                            .filter(hero -> {
+                    int schedule = (int) player.getAllOnBattleHeroList().stream()
+                            .filter(partnerHero -> {
                                 Equip equip;
                                 StaticEquip staticEquip;
+                                Hero hero = partnerHero.getPrincipalHero();
                                 for (int i = 1; i < hero.getEquip().length; i++) {
                                     int equipKey = hero.getEquip()[i];
                                     // 说明没有穿戴装备

@@ -5,7 +5,7 @@ import java.util.List;
 public class StaticBandit {
 	private int banditId;                           // 流寇id
 	private int lv;                                 // 流寇等级
-	private List<Integer> form;                     // 兵力阵型，格式：[npcId,npcId...]
+	private List<List<Integer>> form;                     // 兵力阵型，格式：[npcId,npcId...]
 	private List<List<Integer>> awardBase;          // 匪军掉落的奖励：资源（奖励分类配置为了活动掉落翻倍功能）
 	private List<List<Integer>> awardDrawing;       // 匪军掉落的奖励：图纸
 	private List<List<Integer>> awardProp;          // 匪军掉落的奖励：道具
@@ -28,11 +28,11 @@ public class StaticBandit {
 		this.lv = lv;
 	}
 
-	public List<Integer> getForm() {
+	public List<List<Integer>> getForm() {
 		return form;
 	}
 
-	public void setForm(List<Integer> form) {
+	public void setForm(List<List<Integer>> form) {
 		this.form = form;
 	}
 

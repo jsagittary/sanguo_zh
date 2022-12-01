@@ -1,42 +1,26 @@
 package com.gryphpoem.game.zw.gameplay.local.world;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
-import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
-import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
-import com.gryphpoem.game.zw.gameplay.local.world.map.MineMapEntity;
-import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
-import org.quartz.Scheduler;
-
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonMomentOverService;
-import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.MsgDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonMomentOverService;
+import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
+import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
+import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
+import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
+import com.gryphpoem.game.zw.gameplay.local.world.map.MineMapEntity;
+import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.MailCollect;
 import com.gryphpoem.game.zw.pb.GamePb5.SyncMapCloseRs;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -45,25 +29,36 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticWorldWarPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWorldwarOpen;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import org.quartz.Scheduler;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName WorldWarOpen.java
  * @Description 世界战争开放规则
- * @author QiuKun
  * @date 2019年3月26日
  */
 
 public class WorldWarOpen {
 
-    /** 开放计划,可能为null */
+    /**
+     * 开放计划,可能为null
+     */
     private WorldWarPlanInfo worldWarPlanInfo;
-    /** 周结束 */
+    /**
+     * 周结束
+     */
     private static final String WEEK_TIME_END = "WEEK_TIME_END";
-    /** 赛季结束 */
+    /**
+     * 赛季结束
+     */
     private static final String SEASON_TIME_END = "SEASON_TIME_END";
-    /** 赛季活动显示时间结束 */
+    /**
+     * 赛季活动显示时间结束
+     */
     private static final String SEASON_DISPLAY_TIME_END = "SEASON_DISPLAY_TIME_END";
 
     private final CrossWorldMap crossWorldMap;

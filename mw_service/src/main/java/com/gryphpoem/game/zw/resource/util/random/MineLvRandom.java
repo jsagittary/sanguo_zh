@@ -1,22 +1,21 @@
 package com.gryphpoem.game.zw.resource.util.random;
 
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.RandomUtil;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.RandomUtil;
-
 /**
+ * @author TanDonghai
  * @ClassName MineLvRandom.java
  * @Description 用于矿点随机
- * @author TanDonghai
  * @date 创建时间：2017年4月1日 上午10:44:15
- *
  */
 public class MineLvRandom {
     // 老地图使用
@@ -55,7 +54,7 @@ public class MineLvRandom {
 
     /**
      * 新地图使用
-     * 
+     *
      * @param mineLv
      * @return
      */
@@ -70,7 +69,7 @@ public class MineLvRandom {
 
     /**
      * 根据矿点等级，随机一个同等级的矿
-     * 
+     *
      * @param mineLv
      * @return
      */

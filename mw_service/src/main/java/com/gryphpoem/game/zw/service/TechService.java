@@ -24,6 +24,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -441,7 +442,7 @@ public class TechService {
         // 重置科技升级完成消息推送状态
         // player.removePushRecord(PushConstant.ID_UP_TECH_FINISH);
         activityDataManager.updDay7ActSchedule(player, ActivityConst.ACT_TASK_TECH);
-        taskDataManager.updTask(player,TaskType.COND_508,1);
+        taskDataManager.updTask(player, TaskType.COND_508, 1);
 
         //貂蝉任务-升级科技
         ActivityDiaoChanService.completeTask(player, ETask.TECHNOLOGY_UP);
@@ -486,12 +487,13 @@ public class TechService {
         Hero hero;
         int heroType = 0;
         StaticHero staticHero;
-        for (Integer heroId : player.heroBattle) {
-            hero = player.heros.get(heroId);
+        for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            hero = partnerHero.getPrincipalHero();
             if (CheckNull.isNull(hero))
                 continue;
 
-            staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+            staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
             if (CheckNull.isNull(staticHero))
                 continue;
 

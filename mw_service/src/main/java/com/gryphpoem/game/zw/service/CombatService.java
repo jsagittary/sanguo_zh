@@ -2,14 +2,18 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncHeroEquipRs;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.constant.Constant.CombatType;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -21,11 +25,9 @@ import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
-import com.gryphpoem.game.zw.resource.pojo.WarPlane;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -239,7 +241,8 @@ public class CombatService {
 
     /**
      * 小游戏副本
-     * @param player 玩家
+     *
+     * @param player       玩家
      * @param staticCombat 副本配置
      * @return
      */
@@ -292,14 +295,14 @@ public class CombatService {
         Combat combat = player.combats.get(combatId);
         boolean isFristDo = combat == null;
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
-        Fighter defender = fightService.createNpcFighter(isFristDo && !CheckNull.isEmpty(staticCombat.getFirstform())
-                ? staticCombat.getFirstform() : staticCombat.getForm());
+        Fighter defender = fightService.createNpcFighter(isFristDo && !CheckNull.isEmpty(staticCombat.getFirstForm())
+                ? staticCombat.getFirstForm() : staticCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
         if (Constant.DONT_DODGE_CRIT_COMBATID.contains(combatId)) {
             fightLogic.setCareCrit(false);
             fightLogic.setCareDodge(false);
         }
-        fightLogic.fight();
+        fightLogic.start();
 
         if (combat == null) {
             combat = new Combat(combatId, 0);
@@ -369,7 +372,7 @@ public class CombatService {
             }
 
             //增加图腾掉落
-            builder.addAllAward(totemService.dropTotem(player,1,AwardFrom.TOTOEM_DROP_GUANQIA));
+            builder.addAllAward(totemService.dropTotem(player, 1, AwardFrom.TOTOEM_DROP_GUANQIA));
 
             // 勋章掉落
             List<Medal> medals = medalDataManager.getMedalBydoCombat(player);
@@ -393,7 +396,7 @@ public class CombatService {
             activityTriggerService.doCombatTriggerGift(player, combatId);
 
             //貂蝉任务-成功通关关卡，包含扫荡
-            ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER,1);
+            ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER, 1);
             //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
             TaskService.processTask(player, ETask.PASS_BARRIER, 1);
         } else {
@@ -415,17 +418,17 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
         taskDataManager.updTask(player, TaskType.COND_ENTER_COMBAT_34, 1, combatId);
-        taskDataManager.updTask(player,TaskType.COND_995,1);
+        taskDataManager.updTask(player, TaskType.COND_995, 1);
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return builder.build();
@@ -808,7 +811,7 @@ public class CombatService {
             fightLogic.setCareCrit(false);
             fightLogic.setCareDodge(false);
         }
-        fightLogic.fight();
+        fightLogic.start();
 
         DoCombatRs.Builder builder = DoCombatRs.newBuilder();
         builder.setResult(fightLogic.getWinState());
@@ -878,20 +881,20 @@ public class CombatService {
                 , staticCombat.getType(), staticCombat.getCombatId(), staticCombat.getCost(), fightLogic.getWinState());
 
         //更新任务
-        taskDataManager.updTask(player,TaskType.COND_995,1);
+        taskDataManager.updTask(player, TaskType.COND_995, 1);
 
 
         // 给将领加经验
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
         builder.addCombatFB(PbHelper.createCombatFBPb(combatFb));
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return builder.build();
@@ -926,7 +929,7 @@ public class CombatService {
         Fighter defender = fightService.createNpcFighter(staticCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
 
-        fightLogic.fight();
+        fightLogic.start();
 
         DoCombatRs.Builder builder = DoCombatRs.newBuilder();
         builder.setResult(fightLogic.getWinState());
@@ -986,13 +989,13 @@ public class CombatService {
         builder.addAllAtkHero(fightSettleLogic.combatFightHeroExpReward(player, attacker.getForces(), staticCombat,
                 false, fightLogic.getWinState() == 1));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         // 给战机加经验
         addPlaneExp(player, staticCombat, 1, builder, heroIds);
 
         builder.addCombatFB(PbHelper.createCombatFBPb(combatFb));
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return builder.build();
@@ -1092,7 +1095,7 @@ public class CombatService {
         }
 
         //增加图腾掉落
-        Stream.iterate(0,i->i+1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player,1,AwardFrom.TOTOEM_DROP_GUANQIA)));
+        Stream.iterate(0, i -> i + 1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player, 1, AwardFrom.TOTOEM_DROP_GUANQIA)));
 
         // 给将领加经验 平分
         int addExp = num * cnt * staticCombat.getExp();
@@ -1100,22 +1103,38 @@ public class CombatService {
         int roleLv = player.lord.getLevel();
         if (addExp > 0) {
             int addHeroExp = 0;
-            for (int pos = 0; pos < player.heroBattle.length; pos++) {
-                Hero hero = player.heros.get(player.heroBattle[pos]);
+            CommonPb.RptHero.Builder atkHeroPb = CommonPb.RptHero.newBuilder();
+            for (int pos = 0; pos < player.getPlayerFormation().getHeroBattle().length; pos++) {
+                PartnerHero partnerHero = player.getPlayerFormation().getHeroBattle()[pos];
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                Hero hero = partnerHero.getPrincipalHero();
                 if (hero != null) {
                     addHeroExp = 0;
                     if (hero.getLevel() < roleLv) {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
-                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
+                    atkHeroPb.addEntity(PbHelper.createChiefBattleEntity(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
                             player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
+                if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                    for (Hero deputyHero : partnerHero.getDeputyHeroList()) {
+                        if (CheckNull.isNull(deputyHero)) continue;
+                        addHeroExp = 0;
+                        if (deputyHero.getLevel() < roleLv) {
+                            addHeroExp = heroService.addHeroExp(deputyHero, addExp, player.lord.getLevel(), player);
+                        }
+                        atkHeroPb.addEntity(PbHelper.createAssBattleEntity(Constant.Role.PLAYER, hero.getHeroId(),
+                                player.lord.getNick(), hero.getLevel(), addHeroExp, hero));
+                    }
+                }
+                builder.addAtkHero(atkHeroPb.build());
+                atkHeroPb.clear();
             }
         }
 
         // 给战机加经验
-        addPlaneExp(player, staticCombat, cnt, builder,
-                Arrays.stream(player.heroBattle).boxed().collect(Collectors.toList()));
+//        addPlaneExp(player, staticCombat, cnt, builder,
+//                Arrays.stream(player.get).boxed().collect(Collectors.toList()));
 
         // 勋章掉落
         for (int i = 0; i < cnt; i++) {
@@ -1147,42 +1166,42 @@ public class CombatService {
     private List<TwoInt> addPlaneExp(Player player, StaticCombat staticCombat, int cnt, DoCombatRs.Builder builder,
                                      List<Integer> heroIds) {
         List<TwoInt> planeExp = new ArrayList<>();
-        int addExp;// 给战机加经验
-        if (CheckNull.isNull(player) || CheckNull.isNull(staticCombat)) {
-            return planeExp;
-        }
-        int roleLv = player.lord.getLevel();
-        int maxLv = PlaneConstant.PLANE_LEVEL_MAX;
-        if (roleLv < maxLv) {
-            maxLv = roleLv;
-        }
-        addExp = cnt * staticCombat.getPlaneExp();
-        if (addExp > 0) {
-            int addPlaneExp = 0;
-            for (int pos = 0; pos < player.heroBattle.length; pos++) {
-                Hero hero = player.heros.get(player.heroBattle[pos]);
-                if (hero != null && !CheckNull.isEmpty(hero.getWarPlanes()) && heroIds.contains(hero.getHeroId())) {
-                    for (Integer planeId : hero.getWarPlanes()) {
-                        StaticPlaneUpgrade sPlaneUpgrade = StaticWarPlaneDataMgr.getPlaneUpgradeById(planeId);
-                        if (CheckNull.isNull(sPlaneUpgrade)) {
-                            continue;
-                        }
-                        WarPlane plane = player.warPlanes.get(sPlaneUpgrade.getPlaneType());
-                        if (CheckNull.isNull(plane)) {
-                            continue;
-                        }
-                        if (plane.getLevel() < maxLv) {
-                            addPlaneExp = warPlaneDataManager.addPlaneExp(plane, addExp, maxLv, player, sPlaneUpgrade);
-                        }
-                        TwoInt twoIntPb = PbHelper.createTwoIntPb(planeId, addPlaneExp);
-                        planeExp.add(twoIntPb);
-                        if (!CheckNull.isNull(builder)) {
-                            builder.addPlaneExp(twoIntPb);
-                        }
-                    }
-                }
-            }
-        }
+//        int addExp;// 给战机加经验
+//        if (CheckNull.isNull(player) || CheckNull.isNull(staticCombat)) {
+//            return planeExp;
+//        }
+//        int roleLv = player.lord.getLevel();
+//        int maxLv = PlaneConstant.PLANE_LEVEL_MAX;
+//        if (roleLv < maxLv) {
+//            maxLv = roleLv;
+//        }
+//        addExp = cnt * staticCombat.getPlaneExp();
+//        if (addExp > 0) {
+//            int addPlaneExp = 0;
+//            for (int pos = 0; pos < player.heroBattle.length; pos++) {
+//                Hero hero = player.heros.get(player.heroBattle[pos]);
+//                if (hero != null && !CheckNull.isEmpty(hero.getWarPlanes()) && heroIds.contains(hero.getHeroId())) {
+//                    for (Integer planeId : hero.getWarPlanes()) {
+//                        StaticPlaneUpgrade sPlaneUpgrade = StaticWarPlaneDataMgr.getPlaneUpgradeById(planeId);
+//                        if (CheckNull.isNull(sPlaneUpgrade)) {
+//                            continue;
+//                        }
+//                        WarPlane plane = player.warPlanes.get(sPlaneUpgrade.getPlaneType());
+//                        if (CheckNull.isNull(plane)) {
+//                            continue;
+//                        }
+//                        if (plane.getLevel() < maxLv) {
+//                            addPlaneExp = warPlaneDataManager.addPlaneExp(plane, addExp, maxLv, player, sPlaneUpgrade);
+//                        }
+//                        TwoInt twoIntPb = PbHelper.createTwoIntPb(planeId, addPlaneExp);
+//                        planeExp.add(twoIntPb);
+//                        if (!CheckNull.isNull(builder)) {
+//                            builder.addPlaneExp(twoIntPb);
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return planeExp;
     }
 
@@ -1284,7 +1303,7 @@ public class CombatService {
             builder.addAllAward(rewardDataManager.sendReward(player, actCombatDropAward, AwardFrom.GAIN_COMBAT));
         }
         //增加图腾掉落
-        Stream.iterate(0,i->i+1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player,1,AwardFrom.TOTOEM_DROP_GUANQIA)));
+        Stream.iterate(0, i -> i + 1).limit(cnt).forEach(j -> builder.addAllAward(totemService.dropTotem(player, 1, AwardFrom.TOTOEM_DROP_GUANQIA)));
         // 给将领加经验 平分
         int addExp = num * cnt * staticCombat.getExp();
         addExp = heroService.adaptHeroAddExp(player, addExp);
@@ -1297,8 +1316,8 @@ public class CombatService {
                     if (hero.getLevel() < roleLv) {
                         addHeroExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
                     }
-                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
-                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
+//                    builder.addAtkHero(PbHelper.createRptHero(Constant.Role.PLAYER, 0, 0, hero.getHeroId(),
+//                            player.lord.getNick(), hero.getLevel(), addHeroExp, 0, hero));
                 }
             }
         }
@@ -1310,7 +1329,7 @@ public class CombatService {
         activityDataManager.updActivity(player, ActivityConst.ACT_CHALLENGE_COMBAT, cnt, combatId, true);
 
         //貂蝉任务-成功通关关卡，包含扫荡
-        ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER,cnt);
+        ActivityDiaoChanService.completeTask(player, ETask.PASS_BARRIER, cnt);
         //喜悦金秋-日出而作-通关战役xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_BARRIER, cnt);
 
@@ -1448,8 +1467,10 @@ public class CombatService {
                 throw new MwException(GameError.COMMANDO_HERO_NOT_ATK.getCode(), "挑战关卡时,选择的将领不能进攻, roleId:", roleId,
                         ", heroId:", heroId);
             }
-            for (int i = 1; i < player.heroBattle.length; i++) {
-                if (player.heroBattle[i] == heroId) {
+            for (int i = 1; i < player.getPlayerFormation().getHeroBattle().length; i++) {
+                PartnerHero partnerHero = player.getPlayerFormation().getHeroBattle()[i];
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (partnerHero.getPrincipalHero().getHeroId() == heroId) {
                     combatPos.add(i);
                     break;
                 }
@@ -1545,7 +1566,7 @@ public class CombatService {
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
         Fighter defender = fightService.createNpcFighter(sCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
         if (fightLogic.getWinState() == 1) { // 胜利
             // 更新战火试炼进度
             activityDataManager.updActivity(player, ActivityConst.ACT_WAR_ROAD, 1, 0, true);
@@ -1576,7 +1597,7 @@ public class CombatService {
             activityTriggerService.doExpeditionCombatTriggerGift(player, combatId);
 
             //貂蝉任务-成功通关帝国远征，包含扫荡
-            ActivityDiaoChanService.completeTask(player,ETask.PASS_EXPEDITION,1);
+            ActivityDiaoChanService.completeTask(player, ETask.PASS_EXPEDITION, 1);
             //喜悦金秋-日出而作-通关帝国远征xx次（包含扫荡）
             TaskService.processTask(player, ETask.PASS_EXPEDITION, 1);
 
@@ -1593,7 +1614,7 @@ public class CombatService {
         builder.setRecord(fightLogic.generateRecord());
         builder.addAllAtkHero(fightSettleLogic.stoneCombatCreateRptHero(player, attacker.forces));
         // 防守方hero信息
-        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+        builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         return builder.build();
     }
 
@@ -1644,7 +1665,7 @@ public class CombatService {
         royalArenaService.updTaskSchedule(player.roleId, TaskType.COND_STONE_COMBAT_47, wipeCnt);
 
         //貂蝉任务-成功通关帝国远征，包含扫荡
-        ActivityDiaoChanService.completeTask(player,ETask.PASS_EXPEDITION,wipeCnt);
+        ActivityDiaoChanService.completeTask(player, ETask.PASS_EXPEDITION, wipeCnt);
         //喜悦金秋-日出而作-通关帝国远征xx次（包含扫荡）
         TaskService.processTask(player, ETask.PASS_EXPEDITION, wipeCnt);
 
@@ -1801,7 +1822,7 @@ public class CombatService {
             Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
             Fighter defender = fightService.createNpcFighter(sPitchCombat.getForm());
             FightLogic fightLogic = new FightLogic(attacker, defender, true);
-            fightLogic.fight();
+            fightLogic.start();
             if (fightLogic.getWinState() == 1) { // 胜利
                 boolean isFirst = combatId > pitchCombat.getHighestCombatId(); // 首次奖励
                 pitchCombat.updateCombatId(combatId); // 进度更新

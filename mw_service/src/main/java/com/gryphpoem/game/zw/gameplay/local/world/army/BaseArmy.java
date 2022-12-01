@@ -11,7 +11,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.battle.BaseMapBattle;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
@@ -77,7 +76,7 @@ public abstract class BaseArmy implements DelayRun {
         Player player = playerDataManager.getPlayer(getArmy().getLordId());
         if (player == null) return 0;
         int sum = army.getHero().stream().mapToInt(tw -> {
-            Hero hero = player.heros.get(tw.getV1());
+            Hero hero = player.heros.get(tw.getPrincipleHeroId());
             if (hero == null) return 0;
             return hero.getCount();
         }).sum();
@@ -294,12 +293,13 @@ public abstract class BaseArmy implements DelayRun {
     public void setArmyPlayerHeroState(MapMarch mapMarchArmy, int state) {
         Player armyPlayer = checkAndGetAmryHasPlayer(mapMarchArmy);
         if (armyPlayer != null) {
-            for (TwoInt h : army.getHero()) {
-                Hero hero = armyPlayer.heros.get(h.getV1());
-                if (hero != null) {
-                    hero.setState(state);
-                }
-            }
+            army.setHeroState(armyPlayer, state);
+//            for (CommonPb.PartnerHeroIdPb h : army.getHero()) {
+//                Hero hero = armyPlayer.heros.get(h.getV1());
+//                if (hero != null) {
+//                    hero.setState(state);
+//                }
+//            }
         }
     }
 

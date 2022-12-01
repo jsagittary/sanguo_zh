@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.manager;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticMailDataMgr;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
@@ -17,7 +18,6 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MailHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@Component public class MailDataManager {
+@Component
+public class MailDataManager {
 
     @Autowired
     private ActivityDataManager activityDataManager;
@@ -144,15 +145,15 @@ import java.util.Objects;
      * @return
      */
     public Mail sendAttachMail(Player recvPlayer, List<CommonPb.Award> awards, int mailId, AwardFrom from, int now,
-            Object... param) {
+                               Object... param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(mailId);
         if (staticMail == null) {
             //邮件id未配置，就用这个保证正常发奖励
             staticMail = StaticMailDataMgr.getStaticMail(MailConstant.MOLD_GM_CUSTOM);//MOLD_NON_CONFIG_MAIL_ID
-            param = new Object[]{"奖励补发","尊敬的领主，您在活动中获得以下奖励，请查收！[" + mailId + "]"};
+            param = new Object[]{"奖励补发", "尊敬的领主，您在活动中获得以下奖励，请查收！[" + mailId + "]"};
             mailId = MailConstant.MOLD_GM_CUSTOM;
         }
-        if(Objects.isNull(staticMail)){
+        if (Objects.isNull(staticMail)) {
             return null;
         }
 
@@ -170,7 +171,7 @@ import java.util.Objects;
         }
 
         recvPlayer.mails.put(mail.getKeyId(), mail);
-        LogUtil.common("带附件邮件roleId:", recvPlayer.roleId, ", mailId:", mailId,", from:", Objects.isNull(from)?"NULL":from.getCode(), ", tParam:", tParam, ", cParam:",cParam);
+        LogUtil.common("带附件邮件roleId:", recvPlayer.roleId, ", mailId:", mailId, ", from:", Objects.isNull(from) ? "NULL" : from.getCode(), ", tParam:", tParam, ", cParam:", cParam);
         if (ArrayUtils.contains(MailConstant.CROSS_MAIL_TEMPLATE_ID, mailId))
             mail.setCross(true);
 
@@ -185,7 +186,8 @@ import java.util.Objects;
      * 发送带附件的邮件和获取的奖励的邮件<br/>
      * <i>注意：</i>使用该方法 <tt>必须 </tt>在 {@link MailHelper#registerMailParamNum()}
      * 方法中注册邮件的标题和内容参数个数
-     *  这个方法现在没有用到
+     * 这个方法现在没有用到
+     *
      * @param recvPlayer
      * @param awards
      * @param mailId
@@ -197,7 +199,7 @@ import java.util.Objects;
      */
     @Deprecated
     public Mail sendAttachMail(Player recvPlayer, List<CommonPb.Award> awards, int mailId, AwardFrom from, int now,
-            List<CommonPb.Award> drop, Object... param) {
+                               List<CommonPb.Award> drop, Object... param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(mailId);
         if (staticMail == null) {
             return null;
@@ -242,8 +244,8 @@ import java.util.Objects;
      * @return
      */
     public Mail sendCollectMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
-            CommonPb.MailCollect collect, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
-            Object... param) {
+                                CommonPb.MailCollect collect, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
+                                Object... param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
         if (staticMail == null) {
             return null;
@@ -293,8 +295,8 @@ import java.util.Objects;
     }
 
     public Mail sendCrossCollectMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
-                                CommonPb.MailCollect collect, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
-                                List<String> param) {
+                                     CommonPb.MailCollect collect, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
+                                     List<String> param) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
         if (staticMail == null) {
             return null;
@@ -352,7 +354,7 @@ import java.util.Objects;
      * @return
      */
     public Mail sendCollectMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
-            CommonPb.MailCollect collect, int now, Object... param) {
+                                CommonPb.MailCollect collect, int now, Object... param) {
         return sendCollectMail(recvPlayer, report, moldId, collect, now, null, param);
     }
 
@@ -458,7 +460,7 @@ import java.util.Objects;
      * @return 返回邮件对象
      */
     public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int mailId, List<CommonPb.Award> drop,
-            int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
+                               int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Object... param) {
         Turple<Integer, Integer> paramNum = MailHelper.getMailParamNum(mailId);
         List<String> tParam = new ArrayList<>();
         List<String> cParam = new ArrayList<>();
@@ -496,7 +498,7 @@ import java.util.Objects;
      * @return
      */
     public Mail sendCrossReportMail(Player recvPlayer, CommonPb.Report.Builder report, int mailId, List<CommonPb.Award> drop,
-                               int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, List<String> param) {
+                                    int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, List<String> param) {
         Turple<Integer, Integer> paramNum = MailHelper.getMailParamNum(mailId);
         List<String> tParam = new ArrayList<>();
         List<String> cParam = new ArrayList<>();
@@ -533,7 +535,7 @@ import java.util.Objects;
      * @return
      */
     public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int mailId, List<CommonPb.Award> drop,
-            int now, Object... param) {
+                               int now, Object... param) {
         return sendReportMail(recvPlayer, report, mailId, drop, now, null, param);
     }
 
@@ -550,7 +552,7 @@ import java.util.Objects;
      * @return
      */
     public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId, List<CommonPb.Award> drop,
-            int now, List<String> tParam, List<String> cParam) {
+                               int now, List<String> tParam, List<String> cParam) {
         return sendReportMail(recvPlayer, report, moldId, drop, now, tParam, cParam, null);
     }
 
@@ -568,7 +570,7 @@ import java.util.Objects;
      * @return
      */
     public Mail sendReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId, List<CommonPb.Award> drop,
-            int now, List<String> tParam, List<String> cParam, List<CommonPb.Award> recover) {
+                               int now, List<String> tParam, List<String> cParam, List<CommonPb.Award> recover) {
         Mail mail = createReportMail(recvPlayer, report, moldId, drop, now, tParam, cParam, recover);
 
         if (null != mail) {
@@ -580,7 +582,7 @@ import java.util.Objects;
     }
 
     public Mail sendCrossReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId, List<CommonPb.Award> drop,
-                               int now, List<String> tParam, List<String> cParam, List<CommonPb.Award> recover) {
+                                    int now, List<String> tParam, List<String> cParam, List<CommonPb.Award> recover) {
         Mail mail = createCrossReportMail(recvPlayer, report, moldId, drop, now, tParam, cParam, recover);
 
         if (null != mail) {
@@ -592,8 +594,8 @@ import java.util.Objects;
     }
 
     public Mail createCrossReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
-                                 List<CommonPb.Award> drop, int now, List<String> tParam, List<String> cParam,
-                                 List<CommonPb.Award> recover) {
+                                      List<CommonPb.Award> drop, int now, List<String> tParam, List<String> cParam,
+                                      List<CommonPb.Award> recover) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
         if (staticMail == null) {
             return null;
@@ -642,8 +644,8 @@ import java.util.Objects;
      * @return 返回邮件对象
      */
     public Mail createReportMail(Player recvPlayer, CommonPb.Report.Builder report, int moldId,
-            List<CommonPb.Award> drop, int now, List<String> tParam, List<String> cParam,
-            List<CommonPb.Award> recover) {
+                                 List<CommonPb.Award> drop, int now, List<String> tParam, List<String> cParam,
+                                 List<CommonPb.Award> recover) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
         if (staticMail == null) {
             return null;
@@ -693,7 +695,7 @@ import java.util.Objects;
 
     private Mail createSandTableEnrollMail(Player recvPlayer, int moldId, int now, Object[] param,
                                            CommonPb.SandTableEnrollMailInfo mailInfo0,
-                                           CommonPb.SandTableRoundOverMailInfo mailInfo1){
+                                           CommonPb.SandTableRoundOverMailInfo mailInfo1) {
         StaticMail staticMail = StaticMailDataMgr.getStaticMail(moldId);
         if (staticMail == null) {
             return null;
@@ -706,24 +708,24 @@ import java.util.Objects;
         fillMailParam(moldId, tParam, cParam, param);
         mail.settParam(tParam);
         mail.setcParam(cParam);
-        if(Objects.nonNull(mailInfo0))
+        if (Objects.nonNull(mailInfo0))
             mail.setEnrollMailInfo(mailInfo0);
-        if(Objects.nonNull(mailInfo1))
+        if (Objects.nonNull(mailInfo1))
             mail.setRoundOverMailInfo(mailInfo1);
 
         recvPlayer.mails.put(mail.getKeyId(), mail);
         return mail;
     }
 
-    public void sendSandTableEnrollMail(Player recvPlayer, int moldId, int now, Object[] param, CommonPb.SandTableEnrollMailInfo mailInfo){
-        Mail mail = this.createSandTableEnrollMail(recvPlayer,moldId,now,param,mailInfo,null);
+    public void sendSandTableEnrollMail(Player recvPlayer, int moldId, int now, Object[] param, CommonPb.SandTableEnrollMailInfo mailInfo) {
+        Mail mail = this.createSandTableEnrollMail(recvPlayer, moldId, now, param, mailInfo, null);
         if (Objects.nonNull(mail)) {
             synMailToPlayer(recvPlayer, mail);
         }
     }
 
-    public void sendSandTableRoundOverMail(Player recvPlayer,int moldId,int now,Object[] param,CommonPb.SandTableRoundOverMailInfo mailInfo){
-        Mail mail = this.createSandTableEnrollMail(recvPlayer,moldId,now,param,null,mailInfo);
+    public void sendSandTableRoundOverMail(Player recvPlayer, int moldId, int now, Object[] param, CommonPb.SandTableRoundOverMailInfo mailInfo) {
+        Mail mail = this.createSandTableEnrollMail(recvPlayer, moldId, now, param, null, mailInfo);
         if (Objects.nonNull(mail)) {
             synMailToPlayer(recvPlayer, mail);
         }

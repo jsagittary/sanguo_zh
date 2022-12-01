@@ -20,8 +20,10 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyAttr;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroBiographyShow;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroUpgrade;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.EventRegisterService;
 import com.gryphpoem.game.zw.service.GmCmd;
@@ -105,7 +107,7 @@ public class HeroBiographyService implements GmCmdService, EventRegisterService 
         builder.setLevel(biographyAttr.getLevel());
         CalculateUtil.reCalcAllHeroAttr(player);
         // 同步客户端上阵武将属性变更
-        EventBus.getDefault().post(new Events.SyncHeroAttrChangeEvent(player.heroBattle, player));
+        EventBus.getDefault().post(new Events.SyncHeroAttrChangeEvent(player.getPlayerFormation().getHeroBattle(), player));
         return builder.build();
     }
 
@@ -185,16 +187,19 @@ public class HeroBiographyService implements GmCmdService, EventRegisterService 
      */
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void syncHeroAttr(Events.SyncHeroAttrChangeEvent event) {
-        if (ObjectUtils.isEmpty(event) || ObjectUtils.isEmpty(event.heroIds) || ObjectUtils.isEmpty(event.player) || !event.player.isLogin)
+        if (ObjectUtils.isEmpty(event) || ObjectUtils.isEmpty(event.partnerHeroes) || ObjectUtils.isEmpty(event.player) || !event.player.isLogin)
             return;
 
         GamePb5.SyncHeroOnBattleAttrChangeRs.Builder builder = GamePb5.SyncHeroOnBattleAttrChangeRs.newBuilder();
-        for (int heroId : event.heroIds) {
-            if (heroId == 0)
+        for (PartnerHero partnerHero : event.partnerHeroes) {
+            if (HeroUtil.isEmptyPartner(partnerHero))
                 continue;
-            Hero hero = event.player.heros.get(heroId);
+            Hero hero = partnerHero.getPrincipalHero();
             if (CheckNull.isNull(hero)) continue;
             builder.addHero(PbHelper.createHeroPb(hero, event.player));
+            if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                partnerHero.getDeputyHeroList().forEach(hero_ -> PbHelper.createHeroPb(hero_, event.player));
+            }
         }
         BasePb.Base base = PbHelper.createRsBase(GamePb5.SyncHeroOnBattleAttrChangeRs.EXT_FIELD_NUMBER, GamePb5.SyncHeroOnBattleAttrChangeRs.ext, builder.build()).build();
         DataResource.ac.getBean(PlayerService.class).syncMsgToPlayer(base, event.player);

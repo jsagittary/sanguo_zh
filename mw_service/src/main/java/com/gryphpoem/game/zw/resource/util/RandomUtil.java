@@ -1,20 +1,17 @@
 package com.gryphpoem.game.zw.resource.util;
 
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import org.apache.commons.lang3.RandomUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Function;
 
 public class RandomUtil {
 
     /**
      * 一个列表随机中取出n个元素
-     * 
+     *
      * @param originList
      * @param n
      * @return
@@ -48,9 +45,9 @@ public class RandomUtil {
      * @param list
      * @param count
      * @param weightPos 权重字段所在的位置,从0开始
-     * @return 返回命中的元素,返回null 说明格式有错误
+     * @return 返回命中的元素, 返回null 说明格式有错误
      */
-    public static List<List<Integer>> getListRandomWeight(List<List<Integer>> list, int count,int weightPos) {
+    public static List<List<Integer>> getListRandomWeight(List<List<Integer>> list, int count, int weightPos) {
         List<List<Integer>> resList = new ArrayList<>();
         if (CheckNull.isEmpty(list) || weightPos < 0) {
             // 参数格式有错误
@@ -58,14 +55,14 @@ public class RandomUtil {
         }
         int size = list.size();
         if (size <= count) {
-            for (List<Integer> wc : list){
+            for (List<Integer> wc : list) {
                 List<Integer> notwgt = new ArrayList<>();
                 for (int i = 0; i < weightPos; i++) {
                     notwgt.add(wc.get(i));
                 }
                 resList.add(notwgt);
             }
-            return resList;            
+            return resList;
         }
         int weightSum = 0;
         // 计算权重总值
@@ -80,7 +77,7 @@ public class RandomUtil {
         }
         List<List<Integer>> copyList = new ArrayList<>();
         copyList.addAll(list); //为了不影响原来的奖励列表
-        while (count>0) {
+        while (count > 0) {
             int n = RandomHelper.randomInSize(weightSum); // [0,weightSum)
             int m = 0;
             int x = 0; //已经命中的权重
@@ -98,10 +95,10 @@ public class RandomUtil {
                 }
                 m += wc.get(weightPos);
             }
-            if(rmWc!=null) {
+            if (rmWc != null) {
                 copyList.remove(rmWc); //从拷贝的列表中移除已经命中的奖励
             }
-            weightSum-=x;
+            weightSum -= x;
             count--;
         }
         return resList;
@@ -109,8 +106,8 @@ public class RandomUtil {
 
     /**
      * 随机[[key,pro]]
-     * 
-     * @param map 随机源
+     *
+     * @param map   随机源
      * @param rmKey 不包含其中的key
      * @return
      */
@@ -137,13 +134,13 @@ public class RandomUtil {
         return 0;
     }
 
-    public static <T> T randomByWeight(List<T> list,Function<T,Integer> weight){
-        return getWeightByList(list,weight);
+    public static <T> T randomByWeight(List<T> list, Function<T, Integer> weight) {
+        return getWeightByList(list, weight);
     }
 
     /**
      * 带泛型的获取权重
-     * 
+     *
      * @param list
      * @param weight
      * @return
@@ -175,8 +172,8 @@ public class RandomUtil {
         return null;
     }
 
-    public static List<Integer> randomAwardByWeight(List<List<Integer>> list){
-        if(ListUtils.isBlank(list)){
+    public static List<Integer> randomAwardByWeight(List<List<Integer>> list) {
+        if (ListUtils.isBlank(list)) {
             return null;
         }
         int tweight = 0;
@@ -195,8 +192,8 @@ public class RandomUtil {
         return null;
     }
 
-    public static int randomAwardIdxByWeight(List<List<Integer>> list){
-        if(ListUtils.isBlank(list)){
+    public static int randomAwardIdxByWeight(List<List<Integer>> list) {
+        if (ListUtils.isBlank(list)) {
             return -1;
         }
         int tweight = 0;
@@ -212,15 +209,15 @@ public class RandomUtil {
                 return idx;
             }
             m += o.get(3);
-            idx ++;
+            idx++;
         }
         return -1;
     }
 
     /**
      * 随机[[key,val,pro]]
-     * 
-     * @param list 随机源
+     *
+     * @param list  随机源
      * @param rmKey 不包含其中的key
      * @return
      */
@@ -252,7 +249,7 @@ public class RandomUtil {
 
     /**
      * 获取带有权重的随机值 [[val,weight],[val,weight]]
-     * 
+     *
      * @param list 随机列表
      * @return 如果返回 null 说明参数格式有错误
      */
@@ -289,11 +286,11 @@ public class RandomUtil {
 
     /**
      * 获取带有权重的随机值,必须最后一个值为权重[[val1,val2,weight],[val1,val2,weight]]
-     * 
+     *
      * @param list
-     * @param weightPos 权重字段所在的位置,从0开始
+     * @param weightPos       权重字段所在的位置,从0开始
      * @param returnHasWeight 返回命中的元素中是否含有权重字段,false为不含有
-     * @return 返回命中的元素,返回null 说明格式有错误
+     * @return 返回命中的元素, 返回null 说明格式有错误
      */
 
     public static List<Integer> getRandomByWeight(List<List<Integer>> list, int weightPos, boolean returnHasWeight) {
@@ -335,16 +332,16 @@ public class RandomUtil {
 
     /**
      * 获取带有权重的随机值,必须最后一个值为权重[[val1,val2,weight],[val1,val2,weight]]
-     * 
+     *
      * @param list
-     * @param weightPos 权重字段所在的位置,从0开始
+     * @param weightPos       权重字段所在的位置,从0开始
      * @param returnHasWeight 返回命中的元素中是否含有权重字段,false为不含有
-     * @param wSum 设定的权重总值
-     * @return 返回命中的元素,返回null 说明格式有错误
+     * @param wSum            设定的权重总值
+     * @return 返回命中的元素, 返回null 说明格式有错误
      */
 
     public static List<Integer> getRandomByWeightAndRatio(List<List<Integer>> list, int weightPos,
-            boolean returnHasWeight, int wSum) {
+                                                          boolean returnHasWeight, int wSum) {
         if (CheckNull.isEmpty(list) || weightPos < 0) {
             // 参数格式有错误
             return null;
@@ -376,7 +373,7 @@ public class RandomUtil {
 
     /**
      * 随机生成几个 互斥的数, min<= Num <max
-     * 
+     *
      * @param cnt 生成随机数的个数
      * @param min
      * @param max
@@ -388,7 +385,7 @@ public class RandomUtil {
             return numArr;
         }
         int realCnt = Math.min(cnt, max - min);
-        for (int i = 0; i < realCnt;) {
+        for (int i = 0; i < realCnt; ) {
             int temp = RandomHelper.randomInArea(min, max);
             if (!numArr.contains(temp)) {
                 numArr.add(temp);
@@ -400,7 +397,7 @@ public class RandomUtil {
 
     /**
      * 随机生成几个 互斥的数, min<= Num <max
-     * 
+     *
      * @param cnt
      * @param max
      * @return
@@ -409,26 +406,26 @@ public class RandomUtil {
         return getRandomNums(cnt, 0, max);
     }
 
-    public static int randomIntIncludeEnd(int start,int end){
-        return RandomUtils.nextInt(start,end + 1);
+    public static int randomIntIncludeEnd(int start, int end) {
+        return RandomUtils.nextInt(start, end + 1);
     }
 
-    public static int randomIntExcludeEnd(int start,int end){
-        return RandomUtils.nextInt(start,end);
+    public static int randomIntExcludeEnd(int start, int end) {
+        return RandomUtils.nextInt(start, end);
     }
 
-    public static <T> List<T> randomList(List<T> list,int n){
+    public static <T> List<T> randomList(List<T> list, int n) {
         List<T> rlist = new ArrayList<>();
-        if(ListUtils.isBlank(list)){
+        if (ListUtils.isBlank(list)) {
             return rlist;
         }
-        if(list.size() <= n){
+        if (list.size() <= n) {
             rlist.addAll(list);
             return rlist;
         }
         List<T> tmps = new ArrayList<>(list);
-        for(int i=0;i<n;i++){
-            int idx = randomIntExcludeEnd(0,tmps.size());
+        for (int i = 0; i < n; i++) {
+            int idx = randomIntExcludeEnd(0, tmps.size());
             rlist.add(tmps.remove(idx));
         }
         return rlist;

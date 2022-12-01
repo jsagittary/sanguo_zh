@@ -1,10 +1,14 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CheckedInputStream;
 
 /**
  * @Author: ZhouJie
@@ -31,8 +35,8 @@ public class StaticGestapoPlan {
     // 太保召唤后存在时间（会从地图上消失）
     private Integer existenceTime;
 
-    // 城池初始兵力阵型，格式：[npcId,npcId...]
-    private List<Integer> form;
+    // 城池初始兵力阵型，格式：[[npcId,副将1npcId,副将2npcId],...]
+    private List<List<Integer>> form;
 
     // 胜利奖励的列表，格式：[[type,id,count,weight]]
     private List<List<Integer>> awardProp;
@@ -89,11 +93,11 @@ public class StaticGestapoPlan {
         this.countdown = countdown;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 
@@ -137,8 +141,10 @@ public class StaticGestapoPlan {
     public int getTotalArm() {
         if (totalArm < 0) {
             totalArm = 0;
-            for (Integer npcId : form) {
-                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+            for (List<Integer> npcIdList : form) {
+                if (CheckNull.isEmpty(npcIdList)) continue;
+                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+                if (CheckNull.isNull(npc)) continue;
                 totalArm += npc.getTotalArm();
             }
         }
@@ -155,10 +161,13 @@ public class StaticGestapoPlan {
             formList = new ArrayList<>();
         }
         formList.clear();
-        for (Integer npcId : getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
-            formList.add(hero);
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        if (CheckNull.nonEmpty(getForm())) {
+            for (List<Integer> npcIdList : getForm()) {
+                hero = fightService.createCityHero(npcIdList);
+                if (CheckNull.isNull(hero)) continue;
+                formList.add(hero);
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.service.sandtable;
 
 import com.alibaba.fastjson.JSON;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -10,6 +11,9 @@ import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.sandtable.SandTableJob;
 import com.gryphpoem.game.zw.quartz.jobs.sandtable.SandTableOpenEndRoundJob;
@@ -20,13 +24,13 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSandTableAward;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSandTableExchange;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.sandtable.*;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.ListUtils;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.PlayerService;
 import com.gryphpoem.game.zw.service.TaskService;
@@ -85,7 +89,7 @@ public class SandTableContestService {
     }
 
     public GamePb4.SandTableEnrollRs enroll(long roleId, int line, List<Integer> heroIds) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
@@ -108,18 +112,18 @@ public class SandTableContestService {
         SandTableCamp sandTableCamp = sandTableContest.getSandTableCamp(player.getCamp());
         SandTableCamp.LineObject lineObject = sandTableCamp.getLine(line);
         LinePlayer linePlayer = new LinePlayer(roleId);
-        for(SandTableCamp.LineObject obj : sandTableCamp.getLines().values()){
-            if(obj.list.contains(linePlayer)){
+        for (SandTableCamp.LineObject obj : sandTableCamp.getLines().values()) {
+            if (obj.list.contains(linePlayer)) {
                 throw new MwException(GameError.SANDTABLE_CONTEST_ENROLLED.getCode(), "沙盘演武，报名失败，已报名，lordId=" + roleId + ", line=" + line + ", heroIds=" + ListUtils.toString(heroIds));
             }
         }
 
-        if(sandTableContest.state() != SandTableContest.STATE_PREVIEW){
+        if (sandTableContest.state() != SandTableContest.STATE_PREVIEW) {
             throw new MwException(GameError.SANDTABLE_CONTEST_ENROLL_EXPIRED.getCode(), "沙盘演武，报名失败，不在报名时间内，lordId=" + roleId + ", line=" + line + ", heroIds=" + ListUtils.toString(heroIds));
         }
 
-        if(!checkDispatchTime(sandTableContest)){
-            throw new MwException(GameError.SANDTABLE_CONTEST_ENROLL_DISPATCH_NO_TIME.getCode(), "沙盘演武，报名失败，派遣部队时间不够，lordId=" + roleId + ", line=" + line +", heroIds=" + ListUtils.toString(heroIds));
+        if (!checkDispatchTime(sandTableContest)) {
+            throw new MwException(GameError.SANDTABLE_CONTEST_ENROLL_DISPATCH_NO_TIME.getCode(), "沙盘演武，报名失败，派遣部队时间不够，lordId=" + roleId + ", line=" + line + ", heroIds=" + ListUtils.toString(heroIds));
         }
 
         validHeroIds.forEach(o -> {
@@ -133,21 +137,21 @@ public class SandTableContestService {
         lineObject.list.add(linePlayer);
 
         //sync camp info
-        syncLinesInfoToCamp(sandTableCamp,sandTableContest.state());
+        syncLinesInfoToCamp(sandTableCamp, sandTableContest.state());
 
         //任务
         TaskService.handleTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.SAND_TABLE.getCategory());
-        ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY,FeatureCategory.SAND_TABLE.getCategory());
-        TaskService.processTask(player, ETask.JOIN_ACTIVITY,FeatureCategory.SAND_TABLE.getCategory());
+        ActivityDiaoChanService.completeTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.SAND_TABLE.getCategory());
+        TaskService.processTask(player, ETask.JOIN_ACTIVITY, FeatureCategory.SAND_TABLE.getCategory());
 
         GamePb4.SandTableEnrollRs.Builder resp = GamePb4.SandTableEnrollRs.newBuilder();
         resp.setMyLine(line);
         return resp.build();
     }
 
-    private boolean checkDispatchTime(SandTableContest sandTableContest){
+    private boolean checkDispatchTime(SandTableContest sandTableContest) {
         int now = TimeHelper.getCurrentSecond();
-        int begin = (int) (sandTableContest.getOpenBeginDate().getTime()/1000);
+        int begin = (int) (sandTableContest.getOpenBeginDate().getTime() / 1000);
         return now + DISPATCH_NEED_SECOND <= begin;
     }
 
@@ -156,7 +160,7 @@ public class SandTableContestService {
         linePlayer.fightVal = fightVal;
     }
 
-    private void syncLinesInfoToCamp(SandTableCamp sandTableCamp,int state) {
+    private void syncLinesInfoToCamp(SandTableCamp sandTableCamp, int state) {
 //        Turple<Integer, Long> currWinner = BerlinWar.getCurWinner();
 //        if(currWinner != null){
 //            Player winPlayer = playerDataManager.getPlayer(currWinner.getB().longValue());
@@ -170,38 +174,38 @@ public class SandTableContestService {
 //            lineInfoBuilder.setTfval(tfval);
 //            builder.addLineInfo(lineInfoBuilder.build());
 //        }
-        GamePb4.SyncSandTableEnrollRs enrollRs = this.buildSyncEnrollRs(sandTableCamp,state);
+        GamePb4.SyncSandTableEnrollRs enrollRs = this.buildSyncEnrollRs(sandTableCamp, state);
         BasePb.Base msg = PbHelper.createSynBase(GamePb4.SyncSandTableEnrollRs.EXT_FIELD_NUMBER, GamePb4.SyncSandTableEnrollRs.ext, enrollRs).build();
         playerService.syncMsgToCamp(msg, sandTableCamp.getCamp());
     }
 
-    public void syncSandTablePreview(SandTableContest sandTableContest){
+    public void syncSandTablePreview(SandTableContest sandTableContest) {
         GamePb4.SyncSandTablePreviewRs.Builder resp = GamePb4.SyncSandTablePreviewRs.newBuilder();
         resp.setState(sandTableContest.state());
         BasePb.Base msg = PbHelper.createSynBase(GamePb4.SyncSandTablePreviewRs.EXT_FIELD_NUMBER, GamePb4.SyncSandTablePreviewRs.ext, resp.build()).build();
         playerService.syncMsgToAll(msg);
     }
 
-    private GamePb4.SyncSandTableEnrollRs buildSyncEnrollRs(SandTableCamp sandTableCamp,int state) {
+    private GamePb4.SyncSandTableEnrollRs buildSyncEnrollRs(SandTableCamp sandTableCamp, int state) {
         GamePb4.SyncSandTableEnrollRs.Builder builder = GamePb4.SyncSandTableEnrollRs.newBuilder();
         for (int line : LINES) {
             SandTableCamp.LineObject lineObject = sandTableCamp.getLine(line);
             List<LinePlayer> tmps = new ArrayList<>();
             lineObject.list.sort((o1, o2) -> o2.fightVal - o1.fightVal);
-            if(state == SandTableContest.STATE_OPEN){
+            if (state == SandTableContest.STATE_OPEN) {
                 tmps.addAll(lineObject.list.stream().limit(Constant.SAND_TABLE_1057).collect(Collectors.toList()));
-            }else {
+            } else {
                 tmps.addAll(lineObject.list);
             }
 
-            CommonPb.SandTableLineInfo.Builder lineInfoBuilder = this.buildLineInfo(line,tmps);
+            CommonPb.SandTableLineInfo.Builder lineInfoBuilder = this.buildLineInfo(line, tmps);
             builder.addLineInfo(lineInfoBuilder.build());
         }
         return builder.build();
     }
 
     public GamePb4.SandTableUpdateArmyRs updateArmy(long roleId, List<Integer> heroIds) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         if (ListUtils.isBlank(heroIds)) {
@@ -218,13 +222,13 @@ public class SandTableContestService {
         if (ListUtils.isBlank(validHeroIds)) {
             throw new MwException(GameError.SANDTABLE_CONTEST_ENROLL_INVALID_HEROS.getCode(), "沙盘演武，更新军队失败，没有出战的英雄，lordId=" + roleId + ", heroIds=" + ListUtils.toString(heroIds));
         }
-        if(sandTableContest.state() != SandTableContest.STATE_PREVIEW){
+        if (sandTableContest.state() != SandTableContest.STATE_PREVIEW) {
             throw new MwException(GameError.SANDTABLE_CONTEST_UPDATE_ARMY_EXPIRED.getCode(), "沙盘演武，更新军队失败，此阶段无法更新，lordId=" + roleId + ", heroIds=" + ListUtils.toString(heroIds));
         }
 
         linePlayer.heroIds.forEach(o -> {
             Hero hero = player.heros.get(o);
-            if(Objects.nonNull(hero)) {
+            if (Objects.nonNull(hero)) {
                 hero.setSandTableState(0);
             }
         });
@@ -241,9 +245,9 @@ public class SandTableContestService {
         if (player.lord.getJob() != PartyConstant.Job.KING) {
 
         }
-        GamePb4.SyncSandTableEnrollRs enrollRs = this.buildSyncEnrollRs(sandTableCamp,sandTableContest.state());
+        GamePb4.SyncSandTableEnrollRs enrollRs = this.buildSyncEnrollRs(sandTableCamp, sandTableContest.state());
         BasePb.Base msg = PbHelper.createSynBase(GamePb4.SyncSandTableEnrollRs.EXT_FIELD_NUMBER, GamePb4.SyncSandTableEnrollRs.ext, enrollRs).build();
-        playerService.syncMsgToCamp(msg,player.getCamp());
+        playerService.syncMsgToCamp(msg, player.getCamp());
 
         GamePb4.SandTableUpdateArmyRs.Builder resp = GamePb4.SandTableUpdateArmyRs.newBuilder();
         return resp.build();
@@ -260,7 +264,7 @@ public class SandTableContestService {
     }
 
     public GamePb4.SandTableChangeLineRs changeLine(long roleId, int line) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
@@ -273,7 +277,7 @@ public class SandTableContestService {
         if (!ArrayUtils.contains(LINES, line) || line == linePlayer.line) {
             throw new MwException(GameError.SANDTABLE_CONTEST_CHANGE_LINE_NO_ENROLL.getCode(), "沙盘演武，更换线路失败，无效参数，lordId=" + roleId + ", line=" + line + ", myLine=" + linePlayer.line);
         }
-        if(sandTableContest.state() != SandTableContest.STATE_PREVIEW){
+        if (sandTableContest.state() != SandTableContest.STATE_PREVIEW) {
             throw new MwException(GameError.SANDTABLE_CONTEST_CHANGE_LINE_EXPIRED.getCode(), "沙盘演武，更换线路失败，此阶段无法更换，lordId=" + roleId + ", line=" + line + ", myLine=" + linePlayer.line);
         }
 
@@ -283,7 +287,7 @@ public class SandTableContestService {
         }
 
         //sync camp info
-        syncLinesInfoToCamp(sandTableCamp,sandTableContest.state());
+        syncLinesInfoToCamp(sandTableCamp, sandTableContest.state());
 
         GamePb4.SandTableChangeLineRs.Builder resp = GamePb4.SandTableChangeLineRs.newBuilder();
         resp.setMyLine(linePlayer.line);
@@ -291,7 +295,7 @@ public class SandTableContestService {
     }
 
     public GamePb4.SandTableAdjustLineRs adjustLine(long roleId, int line1, int line2) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
@@ -303,7 +307,7 @@ public class SandTableContestService {
         }
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
 
-        if(sandTableContest.state() != SandTableContest.STATE_OPEN){
+        if (sandTableContest.state() != SandTableContest.STATE_OPEN) {
             throw new MwException(GameError.SANDTABLE_CONTEST_ADJUST_EXPIRED.getCode(), "沙盘演武，调整分路部署，此阶段无法调整，lordId=" + roleId + ", line1=" + line1 + ", line2=" + line2);
         }
 
@@ -316,24 +320,24 @@ public class SandTableContestService {
         lineObject2.list.forEach(o -> o.line = line1);
 
         //sync camp info
-        syncLinesInfoToCamp(sandTableCamp,sandTableContest.state());
+        syncLinesInfoToCamp(sandTableCamp, sandTableContest.state());
 
         //同步玩家路线
         GamePb4.SyncSandTablePlayerLineRs.Builder playerLineRs = GamePb4.SyncSandTablePlayerLineRs.newBuilder();
         playerLineRs.setMyLine(line2);
         BasePb.Base msg1 = PbHelper.createSynBase(GamePb4.SyncSandTablePlayerLineRs.EXT_FIELD_NUMBER, GamePb4.SyncSandTablePlayerLineRs.ext, playerLineRs.build()).build();
-        lineObject1.list.forEach(o -> playerService.syncMsgToPlayer(msg1,o.lordId));
+        lineObject1.list.forEach(o -> playerService.syncMsgToPlayer(msg1, o.lordId));
 
         playerLineRs.setMyLine(line1);
         BasePb.Base msg2 = PbHelper.createSynBase(GamePb4.SyncSandTablePlayerLineRs.EXT_FIELD_NUMBER, GamePb4.SyncSandTablePlayerLineRs.ext, playerLineRs.build()).build();
-        lineObject2.list.forEach(o -> playerService.syncMsgToPlayer(msg2,o.lordId));
+        lineObject2.list.forEach(o -> playerService.syncMsgToPlayer(msg2, o.lordId));
 
         GamePb4.SandTableAdjustLineRs.Builder resp = GamePb4.SandTableAdjustLineRs.newBuilder();
         return resp.build();
     }
 
     public GamePb4.SandTableGetInfoRs getInfo(long roleId) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
@@ -342,7 +346,7 @@ public class SandTableContestService {
         GamePb4.SandTableGetInfoRs.Builder resp = GamePb4.SandTableGetInfoRs.newBuilder();
 
         resp.setState(sandTableContest.state());
-        if(resp.getState() != SandTableContest.STATE_NOTOPEN) {
+        if (resp.getState() != SandTableContest.STATE_NOTOPEN) {
             resp.setPreViewBegin((int) (sandTableContest.getPreviewBeginDate().getTime() / 1000));
             resp.setOpenBegin((int) (sandTableContest.getOpenBeginDate().getTime() / 1000));
             resp.setOpenEnd((int) (sandTableContest.getOpenEndDate().getTime() / 1000));
@@ -357,9 +361,9 @@ public class SandTableContestService {
                 SandTableCamp.LineObject lineObject = sandTableCamp.getLine(line);
                 List<LinePlayer> tmps = new ArrayList<>();
                 lineObject.list.sort((o1, o2) -> o2.fightVal - o1.fightVal);
-                if(resp.getState() == SandTableContest.STATE_OPEN){
+                if (resp.getState() == SandTableContest.STATE_OPEN) {
                     tmps.addAll(lineObject.list.stream().limit(Constant.SAND_TABLE_1057).collect(Collectors.toList()));
-                }else {
+                } else {
                     tmps.addAll(lineObject.list);
                 }
 //                CommonPb.SandTableLineInfo.Builder builder = CommonPb.SandTableLineInfo.newBuilder();
@@ -367,7 +371,7 @@ public class SandTableContestService {
 //                builder.setPcount(tmps.size());
 //                int tfval = tmps.stream().mapToInt(LinePlayer::getFightVal).sum();
 //                builder.setTfval(tfval);
-                CommonPb.SandTableLineInfo.Builder builder = this.buildLineInfo(line,tmps);
+                CommonPb.SandTableLineInfo.Builder builder = this.buildLineInfo(line, tmps);
                 resp.addLineInfo(builder.build());
             }
             if (resp.getState() == SandTableContest.STATE_OPEN) {
@@ -388,27 +392,27 @@ public class SandTableContestService {
                     LogUtil.debug("沙盘演武, 获取信息未获取到分组数据，Current Round = " + sandTableContest.getRound());
                 }
             }
-            resp.setShopInfo(buildSandTableShopInfo(player,sandTableContest));
-        }else {
+            resp.setShopInfo(buildSandTableShopInfo(player, sandTableContest));
+        } else {
             //setting next open timestamp
             resp.setNextOpen(TimeHelper.getNextTimeStampByCron(Constant.SAND_TABLE_PREVIEW));
         }
-        if(sandTableContest.getHisCampRanks().size() > 0){
+        if (sandTableContest.getHisCampRanks().size() > 0) {
             resp.setUnlock(true);
-        }else {
+        } else {
             resp.setUnlock(false);
         }
         return resp.build();
     }
 
     public GamePb4.SandTableHisRankRs getHisRank(long roleId) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
         GamePb4.SandTableHisRankRs.Builder resp = GamePb4.SandTableHisRankRs.newBuilder();
-        for(int i=sandTableContest.getHisCampRanks().size()-1;i>=0;i--){
+        for (int i = sandTableContest.getHisCampRanks().size() - 1; i >= 0; i--) {
             resp.addHisRankInfo(sandTableHisRankInfo(sandTableContest.getHisCampRanks().get(i)));
         }
         return resp.build();
@@ -431,7 +435,7 @@ public class SandTableContestService {
         return builder.build();
     }
 
-    private CommonPb.SandTableLineInfo.Builder buildLineInfo(int line,List<LinePlayer> tmps) {
+    private CommonPb.SandTableLineInfo.Builder buildLineInfo(int line, List<LinePlayer> tmps) {
         CommonPb.SandTableLineInfo.Builder builder = CommonPb.SandTableLineInfo.newBuilder();
         builder.setLine(line);
         builder.setPcount(tmps.size());
@@ -441,13 +445,13 @@ public class SandTableContestService {
     }
 
     public GamePb4.SandTableHisContestRs getHisContest(long roleId) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
         GamePb4.SandTableHisContestRs.Builder resp = GamePb4.SandTableHisContestRs.newBuilder();
-        for(int i=sandTableContest.getHisMatches().size()-1;i>=0;i--){
+        for (int i = sandTableContest.getHisMatches().size() - 1; i >= 0; i--) {
             resp.addHisContestInfo(sandTableHisContestInfo(sandTableContest.getHisMatches().get(i)));
         }
         return resp.build();
@@ -475,14 +479,14 @@ public class SandTableContestService {
     }
 
     public GamePb4.SandTableReplayRs getReplay(long roleId, int hisDate, int round) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
         if (hisDate <= 0) {
-            if(sandTableContest.getMatchDate() == 0)
+            if (sandTableContest.getMatchDate() == 0)
                 hisDate = TimeHelper.getCurrentDay();
             else
                 hisDate = sandTableContest.getMatchDate();
@@ -524,7 +528,7 @@ public class SandTableContestService {
         return builder.build();
     }
 
-    private CommonPb.SandTableWarReportInfo reverseBuildSandTableWarReportInfo(HisMatch.WarReportInfo warReportInfo){
+    private CommonPb.SandTableWarReportInfo reverseBuildSandTableWarReportInfo(HisMatch.WarReportInfo warReportInfo) {
         CommonPb.SandTableWarReportInfo.Builder builder = CommonPb.SandTableWarReportInfo.newBuilder();
         builder.setTotalNum1(Objects.isNull(warReportInfo) ? 0 : warReportInfo.totalNum2);
         builder.setLeftNum1(Objects.isNull(warReportInfo) ? 0 : warReportInfo.leftNum2);
@@ -559,11 +563,11 @@ public class SandTableContestService {
         builder.setIsWin(obj.isWin);
         int maxHp = obj.heroDetails.stream().mapToInt(o -> o.hp).sum();
         int lostHp = obj.heroDetails.stream().mapToInt(o -> o.lost).sum();
-        builder.setHpInfo(PbHelper.createTwoIntPb(maxHp,maxHp-lostHp));
+        builder.setHpInfo(PbHelper.createTwoIntPb(maxHp, maxHp - lostHp));
         return builder.build();
     }
 
-    public void matchGroup(){
+    public void matchGroup() {
         List<Integer> list = new ArrayList<Integer>() {{
             add(1);
             add(2);
@@ -579,10 +583,10 @@ public class SandTableContestService {
         int camp22 = list.get(0);
         int camp31 = camp12;
         int camp32 = camp22;
-        this.matchGroup(camp11,camp12,camp21,camp22,camp31,camp32);
+        this.matchGroup(camp11, camp12, camp21, camp22, camp31, camp32);
     }
 
-    private void matchGroup(int...camps) {
+    private void matchGroup(int... camps) {
         try {
             SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
             int openBeginStamp = (int) (sandTableContest.getOpenBeginDate().getTime() / 1000);
@@ -619,8 +623,8 @@ public class SandTableContestService {
             this.fightLines();
 
             LogUtil.error("沙盘演武执行战斗完成, round=" + round + ", nextRound=" + sandTableContest.getRound());
-        }catch (Exception e) {
-            LogUtil.error("沙盘演武执行战斗异常, round=" + round + ", nextRound=" + sandTableContest.getRound(),e);
+        } catch (Exception e) {
+            LogUtil.error("沙盘演武执行战斗异常, round=" + round + ", nextRound=" + sandTableContest.getRound(), e);
         }
     }
 
@@ -648,7 +652,7 @@ public class SandTableContestService {
             SandTableCamp.LineObject lineA = sandTableCamp1.getLine(line);
             SandTableCamp.LineObject lineB = sandTableCamp2.getLine(line);
 
-            fightLine(line,lineA, lineB, matchInfo);
+            fightLine(line, lineA, lineB, matchInfo);
 
             if (lineA.result == 1 && lineB.result == 0)
                 matchInfo.linesResult.put(line, sandTableCamp1.getCamp());
@@ -677,7 +681,7 @@ public class SandTableContestService {
 
         sendRoundOverWarReportMail(matchInfo, sandTableCamp1, sandTableCamp2);
 
-        sendRoundOverKillingRewardMail(round,sandTableCamp1,sandTableCamp2);
+        sendRoundOverKillingRewardMail(round, sandTableCamp1, sandTableCamp2);
 
         group.state = 1;
 
@@ -736,7 +740,7 @@ public class SandTableContestService {
         return matchInfo;
     }
 
-    private void fightLine(int line,SandTableCamp.LineObject lineA, SandTableCamp.LineObject lineB, HisMatch.MatchInfo matchInfo) {
+    private void fightLine(int line, SandTableCamp.LineObject lineA, SandTableCamp.LineObject lineB, HisMatch.MatchInfo matchInfo) {
         try {
             LinkedList<LinePlayer> linePlayersA = getFightPlayers(lineA.list);
             LinkedList<LinePlayer> linePlayersB = getFightPlayers(lineB.list);
@@ -780,13 +784,13 @@ public class SandTableContestService {
                     }
 
                     FightLogic fightLogic = new FightLogic(fighterA, fighterB, true);
-                    fightLogic.fight();
+                    fightLogic.start();
                     //his
                     List<FightReplay> fightReplayList = matchInfo.fightReplays.get(line);
-                    FightReplay.FightObject fightObjectA = newFightObject(playerA,playerA.roleId, playerA.lord.getNick(), linePlayerA.fightTimes,fighterA);
-                    FightReplay.FightObject fightObjectB = newFightObject(playerB,playerB.roleId, playerB.lord.getNick(), linePlayerB.fightTimes,fighterB);
+                    FightReplay.FightObject fightObjectA = newFightObject(playerA, playerA.roleId, playerA.lord.getNick(), linePlayerA.fightTimes, fighterA);
+                    FightReplay.FightObject fightObjectB = newFightObject(playerB, playerB.roleId, playerB.lord.getNick(), linePlayerB.fightTimes, fighterB);
 
-                    if (fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS) {
+                    if (fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS) {
                         linePlayersB.removeLast();
                         fightObjectA.isWin = true;
 
@@ -795,7 +799,7 @@ public class SandTableContestService {
                         linePlayerB.isAlive = false;
 
                         linePlayerA.killingNum++;
-                    } else if (fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_FAIL) {
+                    } else if (fightLogic.getWinState() == FightConstant.FIGHT_RESULT_FAIL) {
                         linePlayersA.removeLast();
                         fightObjectB.isWin = true;
 
@@ -808,8 +812,8 @@ public class SandTableContestService {
                     }
 
                     int fightId = matchInfo.idxGen.incrementAndGet();
-                    FightReplay fightReplay = new FightReplay(fightObjectA, fightObjectB,fightId);
-                    HisMatch.WarReportInfo warReportInfo_ = new HisMatch.WarReportInfo(totalNum1,linePlayersA.size(),totalNum2,linePlayersB.size());
+                    FightReplay fightReplay = new FightReplay(fightObjectA, fightObjectB, fightId);
+                    HisMatch.WarReportInfo warReportInfo_ = new HisMatch.WarReportInfo(totalNum1, linePlayersA.size(), totalNum2, linePlayersB.size());
                     fightReplay.warReportInfo = warReportInfo_;
                     fightReplayList.add(fightReplay);
 
@@ -828,7 +832,7 @@ public class SandTableContestService {
                         linePlayerA.fighter = null;
                         linePlayerB.fighter = null;
                         break;
-                    }else {
+                    } else {
                         if (linePlayerA.fightTimes >= Constant.SAND_TABLE_1056) {
                             linePlayersA.remove(linePlayerA);
                             linePlayerA.fighter = null;
@@ -837,7 +841,7 @@ public class SandTableContestService {
                             linePlayersB.remove(linePlayerB);
                             linePlayerB.fighter = null;
                         }
-                        warReportInfo_ = new HisMatch.WarReportInfo(totalNum1,linePlayersA.size(),totalNum2,linePlayersB.size());
+                        warReportInfo_ = new HisMatch.WarReportInfo(totalNum1, linePlayersA.size(), totalNum2, linePlayersB.size());
                         fightReplay.warReportInfo = warReportInfo_;
                         if (linePlayersA.size() > 0 && linePlayersB.size() <= 0) {
                             lineA.result = 1;
@@ -865,31 +869,31 @@ public class SandTableContestService {
             HisMatch.WarReportInfo warReportInfo = new HisMatch.WarReportInfo(totalNum1, leftNum1, totalNum2, leftNum2);
             matchInfo.warReportInfos.put(line, warReportInfo);
 
-            LogUtil.error("沙盘演武处理线路战斗完成, line=" + line,", result=[" + lineA.result + "," + lineB.result + "]",", WarReportInfo=" + JSON.toJSONString(warReportInfo));
-        }catch (Exception e) {
+            LogUtil.error("沙盘演武处理线路战斗完成, line=" + line, ", result=[" + lineA.result + "," + lineB.result + "]", ", WarReportInfo=" + JSON.toJSONString(warReportInfo));
+        } catch (Exception e) {
             LogUtil.error("沙盘演武处理线路战斗异常, line=" + line, e);
         }
     }
 
-    private FightReplay.FightObject newFightObject(Player player,long lordId, String lordNick, int attackTimes,Fighter fighter) {
+    private FightReplay.FightObject newFightObject(Player player, long lordId, String lordNick, int attackTimes, Fighter fighter) {
         FightReplay.FightObject obj = new FightReplay.FightObject();
         obj.lordId = lordId;
         obj.lordNick = lordNick;
         obj.attackTimes = attackTimes;
-        for(Force force : fighter.forces){
+        for (Force force : fighter.forces) {
             Hero hero = player.heros.get(force.id);
-            obj.heroDetails.add(new FightReplay.FightHeroDetail(force.id, force.killed, force.totalLost,force.maxHp,hero.getDecorated()));
+            obj.heroDetails.add(new FightReplay.FightHeroDetail(force.id, force.killed, force.totalLost, force.maxHp, hero.getDecorated()));
         }
         return obj;
     }
 
     private LinkedList<LinePlayer> getFightPlayers(List<LinePlayer> line) {
         LinkedList linkedList = new LinkedList();
-        if(!ListUtils.isBlank(line)){
+        if (!ListUtils.isBlank(line)) {
 //            line.stream().forEach(o -> o. fightVal= CalculateUtil.calcHeroesFightVal(playerDataManager.getPlayer(o.lordId), o.heroIds));
             line.sort((o1, o2) -> o2.fightVal - o1.fightVal);
-            for(int i=0;i<line.size();i++){
-                if(i >= Constant.SAND_TABLE_1057){
+            for (int i = 0; i < line.size(); i++) {
+                if (i >= Constant.SAND_TABLE_1057) {
                     break;
                 }
                 LinePlayer linePlayer = line.get(i);
@@ -936,9 +940,9 @@ public class SandTableContestService {
             return sandTableCamp1.getCamp();
         } else if (sandTableCamp2.getResult() == 1 && sandTableCamp1.getResult() == 0) {
             return sandTableCamp2.getCamp();
-        } else if(sandTableCamp1.getResult() == 2 && sandTableCamp2.getResult() == 2){
+        } else if (sandTableCamp1.getResult() == 2 && sandTableCamp2.getResult() == 2) {
             return 0;
-        }else {
+        } else {
             return 0;
         }
     }
@@ -967,7 +971,7 @@ public class SandTableContestService {
                     o1.fightVal = CalculateUtil.calcHeroesFightVal(playerDataManager.getPlayer(o1.lordId), o1.heroIds);
                     //setting tmp val
                     Player player = playerDataManager.getPlayer(o1.lordId);
-                    if(Objects.nonNull(player)){
+                    if (Objects.nonNull(player)) {
                         o1.tmpLv = player.lord.getLevel();
                         o1.tmpRanks = player.lord.getRanks();
                     }
@@ -981,12 +985,12 @@ public class SandTableContestService {
                 sendEnrollMailInfo(playerList, camp);
             }
             LogUtil.error("沙盘演武报名结束发送阵营邮件完成");
-        }catch (Exception e) {
-            LogUtil.error("沙盘演武报名结束发送阵营邮件异常, ",e);
+        } catch (Exception e) {
+            LogUtil.error("沙盘演武报名结束发送阵营邮件异常, ", e);
         }
     }
 
-    private void sortedEnrollPlayer(List<LinePlayer> playerList){
+    private void sortedEnrollPlayer(List<LinePlayer> playerList) {
 //        playerList.forEach(o -> {
 //            Player player = playerDataManager.getPlayer(o.lordId);
 //            if(Objects.nonNull(player)){
@@ -995,7 +999,7 @@ public class SandTableContestService {
 //            }
 //        });
         Collections.sort(playerList, (o1, o2) -> {
-            long r1 =o1.tmpRanks;
+            long r1 = o1.tmpRanks;
             long r2 = o2.tmpRanks;
 
             long f1 = o1.fightVal;
@@ -1022,7 +1026,6 @@ public class SandTableContestService {
     }
 
 
-
     private void sendEnrollMailInfo(List<LinePlayer> players, int camp) {
         CommonPb.SandTableEnrollMailInfo.Builder builder = CommonPb.SandTableEnrollMailInfo.newBuilder();
         builder.setEnrollNum(players.size());
@@ -1044,7 +1047,7 @@ public class SandTableContestService {
         int now = TimeHelper.getCurrentSecond();
         players.forEach(o -> {
             Player p = playerDataManager.getPlayer(o.lordId);
-            if(Objects.nonNull(p)){
+            if (Objects.nonNull(p)) {
                 mailDataManager.sendSandTableEnrollMail(p, MailConstant.MOLD_SAND_TABLE_CAMP_ENROLL, now, new Object[]{camp}, enrollMailInfo);
             }
         });
@@ -1173,7 +1176,7 @@ public class SandTableContestService {
                                 getSeasonTalentEffectValue(p, SeasonConst.TALENT_EFFECT_620) / Constant.TEN_THROUSAND);
                         mailAwards.addAll(PbHelper.createMultipleAwardsPb(staticSandTableAward.getAward(), multiple, multipleAwardType));
                         int awardCountBuff = (int) (preAwardCount * multiple);
-                        mailDataManager.sendAttachMail(p, mailAwards, MailConstant.MOLD_SAND_TABLE_CAMP_RANK_REWARD, AwardFrom.SAND_TABLE_CAMP_RANK_REWARD, now,o.camp,o.rank, o.camp, o.rank,
+                        mailDataManager.sendAttachMail(p, mailAwards, MailConstant.MOLD_SAND_TABLE_CAMP_RANK_REWARD, AwardFrom.SAND_TABLE_CAMP_RANK_REWARD, now, o.camp, o.rank, o.camp, o.rank,
                                 DataResource.getBean(SeasonTalentService.class).getSeasonTalentIdStr(p, SeasonConst.TALENT_EFFECT_620), awardCountBuff - preAwardCount);
                     }
                 }));
@@ -1198,13 +1201,13 @@ public class SandTableContestService {
 
     private void sendNoFightRewardMail(SandTableContest sandTableContest) {
         int now = TimeHelper.getCurrentSecond();
-        StaticSandTableAward staticSandTableAward = StaticIniDataMgr.getStaticSandTableAward(3,0);
+        StaticSandTableAward staticSandTableAward = StaticIniDataMgr.getStaticSandTableAward(3, 0);
         //加成前沙盘积分
         int preAwardCount = staticSandTableAward.getSandTableScoreAward();
         sandTableContest.getCampLines().values().forEach(o ->
                 o.getLines().values().forEach(o1 -> {
                     o1.list.forEach(o2 -> {
-                        if(!o2.tmpFight){
+                        if (!o2.tmpFight) {
                             Optional.ofNullable(playerDataManager.getPlayer(o2.lordId)).ifPresent(p -> {
                                 //赛季天赋优化， 积分加成
                                 List<CommonPb.Award> mailAwards = new ArrayList<>();
@@ -1212,7 +1215,7 @@ public class SandTableContestService {
                                         getSeasonTalentEffectValue(p, SeasonConst.TALENT_EFFECT_620) / Constant.TEN_THROUSAND);
                                 mailAwards.addAll(PbHelper.createMultipleAwardsPb(staticSandTableAward.getAward(), multiple, multipleAwardType));
                                 int awardCountBuff = (int) (preAwardCount * multiple);
-                                mailDataManager.sendAttachMail(p,mailAwards,MailConstant.MOLD_SAND_TABLE_ENROLL_REWARD,
+                                mailDataManager.sendAttachMail(p, mailAwards, MailConstant.MOLD_SAND_TABLE_ENROLL_REWARD,
                                         AwardFrom.SAND_TABLE_ENROLL_REWARD, now, Constant.SAND_TABLE_1057,
                                         DataResource.getBean(SeasonTalentService.class).getSeasonTalentIdStr(p, SeasonConst.TALENT_EFFECT_620),
                                         awardCountBuff - preAwardCount);
@@ -1222,14 +1225,14 @@ public class SandTableContestService {
                 }));
     }
 
-    private void sendRoundOverKillingRewardMail(int round,SandTableCamp...sandTableCamp){
+    private void sendRoundOverKillingRewardMail(int round, SandTableCamp... sandTableCamp) {
         int now = TimeHelper.getCurrentSecond();
-        for(SandTableCamp camp : sandTableCamp){
-            a(round,camp,now);
+        for (SandTableCamp camp : sandTableCamp) {
+            a(round, camp, now);
         }
     }
 
-    private void a(int round,SandTableCamp sandTableCamp,int now) {
+    private void a(int round, SandTableCamp sandTableCamp, int now) {
         sandTableCamp.getLines().values().forEach(o1 -> o1.list.forEach(o2 -> {
             Player player = playerDataManager.getPlayer(o2.lordId);
             if (Objects.nonNull(player) && o2.tmpFight) {
@@ -1238,24 +1241,20 @@ public class SandTableContestService {
                 AwardFrom awardFromEnum = null;//奖励来源
                 if (o2.tmpFought) {
                     //个人击败2名玩家奖励 or 击败1名玩家且自身存活
-                    if (o2.killingNum > StaticIniDataMgr.getSandTableKillingRewardMaxParam().getParam())
-                    {
+                    if (o2.killingNum > StaticIniDataMgr.getSandTableKillingRewardMaxParam().getParam()) {
                         staticSandTableAward = StaticIniDataMgr.getSandTableKillingRewardMaxParam();
                         mailId = MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD;//演武个人奖励(您在沙盤演武中擊敗了#num1個領主)
                         awardFromEnum = AwardFrom.SAND_TABLE_PERSONAL_KILLING_REWARD;
-                    }
-                    else if (o2.killingNum == 1 && o2.isAlive)
-                    {
+                    } else if (o2.killingNum == 1 && o2.isAlive) {
                         staticSandTableAward = StaticIniDataMgr.getSandTableKillingRewardMaxParam();
                         mailId = MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD_TWO;//演武个人奖励(击败敌方一名领主)
                         awardFromEnum = AwardFrom.SAND_TABLE_PERSONAL_KILLING_REWARD_TWO;
-                    }
-                    else {
+                    } else {
                         staticSandTableAward = StaticIniDataMgr.getStaticSandTableAward(2, o2.killingNum);
                         mailId = MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD;//演武个人奖励(您在沙盤演武中擊敗了#num1個領主)
                         awardFromEnum = AwardFrom.SAND_TABLE_PERSONAL_KILLING_REWARD;
                     }
-                }else {
+                } else {
                     //未参与战斗
                     staticSandTableAward = StaticIniDataMgr.getStaticSandTableAward(2, 2);
                     mailId = MailConstant.MOLD_SAND_TABLE_PERSONAL_REWARD_THREE;//演武个人奖励(敌方无人应战)
@@ -1284,76 +1283,76 @@ public class SandTableContestService {
         }));
     }
 
-    private void overResetHeroState(SandTableContest sandTableContest){
+    private void overResetHeroState(SandTableContest sandTableContest) {
         try {
             sandTableContest.getCampLines().values().forEach(o -> o.getLines().values().forEach(o1 -> o1.list.forEach(o2 -> {
                 Optional.ofNullable(playerDataManager.getPlayer(o2.lordId)).ifPresent(p -> o2.heroIds.forEach(heroId -> {
                     Optional.ofNullable(p.heros.get(heroId)).ifPresent(hero -> hero.setSandTableState(0));
                 }));
             })));
-        }catch (Exception e) {
-            LogUtil.error("最后一轮结束重置玩家出战沙盘英雄状态发生异常, ",e);
+        } catch (Exception e) {
+            LogUtil.error("最后一轮结束重置玩家出战沙盘英雄状态发生异常, ", e);
         }
     }
 
-    public GamePb4.SandTableShopBuyRs buy(long roleId,int confId) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+    public GamePb4.SandTableShopBuyRs buy(long roleId, int confId) throws MwException {
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         StaticSandTableExchange staticSandTableExchange = StaticIniDataMgr.getStaticSandTableExchangeById(confId);
         if (Objects.isNull(staticSandTableExchange)) {
-            throw new MwException(GameError.SANDTABLE_CONTEST_SHOP_BUY_NO_CONFIG.getCode(), "沙盘演武兑换失败，StaticSandTableExchange IS NULL，roleId=" + roleId,", confId=" + confId);
+            throw new MwException(GameError.SANDTABLE_CONTEST_SHOP_BUY_NO_CONFIG.getCode(), "沙盘演武兑换失败，StaticSandTableExchange IS NULL，roleId=" + roleId, ", confId=" + confId);
         }
 
-        int boughtTimes = player.getSandTableBought().getOrDefault(confId,0);
-        if(boughtTimes >= staticSandTableExchange.getNumberLimit()){
-            throw new MwException(GameError.SANDTABLE_CONTEST_SHOP_BUY_LIMIT_BUY.getCode(), "沙盘演武兑换失败，达到次数限制，roleId=" + roleId,", confId=" + confId,", bought=" + boughtTimes);
+        int boughtTimes = player.getSandTableBought().getOrDefault(confId, 0);
+        if (boughtTimes >= staticSandTableExchange.getNumberLimit()) {
+            throw new MwException(GameError.SANDTABLE_CONTEST_SHOP_BUY_LIMIT_BUY.getCode(), "沙盘演武兑换失败，达到次数限制，roleId=" + roleId, ", confId=" + confId, ", bought=" + boughtTimes);
         }
 
-        if(staticSandTableExchange.getType() == 2 && campDataManager.getParty(player.getCamp()).getSandTableWinMax() < staticSandTableExchange.getParam()){
-            throw new MwException(GameError.SANDTABLE_CONTEST_SHOP_BUY_LIMIT_BUY.getCode(), "沙盘演武兑换失败，阵营连胜次数条件不足，roleId=" + roleId,", confId=" + confId,", bought=" + boughtTimes);
+        if (staticSandTableExchange.getType() == 2 && campDataManager.getParty(player.getCamp()).getSandTableWinMax() < staticSandTableExchange.getParam()) {
+            throw new MwException(GameError.SANDTABLE_CONTEST_SHOP_BUY_LIMIT_BUY.getCode(), "沙盘演武兑换失败，阵营连胜次数条件不足，roleId=" + roleId, ", confId=" + confId, ", bought=" + boughtTimes);
         }
         //检测商品在当前赛季是否可售卖
         seasonService.checkSeasonItem(staticSandTableExchange.getSeasons());
 
-        rewardDataManager.checkAndSubPlayerRes(player,staticSandTableExchange.getExpendProp(),AwardFrom.SAND_TABLE_SHOP_BUY);
-        List<CommonPb.Award> getAwards = rewardDataManager.sendReward(player,staticSandTableExchange.getAward(),AwardFrom.SAND_TABLE_SHOP_BUY);
+        rewardDataManager.checkAndSubPlayerRes(player, staticSandTableExchange.getExpendProp(), AwardFrom.SAND_TABLE_SHOP_BUY);
+        List<CommonPb.Award> getAwards = rewardDataManager.sendReward(player, staticSandTableExchange.getAward(), AwardFrom.SAND_TABLE_SHOP_BUY);
 
-        player.getSandTableBought().put(confId,boughtTimes+1);
+        player.getSandTableBought().put(confId, boughtTimes + 1);
 
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
 
         GamePb4.SandTableShopBuyRs.Builder resp = GamePb4.SandTableShopBuyRs.newBuilder();
         resp.addAllGotAward(getAwards);
-        resp.setShopInfo(buildSandTableShopInfo(player,sandTableContest));
+        resp.setShopInfo(buildSandTableShopInfo(player, sandTableContest));
         return resp.build();
     }
 
-    private CommonPb.SandTableShopInfo buildSandTableShopInfo(Player player,SandTableContest sandTableContest){
+    private CommonPb.SandTableShopInfo buildSandTableShopInfo(Player player, SandTableContest sandTableContest) {
         CommonPb.SandTableShopInfo.Builder builder = CommonPb.SandTableShopInfo.newBuilder();
         builder.setScore(player.getSandTableScore());
-        Date nextFireDate = QuartzHelper.getNextFireTime(ScheduleManager.getInstance().getSched(),SandTableJob.name_preview,SandTableJob.groupName);
-        builder.setNextRefreshStamp((int) (nextFireDate.getTime()/1000));
-        player.getSandTableBought().entrySet().forEach(o -> builder.addBoughtTimes(PbHelper.createTwoIntPb(o.getKey(),o.getValue())));
+        Date nextFireDate = QuartzHelper.getNextFireTime(ScheduleManager.getInstance().getSched(), SandTableJob.name_preview, SandTableJob.groupName);
+        builder.setNextRefreshStamp((int) (nextFireDate.getTime() / 1000));
+        player.getSandTableBought().entrySet().forEach(o -> builder.addBoughtTimes(PbHelper.createTwoIntPb(o.getKey(), o.getValue())));
         Camp camp = campDataManager.getParty(player.getCamp());
         builder.setWinNum(camp.getSandTableWinMax());
         return builder.build();
     }
 
-    public GamePb4.SandTablePlayerFightDetailRs getPlayerFightDetail(long roleId,int hisDate,int round,int onlyId) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+    public GamePb4.SandTablePlayerFightDetailRs getPlayerFightDetail(long roleId, int hisDate, int round, int onlyId) throws MwException {
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-        if(round > 3 || round < 1){
+        if (round > 3 || round < 1) {
             throw new MwException(GameError.SANDTABLE_CONTEST_GET_PLAYER_FIGHT_DETAIL_PARAM_INVALID.getCode(), "沙盘演武, 获取玩家战斗详细, 参数错误，roleId=" + roleId + "，hisDate=" + hisDate + ", round=" + round + ", onlyId=" + onlyId);
         }
 
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
-        if(hisDate <= 0){
-            if(sandTableContest.getMatchDate() == 0)
+        if (hisDate <= 0) {
+            if (sandTableContest.getMatchDate() == 0)
                 hisDate = TimeHelper.getCurrentDay();
             else
                 hisDate = sandTableContest.getMatchDate();
@@ -1370,29 +1369,29 @@ public class SandTableContestService {
         }
 
         FightReplay fightReplay = null;
-        for(List<FightReplay> tmps : matchInfo.fightReplays.values()){
+        for (List<FightReplay> tmps : matchInfo.fightReplays.values()) {
             boolean b = false;
-            for(FightReplay o : tmps){
-                if(o.onlyIdx == onlyId){
+            for (FightReplay o : tmps) {
+                if (o.onlyIdx == onlyId) {
                     fightReplay = o;
                     b = true;
                     break;
                 }
             }
-            if(b) break;
+            if (b) break;
         }
-        if(Objects.isNull(fightReplay)){
+        if (Objects.isNull(fightReplay)) {
             throw new MwException(GameError.SANDTABLE_CONTEST_GET_PLAYER_FIGHT_DETAIL_NODATA.getCode(), "沙盘演武, 获取玩家战斗详细错误, 没有重播数据(FightReplay is NULL), roleId=" + roleId + "，hisDate=" + hisDate + ", round=" + round + ", onlyId=" + onlyId);
         }
 
         GamePb4.SandTablePlayerFightDetailRs.Builder resp = GamePb4.SandTablePlayerFightDetailRs.newBuilder();
-        if(player.getCamp() == matchInfo.camp1){
+        if (player.getCamp() == matchInfo.camp1) {
             fightReplay.obj1.heroDetails.forEach(o -> resp.addAtkHero(buildRptHero(o)));
             fightReplay.obj2.heroDetails.forEach(o -> resp.addDefHero(buildRptHero(o)));
-        }else if(player.getCamp() == matchInfo.camp2){
+        } else if (player.getCamp() == matchInfo.camp2) {
             fightReplay.obj2.heroDetails.forEach(o -> resp.addAtkHero(buildRptHero(o)));
             fightReplay.obj1.heroDetails.forEach(o -> resp.addDefHero(buildRptHero(o)));
-        }else {
+        } else {
             fightReplay.obj1.heroDetails.forEach(o -> resp.addAtkHero(buildRptHero(o)));
             fightReplay.obj2.heroDetails.forEach(o -> resp.addDefHero(buildRptHero(o)));
         }
@@ -1400,63 +1399,64 @@ public class SandTableContestService {
         return resp.build();
     }
 
-    private CommonPb.RptHero buildRptHero(FightReplay.FightHeroDetail detail){
-        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
-        builder.setHeroId(detail.heroId);
-        builder.setHp(detail.hp);
-        builder.setKill(detail.kill);
-        builder.setLost(detail.lost);
-        builder.setType(0);
-        builder.setAward(0);
-        builder.setHeroDecorated(detail.heroDecorated);
-        return builder.build();
+    private CommonPb.RptHero buildRptHero(FightReplay.FightHeroDetail detail) {
+        return null;
+//        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
+//        builder.setHeroId(detail.heroId);
+//        builder.setHp(detail.hp);
+//        builder.setKill(detail.kill);
+//        builder.setLost(detail.lost);
+//        builder.setType(0);
+//        builder.setAward(0);
+//        builder.setHeroDecorated(detail.heroDecorated);
+//        return builder.build();
     }
 
-    public GamePb4.SandTableGetLinePlayersRs getLinePlayers(long roleId,int line) throws MwException {
-        if(!checkOpenByServerId()){//SANDTABLE_CONTEST_SERVER_NOT_OPEN
+    public GamePb4.SandTableGetLinePlayersRs getLinePlayers(long roleId, int line) throws MwException {
+        if (!checkOpenByServerId()) {//SANDTABLE_CONTEST_SERVER_NOT_OPEN
             throw new MwException(GameError.SANDTABLE_CONTEST_SERVER_NOT_OPEN.getCode(), "沙盘演武在此服不开放, roleId=" + roleId + ", serverId=" + serverSetting.getServerID() + ", Config=" + JSON.toJSONString(Constant.SAND_TABLE_1058));
         }
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
         int state = sandTableContest.state();
-        if(Arrays.binarySearch(LINES,line) < 0){
+        if (Arrays.binarySearch(LINES, line) < 0) {
             throw new MwException(GameError.SANDTABLE_CONTEST_GET_LINE_PLAYERS_PARAM_INVALID.getCode(), "沙盘演武, 获取线路玩家排序列表, 参数无效, roleId=" + roleId + ", line=" + line + ", state=" + state);
         }
-        if(state == SandTableContest.STATE_NOTOPEN){
+        if (state == SandTableContest.STATE_NOTOPEN) {
             throw new MwException(GameError.SANDTABLE_CONTEST_GET_LINE_PLAYERS_NO_OPEN.getCode(), "沙盘演武, 获取线路玩家排序列表, 功能未开放, roleId=" + roleId + ", line=" + line + ", state=" + state);
         }
         GamePb4.SandTableGetLinePlayersRs.Builder resp = GamePb4.SandTableGetLinePlayersRs.newBuilder();
         SandTableCamp.LineObject lineObject = sandTableContest.getSandTableCamp(player.getCamp()).getLine(line);
         lineObject.list.sort((o1, o2) -> o2.fightVal - o1.fightVal);
         int size;
-        if(state == SandTableContest.STATE_PREVIEW){
+        if (state == SandTableContest.STATE_PREVIEW) {
             size = lineObject.list.size();
-        }else if(state == SandTableContest.STATE_OPEN){
+        } else if (state == SandTableContest.STATE_OPEN) {
             size = lineObject.list.size() > Constant.SAND_TABLE_1057 ? Constant.SAND_TABLE_1057 : lineObject.list.size();
-        }else {
+        } else {
             size = lineObject.list.size();
         }
 //        int order = size / Constant.SAND_TABLE_1041 > 0 ? Constant.SAND_TABLE_1041 : size;
 //        int order2 = order + 1;
 //        int tmpOrder = 0;
-        for(LinePlayer linePlayer : lineObject.list){
+        for (LinePlayer linePlayer : lineObject.list) {
 //            if(order <= 0){
 //                tmpOrder = order2;
 //                order2 ++;
 //            }else {
 //                tmpOrder = order;
 //            }
-            if(size <= 0){
+            if (size <= 0) {
                 break;
             }
-            resp.addLinePlayerInfo(buildSandTableLinePlayerInfo(linePlayer,size));
+            resp.addLinePlayerInfo(buildSandTableLinePlayerInfo(linePlayer, size));
 //            order --;
-            size --;
+            size--;
         }
         return resp.build();
     }
 
-    private CommonPb.SandTableLinePlayerInfo buildSandTableLinePlayerInfo(LinePlayer linePlayer,int order){
+    private CommonPb.SandTableLinePlayerInfo buildSandTableLinePlayerInfo(LinePlayer linePlayer, int order) {
         CommonPb.SandTableLinePlayerInfo.Builder builder = CommonPb.SandTableLinePlayerInfo.newBuilder();
         builder.setLordId(linePlayer.lordId);
         builder.setLordNick(playerDataManager.getPlayer(linePlayer.lordId).lord.getNick());
@@ -1465,28 +1465,28 @@ public class SandTableContestService {
         return builder.build();
     }
 
-    public boolean checkOpenByServerId(){
+    public boolean checkOpenByServerId() {
         boolean check = false;
         int serverId = serverSetting.getServerID();
-        if(!ListUtils.isBlank(Constant.SAND_TABLE_1058)){
-            for(List<Integer> tmps : Constant.SAND_TABLE_1058){
-                if(serverId >= tmps.get(0) && serverId <= tmps.get(1)){
+        if (!ListUtils.isBlank(Constant.SAND_TABLE_1058)) {
+            for (List<Integer> tmps : Constant.SAND_TABLE_1058) {
+                if (serverId >= tmps.get(0) && serverId <= tmps.get(1)) {
                     check = true;
                     break;
                 }
             }
-        }else {
+        } else {
             check = true;
         }
         return check;
     }
 
-    public void resetContestDate4LoadSystem(){
+    public void resetContestDate4LoadSystem() {
         SandTableContest sandTableContest = globalDataManager.getGameGlobal().getSandTableContest();
-        if(StringUtils.isBlank(sandTableContest.getPreviewCron()) || !sandTableContest.getPreviewCron().equals(Constant.SAND_TABLE_PREVIEW)){
-            QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(),SandTableJob.name_preview, SandTableJob.groupName);
-            QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(),SandTableJob.name_open, SandTableJob.groupName);
-            QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(),SandTableJob.name_end, SandTableJob.groupName);
+        if (StringUtils.isBlank(sandTableContest.getPreviewCron()) || !sandTableContest.getPreviewCron().equals(Constant.SAND_TABLE_PREVIEW)) {
+            QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(), SandTableJob.name_preview, SandTableJob.groupName);
+            QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(), SandTableJob.name_open, SandTableJob.groupName);
+            QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(), SandTableJob.name_end, SandTableJob.groupName);
 
             ScheduleManager.getInstance().initSandTableContest();
             LogUtil.error("重载System配表 沙盘演武的配置有变化");
@@ -1495,8 +1495,10 @@ public class SandTableContestService {
     }
 
     // <editor-fold desc="自己测试用的方法" defaultstate="collapsed">
+
     /**
      * GM命令调用，自定分组
+     *
      * @param g11
      * @param g12
      * @param g21
@@ -1505,9 +1507,10 @@ public class SandTableContestService {
      * @param g32
      */
     @Deprecated
-    public void matchGroup1(int g11,int g12,int g21,int g22,int g31,int g32) {
-        this.matchGroup(g11,g12,g21,g22,g31,g32);
+    public void matchGroup1(int g11, int g12, int g21, int g22, int g31, int g32) {
+        this.matchGroup(g11, g12, g21, g22, g31, g32);
     }
+
     /**
      * 设置时间当前天开放
      *
@@ -1544,17 +1547,17 @@ public class SandTableContestService {
 
         String[] arr_ = Constant.SAND_TABLE_PREVIEW.split(" ");
         Calendar c = Calendar.getInstance();
-        c.set(Calendar.DAY_OF_WEEK,TimeHelper.getWeekByCron(arr_[5]));
-        c.set(Calendar.HOUR_OF_DAY,Integer.parseInt(arr_[2]));
-        c.set(Calendar.MINUTE,Integer.parseInt(arr_[1]));
-        c.set(Calendar.SECOND,Integer.parseInt(arr_[0]));
+        c.set(Calendar.DAY_OF_WEEK, TimeHelper.getWeekByCron(arr_[5]));
+        c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(arr_[2]));
+        c.set(Calendar.MINUTE, Integer.parseInt(arr_[1]));
+        c.set(Calendar.SECOND, Integer.parseInt(arr_[0]));
 
         sandTableContest.setPreviewBeginDate(c.getTime());
         CronExpression cronExpression = new CronExpression(Constant.SAND_TABLE_OPEN_END.get(0));
         sandTableContest.setOpenBeginDate(cronExpression.getNextValidTimeAfter(sandTableContest.getPreviewBeginDate()));
         cronExpression = new CronExpression(Constant.SAND_TABLE_OPEN_END.get(1));
         sandTableContest.setOpenEndDate(cronExpression.getNextValidTimeAfter(sandTableContest.getOpenBeginDate()));
-        int exchangeEndStamp = (int) (sandTableContest.getOpenEndDate().getTime()/1000 + 3600);
+        int exchangeEndStamp = (int) (sandTableContest.getOpenEndDate().getTime() / 1000 + 3600);
         sandTableContest.setExchangeEndDate(new Date(exchangeEndStamp * 1000L));
         //setting match Date
         sandTableContest.setMatchDate(TimeHelper.getDay(sandTableContest.getOpenBeginDate()));

@@ -5,7 +5,6 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.eventbus.Subscribe;
 import com.gryphpoem.game.zw.core.eventbus.ThreadMode;
 import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.crosssimple.util.CrossPlayerPbHelper;
 import com.gryphpoem.game.zw.crosssimple.util.PbCrossUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticCrossDataMgr;
 import com.gryphpoem.game.zw.gameplay.cross.serivce.CrossGamePlayService;
@@ -18,7 +17,6 @@ import com.gryphpoem.game.zw.pb.CommonPb.CrossHeroPb;
 import com.gryphpoem.game.zw.pb.CrossPb.CrossHeroSyncRq;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.GameError;
@@ -30,7 +28,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCrossBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossPersonalTrophy;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossServerRule;
 import com.gryphpoem.game.zw.resource.pojo.PeriodTime;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +40,9 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName CrossBuffService.java
  * @Description 跨服数据相关
- * @author QiuKun
  * @date 2019年5月15日
  */
 @Component
@@ -71,7 +68,7 @@ public class CrossDataService {
 
     /**
      * 初始和刷新
-     * 
+     *
      * @param isStart 是否是启动时初始化
      */
     public void initAndRefresh(boolean isStart) {
@@ -109,7 +106,7 @@ public class CrossDataService {
 
     /**
      * 检测跨服是否开放
-     * 
+     *
      * @return
      */
     public boolean isCrossOpen() {
@@ -122,7 +119,7 @@ public class CrossDataService {
 
     /**
      * 检测该服是否开启跨服,并且在跨服战期间内
-     * 
+     *
      * @return
      * @throws MwException
      */
@@ -134,7 +131,7 @@ public class CrossDataService {
 
     /**
      * 获取跨服信息(buff 和时间信息)
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -145,7 +142,7 @@ public class CrossDataService {
         CrossPersonalData crossData = player.getAndCreateCrossPersonalData();
         int now = TimeHelper.getCurrentSecond();
         GetCrossInfoRs.Builder builder = GetCrossInfoRs.newBuilder();
-        for (Iterator<Entry<Integer, CrossBuff>> it = crossData.getBuffs().entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Entry<Integer, CrossBuff>> it = crossData.getBuffs().entrySet().iterator(); it.hasNext(); ) {
             CrossBuff buff = it.next().getValue();
             if (now < buff.getStartTime() || now > buff.getEndTime()) {
                 it.remove();
@@ -167,7 +164,7 @@ public class CrossDataService {
 
     /**
      * 购买跨服buff
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -215,18 +212,18 @@ public class CrossDataService {
 
     /**
      * 同步将领信息
-     * 
+     *
      * @param player
      */
     private void sendSyncCrossHero(Player player) {
         if (!player.getAndCreateCrossPersonalData().isInCross()) return;
         List<CrossHeroPb> crossHeroPbList = new ArrayList<>();
-        for (Hero hero : player.getAllOnBattleHeros()) {
-            if (hero.getState() == ArmyConstant.ARMY_STATE_CROSS
-                    || hero.getState() == ArmyConstant.ARMY_STATE_CROSS_REVIVAL) {
-                crossHeroPbList.add(CrossPlayerPbHelper.toCrossHeroPb(player, hero));
-            }
-        }
+//        for (Hero hero : player.getAllOnBattleHeroList()) {
+//            if (hero.getState() == ArmyConstant.ARMY_STATE_CROSS
+//                    || hero.getState() == ArmyConstant.ARMY_STATE_CROSS_REVIVAL) {
+//                crossHeroPbList.add(CrossPlayerPbHelper.toCrossHeroPb(player, hero));
+//            }
+//        }
         if (!crossHeroPbList.isEmpty()) {
             CrossHeroSyncRq.Builder builder = CrossHeroSyncRq.newBuilder();
             builder.addAllHero(crossHeroPbList);
@@ -237,7 +234,7 @@ public class CrossDataService {
 
     /**
      * 获取跨服成就信息
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -255,7 +252,7 @@ public class CrossDataService {
 
     /**
      * 领取跨服成就奖励
-     * 
+     *
      * @param roleId
      * @param req
      * @return

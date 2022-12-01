@@ -45,7 +45,7 @@ public class LogUtil {
     private static Logger HOTFIX_LOGGER = LogManager.getLogger("HOTFIX");
     private static Logger ROBOT_LOGGER = LogManager.getLogger("ROBOT");
     private static Logger WORLD_LOGGER = LogManager.getLogger("WORLD");
-    private static Logger BATTLE_LOGGER = LogManager.getLogger("BATTLE");
+    private static Logger FIGHT_LOGGER = LogManager.getLogger("FIGHT");
     private static Logger CALCULATE_LOGGER = LogManager.getLogger("CALCULATE");
 
     /**
@@ -84,7 +84,7 @@ public class LogUtil {
      */
     public static void fight(Object... message) {
         if (canPrint(Level.DEBUG)) {
-            logThread.addCommand(() -> COMMON_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message)));
+            getLogThread().addCommand(() -> FIGHT_LOGGER.info("[debug] " + getClassPath() + ExceptionMessage.spliceMessage(message)));
         }
     }
 
@@ -294,15 +294,6 @@ public class LogUtil {
         sb.append("|").append(roleId2 == null ? "" : roleId2);
 
         CHAT_LOGGER.info(sb);
-    }
-
-    public static void battle(String battleId, Object... msgs) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("battle|").append(battleId);
-        for (Object msg : msgs) {
-            sb.append("|").append(msg);
-        }
-        logThread.addCommand(() -> BATTLE_LOGGER.info(sb.toString()));
     }
 
     public static void silence(Object message) {

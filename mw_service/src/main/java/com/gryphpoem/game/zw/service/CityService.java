@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.CrossCityService;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
@@ -35,14 +36,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
+ * @author TanDonghai
  * @ClassName CityService.java
  * @Description 城池相关处理 特殊说明：定时处理城池任务cityTimeLogic包含城池产出，竞选，都城自动发起攻城
- * @author TanDonghai
  * @date 创建时间：2017年4月19日 下午8:37:28
- *
  */
 @Service
-public class CityService extends AbsGameService implements DelayInvokeEnvironment,GmCmdService {
+public class CityService extends AbsGameService implements DelayInvokeEnvironment, GmCmdService {
 
     @Autowired
     private PlayerDataManager playerDataManager;
@@ -77,7 +77,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池征收
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -86,10 +86,10 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     public CityLevyRs cityLevy(long roleId, int cityId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if(checkIsCrossCity(cityId)){//本地跨服使用
-           return crossCityService.crossCityLevy(player, cityId);
+        if (checkIsCrossCity(cityId)) {//本地跨服使用
+            return crossCityService.crossCityLevy(player, cityId);
         }
-        
+
         // 检查城池是否存在
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(cityId);
         City city = worldDataManager.getCityById(cityId);
@@ -242,7 +242,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 获取单个城池信息
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -250,9 +250,9 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
      */
     public GetCityRs getCity(long roleId, int cityId) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if(checkIsCrossCity(cityId)){//本地跨服使用
+        if (checkIsCrossCity(cityId)) {//本地跨服使用
             return crossCityService.getCity(player, cityId);
-         }
+        }
         // 检查城池是否存在
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(cityId);
         City city = worldDataManager.getCityById(cityId);
@@ -278,7 +278,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 获取城池竞选信息
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -286,7 +286,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
      */
     public GetCityCampaignRs getCityCampaign(long roleId, int cityId) throws MwException {
         Player p = playerDataManager.checkPlayerIsExist(roleId);
-        if(checkIsCrossCity(cityId)){
+        if (checkIsCrossCity(cityId)) {
             return crossCityService.getCityCampaign(p, cityId);
         }
         // 检查城池是否存在
@@ -316,7 +316,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池重建
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -398,7 +398,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             //发送重建奖励邮件
             Award ownerAward = PbHelper.createAward(staticCity.getOutAward());
             List<Award> ownerAwards = ListUtils.createList(ownerAward);
-            mailDataManager.sendAttachMail(player,ownerAwards,MailConstant.MOLD_CAMPAIGN_SUCC,AwardFrom.CITY_CAMPAIGN_SUC,TimeHelper.getCurrentSecond(),city.getCityId(),"重建",city.getCityId());
+            mailDataManager.sendAttachMail(player, ownerAwards, MailConstant.MOLD_CAMPAIGN_SUCC, AwardFrom.CITY_CAMPAIGN_SUC, TimeHelper.getCurrentSecond(), city.getCityId(), "重建", city.getCityId());
             LogUtil.debug("当城主,不用竞选=" + roleId + ",city=" + city);
 
             // 记录军团日志
@@ -446,7 +446,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 是否已经参与了其他城池竞选
-     * 
+     *
      * @param roleId
      * @return null 没有加过其他城池竞选
      */
@@ -462,7 +462,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池修复
-     * 
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -471,7 +471,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     public CityRepairRs cityRepair(long roleId, int cityId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if(checkIsCrossCity(cityId)){
+        if (checkIsCrossCity(cityId)) {
             return crossCityService.crossCityRepair(player, cityId);
         }
         // 检查城池是否存在
@@ -517,7 +517,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池单次兵力修复
-     * 
+     *
      * @param city
      * @param staticCity
      */
@@ -562,7 +562,8 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城主撤离城池
-     *  MODIFY BY XWIND ON 2021-9-2：设置撤离倒计时
+     * MODIFY BY XWIND ON 2021-9-2：设置撤离倒计时
+     *
      * @param roleId
      * @param cityId
      * @return
@@ -571,7 +572,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     public LeaveCityRs leaveCity(long roleId, int cityId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        if(checkIsCrossCity(cityId)){
+        if (checkIsCrossCity(cityId)) {
             return crossCityService.crossLeaveCity(player, cityId);
         }
         // 检查城池是否存在
@@ -601,20 +602,20 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
         }
 
         //检查当前是否处于撤离中
-        if(city.getLeaveOver() > 0 && city.getLeaveOver() >= TimeHelper.getCurrentSecond()){
-            throw new MwException(GameError.PARAM_ERROR.getCode(),GameError.err(roleId,"城主当前正在撤离中",cityId));
+        if (city.getLeaveOver() > 0 && city.getLeaveOver() >= TimeHelper.getCurrentSecond()) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId, "城主当前正在撤离中", cityId));
         }
 
         city.setLeaveOver(TimeHelper.getCurrentSecond() + Constant.CAMP_REBUILD_LEAVE_SECONDS);
 
-        DELAY_QUEUE.add(new CityDelayRun(city,staticCity,player));
+        DELAY_QUEUE.add(new CityDelayRun(city, staticCity, player));
 
         // 推送刷新数据
         List<Integer> posList = new ArrayList<>();
         posList.add(staticCity.getCityPos());
         EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_TYPE));
 
-        syncPartyCity(city,staticCity);
+        syncPartyCity(city, staticCity);
 
         LeaveCityRs.Builder builder = LeaveCityRs.newBuilder();
         builder.setCityId(cityId);
@@ -626,7 +627,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     private DelayQueue<CityDelayRun> DELAY_QUEUE = new DelayQueue<>(this);
 
-    public void doLeave(City city,StaticCity staticCity,Player player) {
+    public void doLeave(City city, StaticCity staticCity, Player player) {
         try {
             // 更新城池拥有者信息
             city.cleanOwner(false);
@@ -639,8 +640,8 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             List<Integer> posList = new ArrayList<>();
             posList.add(staticCity.getCityPos());
             EventBus.getDefault().post(new Events.AreaChangeNoticeEvent(posList, Events.AreaChangeNoticeEvent.MAP_TYPE));
-        }catch (Exception e) {
-            LogUtil.error("城主撤离阵营城池发生异常, ",e);
+        } catch (Exception e) {
+            LogUtil.error("城主撤离阵营城池发生异常, ", e);
         }
     }
 
@@ -731,7 +732,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * NPC自动攻城
-     * 
+     *
      * @param city NPC攻方都城
      * @param list 将要被攻击的城池，根据配置
      */
@@ -789,7 +790,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城主任期到期处理
-     * 
+     *
      * @param city
      * @param now
      */
@@ -805,6 +806,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城主额外奖励处理
+     *
      * @param city
      * @param now
      */
@@ -833,7 +835,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 检查当前是否需要发城主额外奖励
-     * 
+     *
      * @param city
      * @param hour
      * @return
@@ -851,7 +853,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池竞选处理逻辑
-     * 
+     *
      * @param city
      * @param now
      * @throws MwException
@@ -879,7 +881,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
                 Award ownerAward = PbHelper.createAward(staticCity.getInAward());
                 List<Award> ownerAwards = ListUtils.createList(ownerAward);
-                mailDataManager.sendAttachMail(owner,ownerAwards,MailConstant.MOLD_CAMPAIGN_SUCC,AwardFrom.CITY_CAMPAIGN_SUC,now,city.getCityId(),"竞选",city.getCityId());
+                mailDataManager.sendAttachMail(owner, ownerAwards, MailConstant.MOLD_CAMPAIGN_SUCC, AwardFrom.CITY_CAMPAIGN_SUC, now, city.getCityId(), "竞选", city.getCityId());
 
                 // 发送竞选成功邮件
 //                mailDataManager.sendNormalMail(owner, MailConstant.MOLD_CAMPAIGN_SUCC, now, city.getCityId(),
@@ -925,7 +927,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池产出处理逻辑
-     * 
+     *
      * @param city
      * @param now
      */
@@ -939,10 +941,10 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 都城修改城市名称
-     * 
+     *
      * @param roleId 角色id
      * @param cityId 城市id
-     * @param name 待修改的城市名称
+     * @param name   待修改的城市名称
      * @return
      * @throws MwException
      */
@@ -1009,7 +1011,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 城池名城是否合法
-     * 
+     *
      * @param nick
      * @return
      */
@@ -1020,9 +1022,9 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 是否有相同的名称
-     * 
+     *
      * @param cityId 城池id
-     * @param name  名称
+     * @param name   名称
      * @return 是否有同名
      */
     private boolean isSameCity(final int cityId, String name) {
@@ -1044,7 +1046,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 都城开发
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -1194,6 +1196,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 都城加人口
+     *
      * @param city
      * @param population
      */
@@ -1205,7 +1208,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 阵营city推送
-     * 
+     *
      * @param city
      */
     public void syncPartyCity(City city, StaticCity staticCity) {
@@ -1225,7 +1228,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
 
     /**
      * 检测该城池是否是跨服的城池
-     * 
+     *
      * @param cityId
      * @return true 是跨服的城池
      * @throws MwException
@@ -1246,10 +1249,10 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     @Override
     public void handleOnStartup() throws Exception {
         worldDataManager.getCityMap().values().forEach(city -> {
-            if(city.getLeaveOver() > 0){
+            if (city.getLeaveOver() > 0) {
                 StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(city.getCityId());
-                if(city.getOwnerId() != 0 && city.getLeaveOver() > 0){
-                    DELAY_QUEUE.add(new CityDelayRun(city,staticCity,playerDataManager.getPlayer(city.getOwnerId())));
+                if (city.getOwnerId() != 0 && city.getLeaveOver() > 0) {
+                    DELAY_QUEUE.add(new CityDelayRun(city, staticCity, playerDataManager.getPlayer(city.getOwnerId())));
                 }
             }
         });
@@ -1262,7 +1265,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             case "clearState":
                 int cityId = Integer.parseInt(params[1]);
                 City city = worldDataManager.getCityById(cityId);
-                if(Objects.nonNull(city)){
+                if (Objects.nonNull(city)) {
                     city.setStatus(WorldConstant.CITY_STATUS_CALM);
                 }
                 break;

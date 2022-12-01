@@ -792,14 +792,14 @@ public class CampService extends BaseAwkwardDataManager {
                                 army.getType() != ArmyConstant.ARMY_TYPE_COLLECT || army.getState() != ArmyConstant.ARMY_STATE_MARCH)
                             continue;
 
-                        mineInfo.setAttackKeyId(army.getHero().get(0).getV1());
+                        mineInfo.setAttackKeyId(army.getHero().get(0).getPrincipleHeroId());
                         break;
                     }
                 }
 
                 Guard guard = worldDataManager.getGuardByPos(battle.getPos());
                 if (Objects.nonNull(guard) && Objects.nonNull(guard.getArmy())) {
-                    mineInfo.setDefKeyId(guard.getArmy().getHero().get(0).getV1());
+                    mineInfo.setDefKeyId(guard.getArmy().getHero().get(0).getPrincipleHeroId());
                 }
             }
         }
@@ -818,7 +818,7 @@ public class CampService extends BaseAwkwardDataManager {
                                 army.getType() != ArmyConstant.ARMY_TYPE_ATK_SUPERMINE || army.getState() != ArmyConstant.ARMY_STATE_MARCH)
                             continue;
 
-                        mineInfo.setAttackKeyId(army.getHero().get(0).getV1());
+                        mineInfo.setAttackKeyId(army.getHero().get(0).getPrincipleHeroId());
                         break;
                     }
                 }
@@ -832,7 +832,7 @@ public class CampService extends BaseAwkwardDataManager {
                             if (CheckNull.isNull(superGuard) || CheckNull.isNull(superGuard.getArmy()))
                                 continue;
                             if (superGuard.getArmy().getLordId() == defPlayer.getLordId()) {
-                                mineInfo.setDefKeyId(superGuard.getArmy().getHero().get(0).getV1());
+                                mineInfo.setDefKeyId(superGuard.getArmy().getHero().get(0).getPrincipleHeroId());
                                 break;
                             }
                         }

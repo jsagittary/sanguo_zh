@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
@@ -15,7 +16,6 @@ import com.gryphpoem.game.zw.resource.domain.p.ResourceMult;
 import com.gryphpoem.game.zw.resource.domain.p.Treasure;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasure;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -29,9 +29,8 @@ import java.util.Map.Entry;
 
 /**
  * 聚宝盆
- * 
- * @author tyler
  *
+ * @author tyler
  */
 @Service
 public class TreasureService {
@@ -53,7 +52,7 @@ public class TreasureService {
 
     /**
      * 获取聚宝盆信息
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -101,7 +100,7 @@ public class TreasureService {
 
     /**
      * 刷新每日
-     * 
+     *
      * @param player
      */
     void refreshShop(Player player) {
@@ -128,12 +127,12 @@ public class TreasureService {
 
     /**
      * 打乱顺序(忽略9号位)
-     * 
+     *
      * @param treasure
      */
     private void breakRank(Treasure treasure) {
         LinkedHashMap<Integer, Integer> newStatus = new LinkedHashMap<>();
-        int[] a = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        int[] a = {1, 2, 3, 4, 5, 6, 7, 8};
         int nTemp;
         for (int i = 0; i < 8; i++) {
             int nPos = (int) (Math.random() * 10 % 8);
@@ -153,7 +152,7 @@ public class TreasureService {
 
     /**
      * 随机取出聚宝盆奖励(乱序)
-     * 
+     *
      * @param player
      */
     private void randomTreasure(Player player) {
@@ -172,11 +171,11 @@ public class TreasureService {
 
     /**
      * 随机处理
-     * 
+     *
      * @param treasure
-     * @param roleLv 需要角色等级
-     * @param map 随机池
-     * @param num 随机几个
+     * @param roleLv   需要角色等级
+     * @param map      随机池
+     * @param num      随机几个
      */
     private void processRandom(Treasure treasure, int roleLv, Map<Integer, StaticTreasure> map, int num, boolean open) {
         Map<Integer, StaticTreasure> aMap = new HashMap<>();
@@ -223,7 +222,7 @@ public class TreasureService {
 
     /**
      * 聚宝盆开启
-     * 
+     *
      * @param roleId
      * @param id
      * @param buy
@@ -232,7 +231,7 @@ public class TreasureService {
      */
     public TreasureOpenRs treasureOpen(Long roleId, int id, boolean buy) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        Treasure treasure = player.treasure; 
+        Treasure treasure = player.treasure;
         int now = TimeHelper.getCurrentSecond();
         TreasureOpenRs.Builder builder = TreasureOpenRs.newBuilder();
         if (buy) {
@@ -260,13 +259,13 @@ public class TreasureService {
             int val = player.getMixtureDataById(PlayerConstant.MARKET_TRIGGER_TIMES);
             //概率
             int probability = Constant.TRIGGER_GIFT_TREASURE_OPEN_PROBABILITY.get(0).get(0);
-            if (val<maxStatus && RandomHelper.isHitRangeIn10000(probability)){
+            if (val < maxStatus && RandomHelper.isHitRangeIn10000(probability)) {
                 //翻牌触发礼包
                 activityService.checkTriggerGiftSync(ActivityConst.TRIGGER_GIFT_TREASURE_OPEN, player);
                 //更新次数
-                player.setMixtureData(PlayerConstant.MARKET_TRIGGER_TIMES,val+1);
+                player.setMixtureData(PlayerConstant.MARKET_TRIGGER_TIMES, val + 1);
             }
-            
+
             treasure.setEndTime(now + Constant.TREASURE_OPEN_TIME);
             Integer key = (Integer) treasure.getIdStatus().keySet().toArray()[id - 1];
             treasure.getIdStatus().put(key, 1);
@@ -289,7 +288,7 @@ public class TreasureService {
 
     /**
      * 资源兑换
-     * 
+     *
      * @param roleId
      * @param costId
      * @param gainId
@@ -341,7 +340,7 @@ public class TreasureService {
 
     /**
      * 兑换状态检查
-     * 
+     *
      * @param treasure
      */
     private void checkRed(Treasure treasure) {

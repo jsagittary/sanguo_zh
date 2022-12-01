@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.manager;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticChapterTaskDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
@@ -19,9 +20,9 @@ import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -244,8 +245,9 @@ public class ChapterTaskDataManager {
      * 获取玩家所有英雄指定位置、某一品质装备的个数
      */
     public long getHeroQualityEquipCount(Player player, int sCondId, int quality) {
-        return player.getAllOnBattleHeros().stream()
-                .filter(hero -> {
+        return player.getAllOnBattleHeroList().stream()
+                .filter(partnerHero -> {
+                    Hero hero = partnerHero.getPrincipalHero();
                     if (sCondId <= hero.getEquip().length) {
                         Equip equip = player.equips.get(hero.getEquip()[sCondId]);
                         if (Objects.nonNull(equip)) {
@@ -304,8 +306,8 @@ public class ChapterTaskDataManager {
      */
     public long battleHeroWearingEquipment(Player player, int sCondId) {
         long count = 0;
-        for (Hero hero : player.getAllOnBattleHeros()) {
-            int[] equips = hero.getEquip();
+        for (PartnerHero partnerHero : player.getAllOnBattleHeroList()) {
+            int[] equips = partnerHero.getPrincipalHero().getEquip();
             if (Objects.isNull(equips)) continue;
             for (int equipKey : equips) {
                 Equip equip = player.equips.get(equipKey);

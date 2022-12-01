@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTaskDataMgr;
 import com.gryphpoem.game.zw.manager.*;
@@ -29,7 +30,10 @@ import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -600,7 +604,7 @@ public class TaskService {
             case HERO_UPSKILL:
                 hero = player.heros.get(condList.get(0));
                 if (Objects.nonNull(hero)) {
-                    task.setSchedule(hero.getSkillLevels().getOrDefault(condList.get(1), 0));
+//                    task.setSchedule(hero.getSkillLevels().getOrDefault(condList.get(1), 0));
                     if (task.getSchedule() >= condList.get(2)) {
                         task.setStatus(TaskType.TYPE_STATUS_FINISH);
                         task.setSchedule(condList.get(2));

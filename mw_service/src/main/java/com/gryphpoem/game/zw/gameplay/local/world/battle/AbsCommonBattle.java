@@ -12,18 +12,19 @@ import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.service.WorldService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName AbsCommonBattle.java
  * @Description
- * @author QiuKun
  * @date 2019年4月10日
  */
 public abstract class AbsCommonBattle extends BaseMapBattle {
@@ -36,10 +37,11 @@ public abstract class AbsCommonBattle extends BaseMapBattle {
         Player player = param.getInvokePlayer();
         int pos = getBattle().getPos();
         int marchTime = param.getMarchTime();
-        List<CommonPb.TwoInt> form = param.getHeroIdList().stream().map(heroId -> {
-            Hero hero = player.heros.get(heroId);
-            return PbHelper.createTwoIntPb(heroId, hero.getCount());
-        }).collect(Collectors.toList());
+        List<CommonPb.PartnerHeroIdPb> form = param.getHeroIdList().stream().map(heroId -> {
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) return null;
+            return partnerHero.convertTo();
+        }).filter(pb -> Objects.nonNull(pb)).collect(Collectors.toList());
         Army army = new Army(player.maxKey(), armyType, pos, ArmyConstant.ARMY_STATE_MARCH, form, marchTime,
                 now + marchTime, player.getDressUp());
         army.setBattleId(getBattleId());
@@ -55,13 +57,13 @@ public abstract class AbsCommonBattle extends BaseMapBattle {
         return baseArmy;
     }
 
-    protected void addBattleRole(AttackParamDto param,AwardFrom from) {
+    protected void addBattleRole(AttackParamDto param, AwardFrom from) {
         Player player = param.getInvokePlayer();
         long roleId = player.lord.getLordId();
         int camp = player.lord.getCamp();
         if (camp == battle.getAtkCamp()) {
             WorldService worldService = DataResource.ac.getBean(WorldService.class);
-            worldService.removeProTect(player,from,battle.getPos());
+            worldService.removeProTect(player, from, battle.getPos());
             battle.getAtkRoles().add(roleId);
         } else if (camp == battle.getDefCamp()) {
             battle.getDefRoles().add(roleId);

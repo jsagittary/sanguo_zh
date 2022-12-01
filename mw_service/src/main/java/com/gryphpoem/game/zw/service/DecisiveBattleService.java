@@ -3,12 +3,12 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticPartyDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackDecisiveBattleRq;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackDecisiveBattleRs;
@@ -22,6 +22,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,20 +107,20 @@ public class DecisiveBattleService {
             }
         }
 
-        List<Integer> heroIdList = new ArrayList<>();
-        heroIdList.addAll(req.getHeroIdList());
-        heroIdList = heroIdList.stream().distinct().collect(Collectors.toList());
+        List<PartnerHero> heroIdList = new ArrayList<>();
+        heroIdList.addAll(req.getHeroIdList().stream().distinct().map(heroId ->
+                atkP.getPlayerFormation().getPartnerHero(heroId)).filter(pa -> !HeroUtil.isEmptyPartner(pa)).collect(Collectors.toList()));
         // 检查出征将领信息
         worldService.checkFormHeroSupport(atkP, heroIdList, defPos);
 
         Hero hero;
         int armCount = 0;
         int defArmCount = 0;
-        List<TwoInt> form = new ArrayList<>();
-        for (Integer heroId : heroIdList) {
-            hero = atkP.heros.get(heroId);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
-            armCount += hero.getCount();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
+        for (PartnerHero partnerHero : heroIdList) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            form.add(partnerHero.convertTo());
+            armCount += partnerHero.getPrincipalHero().getCount();
         }
 
         // 各势力类型的条件判断
@@ -178,11 +179,9 @@ public class DecisiveBattleService {
         atkInfo.setDecisive(true);
         defInfo.setDecisive(true);
 
-        for (Integer heroId : defP.heroBattle) {
-            hero = defP.heros.get(heroId);
-            if (hero != null) {
-                defArmCount += hero.getCount();
-            }
+        for (PartnerHero partnerHero : defP.getPlayerFormation().getHeroBattle()) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            defArmCount += partnerHero.getPrincipalHero().getCount();
         }
         Battle battle = new Battle();
         battle.setType(battleType);
@@ -233,7 +232,7 @@ public class DecisiveBattleService {
         army.setBattleTime(battle != null ? battle.getBattleTime() : 0);
         army.setOriginPos(atkP.lord.getPos());
         army.setHeroMedals(heroIdList.stream()
-                .map(heroId -> medalDataManager.getHeroMedalByHeroIdAndIndex(atkP, heroId, MedalConst.HERO_MEDAL_INDEX_0))
+                .map(partnerHero -> medalDataManager.getHeroMedalByHeroIdAndIndex(atkP, partnerHero.getPrincipalHero().getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
                 .filter(Objects::nonNull)
                 .map(PbHelper::createMedalPb)
                 .collect(Collectors.toList()));
@@ -241,16 +240,15 @@ public class DecisiveBattleService {
         atkP.armys.put(army.getKeyId(), army);
         // 攻击玩家, 加入部队逻辑全部放入到达后加入队列
         if (worldDataManager.isPlayerPos(defPos) && battle != null) {
-            worldService.addBattleArmy(battle, atkP.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, atkP.roleId, form, army.getKeyId(), true);
         }
 
         // 添加行军路线
         March march = new March(atkP, army);
         worldDataManager.addMarch(march);
         // 改变行军状态
-        for (Integer heroId : heroIdList) {
-            hero = atkP.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+        for (PartnerHero partnerHero : heroIdList) {
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
         }
 
         // 返回协议
@@ -388,7 +386,7 @@ public class DecisiveBattleService {
             worldService.synRetreatArmy(player, army, now); // 同步army状态
             worldDataManager.removePlayerGuard(army.getTarget(), army); // 移除驻防部队
             // 给派兵驻防的玩家发遣返邮件
-            int heroId = army.getHero().get(0).getV1();
+            int heroId = army.getHero().get(0).getPrincipleHeroId();
             mailDataManager
                     .sendNormalMail(player, MailConstant.DECISIVE_BATTLE_GARRISON_CANCEL, now, nick, xyInArea.getA(),
                             xyInArea.getB(), heroId, nick, xyInArea.getA(), xyInArea.getB(), heroId);

@@ -1,11 +1,11 @@
 package com.gryphpoem.game.zw.gameplay.cross.util;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.cross.gameplay.common.Game2CrossRequest;
 import com.gryphpoem.cross.gameplay.player.common.*;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFightDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
@@ -23,10 +23,12 @@ import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -71,7 +73,7 @@ public class CrossEntity2Dto {
     public static int getPlayerForce(StaticCrossGamePlayPlan gamePlayPlan, int serverId, int camp, long lordId) {
         int groupId = gamePlayPlan.getGroup();
         StaticCrossGroup staticCrossGroup = StaticNewCrossDataMgr.getStaticCrossGroup(groupId);
-        if (Objects.isNull(staticCrossGroup)){
+        if (Objects.isNull(staticCrossGroup)) {
             throw new MwException(GameError.NO_CONFIG.getCode(),
                     String.format("serverId: %d, camp: %d, lordId: %d", serverId, camp, lordId));
         }
@@ -112,33 +114,30 @@ public class CrossEntity2Dto {
 
     public static Map<Integer, CrossHero> createCrossHero(Player player) {
         Map<Integer, CrossHero> map = new HashMap<>();
-        Optional.ofNullable(player.heroBattle).ifPresent(heroes -> {
+        Optional.ofNullable(player.getPlayerFormation().getHeroBattle()).ifPresent(heroes -> {
             int index = 0;
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
-                map.put(heroId, createCrossHero(player, hero, index++, true));
+                map.put(partnerHero.getPrincipalHero().getHeroId(), createCrossHero(player, partnerHero.getPrincipalHero(), index++, true));
             }
         });
 
-        Optional.ofNullable(player.heroWall).ifPresent(heroes -> {
+        Optional.ofNullable(player.getPlayerFormation().getHeroWall()).ifPresent(heroes -> {
             int index = 0;
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
-                map.put(heroId, createCrossHero(player, hero, index++, true));
+                map.put(partnerHero.getPrincipalHero().getHeroId(), createCrossHero(player, partnerHero.getPrincipalHero(), index++, true));
             }
         });
 
-        Optional.ofNullable(player.heroAcq).ifPresent(heroes -> {
+        Optional.ofNullable(player.getPlayerFormation().getHeroWall()).ifPresent(heroes -> {
             int index = 0;
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
-                map.put(heroId, createCrossHero(player, hero, index++, true));
+                map.put(partnerHero.getPrincipalHero().getHeroId(), createCrossHero(player, partnerHero.getPrincipalHero(), index++, true));
             }
         });
         return map;
@@ -203,17 +202,17 @@ public class CrossEntity2Dto {
             Map<Integer, Integer> attrMap = CalculateUtil.processAttr(player, hero);
             crossHero.setAttrMap(attrMap);
 
-            if (!ObjectUtils.isEmpty(hero.getSkillLevels())) {
-                crossHero.setSkillAction(new ArrayList<>());
-                for (Map.Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-                    StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
-                    if (Objects.nonNull(heroSkill)) {
-                        StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
-                        if (Objects.nonNull(ska))
-                            crossHero.getSkillAction().add(ska.getId());
-                    }
-                }
-            }
+//            if (!ObjectUtils.isEmpty(hero.getSkillLevels())) {
+//                crossHero.setSkillAction(new ArrayList<>());
+//                for (Map.Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
+//                    StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
+//                    if (Objects.nonNull(heroSkill)) {
+//                        StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
+//                        if (Objects.nonNull(ska))
+//                            crossHero.getSkillAction().add(ska.getId());
+//                    }
+//                }
+//            }
 
             crossHero.setState(hero.getState());
         }
@@ -231,7 +230,7 @@ public class CrossEntity2Dto {
                 wallNpc = ks.getValue();
                 StaticWallHeroLv staticSuperEquipLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                         wallNpc.getLevel());
-                int maxArmy = staticSuperEquipLv.getAttr().get(Constant.AttrId.LEAD);
+                int maxArmy = staticSuperEquipLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (wallNpc.getCount() < maxArmy) {
                     continue;
                 }
@@ -294,7 +293,8 @@ public class CrossEntity2Dto {
             CrossWorldMap cMap = DataResource.getBean(CrossWorldMapService.class).checkCrossWorldMap(player, CrossWorldMapConstant.CROSS_MAP_ID);
             Map<Integer, Integer> cityBuff = cMap.getCityBuff(player);
             addRatio4 = !CheckNull.isEmpty(cityBuff) ? cityBuff.getOrDefault(StaticWarFire.BUFF_TYPE_5, 0) : 0;
-        } catch (MwException e) {}
+        } catch (MwException e) {
+        }
         crossMarchRatio.setAddRatio4(addRatio4);
 
         //皮肤加成

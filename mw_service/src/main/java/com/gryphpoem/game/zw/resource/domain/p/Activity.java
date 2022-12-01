@@ -1,8 +1,7 @@
 package com.gryphpoem.game.zw.resource.domain.p;
 
-import java.util.*;
-
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
@@ -11,8 +10,9 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActivity;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.activity.PersonalActService;
+
+import java.util.*;
 
 public class Activity {
     private int activityId;
@@ -21,9 +21,9 @@ public class Activity {
     private Map<Integer, Integer> statusMap = new HashMap<>();// 活动keyID,领取状态1已领取 clean=1 每日清理
     private Map<Integer, Integer> propMap = new HashMap<>(); // 设置每日重置 clean=1 每日清理
     private Map<Integer, Integer> saveMap = new HashMap<>(); // 该集合不会重置
-    private Map<String,String> dataMap = new HashMap<>();//存放其他的活动数据
+    private Map<String, String> dataMap = new HashMap<>();//存放其他的活动数据
 
-    private Map<Integer, Turple<Integer,Integer>> dayScore = new HashMap<>();//每日的积分数据，用于排行
+    private Map<Integer, Turple<Integer, Integer>> dayScore = new HashMap<>();//每日的积分数据，用于排行
     private Map<Integer, List<ActivityTask>> dayTasks = new HashMap<>();//每日任务数据
 
     private int beginTime; // 开始时间,个人活动存储的值20171111(TimeHelper.getCurrentDay());全局活动存储的值是:毫秒值/6000
@@ -127,6 +127,7 @@ public class Activity {
 
     /**
      * 清除秋季拍卖活动信息
+     *
      * @param activityBase
      */
     public void cleanActivityAuction(ActivityBase activityBase) {
@@ -137,7 +138,7 @@ public class Activity {
 
     /**
      * 反序列化构造
-     * 
+     *
      * @param e
      */
     public Activity(SerializePb.DbActivity e) {
@@ -177,17 +178,17 @@ public class Activity {
         }
         setSaveMap(saveMap);
 
-        Optional.ofNullable(e.getDataList()).ifPresent(obj -> obj.forEach(o -> this.dataMap.put(o.getV1(),o.getV2())));
+        Optional.ofNullable(e.getDataList()).ifPresent(obj -> obj.forEach(o -> this.dataMap.put(o.getV1(), o.getV2())));
 
         Optional.ofNullable(e.getSerDayScoreList()).ifPresent(tmps -> tmps.forEach(o -> {
-            Turple<Integer,Integer> turple = new Turple<>();
+            Turple<Integer, Integer> turple = new Turple<>();
             turple.setA(o.getScore().getV1());
             turple.setB(o.getScore().getV2());
-            this.dayScore.put(o.getDay(),turple);
+            this.dayScore.put(o.getDay(), turple);
         }));
         Optional.ofNullable(e.getSerDayTaskList()).ifPresent(tmps -> tmps.forEach(o -> {
             List<ActivityTask> taskList = new ArrayList<>();
-            if(o.getTaskList() != null){
+            if (o.getTaskList() != null) {
                 o.getTaskList().forEach(o1 -> {
                     ActivityTask task = new ActivityTask(o1.getTaskId(), o1.getProgress(), o1.getCount());
                     task.setDrawCount(o1.getDrawCnt());
@@ -195,7 +196,7 @@ public class Activity {
                     taskList.add(task);
                 });
             }
-            this.dayTasks.put(o.getDay(),taskList);
+            this.dayTasks.put(o.getDay(), taskList);
         }));
 
         //秋季拍卖活动反序列化
@@ -227,8 +228,7 @@ public class Activity {
             return false;
 //        LogUtil.debug("活动重开检测 isReset=" + (this.beginTime == begin) + ",activityType=" + activityType + ", actvityId="
 //                + activityId + ",beginTime=" + beginTime + ",begin=" + begin);
-        if(activityType==111)
-        {
+        if (activityType == 111) {
 //        	 LogUtil.common("活动重开检测 isReset=" + (this.beginTime == begin) + ",activityType=" + activityType + ", actvityId="
 //                     + activityId + ",beginTime=" + beginTime + ",begin=" + begin);
         }
@@ -249,7 +249,7 @@ public class Activity {
 
     /**
      * 自动清理活动数据
-     * 
+     *
      * @param activityBase
      */
     public void autoDayClean(ActivityBase activityBase) {
@@ -278,7 +278,7 @@ public class Activity {
 
     /**
      * 清除数据特别处理
-     * 
+     *
      * @param isDayClean
      */
     private void cleanStatusMap(boolean isDayClean) {

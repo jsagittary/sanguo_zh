@@ -232,7 +232,19 @@ public class HeroConstant {
      * 将领属性：单排兵力
      */
     public static final int ATTR_LEAD = 3;
-
+    /**
+     * 武将角色: 无角色
+     */
+    public static final int HERO_ROLE_TYPE_NOTHING = 0;
+    /**
+     * 武将角色: 主将角色
+     */
+    public static final int HERO_ROLE_TYPE_PRINCIPAL = 1;
+    /**
+     * 武将角色: 副将角色
+     */
+    public static final int HERO_ROLE_TYPE_DEPUTY = 2;
+    
     /**
      * 将领所在队列：空闲
      */

@@ -8,7 +8,6 @@ import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Friend;
-import com.gryphpoem.game.zw.pb.CommonPb.FriendHero;
 import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb4.*;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -20,11 +19,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCreditShop;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMasterReaward;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.chat.RoleChat;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomUtil;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -445,9 +441,10 @@ public class FriendService {
 
         CheckFirendRs.Builder builder = CheckFirendRs.newBuilder();
 
-        List<FriendHero> heros = new ArrayList<>();
-        for (Hero h : fPlayer.getAllOnBattleHeros()) {
-            heros.add(PbHelper.createFriendAndHeroPb(h, fPlayer));
+        List<CommonPb.PartnerHeroPb> heros = new ArrayList<>();
+        for (PartnerHero h : fPlayer.getAllOnBattleHeroList()) {
+            if (HeroUtil.isEmptyPartner(h)) continue;
+            heros.add(h.createPb(false));
         }
         CommonPb.Friend friend = null;
         if (player.friends.containsKey(friendid)) {
@@ -708,7 +705,7 @@ public class FriendService {
 
 
 
-/*    *//**
+    /*    *//**
      * 拜师
      *
      * @param roleId
@@ -925,8 +922,9 @@ public class FriendService {
 
     /**
      * 解除师徒关系
-     * @param roleId    发起者id
-     * @param targetId  需要解除者id
+     *
+     * @param roleId   发起者id
+     * @param targetId 需要解除者id
      * @return 徒弟列表
      */
     public DelMasterApprenticeRs delMasterApprentice(long roleId, long targetId) throws MwException {
@@ -983,8 +981,9 @@ public class FriendService {
 
     /**
      * 检测玩家是否可以解除师徒关系
-     * @param player        检测的玩家
-     * @param offlineDay    离线的天数
+     *
+     * @param player     检测的玩家
+     * @param offlineDay 离线的天数
      * @return true         可以解除
      */
     private boolean checkCanDel(Player player, int offlineDay) {

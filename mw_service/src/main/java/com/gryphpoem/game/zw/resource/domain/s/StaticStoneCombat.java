@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.resource.domain.s;
 import java.util.List;
 
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 /**
  * 宝石副本
@@ -19,8 +20,8 @@ public class StaticStoneCombat {
     private int cost;// 消耗
     private List<List<Integer>> winAward1;// 通关奖励必掉1种[[道具，个数下限，个数上限，权重],········]
     private List<List<Integer>> winAward2;// 通关奖励全随机[[道具，个数下限，个数上限，独立概率万分比],········]
-    private List<Integer> firstform; // 首次攻打的阵型
-    private List<Integer> form;
+    private List<List<Integer>> firstForm; // 首次攻打的阵型
+    private List<List<Integer>> form;
     private List<Integer> hero;
     private List<List<Integer>> attr;
     private List<Integer> extand;// 高级副本属性 根据每个
@@ -34,8 +35,9 @@ public class StaticStoneCombat {
     public int getTotalArm() {
         if (totalArm < 0) {
             totalArm = 0;
-            for (Integer npcId : form) {
-                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+            for (List<Integer> npcId : form) {
+                if (CheckNull.isEmpty(npcId)) continue;
+                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId.get(0));
                 totalArm += npc.getTotalArm();
             }
         }
@@ -122,19 +124,19 @@ public class StaticStoneCombat {
         this.winAward2 = winAward2;
     }
 
-    public List<Integer> getFirstform() {
-        return firstform;
+    public List<List<Integer>> getFirstForm() {
+        return firstForm;
     }
 
-    public void setFirstform(List<Integer> firstform) {
-        this.firstform = firstform;
+    public void setFirstForm(List<List<Integer>> firstForm) {
+        this.firstForm = firstForm;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

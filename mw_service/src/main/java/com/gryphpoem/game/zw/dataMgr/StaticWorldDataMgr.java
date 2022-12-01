@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.dataMgr;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.resource.constant.ActivityConst;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
@@ -11,7 +12,6 @@ import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.random.MineLvRandom;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
 
@@ -414,6 +414,7 @@ public class StaticWorldDataMgr {
 
     /**
      * 根据世界进度id查询世界boss排行配置信息
+     *
      * @param id
      * @return
      */
@@ -701,7 +702,7 @@ public class StaticWorldDataMgr {
     public static Map<Integer, StaticAltarArea> getAltarAreaMap() {
         if (!CheckNull.isEmpty(altarAreaMap)) {
             ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(ActivityConst.ACT_VISIT_ALTAR);
-            if(Objects.nonNull(activityBase) && activityBase.getStep0() == ActivityConst.OPEN_STEP){
+            if (Objects.nonNull(activityBase) && activityBase.getStep0() == ActivityConst.OPEN_STEP) {
                 int activityId = activityBase.getActivityId();
                 // 过滤活动Id
                 return altarAreaMap.values().stream().filter(saa -> saa.getActivityId() == activityId).collect(Collectors.toMap(StaticAltarArea::getAreaOrder, Function.identity(), (oldV, newV) -> newV));

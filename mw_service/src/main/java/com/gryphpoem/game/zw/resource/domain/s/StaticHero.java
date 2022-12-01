@@ -1,14 +1,15 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+
 import java.util.List;
 import java.util.Map;
 
 /**
+ * @author TanDonghai
  * @ClassName StaticHero.java
  * @Description 武将基础信息配置
- * @author TanDonghai
  * @date 创建时间：2017年3月11日 下午4:23:57
- *
  */
 public class StaticHero {
     private int heroId;//
@@ -42,8 +43,27 @@ public class StaticHero {
     private List<Integer> evolveGroup;// 技能组，链接到 hero_evolve表格中的group字段
     private List<List<Integer>> recombination;// 重组的消耗
     protected List<Integer> activateFight; // 天赋激活加成战力
+    /**
+     * 合成英雄需要的碎片数量
+     */
+    private int chips;
+    /**
+     * 登场技能
+     */
+    private List<Integer> onStageSkills;
+    /**
+     * 主动技能
+     */
+    private List<Integer> activeSkills;
+    /**
+     * 每回合充能属性
+     */
+    private List<List<Integer>> chargeEveryRound;
+    /**
+     * 副将容许的兵种
+     */
+    private List<Integer> deputyArms;
     private int activate; // 1为可以觉醒 0为无法觉醒
-    private int chips; // 合成英雄需要的碎片数量
     private List<List<Integer>> interior; // 内政属性
 
     public int getHeroType() {
@@ -322,9 +342,47 @@ public class StaticHero {
         this.interior = interior;
     }
 
+    public List<Integer> getOnStageSkills() {
+        return onStageSkills;
+    }
+
+    public void setOnStageSkills(List<Integer> onStageSkills) {
+        this.onStageSkills = onStageSkills;
+    }
+
+    public List<Integer> getActiveSkills() {
+        return activeSkills;
+    }
+
+    public void setActiveSkills(List<Integer> activeSkills) {
+        this.activeSkills = activeSkills;
+    }
+
+    public List<List<Integer>> getChargeEveryRound() {
+        return chargeEveryRound;
+    }
+
+    public void setChargeEveryRound(List<List<Integer>> chargeEveryRound) {
+        this.chargeEveryRound = chargeEveryRound;
+    }
+
+    public int getChargeEnergy(int attrId) {
+        if (CheckNull.isEmpty(this.chargeEveryRound))
+            return 0;
+        return this.chargeEveryRound.stream().filter(arr -> arr.get(0) == attrId).map(arr -> arr.get(1)).findFirst().orElse(0);
+    }
+
+    public List<Integer> getDeputyArms() {
+        return deputyArms;
+    }
+
+    public void setDeputyArms(List<Integer> deputyArms) {
+        this.deputyArms = deputyArms;
+    }
+
     /**
      * 根据属性id获取将领的基础属性值
-     * 
+     *
      * @param attrId
      * @return
      */
@@ -335,7 +393,7 @@ public class StaticHero {
 
     /**
      * 根据属性id获取将领的资质影响系数（万分比）
-     * 
+     *
      * @param attrId
      * @return
      */
@@ -346,7 +404,7 @@ public class StaticHero {
 
     /**
      * 根据属性id获取品质影响基数（万分比）
-     * 
+     *
      * @param attrId
      * @return
      */
@@ -357,12 +415,21 @@ public class StaticHero {
 
     /**
      * 根据属性id获取将领的成长值
-     * 
+     *
      * @param attrId
      * @return
      */
     public int getAttrGrowthById(int attrId) {
         Integer value = getGrowth().get(attrId);
         return null == value ? 0 : value;
+    }
+
+    public int getTotalSkillNum() {
+        int total = 0;
+        if (CheckNull.nonEmpty(this.onStageSkills))
+            total += this.onStageSkills.size();
+        if (CheckNull.nonEmpty(this.activeSkills))
+            total += this.activeSkills.size();
+        return total;
     }
 }

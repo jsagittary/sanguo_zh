@@ -1,145 +1,48 @@
 package com.gryphpoem.game.zw.resource.util;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
+import com.gryphpoem.cross.constants.FightCommonConstant.AttrId;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCiaDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWarFireDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticFightDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticMentorDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNightRaidMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticPartyDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticTotemDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.dataMgr.cross.StaticNewCrossDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.NewCrossConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
-import com.gryphpoem.game.zw.manager.DressUpDataManager;
-import com.gryphpoem.game.zw.manager.MedalDataManager;
-import com.gryphpoem.game.zw.manager.RankDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.manager.TechDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
-import com.gryphpoem.game.zw.resource.constant.EffectConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.LogParamConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.MentorConstant;
-import com.gryphpoem.game.zw.resource.constant.PlaneConstant;
-import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
-import com.gryphpoem.game.zw.resource.constant.SeasonConst;
-import com.gryphpoem.game.zw.resource.constant.TaskType;
-import com.gryphpoem.game.zw.resource.constant.TechConstant;
-import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Cia;
-import com.gryphpoem.game.zw.resource.domain.p.CrossBuff;
-import com.gryphpoem.game.zw.resource.domain.p.CrossFunctionData;
-import com.gryphpoem.game.zw.resource.domain.p.CrossPersonalData;
-import com.gryphpoem.game.zw.resource.domain.p.CrossWarFireLocalData;
-import com.gryphpoem.game.zw.resource.domain.p.Effect;
-import com.gryphpoem.game.zw.resource.domain.p.FemaleAgent;
-import com.gryphpoem.game.zw.resource.domain.p.Mentor;
-import com.gryphpoem.game.zw.resource.domain.p.MentorEquip;
-import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
-import com.gryphpoem.game.zw.resource.domain.p.MentorSkill;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerRebellion;
-import com.gryphpoem.game.zw.resource.domain.p.RebelBuff;
-import com.gryphpoem.game.zw.resource.domain.p.Tech;
-import com.gryphpoem.game.zw.resource.domain.p.TechLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCabinetPlan;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkinStar;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCrossBuff;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
-import com.gryphpoem.game.zw.resource.domain.s.StaticEquip;
-import com.gryphpoem.game.zw.resource.domain.s.StaticEquipExtra;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroClergy;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroDecorated;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroEvolve;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSeasonSkill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticJewel;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMarchLine;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMedalAuraSkill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMedalGeneralSkill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMedalSpecialSkill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMentor;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMentorSkill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPartyRanks;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneInit;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
-import com.gryphpoem.game.zw.resource.domain.s.StaticRebelBuff;
-import com.gryphpoem.game.zw.resource.domain.s.StaticRingStrengthen;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSeasonTalent;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSkillAction;
-import com.gryphpoem.game.zw.resource.domain.s.StaticStone;
-import com.gryphpoem.game.zw.resource.domain.s.StaticStoneImprove;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSuperEquipLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTotem;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTotemLink;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTotemUp;
-import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
-import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuff;
-import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuffCross;
-import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.Equip;
-import com.gryphpoem.game.zw.resource.pojo.Ring;
-import com.gryphpoem.game.zw.resource.pojo.StoneHole;
-import com.gryphpoem.game.zw.resource.pojo.StoneImprove;
-import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
-import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.domain.p.*;
+import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.CastleSkinEntity;
 import com.gryphpoem.game.zw.resource.pojo.dressup.TitleEntity;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.TalentData;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.medal.RedMedal;
 import com.gryphpoem.game.zw.resource.pojo.season.SeasonTalent;
 import com.gryphpoem.game.zw.resource.pojo.totem.Totem;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
-import com.gryphpoem.game.zw.service.HeroUpgradeService;
-import com.gryphpoem.game.zw.service.TaskService;
-import com.gryphpoem.game.zw.service.TitleService;
-import com.gryphpoem.game.zw.service.TreasureWareService;
-import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.hero.HeroBiographyService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.util.ObjectUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author TanDonghai
@@ -170,7 +73,7 @@ public class CalculateUtil {
                 / Constant.TEN_THROUSAND;
         value += staticHero.getAttrGrowthById(attrId) * lv;
 
-        if (attrId == Constant.AttrId.LEAD) {
+        if (attrId == FightCommonConstant.AttrId.LEAD) {
             // 总兵力=兵力*排数
             value *= (staticHero.getLine() + lineAdd);
         }
@@ -183,11 +86,11 @@ public class CalculateUtil {
             return 0;
         }
         float ratio = 0;// 系数
-        if (attrId == Constant.AttrId.ATTACK) {
+        if (attrId == FightCommonConstant.AttrId.ATTACK) {
             ratio = WorldConstant.ATK_RATIO;
-        } else if (attrId == Constant.AttrId.DEFEND) {
+        } else if (attrId == FightCommonConstant.AttrId.DEFEND) {
             ratio = WorldConstant.DEF_RATIO;
-        } else if (attrId == Constant.AttrId.LEAD) {
+        } else if (attrId == FightCommonConstant.AttrId.LEAD) {
             ratio = WorldConstant.ARMY_RATIO;
         }
         // 攻击=攻击资质*（武将等级）*系数+基础攻击
@@ -221,14 +124,19 @@ public class CalculateUtil {
         if (null == player) {
             return;
         }
-        int[] heroIds = new int[player.heroBattle.length + player.heroCommando.length];
-        System.arraycopy(player.heroBattle, 0, heroIds, 0, player.heroBattle.length);
-        System.arraycopy(player.heroCommando, 0, heroIds, player.heroBattle.length, player.heroCommando.length);
-        for (int i = 1; i < heroIds.length; i++) {
-            int heroId = heroIds[i];
-            Hero hero = player.heros.get(heroId);
+        PartnerHero[] partnerHeroes = player.getPlayerFormation().getHeroBattle();
+        for (int i = 1; i < partnerHeroes.length; i++) {
+            PartnerHero partnerHero = partnerHeroes[i];
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            Hero hero = partnerHero.getPrincipalHero();
             if (hero != null) {
                 processAttr(player, hero, false);
+            }
+            if (CheckNull.nonEmpty(partnerHero.getDeputyHeroList())) {
+                partnerHero.getDeputyHeroList().forEach(hero_ -> {
+                    if (CheckNull.isNull(hero_)) return;
+                    processAttr(player, hero_, false);
+                });
             }
         }
         reCalcFight(player);
@@ -252,11 +160,11 @@ public class CalculateUtil {
       }
 
       // 计算将领本身属性
-      hero.getAttr()[HeroConstant.ATTR_ATTACK] = calcHeroAttrById(staticHero, Constant.AttrId.ATTACK,
+      hero.getAttr()[HeroConstant.ATTR_ATTACK] = calcHeroAttrById(staticHero, FightCommonConstant.AttrId.ATTACK,
       hero.getWash()[HeroConstant.ATTR_ATTACK], hero.getLevel());
-      hero.getAttr()[HeroConstant.ATTR_DEFEND] = calcHeroAttrById(staticHero, Constant.AttrId.DEFEND,
+      hero.getAttr()[HeroConstant.ATTR_DEFEND] = calcHeroAttrById(staticHero, FightCommonConstant.AttrId.DEFEND,
       hero.getWash()[HeroConstant.ATTR_DEFEND], hero.getLevel());
-      hero.getAttr()[HeroConstant.ATTR_LEAD] = calcHeroAttrById(staticHero, Constant.AttrId.LEAD,
+      hero.getAttr()[HeroConstant.ATTR_LEAD] = calcHeroAttrById(staticHero, FightCommonConstant.AttrId.LEAD,
       hero.getWash()[HeroConstant.ATTR_LEAD], hero.getLevel());
 
       // 计算装备加成属性
@@ -320,10 +228,6 @@ public class CalculateUtil {
      * 线上 1服 2服的系数
      */
     private static Map<Integer, Integer> FIGHT_K1;
-    /**
-     * 新的战斗力系数
-     */
-    private static Map<Integer, Integer> FIGHT_K2;
 
     static {
         FIGHT_K1 = new HashMap<>();
@@ -336,15 +240,15 @@ public class CalculateUtil {
         FIGHT_K1.put(AttrId.DEFEND_EXT, 3);
         FIGHT_K1.put(AttrId.FIGHT, 1);
 
-        FIGHT_K2 = new HashMap<>();
-        FIGHT_K2.put(AttrId.ATTACK, 3);
-        FIGHT_K2.put(AttrId.DEFEND, 4);
-        FIGHT_K2.put(AttrId.LEAD, 1);
-        FIGHT_K2.put(AttrId.ATTACK_TOWN, 4);
-        FIGHT_K2.put(AttrId.DEFEND_TOWN, 4);
-        FIGHT_K2.put(AttrId.ATTACK_EXT, 4);
-        FIGHT_K2.put(AttrId.DEFEND_EXT, 4);
-        FIGHT_K2.put(AttrId.FIGHT, 1);
+//        FIGHT_K2 = new HashMap<>();
+//        FIGHT_K2.put(AttrId.ATTACK, 3);
+//        FIGHT_K2.put(AttrId.DEFEND, 4);
+//        FIGHT_K2.put(AttrId.LEAD, 1);
+//        FIGHT_K2.put(AttrId.ATTACK_TOWN, 4);
+//        FIGHT_K2.put(AttrId.DEFEND_TOWN, 4);
+//        FIGHT_K2.put(AttrId.ATTACK_EXT, 4);
+//        FIGHT_K2.put(AttrId.DEFEND_EXT, 4);
+//        FIGHT_K2.put(AttrId.FIGHT, 1);
     }
 
     /**
@@ -353,39 +257,20 @@ public class CalculateUtil {
      * @param player
      */
     public static void reCalcFight(Player player) {
-        // ServerSetting serverSetting = DataResource.ac.getBean(ServerSetting.class);
-        // String environment = serverSetting.getEnvironment();
-        // int serverID = serverSetting.getServerID();
-        // Map<Integer, Integer> keyMap = null;
-        // if ((serverID == 1 || serverID == 2) && "release".equals(environment)) {
-        // // FIGHT_K1 的公式
-        // keyMap = FIGHT_K1;
-        // } else {
-        // keyMap = FIGHT_K2;
-        // }
-        Map<Integer, Integer> keyMap = FIGHT_K2;
-
-        Hero hero = null;
+        Hero hero;
         int fight = 0;
-        int[] heroIds = new int[player.heroBattle.length + player.heroCommando.length];
-        System.arraycopy(player.heroBattle, 0, heroIds, 0, player.heroBattle.length);
-        System.arraycopy(player.heroCommando, 0, heroIds, player.heroBattle.length, player.heroCommando.length);
-        for (int heroId : heroIds) {
-            hero = player.heros.get(heroId);
+        int staticAttribute;
+
+        PartnerHero[] partnerHeroes = player.getPlayerFormation().getHeroBattle();
+        for (PartnerHero partnerHero : partnerHeroes) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            hero = partnerHero.getPrincipalHero();
             if (hero != null) {
                 if (hero.getAttr() != null) {
                     for (int i = 1; i < hero.getAttr().length; i++) { // 基本攻防兵
                         int attrVal = hero.getAttr()[i];
-                        // if (i == HeroConstant.ATTR_ATTACK) {
-                        // fight += attrVal * 3;
-                        // } else if (i == HeroConstant.ATTR_DEFEND) {
-                        // fight += attrVal * 3;
-                        // } else if (i == HeroConstant.ATTR_LEAD) {
-                        // fight += attrVal * 3;
-                        // }
-                        Integer k = keyMap.get(i);
-                        k = k == null ? k = 0 : k;
-                        fight += attrVal * k;
+                        staticAttribute = StaticHeroDataMgr.getStaticAttribute(i);
+                        fight += attrVal * staticAttribute;
                     }
                 }
                 if (hero.getExtAttrs() != null) {
@@ -394,18 +279,8 @@ public class CalculateUtil {
                         i = i == null ? 0 : i;
                         Integer attrVal = kv.getValue();
                         attrVal = attrVal == null ? 0 : attrVal;
-                        // if (i == AttrId.ATTACK_TOWN) {
-                        // fight += attrVal * 3;
-                        // } else if (i == AttrId.DEFEND_TOWN) {
-                        // fight += attrVal * 3;
-                        // } else if (i == AttrId.ATTACK_EXT) {
-                        // fight += attrVal * 3;
-                        // } else if (i == AttrId.DEFEND_EXT) {
-                        // fight += attrVal * 3;
-                        // }
-                        Integer k = keyMap.get(i);
-                        k = k == null ? k = 0 : k;
-                        fight += attrVal * k;
+                        staticAttribute = StaticHeroDataMgr.getStaticAttribute(i);
+                        fight += attrVal * staticAttribute;
                     }
                 }
                 //英雄技能战力
@@ -457,11 +332,11 @@ public class CalculateUtil {
         Map<Integer, Integer> attrMap = calcHeroAttr(player, hero, staticHero);
 
         // 重新计算战斗力
-        if (reCalcFight && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
+        if (reCalcFight && hero.isPrincipleHero() && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
             CalculateUtil.reCalcFight(player);
         }
         // 兵力属性改变时返还兵力
-        if (hero.getAttr()[Constant.AttrId.LEAD] < oldArmyCnt) {
+        if (hero.getAttr()[FightCommonConstant.AttrId.LEAD] < oldArmyCnt) {
             // 兵属下降时才会执行,士兵回营
             returnArmy(player, hero);
         }
@@ -612,22 +487,22 @@ public class CalculateUtil {
 
         // 方便一个人打一个城
         if (player.isTester) {
-            attrMap.put(Constant.AttrId.ATTACK, 9999999);
-            attrMap.put(Constant.AttrId.DEFEND, 9999999);
-            attrMap.put(Constant.AttrId.LEAD, 9999999);
+            attrMap.put(FightCommonConstant.AttrId.ATTACK, 9999999);
+            attrMap.put(FightCommonConstant.AttrId.DEFEND, 9999999);
+            attrMap.put(FightCommonConstant.AttrId.LEAD, 9999999);
         }
 
-        hero.getAttr()[Constant.AttrId.ATTACK] = attrMap.get(Constant.AttrId.ATTACK);
-        hero.getAttr()[Constant.AttrId.DEFEND] = attrMap.get(Constant.AttrId.DEFEND);
-        hero.getAttr()[Constant.AttrId.LEAD] = attrMap.get(Constant.AttrId.LEAD);
-        attrMap.put(Constant.AttrId.LEAD,
-                getFinalLead(player, hero, staticHero.getLine(), hero.getAttr()[Constant.AttrId.LEAD]));
-        hero.getAttr()[Constant.AttrId.LEAD] = attrMap.get(Constant.AttrId.LEAD);
+        hero.getAttr()[FightCommonConstant.AttrId.ATTACK] = attrMap.get(FightCommonConstant.AttrId.ATTACK);
+        hero.getAttr()[FightCommonConstant.AttrId.DEFEND] = attrMap.get(FightCommonConstant.AttrId.DEFEND);
+        hero.getAttr()[FightCommonConstant.AttrId.LEAD] = attrMap.get(FightCommonConstant.AttrId.LEAD);
+        attrMap.put(FightCommonConstant.AttrId.LEAD,
+                getFinalLead(player, hero, staticHero.getLine(), hero.getAttr()[FightCommonConstant.AttrId.LEAD]));
+        hero.getAttr()[FightCommonConstant.AttrId.LEAD] = attrMap.get(FightCommonConstant.AttrId.LEAD);
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "最终值 attrMap=" + attrMap);
 
         // 额外属性计算
         hero.getExtAttrs().clear();
-        for (int attr : Constant.EXT_ATTRS) {
+        for (int attr : FightCommonConstant.EXT_ATTRS) {
             Integer attrVal = attrMap.get(attr);
             if (attrVal == null) {
                 hero.getExtAttrs().put(attr, 0);
@@ -715,13 +590,14 @@ public class CalculateUtil {
         Map<Integer, Integer> tempMap = new HashMap<>();// 基础属性
         Map<Integer, Integer> attrMutMap = new HashMap<>();// 万分比属性
         // 基础属性
-        tempMap.put(HeroConstant.ATTR_ATTACK, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.ATTACK,
-                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.ATTACK), hero.getLevel()));
-        tempMap.put(HeroConstant.ATTR_DEFEND, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.DEFEND,
-                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.DEFEND), hero.getLevel()));
-        tempMap.put(HeroConstant.ATTR_LEAD, CalculateUtil.calcHeroAttrById(staticHero, Constant.AttrId.LEAD,
-                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, Constant.AttrId.LEAD), hero.getLevel()));
-
+        tempMap.put(HeroConstant.ATTR_ATTACK, CalculateUtil.calcHeroAttrById(staticHero, FightCommonConstant.AttrId.ATTACK,
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, FightCommonConstant.AttrId.ATTACK), hero.getLevel()));
+        tempMap.put(HeroConstant.ATTR_DEFEND, CalculateUtil.calcHeroAttrById(staticHero, FightCommonConstant.AttrId.DEFEND,
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, FightCommonConstant.AttrId.DEFEND), hero.getLevel()));
+        tempMap.put(HeroConstant.ATTR_LEAD, CalculateUtil.calcHeroAttrById(staticHero, FightCommonConstant.AttrId.LEAD,
+                DataResource.ac.getBean(HeroUpgradeService.class).getGradeAttrValue(hero, FightCommonConstant.AttrId.LEAD), hero.getLevel()));
+        tempMap.put(AttrId.LOWER_LIMIT_OF_CHARGING, staticHero.getChargeEnergy(AttrId.LOWER_LIMIT_OF_CHARGING));
+        tempMap.put(AttrId.UPPER_CHARGING_LIMIT, staticHero.getChargeEnergy(AttrId.UPPER_CHARGING_LIMIT));
 
         LogUtil.calculate("roleId:", player.roleId, ",heroId:", hero.getHeroId(), "base tempMap=" + tempMap);
 
@@ -800,10 +676,10 @@ public class CalculateUtil {
                                             int buffVal = buff.getValue();
                                             switch (buffType) {
                                                 case StaticWarFire.BUFF_TYPE_3:
-                                                    addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, buffVal);
+                                                    addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, buffVal);
                                                     break;
                                                 case StaticWarFire.BUFF_TYPE_4:
-                                                    addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, buffVal);
+                                                    addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, buffVal);
                                                     break;
                                                 default:
                                                     break;
@@ -825,10 +701,10 @@ public class CalculateUtil {
                                                             switch (sBuff.getType()) {
                                                                 //赛季天赋
                                                                 case StaticWarFireBuff.BUFF_TYPE_ATTK:
-                                                                    addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, seasonBuff);
+                                                                    addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, seasonBuff);
                                                                     break;
                                                                 case StaticWarFireBuff.BUFF_TYPE_DEF:
-                                                                    addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, seasonBuff);
+                                                                    addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, seasonBuff);
                                                                     break;
                                                                 default:
                                                                     break;
@@ -854,10 +730,10 @@ public class CalculateUtil {
             buffs.forEach((buffType, buffVal) -> {
                 switch (buffType) {
                     case NewCrossConstant.CrossWarFire.BUFF_TYPE_3:
-                        addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, buffVal);
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, buffVal);
                         break;
                     case NewCrossConstant.CrossWarFire.BUFF_TYPE_4:
-                        addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, buffVal);
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, buffVal);
                         break;
                     default:
                         break;
@@ -881,10 +757,10 @@ public class CalculateUtil {
                 switch (sBuff.getType()) {
                     //赛季天赋
                     case NewCrossConstant.CrossWarFire.BUFF_TYPE_ATTACK:
-                        addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, seasonBuff);
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, seasonBuff);
                         break;
                     case NewCrossConstant.CrossWarFire.BUFF_TYPE_DEF:
-                        addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, seasonBuff);
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, seasonBuff);
                         break;
                     default:
                         break;
@@ -910,9 +786,9 @@ public class CalculateUtil {
             if (CheckNull.isEmpty(attrList_))
                 continue;
             switch (attrList_.get(0)) {
-                case Constant.AttrId.ATK_MUT:
-                case Constant.AttrId.DEF_MUT:// 防御附加万分比
-                case Constant.AttrId.LEAD_MUT:// 兵力附加万分比
+                case FightCommonConstant.AttrId.ATK_MUT:
+                case FightCommonConstant.AttrId.DEF_MUT:// 防御附加万分比
+                case FightCommonConstant.AttrId.LEAD_MUT:// 兵力附加万分比
                     attrMutMap.merge(attrList_.get(0), attrList_.get(1), Integer::sum);
                     break;
                 default:
@@ -1271,9 +1147,9 @@ public class CalculateUtil {
                 return;
             }
             // 重新计算总兵力
-            tempMap.put(Constant.AttrId.LEAD,
-                    getFinalLead(player, hero, staticHero.getLine(), tempMap.getOrDefault(Constant.AttrId.LEAD, 0)));
-            if (hero.getPos() > 0 || hero.getCommandoPos() > 0) {
+            tempMap.put(FightCommonConstant.AttrId.LEAD,
+                    getFinalLead(player, hero, staticHero.getLine(), tempMap.getOrDefault(FightCommonConstant.AttrId.LEAD, 0)));
+            if ((hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {
                 int fight = reCalcFight(tempMap);
                 Map<Integer, Integer> showFight = hero.getShowFight();
                 int oldFight = showFight.getOrDefault(fightId, 0);
@@ -1306,9 +1182,9 @@ public class CalculateUtil {
                 return;
             }
             // 重新计算总兵力
-            tempMap.put(Constant.AttrId.LEAD,
-                    getFinalLead(player, hero, staticHero.getLine(), tempMap.getOrDefault(Constant.AttrId.LEAD, 0)));
-            if (!CheckNull.isNull(hero) && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {
+            tempMap.put(FightCommonConstant.AttrId.LEAD,
+                    getFinalLead(player, hero, staticHero.getLine(), tempMap.getOrDefault(FightCommonConstant.AttrId.LEAD, 0)));
+            if (!CheckNull.isNull(hero) && (hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {
                 Optional.ofNullable(hero.getShowFight()).
                         ifPresent(showFight -> showFight.merge(fightId, reCalcFight(tempMap), Integer::sum));
             }
@@ -1323,9 +1199,6 @@ public class CalculateUtil {
      */
     public static int reCalcFight(Map<Integer, Integer> attrMap) {
         ServerSetting serverSetting = DataResource.ac.getBean(ServerSetting.class);
-        String environment = serverSetting.getEnvironment();
-        int serverID = serverSetting.getServerID();
-        Map<Integer, Integer> keyMap = FIGHT_K2;
 
         int fight = 0;
         if (!CheckNull.isNull(attrMap)) {
@@ -1334,7 +1207,7 @@ public class CalculateUtil {
                 key = CheckNull.isNull(key) ? 0 : key;
                 Integer val = entry.getValue();
                 val = CheckNull.isNull(val) ? 0 : val;
-                Integer radio = keyMap.get(key);
+                int radio = StaticHeroDataMgr.getStaticAttribute(key);
                 radio = CheckNull.isNull(radio) ? 0 : radio;
                 fight += radio * val;
             }
@@ -1385,13 +1258,13 @@ public class CalculateUtil {
      */
     public static int reCalcHeroSkillFight(Hero hero) {
         int skillFightVal = 0;
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
-            if (Objects.nonNull(heroSkill)) {
-                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
-                return ska != null ? ska.getFightVal() : 0;
-            }
-        }
+//        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
+//            StaticHeroSeasonSkill heroSkill = StaticHeroDataMgr.getHeroSkill(hero.getHeroId(), entry.getKey(), entry.getValue());
+//            if (Objects.nonNull(heroSkill)) {
+//                StaticSkillAction ska = StaticFightDataMgr.getSkillAction(heroSkill.getSkillActionId());
+//                return ska != null ? ska.getFightVal() : 0;
+//            }
+//        }
         //英雄的战力加上技能战力Constant.ShowFightId.HERO
         hero.getShowFight().merge(Constant.ShowFightId.HERO, skillFightVal, Integer::sum);
         return skillFightVal;
@@ -1404,10 +1277,10 @@ public class CalculateUtil {
      * @param hero
      */
     public static void returnArmy(Player player, Hero hero) {
-        if (player != null && hero != null && hero.getAttr()[Constant.AttrId.LEAD] < hero.getCount()) {
+        if (player != null && hero != null && hero.getAttr()[FightCommonConstant.AttrId.LEAD] < hero.getCount() && hero.isPrincipleHero()) {
             StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(hero.getHeroId());
-            int subArmy = hero.getCount() - hero.getAttr()[Constant.AttrId.LEAD];
-            hero.setCount(hero.getAttr()[Constant.AttrId.LEAD]);
+            int subArmy = hero.getCount() - hero.getAttr()[FightCommonConstant.AttrId.LEAD];
+            hero.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
             RewardDataManager rewardDataManager = DataResource.ac.getBean(RewardDataManager.class);
             // 武将和采集将领才会
             if (hero.isOnAcq() || hero.isOnBattle() || hero.isCommando()) {
@@ -1419,21 +1292,6 @@ public class CalculateUtil {
                 change.addChangeType(AwardType.ARMY, staticHero.getType());
                 // 向客户端同步玩家资源数据
                 rewardDataManager.syncRoleResChanged(player, change);
-
-//                int armyType = staticHero.getType();
-//                AwardFrom from = AwardFrom.CALCULATE_CHANGE_FIGHT_ACTION;
-                //记录玩家兵力变化信息
-                // LogLordHelper.filterHeroArm(from, player.account, player.lord, hero.getHeroId(), hero.getCount(), -subArmy, Constant.ACTION_SUB, armyType, hero.getQuality());
-
-                // 上报玩家兵力变化信息
-//                LogLordHelper.playerArm(
-//                        from,
-//                        player,
-//                        armyType,
-//                        Constant.ACTION_SUB,
-//                        -subArmy,
-//                        DataResource.ac.getBean(PlayerDataManager.class).getArmCount(player.resource, armyType)
-//                );
             }
         }
     }
@@ -1610,7 +1468,7 @@ public class CalculateUtil {
             return;
         }
         Cia cia = player.getCia();
-        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {// 上阵将领起作用
+        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {// 上阵将领起作用
             for (FemaleAgent fa : cia.getFemaleAngets().values()) {
                 // 好感度加成
                 Optional.ofNullable(StaticCiaDataMgr.getAgentConfByAgent(fa))
@@ -1642,10 +1500,10 @@ public class CalculateUtil {
                     if (sBuff != null) {
                         switch (sBuff.getType()) {
                             case StaticRebelBuff.BUFF_TYPE_ATTK:
-                                addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, sBuff.getBuffVal());
+                                addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, sBuff.getBuffVal());
                                 break;
                             case StaticRebelBuff.BUFF_TYPE_DEF:
-                                addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, sBuff.getBuffVal());
+                                addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, sBuff.getBuffVal());
                                 break;
                             default:
                                 break;
@@ -1694,7 +1552,7 @@ public class CalculateUtil {
     @Deprecated
     private static void addCityBuffEffect(Player player, Hero hero, Map<Integer, Integer> attrMap) {
         // 上阵将领加成
-        if (!CheckNull.isNull(hero) && hero.getPos() > 0) {
+        if (!CheckNull.isNull(hero) && hero.getPos() > 0 && hero.isPrincipleHero()) {
             WorldDataManager worldDataManager = DataResource.ac.getBean(WorldDataManager.class);
             CommonPb.TwoInt cityStatus = worldDataManager.checkCityBuffer(player.lord.getPos());
             if (!CheckNull.isNull(cityStatus)) {
@@ -1766,7 +1624,7 @@ public class CalculateUtil {
                                 "战机替换的时候, 没有找到战机的配置, planeId:", planeId);
                     }
                     // 基础属性
-                    for (int attr : Constant.ATTRS) {
+                    for (int attr : FightCommonConstant.ATTRS) {
                         addAttrValue(tempMap, attr,
                                 calcPlaneAttrById(sPlaneInit, sPlaneUpgrade, attr, plane.getLevel()));
                     }
@@ -1876,7 +1734,7 @@ public class CalculateUtil {
         }
         Map<Integer, Integer> tempMap = new HashMap<>();// 基础属性
         Cia cia = player.getCia();
-        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0)) {// 上阵将领起作用
+        if (cia != null && (hero.getPos() > 0 || hero.getCommandoPos() > 0) && hero.isPrincipleHero()) {// 上阵将领起作用
             for (FemaleAgent fa : cia.getFemaleAngets().values()) {
                 // 星级加成
                 Optional.ofNullable(StaticCiaDataMgr.getStaticAgentStar(fa))
@@ -1962,26 +1820,26 @@ public class CalculateUtil {
     public static void processFinalAttr(Map<Integer, Integer> attrMap, Map<Integer, Integer> attrMutMap) {
         for (Entry<Integer, Integer> kv : attrMutMap.entrySet()) {
             switch (kv.getKey()) {
-                case Constant.AttrId.ATK_MUT:
-                    Integer v = attrMap.get(Constant.AttrId.ATTACK);
+                case FightCommonConstant.AttrId.ATK_MUT:
+                    Integer v = attrMap.get(FightCommonConstant.AttrId.ATTACK);
                     if (v == null) {
                         continue;
                     }
-                    addAttrValue(attrMap, Constant.AttrId.ATTACK, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
+                    addAttrValue(attrMap, FightCommonConstant.AttrId.ATTACK, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
                     break;
-                case Constant.AttrId.DEF_MUT:
-                    v = attrMap.get(Constant.AttrId.DEFEND);
+                case FightCommonConstant.AttrId.DEF_MUT:
+                    v = attrMap.get(FightCommonConstant.AttrId.DEFEND);
                     if (v == null) {
                         continue;
                     }
-                    addAttrValue(attrMap, Constant.AttrId.DEFEND, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
+                    addAttrValue(attrMap, FightCommonConstant.AttrId.DEFEND, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
                     break;
-                case Constant.AttrId.LEAD_MUT:// 兵力百分比 ,在优先于兵排之前计算
-                    v = attrMap.get(Constant.AttrId.LEAD);
+                case FightCommonConstant.AttrId.LEAD_MUT:// 兵力百分比 ,在优先于兵排之前计算
+                    v = attrMap.get(FightCommonConstant.AttrId.LEAD);
                     if (v == null) {
                         continue;
                     }
-                    addAttrValue(attrMap, Constant.AttrId.LEAD, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
+                    addAttrValue(attrMap, FightCommonConstant.AttrId.LEAD, (int) (v * (kv.getValue() / Constant.TEN_THROUSAND)));
                     break;
                 default:
                     break;
@@ -2284,17 +2142,17 @@ public class CalculateUtil {
                         getSeasonTalentEffectValueByFunc(player, SeasonConst.TALENT_EFFECT_604, effect.getEffectType(), SeasonConst.TALENT_BERLIN_ATTR) / Constant.TEN_THROUSAND;
                 switch (effect.getEffectType()) {
                     case EffectConstant.PREWAR_ATK:
-                        addAttrValue(attrMutMap, Constant.AttrId.ATTACK, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATTACK, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
                         break;
                     case EffectConstant.PREWAR_DEF:
-                        addAttrValue(attrMutMap, Constant.AttrId.DEFEND, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEFEND, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
                         break;
                     case EffectConstant.PREWAR_LEAD:
                         addAttrValue(attrMutMap, AttrId.LEAD, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
                         break;
                     case EffectConstant.PREWAR_ATTACK_EXT:
-//                        addAttrValue(attrMutMap, Constant.AttrId.FIGHT, FIGHT_K2.get(Constant.AttrId.ATTACK_EXT) * effect.getEffectVal());
-                        addAttrValue(attrMutMap, Constant.AttrId.ATTACK_EXT, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
+//                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.FIGHT, FIGHT_K2.get(FightCommonConstant.AttrId.ATTACK_EXT) * effect.getEffectVal());
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATTACK_EXT, (int) (effect.getEffectVal() * (1 + seasonTalentBuff)));
                         break;
                     default:
                         break;
@@ -2315,10 +2173,10 @@ public class CalculateUtil {
             if (effect != null) {
                 switch (effect.getEffectType()) {
                     case EffectConstant.ATK_MUT:
-                        addAttrValue(attrMutMap, Constant.AttrId.ATK_MUT, effect.getEffectVal());
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.ATK_MUT, effect.getEffectVal());
                         break;
                     case EffectConstant.DEF_MUT:
-                        addAttrValue(attrMutMap, Constant.AttrId.DEF_MUT, effect.getEffectVal());
+                        addAttrValue(attrMutMap, FightCommonConstant.AttrId.DEF_MUT, effect.getEffectVal());
                         break;
                     default:
                         break;
