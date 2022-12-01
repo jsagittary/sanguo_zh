@@ -7,17 +7,27 @@ import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
+import com.gryphpoem.game.zw.manager.MailDataManager;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.SmallIdManager;
+import com.gryphpoem.game.zw.manager.WarDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
+import com.gryphpoem.game.zw.pb.GamePb2;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
+import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Building;
 import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
@@ -29,6 +39,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRebelRound;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
@@ -36,21 +47,28 @@ import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
 import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
+import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.CombatService;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.GmCmd;
 import com.gryphpoem.game.zw.service.GmCmdService;
-import com.gryphpoem.game.zw.service.PlayerService;
+import com.gryphpoem.game.zw.service.WallService;
+import com.gryphpoem.game.zw.service.WarService;
+import com.gryphpoem.game.zw.service.WorldService;
 import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -58,6 +76,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -74,17 +93,25 @@ public class BuildHomeCityService implements GmCmdService {
     @Autowired
     private RewardDataManager rewardDataManager;
     @Autowired
-    private PlayerService playerService;
-    @Autowired
     private BuildingDataManager buildingDataManager;
     @Autowired
     private BuildingDao buildingDao;
     @Autowired
-    private SmallIdManager smallIdManager;
-    @Autowired
     private LifeSimulatorService lifeSimulatorService;
     @Autowired
     private FightService fightService;
+    @Autowired
+    private WarService warService;
+    @Autowired
+    private WallService wallService;
+    @Autowired
+    private WorldService worldService;
+    @Autowired
+    private WorldDataManager worldDataManager;
+    @Autowired
+    private WarDataManager warDataManager;
+    @Autowired
+    private MailDataManager mailDataManager;
 
     /**
      * 探索迷雾
@@ -549,8 +576,8 @@ public class BuildHomeCityService implements GmCmdService {
                 )).collect(Collectors.toList());
         builder.addAllDefHero(defendHeroInfo);
 
-        CommonPb.Record record = fightLogic.generateRecord();
-        builder.setRecord(record);
+        // CommonPb.Record record = fightLogic.generateRecord();
+        // builder.setRecord(record);
 
         return fightLogic.getWinState() == 1;
     }
@@ -702,11 +729,93 @@ public class BuildHomeCityService implements GmCmdService {
                     continue;
                 }
                 StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
-
+                Battle battle = new Battle();
+                battle.setType(WorldConstant.BATTLE_TYPE_REBEL_INVADE);
+                battle.setBattleType(staticCombat.getCombatId());
+                battle.setBattleTime(now + 30 * 60 * 60 - 1);
+                battle.setBeginTime(now);
+                battle.setDefencerId(player.roleId);
+                battle.setPos(player.lord.getPos());
+                battle.setDefencer(player);
+                battle.setAtkCamp(Constant.Camp.NPC);
+                battle.setDefCamp(player.lord.getCamp());
+                battle.addAtkArm(staticCombat.getTotalArm());// 进攻方兵力
+                warDataManager.addBattle(player, battle); // 添加战斗
+                // 通知被攻击玩家
+                if (player.isLogin) {
+                    GamePb2.SyncAttackRoleRs.Builder builder = GamePb2.SyncAttackRoleRs.newBuilder();
+                    builder.setAtkCamp(Constant.Camp.NPC);
+                    builder.setAtkName("叛军");
+                    builder.setAtkTime(battle.getBattleTime());
+                    builder.setStatus(WorldConstant.ATTACK_ROLE_1);
+                    builder.setBattleType(9);
+                    BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb2.SyncAttackRoleRs.EXT_FIELD_NUMBER, GamePb2.SyncAttackRoleRs.ext, builder.build());
+                    MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
+                }
             } catch (Exception e) {
                 LogUtil.error("土匪过期清除定时器报错, lordId:" + player.lord.getLordId(), e);
             }
         }
+    }
+
+    // 叛军入侵的战斗逻辑
+    public void rebelInvadeFightLogic(Battle battle, int now, Set<Integer> removeBattleIdSet) {
+        int roundId = battle.getBattleType();
+        StaticRebelRound sRound = StaticWorldDataMgr.getRebelRoundById(roundId);
+        if (sRound == null) {
+            LogUtil.error("匪军叛乱战斗时未找到配置 roundId", roundId);
+            return;
+        }
+
+        // 防守者,兵力 添加
+        warService.addCityDefendRoleHeros(battle);
+        Fighter attacker = fightService.createNpcFighter(sRound.getFrom()); // npc攻击
+        Fighter defender = fightService.createCampBattleDefencer(battle, null);
+        FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
+        warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
+        fightLogic.fight();
+
+        boolean defSuccess = !(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
+
+        long defRoleId = battle.getDefencerId();
+        Player defPlayer = playerDataManager.getPlayer(defRoleId);
+        // 兵力恢复
+        Map<Long, List<CommonPb.Award>> recoverArmyAwardMap = new HashMap<>();
+
+        // 战报信息
+        CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(roundId, attacker, defender, fightLogic, defSuccess, defPlayer);
+        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
+
+        List<CommonPb.Award> dropList = new ArrayList<>();
+        if (!defSuccess) {
+            // 防守失败
+            subResAfterFailDefendRebel();
+        }
+
+        // 发送邮件
+        Turple<Integer, Integer> xy = MapHelper.reducePos(defPlayer.lord.getPos());
+        int defX = xy.getA();
+        int defY = xy.getB();
+        Object[] param = {defPlayer.lord.getNick(), defPlayer.lord.getNick(), defX, defY};
+        if (defSuccess) {
+            // 防守成功，没有损失
+            mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_SUCC, null, now,
+                    recoverArmyAwardMap, param);
+        } else {
+            Object[] params = Arrays.copyOf(param, param.length + 1);
+            params[param.length] = battle.getDefencer().lord.getNick();
+            mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_FAIL, dropList, now,
+                    recoverArmyAwardMap, params);
+        }
+        LogLordHelper.commonLog("rebelInvade", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, defSuccess);
+        // 日志记录
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        removeBattleIdSet.add(battle.getBattleId());
+    }
+
+    // 叛军入侵防守失败后, 扣减资源
+    private void subResAfterFailDefendRebel() {
+
     }
 
     @GmCmd("buildCity")

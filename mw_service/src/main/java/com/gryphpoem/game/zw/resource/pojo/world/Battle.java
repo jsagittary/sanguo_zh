@@ -240,6 +240,10 @@ public class Battle {
         return type == WorldConstant.BATTLE_TYPE_COUNTER_ATK;
     }
 
+    public boolean isRebelInvade() {
+        return type == WorldConstant.BATTLE_TYPE_REBEL_INVADE;
+    }
+
     public void addAtkArm(int add) {
         this.atkArm += add;
     }

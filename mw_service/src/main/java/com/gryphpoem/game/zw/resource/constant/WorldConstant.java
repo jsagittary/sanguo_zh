@@ -918,6 +918,11 @@ public class WorldConstant {
     public static final int BATTLE_TYPE_HIS_REMAIN = 14;
 
     /**
+     * 战斗类型: 叛军入侵
+     */
+    public static final int BATTLE_TYPE_REBEL_INVADE = 15;
+
+    /**
      * 是否计算攻坚或者据守
      *
      * @param battleType

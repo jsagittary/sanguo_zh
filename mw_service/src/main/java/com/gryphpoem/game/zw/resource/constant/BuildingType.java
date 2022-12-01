@@ -112,9 +112,9 @@ public class BuildingType {
     /**
      * 一键派遣居民的建筑类型
      */
-    public static final int[] AUTO_DISPATCH_RESIDENT_BUILDING = { RES_FOOD, RES_ORE, RES_ELE, RES_OIL, FERRY };
+    public static final int[] AUTO_DISPATCH_RESIDENT_BUILDING = { FERRY, RES_ORE, RES_FOOD, RES_OIL, RES_ELE };
 
-    public static final List<Integer> autoDispatchResidentBuilding = new ArrayList<>(Arrays.asList(RES_FOOD, RES_ORE, RES_ELE, RES_OIL, FERRY));
+    public static final List<Integer> autoDispatchResidentBuilding = new ArrayList<>(Arrays.asList(FERRY, RES_ORE, RES_FOOD, RES_OIL, RES_ELE));
 
     /** 建筑可升级 */
     public static final int BUILD_CAN_UP_STATUS = 1;

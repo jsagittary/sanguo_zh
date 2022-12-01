@@ -38,6 +38,7 @@ import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
+import com.gryphpoem.game.zw.service.buildHomeCity.BuildHomeCityService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -126,6 +127,8 @@ public class WarService {
     private SeasonTalentService seasonTalentService;
     @Autowired
     private TitleService titleService;
+    @Autowired
+    private BuildHomeCityService buildHomeCityService;
 
     /**
      * 城战、阵营战的执行定时任务
@@ -155,6 +158,9 @@ public class WarService {
                     } else if (battle.isMineGuardBattle()) {
                         //矿点战斗直接移除
                         warDataManager.removeBattleById(battle.getBattleId());
+                    } else if (battle.isRebelInvade()) {
+                        // 叛军入侵
+                        buildHomeCityService.rebelInvadeFightLogic(battle, now, removeBattleIdSet);
                     }
                     // warDataManager.removePosBattleById(battle.getPos(),
                     // battle.getBattleId());
