@@ -154,7 +154,7 @@ public class BuildingService implements GmCmdService {
                         buildingBase
                                 .setUnlock(buildingDataManager.checkBuildingLock(player, buildingType))
                                 .setId(buildingType)
-                                .setType(buildingType)
+                                .setType(buildingState.getBuildingType())
                                 .setLv(buildingState.getBuildingLv())
                                 .setResidentCnt(buildingState.getResidentCnt())
                                 .setFoundationId(buildingState.getFoundationId())
@@ -1748,6 +1748,10 @@ public class BuildingService implements GmCmdService {
             if (buildingId == BuildingType.MALL) {
                 DataResource.ac.getBean(EconomicOrderService.class).randomNewPreOrder(player);
                 DataResource.ac.getBean(EconomicOrderService.class).synEconomicOrderChange(player);
+            }
+
+            if (buildingId == BuildingType.TRAIN_FACTORY_1 || buildingId == BuildingType.TRAIN_FACTORY_2 || buildingId == BuildingType.TRAIN_FACTORY_3) {
+                buildingState.setBuildingType(0);
             }
         }
 
