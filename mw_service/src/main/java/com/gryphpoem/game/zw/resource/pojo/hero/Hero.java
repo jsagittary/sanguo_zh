@@ -16,13 +16,7 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author TanDonghai
@@ -927,11 +921,11 @@ public class Hero {
         return totem;
     }
 
-    public int getTotemKey(int idx){
+    public int getTotemKey(int idx) {
         return totem[idx];
     }
 
-    public void setTotemKey(int idx,int totemKey) {
+    public void setTotemKey(int idx, int totemKey) {
         totem[idx] = totemKey;
     }
 
@@ -990,7 +984,6 @@ public class Hero {
                 ", awaken=" + awaken +
                 ", sandTableState=" + sandTableState +
                 ", fightVal=" + fightVal +
-                ", skillLevels=" + skillLevels +
                 ", isOnBaitTeam=" + isOnBaitTeam +
                 ", totem=" + Arrays.toString(totem) +
                 ", treasureWare=" + treasureWare +

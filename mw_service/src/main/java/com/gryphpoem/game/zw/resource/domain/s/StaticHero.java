@@ -64,7 +64,6 @@ public class StaticHero {
      */
     private List<Integer> deputyArms;
     private int activate; // 1为可以觉醒 0为无法觉醒
-    private int chips; // 合成英雄需要的碎片数量
     private List<List<Integer>> interior; // 内政属性
 
     public int getHeroType() {

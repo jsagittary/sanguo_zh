@@ -28,6 +28,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.manager.prop.PropDataManager;
 import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mail;

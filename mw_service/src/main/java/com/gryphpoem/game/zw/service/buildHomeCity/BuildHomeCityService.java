@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service.buildHomeCity;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
@@ -11,8 +12,11 @@ import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.SmallIdManager;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
@@ -23,41 +27,19 @@ import com.gryphpoem.game.zw.resource.domain.p.Building;
 import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
-import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
-import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
-import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
+import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.service.CombatService;
-import com.gryphpoem.game.zw.service.FightService;
-import com.gryphpoem.game.zw.service.GmCmd;
-import com.gryphpoem.game.zw.service.GmCmdService;
-import com.gryphpoem.game.zw.service.PlayerService;
+import com.gryphpoem.game.zw.service.*;
 import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -515,7 +497,7 @@ public class BuildHomeCityService implements GmCmdService {
             fightLogic.setCareCrit(false);
             fightLogic.setCareDodge(false);
         }
-        fightLogic.fight();
+        fightLogic.start();
         builder.setCombatResult(fightLogic.getWinState());
         if (fightLogic.getWinState() == 1) {
             int star = DataResource.ac.getBean(CombatService.class).combatStarCalc(attacker.getLost(), attacker.getTotal());
@@ -528,7 +510,7 @@ public class BuildHomeCityService implements GmCmdService {
                         Constant.Role.PLAYER,
                         force.killed,
                         0,
-                        force.id,
+                        force,
                         null,
                         0,
                         0,
@@ -541,7 +523,7 @@ public class BuildHomeCityService implements GmCmdService {
                         Constant.Role.BANDIT,
                         force.killed,
                         0,
-                        force.id,
+                        force,
                         null,
                         0,
                         0,
@@ -549,7 +531,7 @@ public class BuildHomeCityService implements GmCmdService {
                 )).collect(Collectors.toList());
         builder.addAllDefHero(defendHeroInfo);
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         builder.setRecord(record);
 
         return fightLogic.getWinState() == 1;

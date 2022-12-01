@@ -5,159 +5,60 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWarPlaneDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.world.newyork.PlayerNewYorkWar;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.Award;
-import com.gryphpoem.game.zw.pb.CommonPb.BuildingBase;
-import com.gryphpoem.game.zw.pb.CommonPb.ChemicalQue;
-import com.gryphpoem.game.zw.pb.CommonPb.CombatFB;
-import com.gryphpoem.game.zw.pb.CommonPb.DbSpecialProp;
-import com.gryphpoem.game.zw.pb.CommonPb.IntListInt;
-import com.gryphpoem.game.zw.pb.CommonPb.OffLineBuild;
-import com.gryphpoem.game.zw.pb.CommonPb.Report;
-import com.gryphpoem.game.zw.pb.CommonPb.RobinHood;
-import com.gryphpoem.game.zw.pb.CommonPb.RoleOpt;
-import com.gryphpoem.game.zw.pb.CommonPb.SignInInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.StrInt;
-import com.gryphpoem.game.zw.pb.CommonPb.TotemDataInfo;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.pb.CommonPb.TypeAwards;
+import com.gryphpoem.game.zw.pb.CommonPb.*;
 import com.gryphpoem.game.zw.pb.SerializePb;
-import com.gryphpoem.game.zw.pb.SerializePb.DbActivity;
-import com.gryphpoem.game.zw.pb.SerializePb.DbAirshipPersonData;
-import com.gryphpoem.game.zw.pb.SerializePb.DbAtkCityAct;
-import com.gryphpoem.game.zw.pb.SerializePb.DbDay7Act;
-import com.gryphpoem.game.zw.pb.SerializePb.DbDay7ActStatus;
-import com.gryphpoem.game.zw.pb.SerializePb.DbTriggerGiftMap;
-import com.gryphpoem.game.zw.pb.SerializePb.DbWarPlane;
-import com.gryphpoem.game.zw.pb.SerializePb.SerAcquisition;
-import com.gryphpoem.game.zw.pb.SerializePb.SerActivity;
-import com.gryphpoem.game.zw.pb.SerializePb.SerArmy;
-import com.gryphpoem.game.zw.pb.SerializePb.SerBuildQue;
-import com.gryphpoem.game.zw.pb.SerializePb.SerCabinet;
-import com.gryphpoem.game.zw.pb.SerializePb.SerChapterTask;
-import com.gryphpoem.game.zw.pb.SerializePb.SerChemical;
-import com.gryphpoem.game.zw.pb.SerializePb.SerCombat;
-import com.gryphpoem.game.zw.pb.SerializePb.SerCombatFb;
-import com.gryphpoem.game.zw.pb.SerializePb.SerCrossPersonalData;
-import com.gryphpoem.game.zw.pb.SerializePb.SerData;
-import com.gryphpoem.game.zw.pb.SerializePb.SerDrawCardData;
-import com.gryphpoem.game.zw.pb.SerializePb.SerEffects;
-import com.gryphpoem.game.zw.pb.SerializePb.SerEquip;
-import com.gryphpoem.game.zw.pb.SerializePb.SerEquipQue;
-import com.gryphpoem.game.zw.pb.SerializePb.SerFactory;
-import com.gryphpoem.game.zw.pb.SerializePb.SerFriend;
-import com.gryphpoem.game.zw.pb.SerializePb.SerGains;
-import com.gryphpoem.game.zw.pb.SerializePb.SerHero;
-import com.gryphpoem.game.zw.pb.SerializePb.SerMasterApprentice;
-import com.gryphpoem.game.zw.pb.SerializePb.SerMedal;
-import com.gryphpoem.game.zw.pb.SerializePb.SerMill;
-import com.gryphpoem.game.zw.pb.SerializePb.SerPlayerExt;
-import com.gryphpoem.game.zw.pb.SerializePb.SerProp;
-import com.gryphpoem.game.zw.pb.SerializePb.SerRoleOpt;
-import com.gryphpoem.game.zw.pb.SerializePb.SerShop;
-import com.gryphpoem.game.zw.pb.SerializePb.SerSignInInfo;
-import com.gryphpoem.game.zw.pb.SerializePb.SerSuperEquip;
-import com.gryphpoem.game.zw.pb.SerializePb.SerSuperEquipQue;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTask;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTech;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTreasure;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTreasureWares;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTriggerGift;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTrophy;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTypeAwards;
-import com.gryphpoem.game.zw.pb.SerializePb.SerTypeInfo;
-import com.gryphpoem.game.zw.pb.SerializePb.SerWallNpc;
-import com.gryphpoem.game.zw.resource.constant.ActivityConst;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.BuildingType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.EffectConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
-import com.gryphpoem.game.zw.resource.constant.PushConstant;
-import com.gryphpoem.game.zw.resource.domain.p.Account;
+import com.gryphpoem.game.zw.pb.SerializePb.*;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.p.ActBarton;
 import com.gryphpoem.game.zw.resource.domain.p.ActBlackhawk;
-import com.gryphpoem.game.zw.resource.domain.p.ActRobinHood;
-import com.gryphpoem.game.zw.resource.domain.p.ActTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Activity;
 import com.gryphpoem.game.zw.resource.domain.p.ArmQue;
-import com.gryphpoem.game.zw.resource.domain.p.AtkCityAct;
 import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
-import com.gryphpoem.game.zw.resource.domain.p.Building;
-import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
-import com.gryphpoem.game.zw.resource.domain.p.Cabinet;
-import com.gryphpoem.game.zw.resource.domain.p.Chemical;
-import com.gryphpoem.game.zw.resource.domain.p.Cia;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
-import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
-import com.gryphpoem.game.zw.resource.domain.p.CombatInfo;
-import com.gryphpoem.game.zw.resource.domain.p.Common;
-import com.gryphpoem.game.zw.resource.domain.p.CrossPersonalData;
-import com.gryphpoem.game.zw.resource.domain.p.CrossPlayerLocalData;
-import com.gryphpoem.game.zw.resource.domain.p.DataNew;
 import com.gryphpoem.game.zw.resource.domain.p.Day7Act;
 import com.gryphpoem.game.zw.resource.domain.p.DbFriend;
 import com.gryphpoem.game.zw.resource.domain.p.DbMasterApprentice;
-import com.gryphpoem.game.zw.resource.domain.p.DecisiveInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Effect;
 import com.gryphpoem.game.zw.resource.domain.p.EquipQue;
-import com.gryphpoem.game.zw.resource.domain.p.EquipTurnplat;
 import com.gryphpoem.game.zw.resource.domain.p.Factory;
 import com.gryphpoem.game.zw.resource.domain.p.Gains;
 import com.gryphpoem.game.zw.resource.domain.p.History;
-import com.gryphpoem.game.zw.resource.domain.p.Lord;
-import com.gryphpoem.game.zw.resource.domain.p.MailData;
-import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.p.MultCombat;
-import com.gryphpoem.game.zw.resource.domain.p.PersonalActs;
 import com.gryphpoem.game.zw.resource.domain.p.PitchCombat;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerOnHook;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerRebellion;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.p.Sectiontask;
-import com.gryphpoem.game.zw.resource.domain.p.Shop;
-import com.gryphpoem.game.zw.resource.domain.p.SiginInfo;
 import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
 import com.gryphpoem.game.zw.resource.domain.p.StoneInfo;
 import com.gryphpoem.game.zw.resource.domain.p.Summon;
 import com.gryphpoem.game.zw.resource.domain.p.Tech;
-import com.gryphpoem.game.zw.resource.domain.p.TechLv;
 import com.gryphpoem.game.zw.resource.domain.p.TechQue;
-import com.gryphpoem.game.zw.resource.domain.p.Treasure;
-import com.gryphpoem.game.zw.resource.domain.p.TriggerGift;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
+import com.gryphpoem.game.zw.resource.domain.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkin;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
 import com.gryphpoem.game.zw.resource.domain.s.StaticPlaneUpgrade;
-import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.EquipJewel;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
-import com.gryphpoem.game.zw.resource.pojo.MailReportMap;
-import com.gryphpoem.game.zw.resource.pojo.PlaneChip;
-import com.gryphpoem.game.zw.resource.pojo.PlayerWorldWarData;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.pojo.Ring;
 import com.gryphpoem.game.zw.resource.pojo.SmallGame;
 import com.gryphpoem.game.zw.resource.pojo.SuperEquip;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.EconomicOrder;
 import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
@@ -185,31 +86,13 @@ import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
 import com.gryphpoem.game.zw.resource.pojo.world.AirshipPersonData;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.BattlePassPersonInfo;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.PlayerSerHelper;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.PlayerService;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -858,7 +741,7 @@ public class Player {
      */
     private Map<Integer, List<LifeSimulatorInfo>> lifeSimulatorRecordMap = new HashMap<>();
 
-    public Map<Integer,  List<LifeSimulatorInfo>> getLifeSimulatorRecordMap() {
+    public Map<Integer, List<LifeSimulatorInfo>> getLifeSimulatorRecordMap() {
         return lifeSimulatorRecordMap;
     }
 
@@ -1022,6 +905,7 @@ public class Player {
 
     /**
      * 增加幸福度
+     *
      * @param count
      */
     public void addHappiness(int count) {
@@ -1030,6 +914,7 @@ public class Player {
 
     /**
      * 减少幸福度
+     *
      * @param count
      */
     public void subHappiness(int count) {
