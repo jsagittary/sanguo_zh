@@ -79,6 +79,7 @@ public class AppGameServer extends Server {
     private SaveCrossMapServer saveCrossMapServer;
     private SendMsgServer sendMsgServer;
     private SendEventDataServer sendEventDataServer;
+    private SaveMailReportServer saveMailReportServer;
 
     private boolean startSuccess = false;// 记录游戏进程启动是否成功，用于启动失败退出时，跳过数据保存
 
@@ -113,7 +114,7 @@ public class AppGameServer extends Server {
             if (Objects.nonNull(field)) {
                 field.setAccessible(true);
                 Thread shutdownHook = (Thread) field.get(ac);
-                if (Objects.nonNull(shutdownHook)){
+                if (Objects.nonNull(shutdownHook)) {
                     Runtime.getRuntime().removeShutdownHook(shutdownHook);
                 }
             }
@@ -121,7 +122,8 @@ public class AppGameServer extends Server {
             LogUtil.error("移除 spring shutdownHook 失败!!! ", e);
         }
     }
-    private static void removeDubboShutdownHook(){
+
+    private static void removeDubboShutdownHook() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
     }
@@ -289,7 +291,7 @@ public class AppGameServer extends Server {
             try {
                 o.handleOnStartup();
             } catch (Exception e) {
-                LogUtil.error("服务器启动时处理业务数据发生错误," + absGameServices,e);
+                LogUtil.error("服务器启动时处理业务数据发生错误," + absGameServices, e);
                 System.exit(1);
             }
         });
@@ -399,6 +401,7 @@ public class AppGameServer extends Server {
         saveCrossMapServer = SaveCrossMapServer.getIns();
         sendMsgServer = SendMsgServer.getIns(connectServer);
         sendEventDataServer = SendEventDataServer.getIns();
+        saveMailReportServer = SaveMailReportServer.getIns();
 
         startServerThread(savePlayerServer);
         startServerThread(saveGlobalServer);
@@ -591,7 +594,7 @@ public class AppGameServer extends Server {
             }
             Thread.sleep(1000);
             stopMillis = System.currentTimeMillis() - stopMillis;
-            LogUtil.stop(String.format("玩家数据[%s]共耗时%sMS [%s]服停止耗时: %s 秒",savePlayerServer.allSaveCount(),savePlayerServer.stopMillis,DataResource.serverId,stopMillis/1000));
+            LogUtil.stop(String.format("玩家数据[%s]共耗时%sMS [%s]服停止耗时: %s 秒", savePlayerServer.allSaveCount(), savePlayerServer.stopMillis, DataResource.serverId, stopMillis / 1000));
             LogUtil.stop(">>>>>>>>>>>>>>>>>>>>++++++++++++++++++<<<<<<<<<<<<<<<<<<<<");
             LogUtil.stop(">>>>>>>>>>>>>>>>>>>>GAME SERVER STOPED<<<<<<<<<<<<<<<<<<<<");
             LogUtil.stop(">>>>>>>>>>>>>>>>>>>>++++++++++++++++++<<<<<<<<<<<<<<<<<<<<");

@@ -16,7 +16,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -122,10 +121,8 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         // 战报生成
         SolarTermsDataManager solarTermsDataManager = DataResource.ac.getBean(SolarTermsDataManager.class);
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null); // 节气
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
 
         Player atkPlayer = battle.getSponsor();
         Lord atkLord = atkPlayer.lord;
@@ -236,9 +233,7 @@ public class AttackPlayerBattle extends AbsCommonBattle {
         warService.addBattleHeroExp(defender.forces, AwardFrom.CITY_BATTLE_DEFEND, rpt, false, true,
                 battle.isCityBattle(), changeMap, true, exploitAwardMap);
 
-        CommonPb.Report.Builder report = CommonPb.Report.newBuilder();
-        report.setTime(now);
-        report.setRptPlayer(rpt);
+        CommonPb.Report report = DataResource.ac.getBean(FightRecordDataManager.class).generateReport(rpt.build(), fightLogic, now);
 
         taskDataManager.updTask(atkPlayer, TaskType.COND_ATTCK_PLAYER_CNT, 1, defLord.getLevel());
         // 检测并添加荣耀日报

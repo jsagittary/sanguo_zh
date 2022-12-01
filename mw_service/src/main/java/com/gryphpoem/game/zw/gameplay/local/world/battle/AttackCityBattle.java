@@ -19,7 +19,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.CityMapEntity;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -154,11 +153,9 @@ public class AttackCityBattle extends AbsCommonBattle {
         // 战报生成
         SolarTermsDataManager solarTermsDataManager = DataResource.ac.getBean(SolarTermsDataManager.class);
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         // 节气
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
-        rpt.setRecord(record);
 
         Player atkPlayer = battle.getSponsor();
         Lord atkLord = atkPlayer.lord;
@@ -332,9 +329,7 @@ public class AttackCityBattle extends AbsCommonBattle {
             recordMap = warService.recordRoleFight(defender.forces, false);
         }
 
-        CommonPb.Report.Builder report = CommonPb.Report.newBuilder();
-        report.setTime(now);
-
+        CommonPb.Report report = DataResource.ac.getBean(FightRecordDataManager.class).generateReport(rpt.build(), fightLogic, now);
         warService.addBattleHeroExp(attacker.forces, AwardFrom.CAMP_BATTLE_ATTACK, rpt, true, false,
                 battle.isCityBattle(), changeMap, true, exploitAwardMap);
         if (!battle.isAtkNpc()) {
@@ -343,7 +338,6 @@ public class AttackCityBattle extends AbsCommonBattle {
         } else {
             DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.CITY, true);
         }
-        report.setRptPlayer(rpt);
         // 军团礼包消息推送
         Optional.of(campDataManager.getParty(battle.getAtkCamp()))
                 .ifPresent((party) -> campService.checkHonorRewardAndSendSysChat(party));

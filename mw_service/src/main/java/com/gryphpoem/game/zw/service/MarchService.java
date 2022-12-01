@@ -11,7 +11,6 @@ import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDaily
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
@@ -121,6 +120,8 @@ public class MarchService {
     private TitleService titleService;
     @Autowired
     private RelicsFightService relicsFightService;
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
 
     /**
      * 行军结束处理逻辑
@@ -488,7 +489,6 @@ public class MarchService {
         }
 
         // 战斗记录
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         Lord lord = player.lord;
         boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
@@ -503,7 +503,6 @@ public class MarchService {
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
         DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
-        rpt.setRecord(record);
 
         // 邮件参数
         List<String> tParam = new ArrayList<>();
@@ -768,7 +767,7 @@ public class MarchService {
             }
             // 发送战报
             CommonPb.RptAtkBandit rpt_ = rpt.build();
-            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt_, now),
+            mailDataManager.sendReportMail(player, fightRecordDataManager.generateReport(rpt_, fightLogic, now),
                     MailConstant.MOLD_ATK_BANDIT_SUCC, dropList, now, tParam, cParam, recoverArmyAward);
             // 更新功能活动数据
             DataResource.ac.getBean(DrawCardPlanTemplateService.class).updateFunctionData(player, FunctionTrigger.DEFEAT_THE_ROBBER, 1);
@@ -778,7 +777,7 @@ public class MarchService {
                 honorDailyService.addAndCheckHonorReport2s(player, HonorDailyConstant.COND_ID_9);
             }
             CommonPb.RptAtkBandit rpt_ = rpt.build();
-            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt_, now),
+            mailDataManager.sendReportMail(player, fightRecordDataManager.generateReport(rpt_, fightLogic, now),
                     MailConstant.MOLD_ATK_BANDIT_FAIL, null, now, tParam, cParam, recoverArmyAward);
         }
         LogLordHelper.commonLog("attckBandit", AwardFrom.COMMON, player, staticBandit.getBanditId(), isSuccess);
@@ -1297,7 +1296,6 @@ public class MarchService {
         }
 
         // 战斗记录
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         Lord lord = player.lord;
         // 是否战胜目标
         boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
@@ -1313,7 +1311,6 @@ public class MarchService {
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
         DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, false);
-        rpt.setRecord(record);
 
         // 邮件标题参数
         List<String> tParam = new ArrayList<>();
@@ -1381,7 +1378,7 @@ public class MarchService {
             if (recoverArmyAwardMap.containsKey(player.roleId)) {
                 recoverList = recoverArmyAwardMap.get(player.roleId);
             }
-            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt.build(), now),
+            mailDataManager.sendReportMail(player, fightRecordDataManager.generateReport(rpt.build(), fightLogic, now),
                     MailConstant.MOLD_ATK_LEAD_SUCC, dropList, now, tParam, cParam, recoverList);
 
             // 给目标军团加点兵统领经验
@@ -1395,7 +1392,7 @@ public class MarchService {
             }
 
         } else {
-            mailDataManager.sendReportMail(player, worldService.createAtkBanditReport(rpt.build(), now),
+            mailDataManager.sendReportMail(player, fightRecordDataManager.generateReport(rpt.build(), fightLogic, now),
                     MailConstant.MOLD_ATK_LEAD_FAIL, null, now, tParam, cParam);
         }
         // 部队返回
@@ -1605,7 +1602,7 @@ public class MarchService {
         Player firstAttackPlayer = playerDataManager.getPlayer(battleRoles.get(0).getRoleId());
         CommonPb.RptAtkPlayer.Builder rpt = createAirShipRptBuilder(camp, attacker, defender, fightLogic, atkSuccess,
                 firstAttackPlayer, airShipId, airShipPos);
-        CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         StaticAirship sAirShip = StaticWorldDataMgr.getAirshipMap().get(airShipId);
         if (CheckNull.isNull(sAirShip)) {
@@ -1823,8 +1820,6 @@ public class MarchService {
             }
         }
         DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
-        rpt.setRecord(record);
         return rpt;
     }
 

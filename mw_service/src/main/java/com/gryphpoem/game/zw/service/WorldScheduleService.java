@@ -81,6 +81,9 @@ public class WorldScheduleService {
     @Autowired
     private FightSettleLogic fightSettleLogic;
 
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
+
     /**
      * 世界进程排行榜数据
      */
@@ -405,12 +408,9 @@ public class WorldScheduleService {
         StaticSchedule staticSchedule = StaticWorldDataMgr.getScheduleById(curId);
         List<CommonPb.Award> awards = new ArrayList<>();
 
-        // 战斗记录
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
-
-        CommonPb.RptAtkBandit.Builder rpt = createAtkScheduleBossRpt(player, 0, curId, attacker, defender, record,
+        CommonPb.RptAtkBandit.Builder rpt = createAtkScheduleBossRpt(player, 0, curId, attacker, defender, null,
                 player.lord, isSuccess);
-        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), TimeHelper.getCurrentSecond());
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, TimeHelper.getCurrentSecond());
 
         // 有伤害
         if (attacker.hurt > 0) {
@@ -825,7 +825,7 @@ public class WorldScheduleService {
      * @param dropList
      */
     private void sendAtkScheduleBossMail(Player player, int now, int pos, int curId,
-                                         List<CommonPb.Award> recoverArmyAward, Lord lord, boolean isSuccess, CommonPb.Report.Builder report,
+                                         List<CommonPb.Award> recoverArmyAward, Lord lord, boolean isSuccess, CommonPb.Report report,
                                          List<CommonPb.Award> dropList) {
         Turple<Integer, Integer> xy;
         List<String> tParam = new ArrayList<>();
@@ -870,7 +870,6 @@ public class WorldScheduleService {
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
         worldService.buildRptHeroData(defender, rpt, false);
-        rpt.setRecord(record);
         return rpt;
     }
 

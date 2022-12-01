@@ -68,6 +68,10 @@ public class FightUtil {
         return idGenerator++;
     }
 
+    public static long getFightIdGenerator() {
+        return FIGHT_ID_GENERATOR;
+    }
+
     public static long getFightIdAndIncrement() {
         return ++FIGHT_ID_GENERATOR;
     }

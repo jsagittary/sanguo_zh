@@ -78,6 +78,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
     private WorldScheduleService worldScheduleService;
     @Autowired
     private SeasonTalentService seasonTalentService;
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
 
     /**
      * 获取反攻德意志信息
@@ -901,7 +903,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         // Report战报
         CommonPb.RptAtkPlayer.Builder rpt = createBossDefRptBuilderPb(counterAttack, attacker, defender, fightLogic,
                 beforeTotal, beforeLost, atkSuc);
-        CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), sendMailTime);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         // 发送参与邮件
         sendBossDefBattleMail(battle, sendMailTime, counterAttack, recoverArmyAwardMap, creditMap, report);
@@ -1037,7 +1039,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         int currentAtkCnt = counterAttack.getCurrentAtkCnt();
         CommonPb.RptAtkBandit.Builder rpt = fightService
                 .createRptBuilderPb(currentAtkCnt, attacker, defender, fightLogic, defSuc, defPlayer);
-        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), sendMailTime);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         // 防守成功, 所有参与防守的玩家获得防守成功积分
         if (defSuc) {
@@ -1240,7 +1242,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
      * @param recoverArmyAwardMap 损兵恢复
      * @param currentAtkCnt       当前进攻轮数
      */
-    private void sendBossAtkBattleMail(Battle battle, CommonPb.Report.Builder report, boolean defSuc,
+    private void sendBossAtkBattleMail(Battle battle, CommonPb.Report report, boolean defSuc,
                                        Map<Long, Integer> creditMap, int now, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap,
                                        int currentAtkCnt) {
         List<Player> defPlayers = battle.getDefList().stream().map(br -> br.getRoleId()).distinct()
@@ -1272,7 +1274,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
      */
     private void sendBossDefBattleMail(Battle battle, int now, CounterAttack counterAttack,
                                        Map<Long, List<CommonPb.Award>> recoverArmyAwardMap, Map<Long, Integer> creditMap,
-                                       CommonPb.Report.Builder report) {
+                                       CommonPb.Report report) {
         List<Player> atkPlayerList = battle.getAtkList().stream().map(br -> br.getRoleId()).distinct()
                 .map(rId -> playerDataManager.getPlayer(rId)).filter(p -> p != null).collect(Collectors.toList());
         atkPlayerList.forEach(p -> {

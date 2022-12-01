@@ -11,7 +11,6 @@ import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
@@ -134,6 +133,8 @@ public class BerlinWarService {
 
     @Autowired
     private TaskDataManager taskDataManager;
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
 
     /**
      * 获取柏林会战信息
@@ -1653,7 +1654,6 @@ public class BerlinWarService {
                 subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
                 updArmyRank(defender, ids);
             }
-            BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
             // 战斗记录
             Player defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
@@ -1661,7 +1661,6 @@ public class BerlinWarService {
 
             rpt.setResult(atkSuccess);
             rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
-            rpt.setRecord(record);
             // 记录发起进攻和防守方的信息
             rpt.setAttack(
                     PbHelper.createRptMan(atkLord.getPos(), atkLord.getNick(), atkLord.getVip(), atkLord.getLevel(),
@@ -1677,9 +1676,9 @@ public class BerlinWarService {
             addBerlinBattleHeroRpt(attacker, rpt, true);
             addBerlinBattleHeroRpt(defender, rpt, false);
 
-            CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+            CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
             // 记录战况
-            berlinWar.getReports().addFirst(report.build());
+            berlinWar.getReports().addFirst(report);
 
             Hero hero = null;
             if (defPlayer.heros.containsKey(def.id)) {
@@ -1852,7 +1851,6 @@ public class BerlinWarService {
                 subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
                 updArmyRank(defender, ids);
             }
-            BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
             // 战斗记录
             int pos = berlinCityInfo.getPos();
@@ -1865,7 +1863,6 @@ public class BerlinWarService {
 
             rpt.setResult(atkSuccess);
             rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
-            rpt.setRecord(record);
             // 记录发起进攻和防守方的信息
             rpt.setAttack(PbHelper.createRptMan(atkLord.getPos(), atkLord.getNick(), atkLord.getVip(), atkLord.getLevel(),
                     atkLord.getLordId()));
@@ -1884,9 +1881,9 @@ public class BerlinWarService {
             }
             addBerlinBattleHeroRpt(attacker, rpt, true);
             addBerlinBattleHeroRpt(defender, rpt, false);
-            CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+            CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
             // 记录战况
-            berlinWar.getReports().addFirst(report.build());
+            berlinWar.getReports().addFirst(report);
 
             // 战斗日志
             String sb = "柏林会战战斗日志, " + berlinWarLog(atkLord.getLordId(), attacker, true) + ", " +
@@ -2179,7 +2176,6 @@ public class BerlinWarService {
             subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
             updArmyRank(defender, ids);
         }
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         // 战斗记录
         int pos = berlinCityInfo.getPos();
@@ -2192,7 +2188,6 @@ public class BerlinWarService {
 
         rpt.setResult(atkSuccess);
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
-        rpt.setRecord(record);
         // 记录发起进攻和防守方的信息
         rpt.setAttack(PbHelper.createRptMan(atkLord.getPos(), atkLord.getNick(), atkLord.getVip(), atkLord.getLevel(),
                 atkLord.getLordId()));
@@ -2211,9 +2206,9 @@ public class BerlinWarService {
         }
         addBerlinBattleHeroRpt(attacker, rpt, true);
         addBerlinBattleHeroRpt(defender, rpt, false);
-        CommonPb.Report.Builder report = worldService.createAtkPlayerReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
         // 记录战况
-        berlinWar.getReports().addFirst(report.build());
+        berlinWar.getReports().addFirst(report);
 
         // 战斗日志
         String sb = "柏林会战战斗日志, " + berlinWarLog(atkLord.getLordId(), attacker, true) + ", " +

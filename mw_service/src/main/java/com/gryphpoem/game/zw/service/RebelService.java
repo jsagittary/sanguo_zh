@@ -17,7 +17,6 @@ import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
-import com.gryphpoem.game.zw.pb.CommonPb.Report.Builder;
 import com.gryphpoem.game.zw.pb.GamePb4.*;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
@@ -68,6 +67,8 @@ public class RebelService extends BaseAwkwardDataManager {
     private static final String END_CALLBACK_NAME = "END_CALLBACK_NAME";
     private static final String ROUND_NEXT_CALLBACK_NAME = "ROUND_NEXT_CALLBACK_NAME";
 
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
     @Autowired
     private WorldDataManager worldDataManager;
     @Autowired
@@ -767,7 +768,7 @@ public class RebelService extends BaseAwkwardDataManager {
         // 战报信息
         CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(roundId, attacker, defender, fightLogic,
                 defSucce, defPlayer);
-        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
         List<Award> dropList = new ArrayList<>();
         if (defSucce) { // 防守成功
             // 加积分
@@ -817,7 +818,7 @@ public class RebelService extends BaseAwkwardDataManager {
      * @param now
      * @param recoverArmyAwardMap
      */
-    private void sendRebelBattleMail(Battle battle, Builder report, boolean defSucce, List<Award> dropList, int now,
+    private void sendRebelBattleMail(Battle battle, CommonPb.Report report, boolean defSucce, List<Award> dropList, int now,
                                      Map<Long, List<Award>> recoverArmyAwardMap, StaticRebelRound sRound) {
         final long defRoleId = battle.getDefencerId();
         Player defPlayer = battle.getDefencer();

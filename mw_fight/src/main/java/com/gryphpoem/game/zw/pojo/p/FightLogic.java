@@ -24,17 +24,20 @@ public class FightLogic {
     public long fightId;
     // 进攻方胜负 1.胜 2.负
     private int winState = -1;
+    /**
+     * 是否记录战报
+     */
+    private boolean recordFlag;
 
     public FightLogic() {
     }
 
     public FightLogic(Fighter attacker, Fighter defender, boolean recordFlag, int battleType) {
         this.fightId = FightUtil.getFightIdAndIncrement();
+        this.recordFlag = recordFlag;
         attacker.isAttacker = true;
         this.contextHolder = new FightContextHolder(attacker, defender, battleType);
-        if (recordFlag) {
-            contextHolder.setRecordData(BattlePb.BattleRoundPb.newBuilder().setKeyId(String.valueOf(fightId)));
-        }
+        contextHolder.setRecordData(BattlePb.BattleRoundPb.newBuilder().setKeyId(String.valueOf(fightId)));
 
         // 记录勋章光环
         packAura();
@@ -372,5 +375,9 @@ public class FightLogic {
     }
 
     public void setCareCrit(boolean careCrit) {
+    }
+
+    public boolean isRecordFlag() {
+        return this.recordFlag;
     }
 }

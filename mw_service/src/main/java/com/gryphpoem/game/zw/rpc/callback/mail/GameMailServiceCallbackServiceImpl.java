@@ -8,11 +8,13 @@ import com.gryphpoem.cross.gameplay.mail.c2g.service.GameMailService;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.manager.FightRecordDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -20,6 +22,10 @@ import java.util.*;
 
 @Service
 public class GameMailServiceCallbackServiceImpl implements GameMailService {
+
+
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
 
     @Override
     public void sendNormalMail(CrossMailTemplate crossMailTemplate) {
@@ -57,7 +63,7 @@ public class GameMailServiceCallbackServiceImpl implements GameMailService {
         }
 
 
-        CommonPb.Report.Builder report = null;
+        CommonPb.Report report = null;
         List<CommonPb.Award> mailDropList = null;
         Map<Long, List<CommonPb.Award>> mailRecoverList = null;
         try {
@@ -78,14 +84,17 @@ public class GameMailServiceCallbackServiceImpl implements GameMailService {
             }
 
             if (!ObjectUtils.isEmpty(reportMail.getReport())) {
-                report = CommonPb.Report.parseFrom(reportMail.getReport()).toBuilder();
+                report = CommonPb.Report.parseFrom(reportMail.getReport());
             }
+//            if (!ObjectUtils.isEmpty(reportMail.getRecord())) {
+//                record = CommonPb.Record.parseFrom(reportMail.getRecord());
+//            }
         } catch (Exception e) {
             LogUtil.error("parseFrom sendReportMail wrong, e: ", e);
             return;
         }
 
-        CommonPb.Report.Builder finalReport = report;
+        CommonPb.Report finalReport = report;
         List<CommonPb.Award> finalMailDropList = mailDropList;
         Map<Long, List<CommonPb.Award>> finalMailRecoverList = mailRecoverList;
         Java8Utils.syncMethodInvoke(() -> {
@@ -112,14 +121,14 @@ public class GameMailServiceCallbackServiceImpl implements GameMailService {
             return;
         }
 
-        CommonPb.Report.Builder report = null;
+        CommonPb.Report report = null;
         CommonPb.MailCollect mailCollectPb = null;
         Map<Long, List<CommonPb.Award>> mailRecoverList = null;
         try {
             if (!ObjectUtils.isEmpty(crossCollectMail.getCollect()))
                 mailCollectPb = CommonPb.MailCollect.parseFrom(crossCollectMail.getCollect());
             if (!ObjectUtils.isEmpty(crossCollectMail.getReport())) {
-                report = CommonPb.Report.parseFrom(crossCollectMail.getReport()).toBuilder();
+                report = CommonPb.Report.parseFrom(crossCollectMail.getReport());
             }
             int recoverListSize = CheckNull.isEmpty(crossCollectMail.getRecover()) ? 0 : crossCollectMail.getRecover().size();
             if (recoverListSize > 0) {
@@ -133,7 +142,7 @@ public class GameMailServiceCallbackServiceImpl implements GameMailService {
             LogUtil.error("GameMailService sendCollectMail parseFrom wrong, e: ", e);
         }
 
-        CommonPb.Report.Builder finalReport = report;
+        CommonPb.Report finalReport = report;
         CommonPb.MailCollect finalMailCollectPb = mailCollectPb;
         Map<Long, List<CommonPb.Award>> finalMailRecoverList = mailRecoverList;
         Java8Utils.syncMethodInvoke(() -> {

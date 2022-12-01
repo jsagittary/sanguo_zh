@@ -32,8 +32,14 @@ import com.gryphpoem.game.zw.resource.pojo.sandtable.SandTableGroup;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
-import com.gryphpoem.game.zw.service.*;
-import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.BerlinWarService;
+import com.gryphpoem.game.zw.service.CounterAtkService;
+import com.gryphpoem.game.zw.service.LightningWarService;
+import com.gryphpoem.game.zw.service.RebelService;
+import com.gryphpoem.game.zw.service.activity.ActivityAuctionService;
+import com.gryphpoem.game.zw.service.activity.ActivityChristmasService;
+import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
+import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -121,8 +127,8 @@ public class ScheduleManager {
         addJob(sched, "DelTreasureWareJob", "DelTreasureWareJob", DelTreasureWareJob.class, "5 0 * * * ? *");// 整点处理, 有五秒的偏移, [21:00:5, 22:00:5, 23:00:5, 00:00:5]
 
         // 定时刷新土匪
-        List<Integer> banditRefreshTime = Constant.BANDIT_REFRESH_TIME;
-        addJob(sched, "RefreshBanditJob", "RefreshBanditJob", RefreshBanditJob.class, "0 " + banditRefreshTime.get(1) + " " + banditRefreshTime.get(0) + " * * * *");
+//        List<Integer> banditRefreshTime = Constant.BANDIT_REFRESH_TIME;
+//        addJob(sched, "RefreshBanditJob", "RefreshBanditJob", RefreshBanditJob.class, "0 " + banditRefreshTime.get(1) + " " + banditRefreshTime.get(0) + " * * * *");
 
         initBerlinJob();
         initLightningWarJob();

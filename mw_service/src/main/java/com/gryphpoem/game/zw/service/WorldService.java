@@ -23,13 +23,16 @@ import com.gryphpoem.game.zw.gameplay.local.world.battle.BaseMapBattle;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
-import com.gryphpoem.game.zw.pb.*;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.CommonPb.Prop;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb1.SynWallCallBackRs;
+import com.gryphpoem.game.zw.pb.GamePb2;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
+import com.gryphpoem.game.zw.pb.GamePb3;
+import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.GetAreaCentreCityRs;
 import com.gryphpoem.game.zw.pb.GamePb4.GetBattleByIdRq;
 import com.gryphpoem.game.zw.pb.GamePb4.GetBattleByIdRs;
@@ -123,6 +126,9 @@ public class WorldService {
 
     @Autowired
     private FightSettleLogic fightSettleLogic;
+
+    @Autowired
+    private FightRecordDataManager fightRecordDataManager;
 
     @Autowired
     private TechDataManager techDataManager;
@@ -3790,7 +3796,6 @@ public class WorldService {
         Lord defLord = defPlayer.lord;
         boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(atkLord.getPos(), atkLord.getNick(), atkLord.getVip(), atkLord.getLevel()));
@@ -3803,11 +3808,10 @@ public class WorldService {
         int addExp = 0;// 进攻玩家，只有进攻胜利时，进攻方会获得玩家经验。经验（临时）= 进攻方玩家等级*2
         rpt.addAllAtkHero(fightSettleLogic.mineFightHeroExpReward(atkplayer, attacker.forces));
         rpt.addAllDefHero(fightSettleLogic.mineFightHeroExpReward(defPlayer, defender.forces));
-        rpt.setRecord(record);
 
         Turple<Integer, Integer> atkPos = MapHelper.reducePos(atkLord.getPos());
         Turple<Integer, Integer> defPos = MapHelper.reducePos(defLord.getPos());
-        CommonPb.Report.Builder report = createAtkPlayerReport(rpt.build(), now);
+        CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
         //上报数数(攻击方)
         EventDataUp.battle(atkplayer.account, atkplayer.lord, attacker, "atk", CheckNull.isNull(army.getBattleId()) ? "0" : String.valueOf(army.getBattleId()), String.valueOf(WorldConstant.BATTLE_TYPE_MINE_GUARD),

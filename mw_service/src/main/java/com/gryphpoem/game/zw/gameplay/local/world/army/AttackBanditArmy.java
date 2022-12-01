@@ -14,7 +14,6 @@ import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
@@ -151,8 +150,6 @@ public class AttackBanditArmy extends BaseArmy {
         }
 
         // 战斗记录
-        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
-
         Lord lord = armyPlayer.lord;
         boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
@@ -165,7 +162,6 @@ public class AttackBanditArmy extends BaseArmy {
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(armyPlayer, attacker.forces));
         worldService.buildRptHeroData(defender, rpt, false);
-        rpt.setRecord(record);
         // 战斗结果处理
         fightResultLogic(now, armyPlayer, cMap, targetPos, staticBandit, attacker, recoverArmyAward, isSuccess, rpt);
 
@@ -207,6 +203,7 @@ public class AttackBanditArmy extends BaseArmy {
         WorldWarSeasonDailyRestrictTaskService dailyRestrictTaskService = DataResource.ac
                 .getBean(WorldWarSeasonDailyRestrictTaskService.class);
         TaskDataManager taskDataManager = DataResource.ac.getBean(TaskDataManager.class);
+        FightRecordDataManager fightRecordDataManager = DataResource.ac.getBean(FightRecordDataManager.class);
 
         Turple<Integer, Integer> xy;// 邮件参数
         List<String> tParam = new ArrayList<>();
@@ -286,7 +283,7 @@ public class AttackBanditArmy extends BaseArmy {
             }
             cParam.add(armyPlayer.lord.getNick());
             // 发送邮件
-            mailDataManager.sendReportMail(armyPlayer, worldService.createAtkBanditReport(rpt.build(), now),
+            mailDataManager.sendReportMail(armyPlayer, fightRecordDataManager.generateReport(rpt.build(), attacker.fightLogic, now),
                     MailConstant.MOLD_ATK_BANDIT_SUCC, dropList, now, tParam, cParam, recoverArmyAward);
             activityDataManager.updDay7ActSchedule(armyPlayer, ActivityConst.ACT_TASK_ATK_BANDIT, staticBandit.getLv());
 
@@ -299,8 +296,9 @@ public class AttackBanditArmy extends BaseArmy {
             // 世界争霸攻打匪军完成记录
             dailyRestrictTaskService.updatePlayerDailyRestrictTaskAttackBandit(armyPlayer, staticBandit);
         } else {
+            CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), attacker.fightLogic, now);
             // 发送战报
-            mailDataManager.sendReportMail(armyPlayer, worldService.createAtkBanditReport(rpt.build(), now),
+            mailDataManager.sendReportMail(armyPlayer, report,
                     MailConstant.MOLD_ATK_BANDIT_FAIL, null, now, tParam, cParam, recoverArmyAward);
             // 荣耀日报 打匪军失败更新
             honorDailyService.addAndCheckHonorReport2s(armyPlayer, HonorDailyConstant.COND_ID_9);
