@@ -6,9 +6,9 @@ import com.gryphpoem.game.zw.resource.domain.p.DbSerializeId;
 import com.gryphpoem.game.zw.server.thread.SaveCommonThread;
 
 /**
+ * @author QiuKun
  * @ClassName SaveCommonServer.java
  * @Description 保存数据服务抽取
- * @author QiuKun
  * @date 2019年4月2日
  */
 public abstract class SaveCommonServer<DbData extends DbSerializeId> extends SaveServer {
@@ -21,7 +21,7 @@ public abstract class SaveCommonServer<DbData extends DbSerializeId> extends Sav
     public void saveData(Object object) {
         @SuppressWarnings("unchecked")
         DbData data = (DbData) object;
-        SaveThread thread = threadPool.get((data.getSerializeIdId() % threadNum));
+        SaveThread thread = threadPool.get((int) (data.getSerializeIdId() % threadNum));
         thread.add(object);
     }
 
@@ -34,7 +34,7 @@ public abstract class SaveCommonServer<DbData extends DbSerializeId> extends Sav
 
     /**
      * 存储一个逻辑
-     * 
+     *
      * @param data
      */
     protected abstract void saveOne(DbData data);
