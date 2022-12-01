@@ -409,6 +409,7 @@ public class AppGameServer extends Server {
         startServerThread(saveActivityServer);
         startServerThread(saveCrossMapServer);
         startServerThread(sendEventDataServer);
+        startServerThread(saveMailReportServer);
         // quartz 任务启动
         ScheduleManager.getInstance().initRegisterJob();
     }
