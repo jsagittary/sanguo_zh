@@ -574,6 +574,7 @@ public class AppGameServer extends Server {
             LogUtil.stop(savePartyServer.serverName() + " has done with save :" + savePartyServer.allSaveCount());
             LogUtil.stop(saveActivityServer.serverName() + " has done with save :" + saveActivityServer.allSaveCount());
             LogUtil.stop(saveCrossMapServer.serverName() + " has done with save :" + saveCrossMapServer.allSaveCount());
+            LogUtil.stop(saveMailReportServer.serverName() + " has done with save :" + saveMailReportServer.allSaveCount());
             URL location = getClass().getProtectionDomain().getCodeSource().getLocation();
             String runname = ManagementFactory.getRuntimeMXBean().getName();
             String pid = runname.substring(0, runname.indexOf("@"));
