@@ -1,9 +1,11 @@
 package com.gryphpoem.game.zw.service.buildHomeCity;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
@@ -23,9 +25,11 @@ import com.gryphpoem.game.zw.pb.GamePb2;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
 import com.gryphpoem.game.zw.resource.constant.BuildingType;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -43,11 +47,13 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
+import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
-import com.gryphpoem.game.zw.resource.pojo.simulator.LifeSimulatorInfo;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.CombatService;
@@ -62,6 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -116,7 +123,6 @@ public class BuildHomeCityService implements GmCmdService {
     public GamePb1.ExploreRs exploreFog(long roleId, GamePb1.ExploreRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         int cellId = rq.getCellId();
-        // int scoutIndex = rq.getScoutIndex();
         // 获取目标迷雾格子配置
         StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
         if (staticHomeCityCell == null) {
@@ -127,10 +133,6 @@ public class BuildHomeCityService implements GmCmdService {
         if (needLordLevel != null && player.lord.getLevel() < needLordLevel) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("探索主城迷雾区时, 未达到领主等级要求, roleId:%s, cellId:%s", roleId, cellId));
         }
-        /*Integer scoutState = player.getScoutData().get(scoutIndex);
-        if (scoutState == 1) {
-            throw new MwException(GameError.SCOUT_NOT_IDLE, String.format("探索主城迷雾区时, 侦察兵非空闲状态, roleId:%s, scoutIndex:%s", roleId, scoutIndex));
-        }*/
         if (player.getMapCellData().containsKey(cellId)) {
             throw new MwException(GameError.MAP_CELL_ALREADY_EXPLORED, String.format("探索主城迷雾区时, 该迷雾区已被探索, roleId:%s, cellId:%s", roleId, cellId));
         }
@@ -140,15 +142,6 @@ public class BuildHomeCityService implements GmCmdService {
         if (!anyMatch) {
             throw new MwException(GameError.NO_ONE_NEIGHBOR_IS_UNLOCK, String.format("探索主城迷雾区时, 四周的格子没有一个是解锁的, roleId:%s, cellId:%s", roleId, cellId));
         }
-
-        /*// 新增定时任务开始探索
-        int now = TimeHelper.getCurrentSecond();
-        int endTime = staticHomeCityCell.getExploreTime() + now;
-        ExploreQue exploreQue = new ExploreQue(player.maxKey(), scoutIndex, cellId, staticHomeCityCell.getExploreTime(), endTime);
-        player.getExploreQue().put(scoutIndex, exploreQue); // 更新玩家探索队列
-        player.getScoutData().put(scoutIndex, 1); // 更新侦察兵状态
-        // 添加探索结束后的延时任务
-        DELAY_QUEUE.add(new BuildHomeCityDelayRun(1, endTime, cellId, scoutIndex, 0, player));*/
 
         Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
         Map<Integer, List<Integer>> newAddMapCellData = new HashMap<>();
@@ -212,21 +205,6 @@ public class BuildHomeCityService implements GmCmdService {
         if (mapCellData.get(cellId).get(0) == 1) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("开垦地基时, 该格子已被开垦, roleId:%s, cellId:%s", roleId, cellId));
         }
-        /*// 校验是否有空闲农民
-        if (player.getIdleFarmerCount() < farmerCount) {
-            throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("开垦地基时, 没有足够空闲的农民, roleId:%s, cellId:%s", roleId, cellId));
-        }*/
-
-        /*// 新增定时任务开始开垦
-        int now = TimeHelper.getCurrentSecond();
-        int endTime = staticHomeCityCell.getExploreTime() + now;
-        Map<Integer, ReclaimQue> reclaimQueMap = player.getReclaimQue();
-        int reclaimIndex = reclaimQueMap.keySet().stream().max(Integer::compareTo).orElse(0);
-        ReclaimQue reclaimQue = new ReclaimQue(player.maxKey(), reclaimIndex + 1, farmerCount, cellId, staticHomeCityCell.getReclaimTime(), endTime);
-        reclaimQueMap.put(reclaimIndex + 1, reclaimQue); // 更新玩家开垦队列
-        player.subIdleFarmerCount(farmerCount); // 更新空闲农民数量
-        // 添加开垦结束后的延时任务
-        DELAY_QUEUE.add(new BuildHomeCityDelayRun(2, endTime, cellId, 0, farmerCount, player));*/
         GamePb1.ReclaimFoundationRs.Builder builder = GamePb1.ReclaimFoundationRs.newBuilder();
         // 更新格子开垦状态
         List<Integer> cellState = new ArrayList<>(mapCellData.get(cellId));
@@ -387,16 +365,45 @@ public class BuildHomeCityService implements GmCmdService {
         if (!mapCellData.containsKey(cellId)) {
             throw new MwException(GameError.PARAM_ERROR, String.format("清剿土匪时, 地图格不存在或未解锁, roleId:%s, cellId:%s", roleId, cellId));
         }
-        int clearType = rq.getClearType();
-        CommonPb.Award addAward = null;
-        CommonPb.Award subAward = null;
-        // 模拟器结算
-        if (clearType == 1) {
+        List<Integer> cellState = mapCellData.get(cellId);
+        if (CheckNull.isEmpty(cellState) || cellState.size() < 4 || cellState.get(1) < 0 || cellState.get(2) < 0) {
+            throw new MwException(GameError.DATA_EXCEPTION, String.format("清剿土匪时, 地图格对应的土匪信息错误, roleId:%s, cellId:%s", roleId, cellId));
+        }
+        int simulatorType = cellState.get(2);
+        List<StaticSimulatorStep> staticSimulatorStepList = StaticBuildCityDataMgr.getStaticSimulatorStepByType(simulatorType);
+        // 获取土匪引导对话模拟器的第1步，根据玩家选择的选项判断其清剿土匪的方式
+        StaticSimulatorStep firstStep = staticSimulatorStepList.stream().min(Comparator.comparingLong(StaticSimulatorStep::getId)).orElse(null);
+        if (firstStep == null || CheckNull.isEmpty(firstStep.getChoose())) {
+            throw new MwException(GameError.NO_CONFIG, String.format("清剿土匪时, 未获取到土匪对应的对话模拟器配置, roleId:%s, cellId:%s", roleId, cellId));
+        }
+
+        long choose = rq.getChooseId();
+        List<List<Long>> firstStepChooseList = firstStep.getChoose();
+        List<Long> firstStepChoose = firstStepChooseList.stream().filter(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 3 && tmp.get(0) == choose).findFirst().orElse(null);
+        if (firstStepChoose == null) {
+            throw new MwException(GameError.NO_CONFIG, String.format("清剿土匪时, 未获取到土匪对应的对话模拟器配置, roleId:%s, cellId:%s", roleId, cellId));
+        }
+
+        long selectedChooseId = firstStepChoose.get(0);
+        StaticSimulatorChoose staticSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(selectedChooseId);
+
+        boolean clearResult = rq.getClearResult();
+
+        List<List<Integer>> finalRewardList = new ArrayList<>();
+        if (CheckNull.nonEmpty(staticSimulatorChoose.getMiniGame())) {
+            // 小游戏结算
+            if (!clearResult) {
+                return builder.build();
+            }
+            // 获取小游戏奖励
+            List<List<Integer>> rewardList = staticSimulatorChoose.getRewardList();
+            finalRewardList.addAll(rewardList);
+        } else if (firstStepChoose.get(1) == 0) {
+            // 根据配置规则, 说明是进入模拟器结算方式
             List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = rq.getLifeSimulatorStepList();
             if (CheckNull.nonEmpty(lifeSimulatorStepList)) {
                 // 标识模拟器是否结束
                 boolean isEnd = false;
-                List<List<Integer>> finalRewardList = new ArrayList<>();
                 List<List<Integer>> finalCharacterFixList = new ArrayList<>();
                 List<Integer> delay = null;
                 for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
@@ -413,7 +420,7 @@ public class BuildHomeCityService implements GmCmdService {
                         List<List<Integer>> buff = sSimulatorChoose.getBuff();
                     }
                     long stepId = lifeSimulatorStep.getStepId();
-                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
+                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStepById(stepId);
                     // 根据配置, 如果没有下一步, 则模拟器结束
                     long nextId = staticSimulatorStep.getNextId();
                     List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
@@ -427,7 +434,7 @@ public class BuildHomeCityService implements GmCmdService {
                     if (!isEnd) {
                         isEnd = nextId == 0L;
                     }
-                    // 如果该步有延时执行, 新增模拟器器延时任务
+                    /*// 如果该步有延时执行, 新增模拟器器延时任务
                     delay = staticSimulatorStep.getDelay();
                     if (CheckNull.nonEmpty(delay)) {
                         LifeSimulatorInfo delaySimulator = new LifeSimulatorInfo();
@@ -436,12 +443,12 @@ public class BuildHomeCityService implements GmCmdService {
                         delaySimulator.setDelay(delay.get(0));// 延时时间
                         List<LifeSimulatorInfo> lifeSimulatorInfos = player.getLifeSimulatorRecordMap().computeIfAbsent(4, k -> new ArrayList<>());
                         lifeSimulatorInfos.add(delaySimulator);
-                    }
+                    }*/
                 }
                 if (!isEnd) {
                     throw new MwException(GameError.SIMULATOR_IS_NOT_END, String.format("记录模拟器结果时, 模拟器未结束, roleId:%s", roleId));
                 }
-                // 更新性格值并发送对应奖励
+                /*// 更新性格值并发送对应奖励
                 if (CheckNull.nonEmpty(finalCharacterFixList)) {
                     if (CheckNull.isEmpty(player.getCharacterData())) {
                         player.setCharacterData(new HashMap<>(6));
@@ -458,7 +465,7 @@ public class BuildHomeCityService implements GmCmdService {
                     lifeSimulatorService.checkAndSendCharacterReward(player);
                     // 同步领主性格变化
                     playerDataManager.syncRoleInfo(player);
-                }
+                }*/
                 // 更新对应奖励变化
                 if (CheckNull.nonEmpty(finalRewardList)) {
                     for (List<Integer> reward : finalRewardList) {
@@ -476,39 +483,48 @@ public class BuildHomeCityService implements GmCmdService {
                                 break;
                         }
                     }
+                    clearResult = true;
                 }
-            }
-            if (!rq.getClearResult()) {
-                return builder.build();
-            }
-        }
-
-        // 小游戏结算
-        if (clearType == 2) {
-            if (!rq.getClearResult()) {
-                return builder.build();
-            }
-            int miniGameId = rq.getMiniGameId();
-            // TODO 获取小游戏奖励
-        }
-
-        // 战斗结算
-        boolean combatResult = false;
-        if (clearType == 3) {
-            List<Integer> heroIdList = rq.getHeroIdList();
-            if (CheckNull.isEmpty(heroIdList)) {
-                throw new MwException(GameError.PARAM_ERROR, String.format("战斗方式清剿土匪时, 上阵将领为空, roleId:%s, cellId:%s", roleId, cellId));
-            }
-            // 采用当前玩家通关的战役的最后一关的配置
-            Combat combat = player.combats.values().stream().max(Comparator.comparingInt(Combat::getCombatId)).orElse(null);
-            if (combat != null) {
-                StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combat.getCombatId());
-                combatResult = doCombat(player, staticCombat, heroIdList, builder);
+            } else if (staticSimulatorChoose.getCombatId() > 0){
+                // 战斗结算
+                List<Integer> heroIdList = rq.getHeroIdList();
+                if (CheckNull.isEmpty(heroIdList)) {
+                    throw new MwException(GameError.PARAM_ERROR, String.format("战斗方式清剿土匪时, 上阵将领为空, roleId:%s, cellId:%s", roleId, cellId));
+                }
+                int combatId = 0;
+                if (staticSimulatorChoose.getCombatId() == 0) {
+                    // 调用玩家当前所处战役章节前1章中最后1关的npc配置
+                    int maxSuccessCombatId = player.combats.values().stream().mapToInt(Combat::getCombatId).max().orElse(0);
+                    combatId = StaticCombatDataMgr.getCombatMap().values().stream()
+                            .filter(staticCombat -> staticCombat.getIndex() == 6 && staticCombat.getCombatId() <= maxSuccessCombatId)
+                            .mapToInt(StaticCombat::getCombatId)
+                            .max()
+                            .orElse(0);
+                } else {
+                    combatId = staticSimulatorChoose.getCombatId();
+                }
+                if (combatId > 0) {
+                    StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
+                    clearResult = doCombat(player, staticCombat, heroIdList, builder);
+                }
+                if (clearResult) {
+                    finalRewardList = staticSimulatorChoose.getRewardList();
+                }
             }
         }
 
         // 清剿成功, 清除地图土匪状态
-        if (rq.getClearResult() || combatResult) {
+        if (clearResult) {
+            for (List<Integer> list : finalRewardList) {
+                if (CheckNull.isEmpty(list) || list.size() < 3) {
+                    continue;
+                }
+                CommonPb.Award.Builder awardBuilder = CommonPb.Award.newBuilder();
+                awardBuilder.setType(list.get(0));
+                awardBuilder.setId(list.get(1));
+                awardBuilder.setCount(list.get(2));
+                builder.addAward(awardBuilder.build());
+            }
             delBanditStateOfCell(player, cellId);
         }
 
@@ -750,60 +766,142 @@ public class BuildHomeCityService implements GmCmdService {
         }
     }
 
-    // 叛军入侵的战斗逻辑
+    /**
+     * 叛军入侵的战斗逻辑
+     *
+     * @param battle
+     * @param now
+     * @param removeBattleIdSet
+     */
     public void rebelInvadeFightLogic(Battle battle, int now, Set<Integer> removeBattleIdSet) {
-        // int combatId = battle.getBattleType();
-        // StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
-        //
-        // // 防守者,兵力 添加
-        // warService.addCityDefendRoleHeros(battle);
-        // Fighter attacker = fightService.createNpcFighter(staticCombat.getForm()); // npc攻击
-        // Fighter defender = fightService.createCampBattleDefencer(battle, null);
-        // FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
-        // warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        // fightLogic.start();
-        //
-        // boolean defSuccess = !(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
-        //
-        // long defRoleId = battle.getDefencerId();
-        // Player defPlayer = playerDataManager.getPlayer(defRoleId);
-        // // 兵力恢复
-        // Map<Long, List<CommonPb.Award>> recoverArmyAwardMap = new HashMap<>();
-        //
-        // // 战报信息
-        // CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(roundId, attacker, defender, fightLogic, defSuccess, defPlayer);
-        // CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
-        //
-        // List<CommonPb.Award> dropList = new ArrayList<>();
-        // if (!defSuccess) {
-        //     // 防守失败
-        //     subResAfterFailDefendRebel();
-        // }
-        //
-        // // 发送邮件
-        // Turple<Integer, Integer> xy = MapHelper.reducePos(defPlayer.lord.getPos());
-        // int defX = xy.getA();
-        // int defY = xy.getB();
-        // Object[] param = {defPlayer.lord.getNick(), defPlayer.lord.getNick(), defX, defY};
-        // if (defSuccess) {
-        //     // 防守成功，没有损失
-        //     mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_SUCC, null, now,
-        //             recoverArmyAwardMap, param);
-        // } else {
-        //     Object[] params = Arrays.copyOf(param, param.length + 1);
-        //     params[param.length] = battle.getDefencer().lord.getNick();
-        //     mailDataManager.sendReportMail(defPlayer, report, MailConstant.MOLD_DEF_CITY_FAIL, dropList, now,
-        //             recoverArmyAwardMap, params);
-        // }
-        // LogLordHelper.commonLog("rebelInvade", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, defSuccess);
-        // // 日志记录
-        // warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
-        removeBattleIdSet.add(battle.getBattleId());
+        int combatId = battle.getBattleType();
+        StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
+
+        // 防守者,兵力 添加
+        warService.addCityDefendRoleHeros(battle);
+        Fighter attacker = fightService.createNpcFighter(staticCombat.getForm()); // npc攻击
+        Fighter defender = fightService.createCampBattleDefencer(battle, null);
+        FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
+        warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
+        fightLogic.start();
+
+        boolean defSuccess = !(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
+
+        long defRoleId = battle.getDefencerId();
+        Player defPlayer = playerDataManager.getPlayer(defRoleId);
+
+        // 战报信息
+        CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(
+                combatId,
+                attacker,
+                defender,
+                fightLogic,
+                defSuccess,
+                defPlayer
+        );
+        CommonPb.Report.Builder report = worldService.createAtkBanditReport(rpt.build(), now);
+
+        List<CommonPb.Award> dropList = null;
+        if (!defSuccess) {
+            // 防守失败
+            dropList = subResAfterFailDefendRebel(defPlayer);
+        }
+
+        // 发送邮件
+        Turple<Integer, Integer> xy = MapHelper.reducePos(defPlayer.lord.getPos());
+        int defX = xy.getA();
+        int defY = xy.getB();
+        Object[] param = {defPlayer.lord.getNick(), defPlayer.lord.getNick(), defX, defY};
+        if (defSuccess) {
+            // 防守成功, 没有损失
+            mailDataManager.sendReportMail(defPlayer, report, MailConstant.DEFEND_REBEL_INVADE_SUCCESS, null, now,
+                    null, param);
+        } else {
+            Object[] params = Arrays.copyOf(param, param.length + 1);
+            params[param.length] = battle.getDefencer().lord.getNick();
+            mailDataManager.sendReportMail(defPlayer, report, MailConstant.DEFEND_REBEL_INVADE_FAIL, dropList, now,
+                    null, params);
+        }
+        LogLordHelper.commonLog("rebelInvade", AwardFrom.REBELLION_BATTLE_DEF, defPlayer, defSuccess);
+        // 日志记录
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getDefHeroList(), rpt.getAtkHeroList());
     }
 
-    // 叛军入侵防守失败后, 扣减资源
-    private void subResAfterFailDefendRebel() {
+    /**
+     * 叛军入侵防守失败后, 扣减资源
+     *
+     * @param def
+     * @return
+     */
+    private List<CommonPb.Award> subResAfterFailDefendRebel(Player def) {
+        List<CommonPb.Award> list = new ArrayList<>();
+        // 攻方获得资源公式，人口获得(可掠夺资源量 = 侦查到资源量 = 玩家资源量 - 玩家仓库资源保护量)
+        if (def == null) {
+            return list;
+        }
 
+        long[] proRes = buildingDataManager.getProtectRes(def);
+
+        // 损失资源上限值=ROUNDDOWN(主公LV/10,0)*300000+500000
+        int maxLose = def.lord.getLevel() / 10 * 300000 + 500000;
+
+        int defStorehouseLv = BuildingDataManager.getBuildingTopLv(def, BuildingType.STOREHOUSE);
+        float lostPro = 0.35f - defStorehouseLv * 0.005f;
+        int loseOil = (int) (Math.min((int) Math.ceil(proRes[0] * lostPro), maxLose) * 0.1);
+        int loseFood = (int) (Math.min((int) Math.ceil(proRes[1] * lostPro), maxLose) * 0.1);
+        int loseEle = (int) (Math.min((int) Math.ceil(proRes[2] * lostPro), maxLose) * 0.1);
+
+        ChangeInfo change = ChangeInfo.newIns();
+        if (loseOil > 0) {
+            rewardDataManager.subResource(def, AwardType.Resource.OIL, loseOil, AwardFrom.FIGHT_DEF);// , "被掠夺"
+            list.add(CommonPb.Award.newBuilder().setType(AwardType.RESOURCE).setId(AwardType.Resource.OIL).setCount(loseOil)
+                    .build());
+            // 记录更改过的玩家游戏资源类型
+            change.addChangeType(AwardType.RESOURCE, AwardType.Resource.OIL);
+        }
+        if (loseEle > 0) {
+            rewardDataManager.subResource(def, AwardType.Resource.ELE, loseEle, AwardFrom.FIGHT_DEF);// , "被掠夺"
+            list.add(CommonPb.Award.newBuilder().setType(AwardType.RESOURCE).setId(AwardType.Resource.ELE).setCount(loseEle)
+                    .build());
+            change.addChangeType(AwardType.RESOURCE, AwardType.Resource.ELE);
+        }
+        if (loseFood > 0) {
+            rewardDataManager.subResource(def, AwardType.Resource.FOOD, loseFood, AwardFrom.FIGHT_DEF);// , "被掠夺"
+            list.add(CommonPb.Award.newBuilder().setType(AwardType.RESOURCE).setId(AwardType.Resource.FOOD)
+                    .setCount(loseFood).build());
+            change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
+        }
+        // 幸福度损失
+        List<Integer> happinessLostCoefficient = Constant.HAPPINESS_LOST_COEFFICIENT;
+        int loseHappiness = 0;
+        if (CheckNull.nonEmpty(happinessLostCoefficient) || happinessLostCoefficient.size() >= 2) {
+            int happiness = def.getHappiness();
+            loseHappiness = Math.max((int) Math.round(happiness * happinessLostCoefficient.get(0) / Constant.TEN_THROUSAND), happinessLostCoefficient.get(1));
+            loseHappiness = Math.min(happiness, loseHappiness);
+            loseHappiness = (int) (loseHappiness * 0.1);
+            def.subHappiness(loseHappiness);
+        }
+        // 居民损失
+        int residentBottomLimitCoefficient = Constant.RESIDENT_BOTTOM_LIMIT_COEFFICIENT; // 居民数量保底, 总人口低于上限人口的这个万分比, 无法被掠夺
+        int loseResident = 0;
+        if (def.getResidentTotalCnt() > def.getResidentTopLimit() * (residentBottomLimitCoefficient / Constant.TEN_THROUSAND)) {
+            List<Integer> residentLostCoefficient = Constant.RESIDENT_LOST_COEFFICIENT;
+            if (CheckNull.nonEmpty(residentLostCoefficient) || residentLostCoefficient.size() >= 2) {
+                int idleResidentCnt = def.getIdleResidentCnt();
+                loseResident = Math.max((int) Math.round(idleResidentCnt * residentLostCoefficient.get(0) / Constant.TEN_THROUSAND), residentLostCoefficient.get(1));
+                loseResident = Math.min(idleResidentCnt, loseResident);
+                loseResident = (int) (loseResident * 0.1);
+                def.subIdleResidentCnt(loseResident);
+            }
+        }
+
+        LogUtil.debug(def.roleId + ",叛军入侵失去资源oil=" + loseOil + ",food=" + loseFood + ",ele=" + loseEle +
+                ",human=" + def.resource.getHuman() + ",loseHappiness=" + loseHappiness + ",loseResident=" + loseResident);
+        // 向客户端同步玩家资源数据
+        rewardDataManager.syncRoleResChanged(def, change);
+        // 同步领主幸福度和居民变化
+        playerDataManager.syncRoleInfo(def);
+        return list;
     }
 
     @GmCmd("buildCity")

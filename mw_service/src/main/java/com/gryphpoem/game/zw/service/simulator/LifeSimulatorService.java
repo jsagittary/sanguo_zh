@@ -82,7 +82,7 @@ public class LifeSimulatorService {
                 List<List<Integer>> buff = sSimulatorChoose.getBuff();
             }
             long stepId = lifeSimulatorStep.getStepId();
-            StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
+            StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStepById(stepId);
             // 根据配置, 如果没有下一步, 则模拟器结束
             long nextId = staticSimulatorStep.getNextId();
             List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();

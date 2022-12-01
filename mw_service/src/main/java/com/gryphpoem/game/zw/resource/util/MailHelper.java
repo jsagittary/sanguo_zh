@@ -449,6 +449,8 @@ public class MailHelper {
         putMailParamNum(MailConstant.MOLD_HIS_REMAINS_DEFEND_SUCCESS, 4, 4);
         putMailParamNum(MailConstant.MOLD_RELIC_PROBE_OVER, 0, 1);
         putMailParamNum(MailConstant.MOLD_RELIC_PROBE_VANISH, 0, 0);
+        putMailParamNum(MailConstant.DEFEND_REBEL_INVADE_FAIL, 1, 4);
+        putMailParamNum(MailConstant.DEFEND_REBEL_INVADE_SUCCESS, 1, 3);
     }
 
     /**

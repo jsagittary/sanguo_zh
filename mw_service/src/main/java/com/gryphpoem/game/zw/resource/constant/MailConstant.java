@@ -989,6 +989,8 @@ public class MailConstant {
     /*** 王朝遗迹 积分奖励*/
     public static final int RELIC_OVER_SCORE_AWARD = 908;
 
+
+
     /**
      * 限时活动物品自动兑换
      */
@@ -1078,6 +1080,14 @@ public class MailConstant {
 
     // 战火玩法积分不足
     public static final int CROSS_WAR_FIRE_SCORE_NOT_ENOUGH = 2199;
+
+    // 叛军入侵防守失败
+    public static final int DEFEND_REBEL_INVADE_FAIL = 3001;
+
+    // 叛军入侵防守成功
+    public static final int DEFEND_REBEL_INVADE_SUCCESS = 3002;
+
+
 
     /**
      * 不计入消耗功能数组

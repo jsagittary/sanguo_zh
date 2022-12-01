@@ -390,7 +390,7 @@ public class PlayerService implements GmCmdService {
                         List<List<Integer>> buff = sSimulatorChoose.getBuff();
                     }
                     long stepId = lifeSimulatorStep.getStepId();
-                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStep(stepId);
+                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStepById(stepId);
                     // 根据配置, 判断模拟器是否结束
                     if (!isEnd) {
                         long nextId = staticSimulatorStep.getNextId();

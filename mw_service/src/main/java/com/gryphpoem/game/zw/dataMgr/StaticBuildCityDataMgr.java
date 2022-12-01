@@ -163,12 +163,21 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         return staticHomeCityFoundationList.stream().filter(tmp -> Objects.equals(id, tmp.getId())).findFirst().orElse(null);
     }
 
-    public static StaticSimulatorChoose getStaticSimulatorChoose(int id) {
+    public static StaticSimulatorChoose getStaticSimulatorChoose(long id) {
         return staticSimulatorChooseList.stream().filter(staticSimulatorChoose -> staticSimulatorChoose.getId() == id).findFirst().orElse(null);
     }
 
-    public static StaticSimulatorStep getStaticSimulatorStep(long id) {
-        return staticSimulatorStepList.stream().filter(staticSimulatorStep -> staticSimulatorStep.getId() == id).findFirst().orElse(null);
+    public static StaticSimulatorStep getStaticSimulatorStepById(long id) {
+        return staticSimulatorStepList.stream()
+                .filter(staticSimulatorStep -> staticSimulatorStep.getId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static List<StaticSimulatorStep> getStaticSimulatorStepByType(int type) {
+        return staticSimulatorStepList.stream()
+                .filter(staticSimulatorStep -> staticSimulatorStep.getType() == type)
+                .collect(Collectors.toList());
     }
 
     public static List<StaticCharacter> getStaticCharacterList() {

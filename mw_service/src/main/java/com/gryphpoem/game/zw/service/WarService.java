@@ -167,6 +167,7 @@ public class WarService {
                         warDataManager.removeBattleById(battle.getBattleId());
                     } else if (battle.isRebelInvade()) {
                         // 叛军入侵
+                        its.remove();
                         buildHomeCityService.rebelInvadeFightLogic(battle, now, removeBattleIdSet);
                     }
                     // warDataManager.removePosBattleById(battle.getPos(),
