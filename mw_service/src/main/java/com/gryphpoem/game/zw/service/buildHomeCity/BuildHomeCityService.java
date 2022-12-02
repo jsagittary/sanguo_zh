@@ -10,29 +10,76 @@ import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
-import com.gryphpoem.game.zw.manager.*;
-import com.gryphpoem.game.zw.pb.*;
+import com.gryphpoem.game.zw.manager.BuildingDataManager;
+import com.gryphpoem.game.zw.manager.FightRecordDataManager;
+import com.gryphpoem.game.zw.manager.MailDataManager;
+import com.gryphpoem.game.zw.manager.MsgDataManager;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.WarDataManager;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.BattlePb;
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.GamePb1;
+import com.gryphpoem.game.zw.pb.GamePb2;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.MailConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Building;
-import com.gryphpoem.game.zw.resource.domain.p.BuildingExt;
 import com.gryphpoem.game.zw.resource.domain.p.Combat;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
-import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingLv;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
+import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimNpc;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorChoose;
+import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.MapCell;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.PeaceAndWelfareRecord;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
-import com.gryphpoem.game.zw.resource.util.*;
-import com.gryphpoem.game.zw.service.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.CombatService;
+import com.gryphpoem.game.zw.service.FightService;
+import com.gryphpoem.game.zw.service.GmCmd;
+import com.gryphpoem.game.zw.service.GmCmdService;
+import com.gryphpoem.game.zw.service.WallService;
+import com.gryphpoem.game.zw.service.WarService;
+import com.gryphpoem.game.zw.service.WorldService;
 import com.gryphpoem.game.zw.service.simulator.LifeSimulatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -91,51 +138,65 @@ public class BuildHomeCityService implements GmCmdService {
         if (needLordLevel != null && player.lord.getLevel() < needLordLevel) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("探索主城迷雾区时, 未达到领主等级要求, roleId:%s, cellId:%s", roleId, cellId));
         }
-        if (player.getMapCellData().containsKey(cellId)) {
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
+        if (mapCellData.containsKey(cellId)) {
             throw new MwException(GameError.MAP_CELL_ALREADY_EXPLORED, String.format("探索主城迷雾区时, 该迷雾区已被探索, roleId:%s, cellId:%s", roleId, cellId));
         }
         // 配置的周边4个格子是否已解锁
         List<Integer> neighborCellList = staticHomeCityCell.getNeighborCellList();
-        boolean anyMatch = neighborCellList.stream().anyMatch(tmp -> player.getMapCellData().containsKey(tmp));
+        boolean anyMatch = neighborCellList.stream().anyMatch(mapCellData::containsKey);
         if (!anyMatch) {
             throw new MwException(GameError.NO_ONE_NEIGHBOR_IS_UNLOCK, String.format("探索主城迷雾区时, 四周的格子没有一个是解锁的, roleId:%s, cellId:%s", roleId, cellId));
         }
 
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
-        Map<Integer, List<Integer>> newAddMapCellData = new HashMap<>();
-        List<Integer> cellState = new ArrayList<>(2);
+        List<MapCell> newAddMapCellData = new ArrayList<>();
         // 新增解锁的地图格子
-        cellState.add(0); // 未开垦
-        cellState.add(staticHomeCityCell.getHasBandit()); // 土匪keyId
-        cellState.add(getBanditTalkSimulator(staticHomeCityCell.getHasBandit())); // 土匪对应的对话引导模拟器
-        cellState.add(-1); // 侦察出现的土匪不会自动过期消失
-        newAddMapCellData.put(cellId, cellState);
+        MapCell mapCell = new MapCell();
+        mapCell.setCellId(cellId);
+        mapCell.setReclaimed(false);
+        int banditId = staticHomeCityCell.getHasBandit();
+        mapCell.setNpcId(banditId);
+        List<Integer> simInfo = getBanditTalkSimulator(banditId);
+        int simType = 0;
+        int simId = 0;
+        if (CheckNull.nonEmpty(simInfo) && simInfo.size() >= 2) {
+            simType = simInfo.get(0);
+            simId = simInfo.get(1);
+        }
+        mapCell.setSimType(banditId > 0 ? simType: 0);
+        mapCell.setSimId(banditId > 0 ? simId: 0);
+        mapCell.setBanditRefreshTime(banditId > 0 ? -1 : 0);
+        newAddMapCellData.add(mapCell);
+        mapCellData.put(cellId, mapCell);
         // 关联解锁的地图格子
         List<Integer> bindCellList = staticHomeCityCell.getBindCellList();
         for (Integer bindCellId : bindCellList) {
-            StaticHomeCityCell bindCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-            List<Integer> bindCellState = new ArrayList<>(2);
-            bindCellState.add(0); // 未开垦
-            bindCellState.add(bindCell.getHasBandit()); // 土匪keyId
-            bindCellState.add(getBanditTalkSimulator(bindCell.getHasBandit())); // 土匪对应的对话引导模拟器
-            bindCellState.add(-1); // 侦察出现的土匪不会自动过期消失
-            if (!mapCellData.containsKey(bindCellId)) {
-                newAddMapCellData.put(bindCellId, bindCellState);
+            StaticHomeCityCell bindStaticCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+            MapCell bindCell = new MapCell();
+            bindCell.setCellId(cellId);
+            bindCell.setReclaimed(false);
+            int banditId_ = bindStaticCell.getHasBandit();
+            bindCell.setNpcId(banditId_);
+            List<Integer> simInfo_ = getBanditTalkSimulator(banditId_);
+            int simType_ = 0;
+            int simId_ = 0;
+            if (CheckNull.nonEmpty(simInfo_) && simInfo_.size() >= 2) {
+                simType_ = simInfo_.get(0);
+                simId_ = simInfo_.get(1);
             }
+            mapCell.setSimType(banditId_ > 0 ? simType_: 0);
+            mapCell.setSimId(banditId_ > 0 ? simId_: 0);
+            bindCell.setBanditRefreshTime(banditId_ > 0 ? -1 : 0);
+            if (!mapCellData.containsKey(bindCellId)) {
+                newAddMapCellData.add(bindCell);
+            }
+            mapCellData.put(bindCellId, bindCell);
         }
-        mapCellData.putAll(newAddMapCellData);
 
         GamePb1.ExploreRs.Builder builder = GamePb1.ExploreRs.newBuilder();
-        newAddMapCellData.forEach((key, value) -> {
-            CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
-            mapCell.setCellId(key);
-            mapCell.addAllState(value);
-            mapCell.setReclaimed(value.get(0) == 1);
-            mapCell.setNpcId(value.get(1));
-            mapCell.setSimType(value.get(2));
-            mapCell.setBanditRefreshTime(value.get(3));
-            builder.addMapCellData(mapCell.build());
-        });
+        for (MapCell temp : newAddMapCellData) {
+            builder.addMapCellData(temp.ser());
+        }
         return builder.build();
     }
 
@@ -156,32 +217,28 @@ public class BuildHomeCityService implements GmCmdService {
             throw new MwException(GameError.NO_CONFIG, String.format("开垦地基时, 未找到主城地图格配置, roleId:%s, cellId:%s", roleId, cellId));
         }
         // 开垦格子前, 需要先探索
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
-        if (!mapCellData.containsKey(cellId)) {
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
+        MapCell mapCell = mapCellData.get(cellId);
+        if (mapCell == null) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("开垦地基时, 该格子还未解锁, roleId:%s, cellId:%s", roleId, cellId));
         }
-        if (mapCellData.get(cellId).get(0) == 1) {
+        if (mapCell.getReclaimed()) {
             throw new MwException(GameError.INSUFFICIENT_LORD_LEVEL, String.format("开垦地基时, 该格子已被开垦, roleId:%s, cellId:%s", roleId, cellId));
         }
         GamePb1.ReclaimFoundationRs.Builder builder = GamePb1.ReclaimFoundationRs.newBuilder();
         // 更新格子开垦状态
-        List<Integer> cellState = new ArrayList<>(mapCellData.get(cellId));
-        cellState.set(0, 1);
-        mapCellData.put(cellId, cellState);
-        CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
-        mapCell.setCellId(cellId);
-        mapCell.addAllState(cellState);
-        builder.addMapCellData(mapCell.build());// 返回被开垦格子的信息
+        mapCell.setReclaimed(true);
+        builder.addMapCellData(mapCell.ser());// 返回被开垦格子的信息
         // 获取玩家新增解锁的地基id, 解锁地基需要该地基所占的格子全部被开垦完成
         List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(cellId); // 开垦的格子对应可解锁的地基
         List<Integer> unlockFoundationIdList = new ArrayList<>();
         // 获取玩家已开垦的格子
         List<Integer> reclaimedCellIdList = new ArrayList<>();
-        mapCellData.forEach((key, value) -> {
-            if (value.get(0) == 1) {
-                reclaimedCellIdList.add(key);
+        for (MapCell temp : mapCellData.values()) {
+            if (temp.getReclaimed()) {
+                reclaimedCellIdList.add(temp.getCellId());
             }
-        });
+        }
         for (Integer foundationId : foundationIdList) {
             // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
             StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
@@ -197,27 +254,20 @@ public class BuildHomeCityService implements GmCmdService {
 
         // 如果开垦的格子满足城墙解锁条件
         if (player.getFoundationData().containsAll(Constant.WALL_UNLOCK_CONDITION)) {
-            BuildingState buildingState = new BuildingState();
-            buildingState.setBuildingId(BuildingType.WALL);
-            buildingState.setBuildingLv(1);
-            buildingState.setBuildingType(BuildingType.WALL);
-            StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(BuildingType.WALL, 1);
-            if (sBuildingLevel == null) {
-                throw new MwException(GameError.NO_CONFIG, String.format("解锁城墙时, 未获取到城墙的等级配置, roleId:%s, buildingType:%s, buildingLv:%s", player.roleId, BuildingType.WALL, 1));
-            }
-            buildingState.setResidentCnt(0);
-            buildingState.setResidentTopLimit(sBuildingLevel.getResident());
-            player.getBuildingData().put(BuildingType.WALL, buildingState);
-            player.building.setWall(1);
-            BuildingExt buildingExt = player.buildingExts.get(BuildingType.WALL);
-            int now = TimeHelper.getCurrentSecond();
-            if (buildingExt == null) {
-                buildingExt = new BuildingExt(BuildingType.WALL, BuildingType.WALL, true);
-                buildingExt.setUnLockTime(now);
-                player.buildingExts.put(BuildingType.WALL, buildingExt);
-            } else {
-                buildingExt.setUnLockTime(now);
-                buildingExt.setUnlock(true);
+            boolean wallUnlock = buildingDataManager.checkBuildingLock(player, BuildingType.WALL);
+            if (wallUnlock) {
+                BuildingState buildingState = new BuildingState();
+                buildingState.setBuildingId(BuildingType.WALL);
+                buildingState.setBuildingLv(1);
+                buildingState.setBuildingType(BuildingType.WALL);
+                StaticBuildingLv sBuildingLevel = StaticBuildingDataMgr.getStaticBuildingLevel(BuildingType.WALL, 1);
+                if (sBuildingLevel == null) {
+                    throw new MwException(GameError.NO_CONFIG, String.format("解锁城墙时, 未获取到城墙的等级配置, roleId:%s, buildingType:%s, buildingLv:%s", player.roleId, BuildingType.WALL, 1));
+                }
+                buildingState.setResidentCnt(0);
+                buildingState.setResidentTopLimit(sBuildingLevel.getResident());
+                player.getBuildingData().put(BuildingType.WALL, buildingState);
+                player.building.setWall(1);
             }
         }
 
@@ -235,11 +285,24 @@ public class BuildHomeCityService implements GmCmdService {
      */
     public GamePb1.PeaceAndWelfareRs peaceAndWelfare(long roleId, GamePb1.PeaceAndWelfareRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        Map<Integer, Integer> peaceAndWelfareRecord = player.getPeaceAndWelfareRecord();
+        Map<Integer, PeaceAndWelfareRecord> peaceAndWelfareRecordMap = player.getPeaceAndWelfareRecord();
         int type = rq.getType();
-        int latestPlayTime = peaceAndWelfareRecord.get(type);
-        if (latestPlayTime > 0 && DateHelper.isToday(TimeHelper.getDate(latestPlayTime))) {
-            throw new MwException(GameError.PARAM_ERROR, String.format("玩家今日已进行过安民济物, roleId:%s, type:%s, latestTime:%s", roleId, type, TimeHelper.getDate(latestPlayTime)));
+        if (type != 1 && type != 2) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("玩家进行安民济物时, 参数错误, roleId:%S, type:%s", roleId, type));
+        }
+        PeaceAndWelfareRecord peaceAndWelfareRecord = peaceAndWelfareRecordMap.get(type);
+        int now = TimeHelper.getCurrentSecond();
+        if (peaceAndWelfareRecord == null) {
+            peaceAndWelfareRecord = new PeaceAndWelfareRecord();
+            peaceAndWelfareRecord.setType(type);
+            peaceAndWelfareRecord.setLastTime(now);
+            peaceAndWelfareRecord.setCurDayCnt(0);
+            peaceAndWelfareRecord.setTotalCnt(0);
+            peaceAndWelfareRecordMap.put(type, peaceAndWelfareRecord);
+        }
+
+        if (peaceAndWelfareRecord.getCurDayCnt() > 0 && DateHelper.isToday(TimeHelper.getDate(peaceAndWelfareRecord.getLastTime()))) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("玩家今日已进行过安民济物, roleId:%s, type:%s, lastTime:%s", roleId, type, peaceAndWelfareRecord.getLastTime()));
         }
         List<List<Integer>> typeConfig = null;
         switch (type) {
@@ -270,7 +333,8 @@ public class BuildHomeCityService implements GmCmdService {
         player.addIdleResidentCnt(finalAddResident);
 
         // 更新记录时间
-        peaceAndWelfareRecord.put(type, TimeHelper.getCurrentSecond());
+        peaceAndWelfareRecord.setCurDayCnt(peaceAndWelfareRecord.getCurDayCnt() + 1);
+        peaceAndWelfareRecord.setLastTime(now);
 
         // 同步玩家信息
         playerDataManager.syncRoleInfo(player);
@@ -285,27 +349,27 @@ public class BuildHomeCityService implements GmCmdService {
      * @param banditId
      * @return
      */
-    public int getBanditTalkSimulator(int banditId) {
+    public List<Integer> getBanditTalkSimulator(int banditId) {
         StaticSimNpc staticSimNpc = StaticBuildCityDataMgr.getStaticSimNpcById(banditId);
         if (staticSimNpc == null) {
-            return 0;
+            return null;
         }
 
         List<List<Integer>> simTypeList = staticSimNpc.getSimType();
         if (CheckNull.isEmpty(simTypeList)) {
-            return 0;
+            return null;
         }
         for (List<Integer> simType : simTypeList) {
-            if (CheckNull.isEmpty(simType) || simType.size() < 2) {
+            if (CheckNull.isEmpty(simType) || simType.size() < 3) {
                 continue;
             }
-            boolean hit = RandomHelper.isHitRangeIn10000(simType.get(1));
+            boolean hit = RandomHelper.isHitRangeIn10000(simType.get(2));
             if (hit) {
-                return simType.get(0);
+                return simType;
             }
         }
 
-        return 0;
+        return null;
     }
 
     /**
@@ -318,16 +382,16 @@ public class BuildHomeCityService implements GmCmdService {
     public GamePb1.ClearBanditRs clearBandit(long roleId, GamePb1.ClearBanditRq rq) {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         GamePb1.ClearBanditRs.Builder builder = GamePb1.ClearBanditRs.newBuilder();
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
         int cellId = rq.getCellId();
         if (!mapCellData.containsKey(cellId)) {
             throw new MwException(GameError.PARAM_ERROR, String.format("清剿土匪时, 地图格不存在或未解锁, roleId:%s, cellId:%s", roleId, cellId));
         }
-        List<Integer> cellState = mapCellData.get(cellId);
-        if (CheckNull.isEmpty(cellState) || cellState.size() < 4 || cellState.get(1) < 0 || cellState.get(2) < 0) {
+        MapCell mapCell = mapCellData.get(cellId);
+        if (mapCell == null || mapCell.getNpcId() == 0 || mapCell.getSimType() == 0) {
             throw new MwException(GameError.DATA_EXCEPTION, String.format("清剿土匪时, 地图格对应的土匪信息错误, roleId:%s, cellId:%s", roleId, cellId));
         }
-        int simulatorType = cellState.get(2);
+        int simulatorType = mapCell.getSimType();
         List<StaticSimulatorStep> staticSimulatorStepList = StaticBuildCityDataMgr.getStaticSimulatorStepByType(simulatorType);
         // 获取土匪引导对话模拟器的第1步，根据玩家选择的选项判断其清剿土匪的方式
         StaticSimulatorStep firstStep = staticSimulatorStepList.stream().min(Comparator.comparingLong(StaticSimulatorStep::getId)).orElse(null);
@@ -362,15 +426,15 @@ public class BuildHomeCityService implements GmCmdService {
             if (CheckNull.nonEmpty(lifeSimulatorStepList)) {
                 // 标识模拟器是否结束
                 boolean isEnd = false;
-                List<List<Integer>> finalCharacterFixList = new ArrayList<>();
-                List<Integer> delay = null;
+                // List<List<Integer>> finalCharacterFixList = new ArrayList<>();
+                // List<Integer> delay = null;
                 for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
                     int chooseId = lifeSimulatorStep.getChooseId();
                     if (chooseId > 0) {
                         StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
-                        // 性格值变化
-                        List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
-                        finalCharacterFixList.addAll(characterFix);
+                        // // 性格值变化
+                        // List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
+                        // finalCharacterFixList.addAll(characterFix);
                         // 奖励变化
                         List<List<Integer>> rewardList = sSimulatorChoose.getRewardList();
                         finalRewardList.addAll(rewardList);
@@ -499,8 +563,10 @@ public class BuildHomeCityService implements GmCmdService {
      * @return
      * @throws MwException
      */
-    private boolean doCombat(Player player, StaticCombat staticCombat, List<Integer> heroIds, GamePb1.ClearBanditRs.Builder builder)
-            throws MwException {
+    private boolean doCombat(Player player,
+                             StaticCombat staticCombat,
+                             List<Integer> heroIds,
+                             GamePb1.ClearBanditRs.Builder builder) throws MwException {
         int combatId = staticCombat.getCombatId();
         Fighter attacker = fightService.createCombatPlayerFighter(player, heroIds);
         Fighter defender = fightService.createNpcFighter(staticCombat.getForm());
@@ -555,16 +621,14 @@ public class BuildHomeCityService implements GmCmdService {
      * @param cellId
      */
     private void delBanditStateOfCell(Player player, int cellId) {
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
-        List<Integer> cellState = mapCellData.get(cellId);
-        if (CheckNull.isEmpty(cellState)) {
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
+        MapCell mapCell = mapCellData.get(cellId);
+        if (mapCell == null) {
             return;
         }
-        int isReclaimed = cellState.get(0);
-        cellState.clear();
-        cellState.add(isReclaimed);
-        cellState.add(0); // 土匪id清空
-        cellState.add(0); // 对话引导模拟器类型清空
+        mapCell.setNpcId(0);
+        mapCell.setSimType(0);
+        mapCell.setBanditRefreshTime(0);
     }
 
     /**
@@ -576,22 +640,18 @@ public class BuildHomeCityService implements GmCmdService {
         while (iterator.hasNext()) {
             Player player = iterator.next();
             try {
-                Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+                Map<Integer, MapCell> mapCellData = player.getMapCellData();
                 mapCellData.entrySet().stream()
                         .filter(tmp ->
-                                CheckNull.nonEmpty(tmp.getValue())
-                                        && tmp.getValue().size() >= 4
-                                        && tmp.getValue().get(1) > 0
-                                        && tmp.getValue().get(3) != -1 && now > tmp.getValue().get(3)
+                                tmp.getValue().getNpcId() > 0
+                                        && tmp.getValue().getBanditRefreshTime() != -1
+                                        && now > tmp.getValue().getBanditRefreshTime()
                         )
                         .forEach(entry -> {
-                            int reclaimed = entry.getValue().get(0);
-                            List<Integer> newCellState = new ArrayList<>(4);
-                            newCellState.add(reclaimed);
-                            newCellState.add(0);
-                            newCellState.add(0);
-                            newCellState.add(0);
-                            entry.setValue(newCellState);
+                            MapCell value = entry.getValue();
+                            value.setNpcId(0);
+                            value.setSimType(0);
+                            value.setBanditRefreshTime(0);
                         });
             } catch (Exception e) {
                 LogUtil.error("土匪过期清除定时器报错, lordId:" + player.lord.getLordId(), e);
@@ -606,23 +666,30 @@ public class BuildHomeCityService implements GmCmdService {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
         List<StaticHomeCityCell> canRefreshBanditCellList = StaticBuildCityDataMgr.getCanRefreshBanditCellList();
-        List<StaticSimNpc> npcList = StaticBuildCityDataMgr.getStaticSimNpcList().stream()
-                .filter(tmp -> tmp.getType() == 2)
-                .collect(Collectors.toList());
-        if (CheckNull.isEmpty(npcList)) {
-            return;
-        }
         while (iterator.hasNext()) {
             Player player = iterator.next();
             if (player.lord.getLevel() < 42 || DateHelper.isSameDate(player.account.getCreateDate(), new Date())) {
                 continue;
             }
+            List<StaticSimNpc> npcList = StaticBuildCityDataMgr.getStaticSimNpcList().stream()
+                    .filter(tmp -> tmp.getType() == 2
+                            && CheckNull.nonEmpty(tmp.getNpcLock())
+                            && tmp.getNpcLock().size() >= 2
+                            && tmp.getNpcLock().get(0) <= player.lord.getLevel()
+                            && tmp.getNpcLock().get(1) <= player.building.getCommand()
+                    )
+                    .collect(Collectors.toList());
+            if (CheckNull.isEmpty(npcList)) {
+                continue;
+            }
             try {
-                Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+                Map<Integer, MapCell> mapCellData = player.getMapCellData();
+                // 获取玩家没有土匪的格子
                 List<Integer> ownCellIds = mapCellData.entrySet().stream()
-                        .filter(tmp -> CheckNull.nonEmpty(tmp.getValue()) && tmp.getValue().size() >= 4 && tmp.getValue().get(1) == 0)
+                        .filter(tmp -> tmp.getValue().getNpcId() == 0)
                         .map(Map.Entry::getKey)
                         .collect(Collectors.toList());
+                // 获取可刷新土匪的格子
                 List<Integer> cellIds = canRefreshBanditCellList.stream()
                         .map(StaticHomeCityCell::getId)
                         .filter(ownCellIds::contains).collect(Collectors.toList());
@@ -631,30 +698,27 @@ public class BuildHomeCityService implements GmCmdService {
                 }
                 Collections.shuffle(cellIds);
                 int cellId = cellIds.get(0);
-                List<Integer> cellState = mapCellData.get(cellId);
+                MapCell mapCell = mapCellData.get(cellId);
                 Collections.shuffle(npcList);
                 StaticSimNpc staticSimNpc = npcList.get(0);
-                List<List<Integer>> simTypeList = staticSimNpc.getSimType();
-                int simType = 0;
-                if (CheckNull.nonEmpty(simTypeList)) {
-                    for (List<Integer> list : simTypeList) {
-                        if (CheckNull.isEmpty(list) || list.size() < 2) {
-                            continue;
-                        }
-                        int weight = list.get(1);
-                        boolean hit = RandomHelper.isHitRangeIn10000(weight);
-                        if (hit) {
-                            simType = list.get(0);
-                            break;
-                        }
-                    }
-                }
-                if (simType == 0) {
+                int banditId = staticSimNpc == null ? 0 : staticSimNpc.getId();
+                if (banditId == 0) {
                     continue;
                 }
-                cellState.set(1, staticSimNpc.getId());
-                cellState.set(2, simType);
-                cellState.set(3, now);
+                mapCell.setNpcId(banditId);
+                List<Integer> simInfo = getBanditTalkSimulator(banditId);
+                int simType = 0;
+                int simId = 0;
+                if (CheckNull.nonEmpty(simInfo) && simInfo.size() >= 2) {
+                    simType = simInfo.get(0);
+                    simId = simInfo.get(1);
+                }
+                if (simType == 0 || simId == 0) {
+                    continue;
+                }
+                mapCell.setSimType(simType);
+                mapCell.setSimId(simId);
+                mapCell.setBanditRefreshTime(now);
                 playerDataManager.syncRoleInfo(player);
             } catch (Exception e) {
                 LogUtil.error("土匪每日刷新定时器报错, lordId:" + player.lord.getLordId(), e);
@@ -674,6 +738,24 @@ public class BuildHomeCityService implements GmCmdService {
                 continue;
             }
             try {
+                int pos = player.lord.getPos();
+                // 获取这个点的战斗
+                LinkedList<Battle> battles = warDataManager.getBattlePosMap().get(pos);
+                if (CheckNull.nonEmpty(battles)) {
+                    for (Battle battle : battles) {
+                        if (battle.getType() == WorldConstant.BATTLE_TYPE_REBEL_INVADE && battle.getBattleTime() < now) {
+                            GamePb2.SyncAttackRoleRs.Builder builder = GamePb2.SyncAttackRoleRs.newBuilder();
+                            builder.setAtkCamp(Constant.Camp.NPC);
+                            builder.setAtkName("叛军");
+                            builder.setAtkTime(battle.getBattleTime());
+                            builder.setStatus(WorldConstant.ATTACK_ROLE_0);
+                            builder.setBattleType(battle.getType());
+                            BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb2.SyncAttackRoleRs.EXT_FIELD_NUMBER, GamePb2.SyncAttackRoleRs.ext, builder.build());
+                            MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
+                            break;
+                        }
+                    }
+                }
                 // 获取玩家最近一次被玩家攻击时间
                 int playerAttackTime = player.getPlayerAttackTime();
                 // 获取最近一次被叛军入侵时间
@@ -682,15 +764,22 @@ public class BuildHomeCityService implements GmCmdService {
                     continue;
                 }
                 // 如果二者都超过24小时, 进行叛军入侵
-                int maxCombatId = player.combats.values().stream()
-                        .mapToInt(Combat::getCombatId)
-                        .max()
-                        .orElse(0);
-                int combatId = StaticCombatDataMgr.getCombatMap().values().stream()
-                        .filter(tmp -> tmp.getCombatId() > maxCombatId)
-                        .mapToInt(StaticCombat::getCombatId)
-                        .min()
-                        .orElse(0);
+                Combat combat = player.combats.values().stream()
+                        .max(Comparator.comparingInt(Combat::getCombatId))
+                        .orElse(null);
+                if (combat == null) {
+                    continue;
+                }
+                int combatId = 0;
+                if (combat.getStar() <= 0) {
+                    combatId = combat.getCombatId();
+                } else {
+                    combatId = StaticCombatDataMgr.getCombatMap().values().stream()
+                            .filter(tmp -> tmp.getCombatId() > combat.getCombatId())
+                            .mapToInt(StaticCombat::getCombatId)
+                            .min()
+                            .orElse(0);
+                }
                 if (combatId == 0) {
                     continue;
                 }
@@ -698,7 +787,7 @@ public class BuildHomeCityService implements GmCmdService {
                 Battle battle = new Battle();
                 battle.setType(WorldConstant.BATTLE_TYPE_REBEL_INVADE);
                 battle.setBattleType(staticCombat.getCombatId());
-                battle.setBattleTime(now + 30 * 60 * 60 - 1);
+                battle.setBattleTime(now + 3 * 60 * 60 - 1);
                 battle.setBeginTime(now);
                 battle.setDefencerId(player.roleId);
                 battle.setPos(player.lord.getPos());
@@ -714,12 +803,15 @@ public class BuildHomeCityService implements GmCmdService {
                     builder.setAtkName("叛军");
                     builder.setAtkTime(battle.getBattleTime());
                     builder.setStatus(WorldConstant.ATTACK_ROLE_1);
-                    builder.setBattleType(9);
+                    builder.setBattleType(battle.getType());
                     BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb2.SyncAttackRoleRs.EXT_FIELD_NUMBER, GamePb2.SyncAttackRoleRs.ext, builder.build());
                     MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
                 }
             } catch (Exception e) {
-                LogUtil.error("土匪过期清除定时器报错, lordId:" + player.lord.getLordId(), e);
+                LogUtil.error("叛军入侵定时器报错, lordId:" + player.lord.getLordId(), e);
+            } finally {
+                player.setRebelInvadeTime(now);
+                player.setPlayerAttackTime(now);
             }
         }
     }
@@ -749,13 +841,35 @@ public class BuildHomeCityService implements GmCmdService {
         Player defPlayer = playerDataManager.getPlayer(defRoleId);
 
         // 战报信息
-        CommonPb.RptAtkBandit.Builder rpt = fightService.createRptBuilderPb(
-                combatId,
-                attacker,
-                defender,
-                fightLogic,
-                defSuccess,
-                defPlayer
+        CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
+        rpt.setResult(defSuccess);
+        rpt.setAttack(PbHelper.createRptMan(defPlayer.lord.getPos(), "叛军", 0, 0));
+        rpt.setDefMan(PbHelper.createRptMan(defPlayer.lord.getPos(), defPlayer.lord.getNick(), defPlayer.lord.getVip(), defPlayer.lord.getLevel(), defPlayer.roleId));
+        rpt.setAtkSum(PbHelper.createRptSummary(
+                attacker.total,
+                attacker.lost,
+                Constant.Camp.NPC,
+                "叛军",
+                -1,
+                -1)
+        );
+        rpt.setDefSum(PbHelper.createRptSummary(
+                defender.total,
+                defender.lost,
+                defPlayer.lord.getCamp(),
+                defPlayer.lord.getNick(),
+                defPlayer.lord.getPortrait(),
+                defPlayer.getDressUp().getCurPortraitFrame())
+        );
+        for (Force force : defender.forces) {
+            CommonPb.RptHero rptHero = fightService.forceToRptHeroNoExp(force);
+            if (rptHero != null) {
+                rpt.addDefHero(rptHero);
+            }
+        }
+        rpt.addAllAtkHero(attacker.forces.stream()
+                .map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost))
+                .collect(Collectors.toList())
         );
         CommonPb.Report report = fightRecordDataManager.generateReport(rpt.build(), fightLogic, now);
 
@@ -903,7 +1017,7 @@ public class BuildHomeCityService implements GmCmdService {
      * @param player
      */
     public void resetWholeMainCityMapAndBuilding(Player player) {
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
         List<Integer> foundationData = player.getFoundationData();
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         mapCellData.clear();
@@ -1028,15 +1142,27 @@ public class BuildHomeCityService implements GmCmdService {
      * @param player
      */
     public void openTheWholeMap(Player player) {
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
         List<Integer> foundationData = player.getFoundationData();
         List<StaticHomeCityCell> staticHomeCityCellList = StaticBuildCityDataMgr.getStaticHomeCityCellList();
         for (StaticHomeCityCell sHomeCityCell : staticHomeCityCellList) {
             if (!mapCellData.containsKey(sHomeCityCell.getId())) {
-                List<Integer> cellState = new ArrayList<>(2);
-                cellState.add(1);
-                cellState.add(sHomeCityCell.getHasBandit());
-                mapCellData.put(sHomeCityCell.getId(), cellState);
+                MapCell mapCell = new MapCell();
+                mapCell.setCellId(sHomeCityCell.getId());
+                mapCell.setReclaimed(true);
+                int banditId = sHomeCityCell.getHasBandit();
+                mapCell.setNpcId(banditId);
+                List<Integer> simInfo = DataResource.ac.getBean(BuildHomeCityService.class).getBanditTalkSimulator(banditId);
+                int simType = 0;
+                int simId = 0;
+                if (CheckNull.nonEmpty(simInfo) && simInfo.size() >= 2) {
+                    simType = simInfo.get(0);
+                    simId = simInfo.get(1);
+                }
+                mapCell.setSimType(banditId > 0 ? simType: 0);
+                mapCell.setSimId(banditId > 0 ? simId: 0);
+                mapCell.setBanditRefreshTime(-1);
+                mapCellData.put(sHomeCityCell.getId(), mapCell);
             }
         }
         List<StaticHomeCityFoundation> staticHomeCityFoundationList = StaticBuildCityDataMgr.getStaticHomeCityFoundationList();

@@ -170,6 +170,7 @@ public class WarService {
                         // 叛军入侵
                         its.remove();
                         buildHomeCityService.rebelInvadeFightLogic(battle, now, removeBattleIdSet);
+                        warDataManager.removePosBattleById(battle.getPos(), battle.getBattleId());
                     }
                     // warDataManager.removePosBattleById(battle.getPos(),
                     // battle.getBattleId());

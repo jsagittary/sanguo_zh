@@ -86,7 +86,7 @@ public class StaticBuildCityDataMgr extends AbsStaticIniService {
         staticFoundationBuffMap = staticIniDao.selectStaticFoundationBuffMap();
         staticSimNpcMap = staticIniDao.selectStaticSimNpcMap();
         staticSimNpcList = new ArrayList<>(staticSimNpcMap.values());
-        canRefreshBanditCellList = staticHomeCityCellList.stream().filter(tmp -> tmp.getCanRefreshBandit() == 1).collect(Collectors.toList());
+        canRefreshBanditCellList = staticHomeCityCellList.stream().filter(tmp -> tmp.getBanditBase() == 1).collect(Collectors.toList());
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo.buildHomeCity;
 
+import com.gryphpoem.game.zw.pb.CommonPb;
+
 /**
  * @Author: GeYuanpeng
  * @Date: 2022/11/30 16:06
@@ -10,9 +12,11 @@ public class MapCell {
 
     private boolean reclaimed; // 开垦状态
 
-    private int npcId; // 土匪对应的npcId
+    private int npcId; // 土匪对应的npcId, s_sim_npc的id
 
-    private int simType; // 土匪对应的对话引导模拟器
+    private int simType; // 对话类型：1, sim_beginnerguide的type; 2, s_beginnerguide_new的keyId
+
+    private int simId; // sim_beginnerguide的type或s_beginnerguide_new的keyId
 
     private int banditRefreshTime; // 土匪刷新的时间, -1表示侦察时出现的, 不清剿不会自动消失
 
@@ -35,7 +39,7 @@ public class MapCell {
         this.cellId = cellId;
     }
 
-    public boolean isReclaimed() {
+    public boolean getReclaimed() {
         return reclaimed;
     }
 
@@ -59,6 +63,18 @@ public class MapCell {
         this.simType = simType;
     }
 
+    public boolean isReclaimed() {
+        return reclaimed;
+    }
+
+    public int getSimId() {
+        return simId;
+    }
+
+    public void setSimId(int simId) {
+        this.simId = simId;
+    }
+
     public int getBanditRefreshTime() {
         return banditRefreshTime;
     }
@@ -66,4 +82,26 @@ public class MapCell {
     public void setBanditRefreshTime(int banditRefreshTime) {
         this.banditRefreshTime = banditRefreshTime;
     }
+
+    public CommonPb.MapCell ser() {
+        CommonPb.MapCell.Builder builder = CommonPb.MapCell.newBuilder();
+        builder.setCellId(this.cellId);
+        builder.setReclaimed(this.reclaimed);
+        builder.setNpcId(this.npcId);
+        builder.setSimType(this.simType);
+        builder.setBanditRefreshTime(this.banditRefreshTime);
+        builder.setSimId(this.simId);
+        return builder.build();
+    }
+
+    public MapCell dser(CommonPb.MapCell pb) {
+        this.setCellId(pb.getCellId());
+        this.setReclaimed(pb.getReclaimed());
+        this.setNpcId(pb.getNpcId());
+        this.setSimType(pb.getSimType());
+        this.setBanditRefreshTime(pb.getBanditRefreshTime());
+        this.setSimId(pb.getSimId());
+        return this;
+    }
+
 }

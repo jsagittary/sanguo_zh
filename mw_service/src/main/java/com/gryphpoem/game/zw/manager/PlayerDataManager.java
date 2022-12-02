@@ -6,29 +6,83 @@ import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.HttpUtils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.Turple;
-import com.gryphpoem.game.zw.dataMgr.*;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
-import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.RoleOpt;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncFightChgRs;
 import com.gryphpoem.game.zw.pb.GamePb4.SyncRoleInfoRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
+import com.gryphpoem.game.zw.resource.constant.AwardFrom;
+import com.gryphpoem.game.zw.resource.constant.AwardType;
+import com.gryphpoem.game.zw.resource.constant.BuildingType;
+import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.Constant.Camp;
-import com.gryphpoem.game.zw.resource.dao.impl.p.*;
+import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.resource.constant.HeroConstant;
+import com.gryphpoem.game.zw.resource.constant.MedalConst;
+import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
+import com.gryphpoem.game.zw.resource.constant.PushConstant;
+import com.gryphpoem.game.zw.resource.constant.SeasonConst;
+import com.gryphpoem.game.zw.resource.constant.TaskType;
+import com.gryphpoem.game.zw.resource.constant.TechConstant;
+import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.BuildingDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.CommonDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.DataNewDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.LordDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.MailDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.PayDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.PlayerHeroDao;
+import com.gryphpoem.game.zw.resource.dao.impl.p.ResourceDao;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.Role;
-import com.gryphpoem.game.zw.resource.domain.p.*;
-import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.domain.p.Account;
+import com.gryphpoem.game.zw.resource.domain.p.Building;
+import com.gryphpoem.game.zw.resource.domain.p.Common;
+import com.gryphpoem.game.zw.resource.domain.p.DataNew;
+import com.gryphpoem.game.zw.resource.domain.p.DbPlayerHero;
+import com.gryphpoem.game.zw.resource.domain.p.Lord;
+import com.gryphpoem.game.zw.resource.domain.p.MailData;
+import com.gryphpoem.game.zw.resource.domain.p.PaySum;
+import com.gryphpoem.game.zw.resource.domain.p.PlayerHero;
+import com.gryphpoem.game.zw.resource.domain.p.Resource;
+import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacter;
+import com.gryphpoem.game.zw.resource.domain.s.StaticCharacterReward;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHappiness;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityCell;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
+import com.gryphpoem.game.zw.resource.domain.s.StaticIniLord;
+import com.gryphpoem.game.zw.resource.domain.s.StaticRecommend;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Task;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.MapCell;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.PeaceAndWelfareRecord;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.hero.PlayerFormation;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.AccountHelper;
+import com.gryphpoem.game.zw.resource.util.CalculateUtil;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.DateHelper;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
+import com.gryphpoem.game.zw.resource.util.MapHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.PlayerSerHelper;
+import com.gryphpoem.game.zw.resource.util.PushMessageUtil;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import com.gryphpoem.game.zw.service.BuildingService;
 import com.gryphpoem.game.zw.service.buildHomeCity.BuildHomeCityService;
@@ -42,7 +96,17 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -450,12 +514,23 @@ public class PlayerDataManager implements PlayerDM {
             // 初始化订单数上限
             player.setEconomicOrderMaxCnt(Constant.ORDER_INI_TOP_LIMIT);
 
-            // 初始化安民济物记录
-            Map<Integer, Integer> peaceAndWelfareRecord = player.getPeaceAndWelfareRecord();
-            peaceAndWelfareRecord.put(1, 0);
-            peaceAndWelfareRecord.put(2, 0);
-
             int now = TimeHelper.getCurrentSecond();
+            // 初始化安民济物记录
+            Map<Integer, PeaceAndWelfareRecord> peaceAndWelfareRecordMap = new HashMap<>(2);
+            PeaceAndWelfareRecord peaceAndWelfareRecord1 = new PeaceAndWelfareRecord();
+            peaceAndWelfareRecord1.setType(1);
+            peaceAndWelfareRecord1.setLastTime(0);
+            peaceAndWelfareRecord1.setCurDayCnt(0);
+            peaceAndWelfareRecord1.setTotalCnt(0);
+            peaceAndWelfareRecordMap.put(1, peaceAndWelfareRecord1);
+            PeaceAndWelfareRecord peaceAndWelfareRecord2 = new PeaceAndWelfareRecord();
+            peaceAndWelfareRecord2.setType(2);
+            peaceAndWelfareRecord2.setLastTime(0);
+            peaceAndWelfareRecord2.setCurDayCnt(0);
+            peaceAndWelfareRecord2.setTotalCnt(0);
+            peaceAndWelfareRecordMap.put(2, peaceAndWelfareRecord2);
+            player.setPeaceAndWelfareRecord(peaceAndWelfareRecordMap);
+
             // 初始化幸福度恢复时间
             player.setHappinessTime(now);
             // 初始化人口恢复时间
@@ -485,7 +560,7 @@ public class PlayerDataManager implements PlayerDM {
 
     public void initBuildingInfo(Player player, StaticIniLord staticIniLord) {
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
-        Map<Integer, List<Integer>> mapCellData = player.getMapCellData();
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
         List<Integer> foundationData = new ArrayList<>(player.getFoundationData());
         Map<Integer, Integer> buildingInfo = staticIniLord.getBuildingInfo();
         if (CheckNull.nonEmpty(buildingInfo)) {
@@ -498,30 +573,52 @@ public class PlayerDataManager implements PlayerDM {
                 buildingData.put(k, buildingState);
                 StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(v);
                 List<Integer> cellList = staticHomeCityFoundation.getCellList();
-                for (int i = 0; i < cellList.size(); i++) {
-                    Integer cellId = cellList.get(i);
-                    // 解锁的格子
-                    List<Integer> cellState = new ArrayList<>(2);
-                    cellState.add(1);// 已开垦
-                    StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                    cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
-                    mapCellData.put(cellId, cellState);
+                if (CheckNull.nonEmpty(cellList)) {
+                    for (int i = 0; i < cellList.size(); i++) {
+                        Integer cellId = cellList.get(i);
+                        // 解锁的格子
+                        MapCell mapCell = new MapCell();
+                        mapCell.setCellId(cellId);
+                        mapCell.setReclaimed(true);
+                        StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                        if (staticHomeCityCell != null) {
+                            int banditId = staticHomeCityCell.getHasBandit();
+                            mapCell.setNpcId(banditId);
+                            List<Integer> simInfo = DataResource.ac.getBean(BuildHomeCityService.class).getBanditTalkSimulator(banditId);
+                            int simType = 0;
+                            int simId = 0;
+                            if (CheckNull.nonEmpty(simInfo) && simInfo.size() >= 2) {
+                                simType = simInfo.get(0);
+                                simId = simInfo.get(1);
+                            }
+                            mapCell.setSimType(banditId > 0 ? simType: 0);
+                            mapCell.setSimId(banditId > 0 ? simId: 0);
+                            mapCell.setBanditRefreshTime(banditId > 0 ? -1 : 0);
+                        } else {
+                            mapCell.setNpcId(0);
+                            mapCell.setSimType(0);
+                            mapCell.setBanditRefreshTime(0);
+                        }
+                        mapCellData.put(cellId, mapCell);
+                    }
                 }
                 List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
-                player.getMapCellData().forEach((key, value) -> {
-                    if (value.get(0) == 1) {
-                        reclaimedCellIdList.add(key);
+                for (MapCell mapCell : mapCellData.values()) {
+                    if (mapCell.getReclaimed() && !reclaimedCellIdList.contains(mapCell.getCellId())) {
+                        reclaimedCellIdList.add(mapCell.getCellId());
                     }
-                });
+                }
                 // 解锁的地基
                 for (Integer reclaimedCellId : reclaimedCellIdList) {
                     List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(reclaimedCellId); // 开垦的格子对应可解锁的地基
-                    for (Integer foundationId : foundationIdList) {
-                        // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-                        StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
-                        if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                            if (!foundationData.contains(foundationId)) {
-                                foundationData.add(foundationId);
+                    if (CheckNull.nonEmpty(foundationIdList)) {
+                        for (Integer foundationId : foundationIdList) {
+                            // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+                            StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                            if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
+                                if (!foundationData.contains(foundationId)) {
+                                    foundationData.add(foundationId);
+                                }
                             }
                         }
                     }
@@ -534,32 +631,55 @@ public class PlayerDataManager implements PlayerDM {
             buildingState.setBuildingLv(sBuildingInit.getInitLv());
             buildingState.setFoundationId(1);
             buildingData.put(BuildingType.COMMAND, buildingState);
-            StaticHomeCityFoundation staticHomeCityFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
-            List<Integer> cellList = staticHomeCityFoundation.getCellList();
-            for (int i = 0; i < cellList.size(); i++) {
-                Integer cellId = cellList.get(i);
-                // 解锁的格子
-                List<Integer> cellState = new ArrayList<>(2);
-                cellState.add(1);// 已开垦
-                StaticHomeCityCell staticHomeCityCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
-                cellState.add(staticHomeCityCell.getHasBandit());// 是否有土匪
-                mapCellData.put(cellId, cellState);
+            StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(1);
+            List<Integer> cellList = staticFoundation.getCellList();
+            if (CheckNull.nonEmpty(cellList)) {
+                for (int i = 0; i < cellList.size(); i++) {
+                    int cellId = cellList.get(i);
+                    // 解锁的格子
+                    MapCell mapCell = new MapCell();
+                    mapCell.setCellId(cellId);
+                    mapCell.setReclaimed(true);
+                    StaticHomeCityCell staticCell = StaticBuildCityDataMgr.getStaticHomeCityCellById(cellId);
+                    if (staticCell != null) {
+                        int banditId = staticCell.getHasBandit();
+                        mapCell.setNpcId(banditId);
+                        List<Integer> simInfo = DataResource.ac.getBean(BuildHomeCityService.class).getBanditTalkSimulator(banditId);
+                        int simType = 0;
+                        int simId = 0;
+                        if (CheckNull.nonEmpty(simInfo) && simInfo.size() >= 2) {
+                            simType = simInfo.get(0);
+                            simId = simInfo.get(1);
+                        }
+                        mapCell.setSimType(banditId > 0 ? simType: 0);
+                        mapCell.setSimId(banditId > 0 ? simId: 0);
+                        mapCell.setBanditRefreshTime(banditId > 0 ? -1 : 0);
+                    } else {
+                        mapCell.setNpcId(0);
+                        mapCell.setSimType(0);
+                        mapCell.setSimId(0);
+                        mapCell.setBanditRefreshTime(0);
+                    }
+                    mapCellData.put(cellId, mapCell);
+                }
+            }
+            List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
+            for (MapCell mapCell : mapCellData.values()) {
+                if (mapCell.getReclaimed() && !reclaimedCellIdList.contains(mapCell.getCellId())) {
+                    reclaimedCellIdList.add(mapCell.getCellId());
+                }
             }
             // 解锁的地基
-            List<Integer> reclaimedCellIdList = new ArrayList<>();// 获取玩家已开垦的格子
-            player.getMapCellData().forEach((key, value) -> {
-                if (value.get(0) == 1) {
-                    reclaimedCellIdList.add(key);
-                }
-            });
             for (Integer reclaimedCellId : reclaimedCellIdList) {
                 List<Integer> foundationIdList = StaticBuildCityDataMgr.getFoundationIdListByCellId(reclaimedCellId); // 开垦的格子对应可解锁的地基
-                for (Integer foundationId : foundationIdList) {
-                    // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
-                    StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
-                    if (reclaimedCellIdList.containsAll(staticFoundation.getCellList())) {
-                        if (!foundationData.contains(foundationId)) {
-                            foundationData.add(foundationId);
+                if (CheckNull.nonEmpty(foundationIdList)) {
+                    for (Integer foundationId : foundationIdList) {
+                        // 判断该地基所要求格子是否已全部开垦, 如果是, 则解锁该地基
+                        StaticHomeCityFoundation staticFoundation_ = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                        if (reclaimedCellIdList.containsAll(staticFoundation_.getCellList())) {
+                            if (!foundationData.contains(foundationId)) {
+                                foundationData.add(foundationId);
+                            }
                         }
                     }
                 }
@@ -1362,6 +1482,7 @@ public class PlayerDataManager implements PlayerDM {
         int nowDay = TimeHelper.getCurrentDay();
         Lord lord = player.lord;
         Common common = player.common;
+        Map<Integer, PeaceAndWelfareRecord> peaceAndWelfareRecord = player.getPeaceAndWelfareRecord();
         int lastDay = TimeHelper.getDay(lord.getRefreshTime());
         if (nowDay != lastDay) {
 
@@ -1372,6 +1493,10 @@ public class PlayerDataManager implements PlayerDM {
                 hero.setBreakExp(0);
             }
 
+            // 隔天重置安民济物济物记录
+            if (CheckNull.nonEmpty(peaceAndWelfareRecord)) {
+                peaceAndWelfareRecord.forEach((key, value) -> value.setCurDayCnt(0));
+            }
             if (common != null) {
                 common.setBuyAct(0);
                 common.setRetreat(0);
@@ -1403,14 +1528,14 @@ public class PlayerDataManager implements PlayerDM {
         // 侦察兵状态
         builder.addAllScoutData(PbHelper.createTwoIntListByMap(player.getScoutData()));
         builder.addAllResidentData(player.getResidentData());
-        player.getMapCellData().forEach((cellId, cellState) -> {
-            CommonPb.MapCell.Builder mapCell = CommonPb.MapCell.newBuilder();
-            mapCell.setCellId(cellId);
-            mapCell.addAllState(cellState);
-            builder.addMapCellData(mapCell.build());
-        });
+        for (MapCell mapCell : player.getMapCellData().values()) {
+            builder.addMapCellData(mapCell.ser());
+        }
         builder.addAllFoundationData(player.getFoundationData());
         builder.setHappiness(player.getHappiness());
+        for (PeaceAndWelfareRecord peaceAndWelfareRecord : player.getPeaceAndWelfareRecord().values()) {
+            builder.addPeaceAndWelfareRecord(PbHelper.createTwoIntPb(peaceAndWelfareRecord.getType(), peaceAndWelfareRecord.getCurDayCnt()));
+        }
         if (player.ctx != null) {
             Base.Builder msg = PbHelper.createSynBase(SyncRoleInfoRs.EXT_FIELD_NUMBER, SyncRoleInfoRs.ext,
                     builder.build());

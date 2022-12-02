@@ -2029,7 +2029,7 @@ public class RewardDataManager {
             List<Integer> orderTopLimitIncreaseConfig = Constant.ORDER_TOP_LIMIT_INCREASE_CONFIG;
             int orderIniTopLimit = Constant.ORDER_INI_TOP_LIMIT;
             for (Integer canAddLordLv : orderTopLimitIncreaseConfig) {
-                // 达到对应需要的领主等级, 且订单数未超过上限
+                // 每达到对应需要的领主等级, 且订单数未超过上限, 则上限+1
                 if (lvThroughList.contains(canAddLordLv) && player.getEconomicOrderMaxCnt() < orderTopLimitIncreaseConfig.size() + orderIniTopLimit) {
                     player.setEconomicOrderMaxCnt(player.getEconomicOrderMaxCnt() + 1);
                 }

@@ -2962,6 +2962,11 @@ public class PbHelper {
             builder.setAtkPos(atkLord.getPos());
             builder.setActRoleId(atkLord.getLordId());
         }
+        if (battleType == WorldConstant.BATTLE_TYPE_REBEL_INVADE) {
+            // 叛军入侵特殊处理
+            builder.setAtkCamp(Constant.Camp.NPC);
+            builder.setAtkName("叛军");
+        }
         builder.setAtkTime(atkTime);
         builder.setStatus(status);
         builder.setBattleType(battleType);
