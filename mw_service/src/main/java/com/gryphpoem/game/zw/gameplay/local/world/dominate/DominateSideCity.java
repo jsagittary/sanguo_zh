@@ -212,6 +212,7 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
         this.campRankDataMap.clear();
         this.defendList.clear();
         this.holdArmyTime.clear();
+        this.setOwnerId(0l);
     }
 
     public DominateSideCity(SerializePb.SerDominateSideCity city) {

@@ -92,9 +92,12 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         SerializePb.SerTimeLimitDominateMap timeLimitDominateMap = super.createMapPb(isSaveDb);
         SerializePb.SerStateDominateWorldMap.Builder builder = SerializePb.SerStateDominateWorldMap.newBuilder();
         builder.setTimeLimitMap(timeLimitDominateMap);
-        builder.setNextBeginDate(this.nextBeginDate.getTime());
-        builder.setNextEndTime(this.nextEndTime.getTime());
-        builder.setNextPreviewDate(this.nextPreviewDate.getTime());
+        if (Objects.nonNull(this.nextBeginDate))
+            builder.setNextBeginDate(this.nextBeginDate.getTime());
+        if (Objects.nonNull(this.nextEndTime))
+            builder.setNextEndTime(this.nextEndTime.getTime());
+        if (Objects.nonNull(this.nextPreviewDate))
+            builder.setNextPreviewDate(this.nextPreviewDate.getTime());
         if (CheckNull.nonEmpty(this.nextOpenCityList)) {
             SerializePb.SerOpenDominateSideCity.Builder cityPb = SerializePb.SerOpenDominateSideCity.newBuilder();
             this.nextOpenCityList.entrySet().forEach(en -> {
@@ -289,32 +292,37 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                     this.setOpen(true);
                 }
 
-                this.curOpenCityList.clear();
-                if (CheckNull.nonEmpty(this.nextOpenCityList)) {
-                    this.nextOpenCityList.entrySet().forEach(nextOpenCity -> {
-                        nextOpenCity.getValue().forEach(cityId -> {
-                            createDominateCity(worldDataManager, cityId, nextOpenCity.getKey());
+                if (this.isOpen()) {
+                    this.curOpenCityList.clear();
+                    if (CheckNull.nonEmpty(this.nextOpenCityList)) {
+                        this.nextOpenCityList.entrySet().forEach(nextOpenCity -> {
+                            nextOpenCity.getValue().forEach(cityId -> {
+                                createDominateCity(worldDataManager, cityId, nextOpenCity.getKey());
+                            });
                         });
-                    });
 
-                    this.nextOpenCityList.clear();
-                } else {
-                    initCurMultiDominateCity(worldDataManager, stateList, areaMap, curScheduleId);
+                        this.nextOpenCityList.clear();
+                    } else {
+                        initCurMultiDominateCity(worldDataManager, stateList, areaMap, curScheduleId);
+                    }
                 }
                 break;
             case 2:
-                if (CheckNull.nonEmpty(this.nextOpenCityList))
-                    this.nextOpenCityList.clear();
-                if (CheckNull.isEmpty(this.curOpenCityList)) {
-                    initCurMultiDominateCity(worldDataManager, stateList, areaMap, curScheduleId);
-                }
+                if (this.isOpen()) {
+                    if (CheckNull.nonEmpty(this.nextOpenCityList))
+                        this.nextOpenCityList.clear();
+                    if (CheckNull.isEmpty(this.curOpenCityList)) {
+                        initCurMultiDominateCity(worldDataManager, stateList, areaMap, curScheduleId);
+                    }
 
-                initMultiNextOpenCityList(stateList, areaMap, curScheduleId, 1);
-                initMultiNextOpenCityList(stateList, areaMap, curScheduleId, 2);
+                    initMultiNextOpenCityList(stateList, areaMap, curScheduleId, 1);
+                    initMultiNextOpenCityList(stateList, areaMap, curScheduleId, 2);
+                }
                 break;
         }
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        if (this.isOpen())
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
     }
 
     /**
@@ -323,13 +331,15 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      * @param curTimes
      */
     public void onBegin(int curTimes) {
-        LogUtil.common("worldFunction: ", getWorldMapFunction(), ", curTimes: ", curTimes, " begin");
-        String jobName = getWorldMapFunctionName() + "_" + "begin_check_" + curTimes;
-        ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
-            checkWinOfOccupyTime(); // 检测州郡雄踞一方占领情况
-        }, this.getCurBeginDate(), this.getCurEndTime(), 1);
+        if (this.isOpen()) {
+            LogUtil.common("worldFunction: ", getWorldMapFunction(), ", curTimes: ", curTimes, " begin");
+            String jobName = getWorldMapFunctionName() + "_" + "begin_check_" + curTimes;
+            ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
+                checkWinOfOccupyTime(); // 检测州郡雄踞一方占领情况
+            }, this.getCurBeginDate(), this.getCurEndTime(), 1);
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        }
     }
 
     /**
@@ -349,31 +359,34 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 break;
         }
 
-        this.playerStateDominateMap.clear();
-        // 城池结算
-        int now = TimeHelper.getCurrentSecond();
-        if (CheckNull.nonEmpty(this.curOpenCityList)) {
-            Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
-                list.forEach(sideCity -> {
-                    retreatDominateArmy(sideCity);
-                    if (sideCity.isOver())
-                        return;
-                    sideCity.settleCampOccupyTime(now);
-                    List<CampRankData> sortedList = null;
-                    if (CheckNull.nonEmpty(sideCity.getCampRankDataMap())) {
-                        sortedList = sortCampRank(sideCity.getCampRankDataMap().values());
-                    }
-                    if (CheckNull.nonEmpty(sortedList)) {
-                        CampRankData vicCampData = sortedList.get(0);
-                        sideCity.setCamp(vicCampData.camp);
-                        sideCity.setOver(true);
-                    }
+        // 活动开放时才结算
+        if (this.isOpen()) {
+            this.playerStateDominateMap.clear();
+            // 城池结算
+            int now = TimeHelper.getCurrentSecond();
+            if (CheckNull.nonEmpty(this.curOpenCityList)) {
+                Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
+                    list.forEach(sideCity -> {
+                        retreatDominateArmy(sideCity);
+                        if (sideCity.isOver())
+                            return;
+                        sideCity.settleCampOccupyTime(now);
+                        List<CampRankData> sortedList = null;
+                        if (CheckNull.nonEmpty(sideCity.getCampRankDataMap())) {
+                            sortedList = sortCampRank(sideCity.getCampRankDataMap().values());
+                        }
+                        if (CheckNull.nonEmpty(sortedList)) {
+                            CampRankData vicCampData = sortedList.get(0);
+                            sideCity.setCamp(vicCampData.camp);
+                            sideCity.setOver(true);
+                        }
+                    });
                 });
-            });
-        }
+            }
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
-        this.curOpenCityList.clear();
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+            this.curOpenCityList.clear();
+        }
     }
 
     /**

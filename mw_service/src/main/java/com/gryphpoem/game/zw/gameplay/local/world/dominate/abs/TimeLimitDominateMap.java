@@ -191,16 +191,20 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
     public SerializePb.SerTimeLimitDominateMap createMapPb(boolean isSaveDb) {
         SerializePb.SerTimeLimitDominateMap.Builder builder = SerializePb.SerTimeLimitDominateMap.newBuilder();
         builder.setCurTimes(this.curTimes);
-        builder.setCurEndTime(this.curEndTime.getTime());
-        builder.setCurBeginDate(this.curBeginDate.getTime());
-        builder.setCurPreviewDate(this.curPreviewDate.getTime());
+        if (Objects.nonNull(this.curEndTime))
+            builder.setCurEndTime(this.curEndTime.getTime());
+        if (Objects.nonNull(this.curBeginDate))
+            builder.setCurBeginDate(this.curBeginDate.getTime());
+        if (Objects.nonNull(this.curPreviewDate))
+            builder.setCurPreviewDate(this.curPreviewDate.getTime());
         builder.setOpen(open);
         builder.setWorldFunction(getWorldMapFunction());
         if (CheckNull.nonEmpty(curOpenCityList)) {
             builder.addAllCity(this.curOpenCityList.entrySet().stream().
                     map(PbHelper::openDominateSideCityPb).collect(Collectors.toList()));
         }
-        builder.setFunctionOpenDay(this.functionOpenDay.getTime());
+        if (Objects.nonNull(this.functionOpenDay))
+            builder.setFunctionOpenDay(this.functionOpenDay.getTime());
         return builder.build();
     }
 

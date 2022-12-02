@@ -131,9 +131,10 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
             this.setOpen(true);
         }
         this.curOpenCityList.clear();
-        createMultiDominateCity(DataResource.ac.getBean(WorldDataManager.class));
-
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        if (this.isOpen()) {
+            createMultiDominateCity(DataResource.ac.getBean(WorldDataManager.class));
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        }
     }
 
     /**
@@ -143,11 +144,14 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         this.ranks.clear();
         this.recordMap.clear();
         String jobName = getWorldMapFunctionName() + "_" + "begin_check_" + curTimes;
-        ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
-            checkWinOfOccupyTime(); // 检测柏林占领时间
-        }, this.getCurBeginDate(), this.getCurEndTime(), 1);
 
-        EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        if (this.isOpen()) {
+            ScheduleManager.getInstance().addOrModifyDefultJob(DefultJob.createDefult(jobName), (job) -> {
+                checkWinOfOccupyTime(); // 检测柏林占领时间
+            }, this.getCurBeginDate(), this.getCurEndTime(), 1);
+
+            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        }
     }
 
     /**
@@ -155,101 +159,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
      */
     public void onEnd() throws ParseException {
         try {
-            // 城池结算
-            int now = TimeHelper.getCurrentSecond();
-            Map<Integer, Map<Integer, Integer>> campOccupyMap = null;
-            if (CheckNull.nonEmpty(this.curOpenCityList)) {
-                Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
-                    list.forEach(sideCity -> {
-                        retreatDominateArmy(sideCity);
-                        if (sideCity.isOver())
-                            return;
-                        sideCity.settleCampOccupyTime(now);
-                        List<CampRankData> sortedList = null;
-                        if (CheckNull.nonEmpty(sideCity.getCampRankDataMap())) {
-                            sortedList = sortCampRank(sideCity.getCampRankDataMap().values());
-                        }
-                        if (CheckNull.nonEmpty(sortedList)) {
-                            CampRankData vicCampData = sortedList.get(0);
-                            sideCity.setCamp(vicCampData.camp);
-                            sideCity.setOver(true);
-                        }
-                    });
-                });
-
-                campOccupyMap = new HashMap<>();
-                for (DominateSideCity sideCity : this.curOpenCityList.get(curTimes)) {
-                    StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
-                    if (CheckNull.isNull(staticCity)) continue;
-                    int curCount = campOccupyMap.computeIfAbsent(sideCity.getCamp(), m -> new HashMap<>()).
-                            computeIfAbsent(staticCity.getType(), l -> 0);
-                    curCount++;
-                    campOccupyMap.get(sideCity.getCamp()).put(staticCity.getType(), curCount);
-                }
-            }
-
             Date nowDate = new Date();
-            MailDataManager mailDataManager = DataResource.ac.getBean(MailDataManager.class);
-            PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
-            if (CheckNull.nonEmpty(this.recordMap)) {
-                Date tmpDate = new Date();
-                for (Map.Entry<Long, PlayerSiLiDominateFightRecord> entry : this.recordMap.entrySet()) {
-                    long curRoleId = entry.getKey();
-                    PlayerSiLiDominateFightRecord record = entry.getValue();
-                    if (CheckNull.isNull(record) || record.getKillCnt() < Constant.MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS)
-                        continue;
-                    tmpDate.setTime(record.getKillRankTime());
-                    if (!DateHelper.isSameDate(tmpDate, nowDate))
-                        continue;
-                    Player curPlayer = playerDataManager.getPlayer(curRoleId);
-                    if (CheckNull.isNull(curPlayer)) continue;
-                    // 金珠奖励
-                    StaticDominateWarAward award = StaticDominateDataMgr.findKillRankAward(record.getKillCnt());
-
-                    List<CommonPb.Award> awardList = null;
-                    if (Objects.nonNull(award)) {
-                        awardList = new ArrayList<>();
-                        awardList.add(PbHelper.createAwardPb(AwardType.SPECIAL, AwardType.Special.SHENG_WU, award.getAward()));
-                    }
-
-                    // 大中城奖励
-                    int totalCityOccupyCnt = 0;
-                    if (CheckNull.nonEmpty(campOccupyMap) &&
-                            CheckNull.nonEmpty(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY)) {
-                        List<List<Integer>> cityAward = null;
-                        Map<Integer, Integer> cityCountMap = campOccupyMap.get(curPlayer.lord.getCamp());
-                        if (CheckNull.nonEmpty(cityCountMap)) {
-                            int cnt;
-                            if ((cnt = cityCountMap.getOrDefault(WorldConstant.CITY_TYPE_8, 0)) > 0) {
-                                totalCityOccupyCnt += cnt;
-                                cityAward = new ArrayList<>();
-                                cityAward.add(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY.get(0));
-                                if (CheckNull.isNull(awardList)) awardList = new ArrayList<>();
-                                awardList.addAll(PbHelper.createMultipleAwardsPb(cityAward, cnt));
-                            }
-
-                            if ((cnt = cityCountMap.getOrDefault(WorldConstant.CITY_TYPE_HOME, 0)) > 0) {
-                                totalCityOccupyCnt += cnt;
-                                if (CheckNull.nonEmpty(cityAward)) {
-                                    cityAward.clear();
-                                } else {
-                                    cityAward = new ArrayList<>();
-                                }
-                                cityAward.add(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY.get(1));
-                                if (CheckNull.isNull(awardList)) awardList = new ArrayList<>();
-                                awardList.addAll(PbHelper.createMultipleAwardsPb(cityAward, cnt));
-                            }
-                        }
-                    }
-
-                    if (CheckNull.nonEmpty(awardList)) {
-                        mailDataManager.sendAttachMail(curPlayer, awardList, MailConstant.MOLD_SI_LI_DOMINATE_AWARD, AwardFrom.DO_SOME,
-                                curPlayer.lord.getCamp(), totalCityOccupyCnt, record.getKillCnt(), Objects.nonNull(award) ? award.getAward() : 0);
-                    }
-                }
-            }
-
-
             // 初始化下次开放活动时间
             String previewTimeCron = Constant.SI_LI_DOMINATE_PREVIEW_TIME;
             if (!StringUtils.isBlank(previewTimeCron)) {
@@ -270,7 +180,102 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
                 setCurEndTime(nextDate);
             }
 
-            EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+            if (this.isOpen()) {
+                // 城池结算
+                int now = TimeHelper.getCurrentSecond();
+                Map<Integer, Map<Integer, Integer>> campOccupyMap = null;
+                if (CheckNull.nonEmpty(this.curOpenCityList)) {
+                    Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
+                        list.forEach(sideCity -> {
+                            retreatDominateArmy(sideCity);
+                            if (sideCity.isOver())
+                                return;
+                            sideCity.settleCampOccupyTime(now);
+                            List<CampRankData> sortedList = null;
+                            if (CheckNull.nonEmpty(sideCity.getCampRankDataMap())) {
+                                sortedList = sortCampRank(sideCity.getCampRankDataMap().values());
+                            }
+                            if (CheckNull.nonEmpty(sortedList)) {
+                                CampRankData vicCampData = sortedList.get(0);
+                                sideCity.setCamp(vicCampData.camp);
+                                sideCity.setOver(true);
+                            }
+                        });
+                    });
+
+                    campOccupyMap = new HashMap<>();
+                    for (DominateSideCity sideCity : this.curOpenCityList.get(curTimes)) {
+                        StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
+                        if (CheckNull.isNull(staticCity)) continue;
+                        int curCount = campOccupyMap.computeIfAbsent(sideCity.getCamp(), m -> new HashMap<>()).
+                                computeIfAbsent(staticCity.getType(), l -> 0);
+                        curCount++;
+                        campOccupyMap.get(sideCity.getCamp()).put(staticCity.getType(), curCount);
+                    }
+                }
+
+                MailDataManager mailDataManager = DataResource.ac.getBean(MailDataManager.class);
+                PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
+                if (CheckNull.nonEmpty(this.recordMap)) {
+                    Date tmpDate = new Date();
+                    for (Map.Entry<Long, PlayerSiLiDominateFightRecord> entry : this.recordMap.entrySet()) {
+                        long curRoleId = entry.getKey();
+                        PlayerSiLiDominateFightRecord record = entry.getValue();
+                        if (CheckNull.isNull(record) || record.getKillCnt() < Constant.MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS)
+                            continue;
+                        tmpDate.setTime(record.getKillRankTime());
+                        if (!DateHelper.isSameDate(tmpDate, nowDate))
+                            continue;
+                        Player curPlayer = playerDataManager.getPlayer(curRoleId);
+                        if (CheckNull.isNull(curPlayer)) continue;
+                        // 金珠奖励
+                        StaticDominateWarAward award = StaticDominateDataMgr.findKillRankAward(record.getKillCnt());
+
+                        List<CommonPb.Award> awardList = null;
+                        if (Objects.nonNull(award)) {
+                            awardList = new ArrayList<>();
+                            awardList.add(PbHelper.createAwardPb(AwardType.SPECIAL, AwardType.Special.SHENG_WU, award.getAward()));
+                        }
+
+                        // 大中城奖励
+                        int totalCityOccupyCnt = 0;
+                        if (CheckNull.nonEmpty(campOccupyMap) &&
+                                CheckNull.nonEmpty(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY)) {
+                            List<List<Integer>> cityAward = null;
+                            Map<Integer, Integer> cityCountMap = campOccupyMap.get(curPlayer.lord.getCamp());
+                            if (CheckNull.nonEmpty(cityCountMap)) {
+                                int cnt;
+                                if ((cnt = cityCountMap.getOrDefault(WorldConstant.CITY_TYPE_8, 0)) > 0) {
+                                    totalCityOccupyCnt += cnt;
+                                    cityAward = new ArrayList<>();
+                                    cityAward.add(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY.get(0));
+                                    if (CheckNull.isNull(awardList)) awardList = new ArrayList<>();
+                                    awardList.addAll(PbHelper.createMultipleAwardsPb(cityAward, cnt));
+                                }
+
+                                if ((cnt = cityCountMap.getOrDefault(WorldConstant.CITY_TYPE_HOME, 0)) > 0) {
+                                    totalCityOccupyCnt += cnt;
+                                    if (CheckNull.nonEmpty(cityAward)) {
+                                        cityAward.clear();
+                                    } else {
+                                        cityAward = new ArrayList<>();
+                                    }
+                                    cityAward.add(Constant.BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY.get(1));
+                                    if (CheckNull.isNull(awardList)) awardList = new ArrayList<>();
+                                    awardList.addAll(PbHelper.createMultipleAwardsPb(cityAward, cnt));
+                                }
+                            }
+                        }
+
+                        if (CheckNull.nonEmpty(awardList)) {
+                            mailDataManager.sendAttachMail(curPlayer, awardList, MailConstant.MOLD_SI_LI_DOMINATE_AWARD, AwardFrom.DO_SOME,
+                                    curPlayer.lord.getCamp(), totalCityOccupyCnt, record.getKillCnt(), Objects.nonNull(award) ? award.getAward() : 0);
+                        }
+                    }
+                }
+
+                EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+            }
         } catch (Exception e) {
             LogUtil.error("司隶雄踞一方活动结算错误, e: ", e);
         } finally {
