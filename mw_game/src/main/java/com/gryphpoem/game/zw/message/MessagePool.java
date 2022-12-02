@@ -54,6 +54,7 @@ import com.gryphpoem.game.zw.handler.client.cross.newyork.NewYorkWarProgressData
 import com.gryphpoem.game.zw.handler.client.cross.warfire.*;
 import com.gryphpoem.game.zw.handler.client.cross.worldwar.*;
 import com.gryphpoem.game.zw.handler.client.crosssimple.*;
+import com.gryphpoem.game.zw.handler.client.dominate.*;
 import com.gryphpoem.game.zw.handler.client.dressup.ChangeDressUpHandler;
 import com.gryphpoem.game.zw.handler.client.dressup.GetDressUpDataHandler;
 import com.gryphpoem.game.zw.handler.client.economicOrder.GetEconomicOrderHandler;
@@ -117,6 +118,7 @@ import com.gryphpoem.game.zw.pb.GamePb5;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
 import com.gryphpoem.game.zw.pb.GamePb6.*;
 import com.gryphpoem.game.zw.pb.GamePb7.*;
+import com.gryphpoem.game.zw.pb.GamePb8;
 import com.gryphpoem.game.zw.pb.HttpPb;
 import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
 
@@ -1402,6 +1404,13 @@ public class MessagePool implements IMessagePool {
         registerC(GetEconomicOrderRq.EXT_FIELD_NUMBER, GetEconomicOrderRs.EXT_FIELD_NUMBER, GetEconomicOrderHandler.class);
         // 获取战斗战报
         registerC(GamePb5.GetFightRecordRq.EXT_FIELD_NUMBER, GetFightRecordRs.EXT_FIELD_NUMBER, GetFightRecordHandler.class);
+
+        // 雄踞一方
+        registerC(GamePb8.AttackDominateCityRq.EXT_FIELD_NUMBER, GamePb8.AttackDominateCityRs.EXT_FIELD_NUMBER, AttackDominateCityHandler.class);
+        registerC(GamePb8.GetDominateDetailRq.EXT_FIELD_NUMBER, GamePb8.GetDominateDetailRs.EXT_FIELD_NUMBER, GetDominateDetailHandler.class);
+        registerC(GamePb8.GetDominateGovernorListRq.EXT_FIELD_NUMBER, GamePb8.GetDominateGovernorListRs.EXT_FIELD_NUMBER, GetDominateGovernorListHandler.class);
+        registerC(GamePb8.GetDominateRankRq.EXT_FIELD_NUMBER, GamePb8.GetDominateRankRs.EXT_FIELD_NUMBER, GetDominateRankHandler.class);
+        registerC(GamePb8.GetDominateWorldMapInfoRq.EXT_FIELD_NUMBER, GamePb8.GetDominateWorldMapInfoRs.EXT_FIELD_NUMBER, GetDominateWorldMapInfoHandler.class);
     }
 
     /**

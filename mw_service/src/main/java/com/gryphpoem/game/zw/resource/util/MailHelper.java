@@ -451,6 +451,13 @@ public class MailHelper {
         putMailParamNum(MailConstant.MOLD_RELIC_PROBE_VANISH, 0, 0);
         putMailParamNum(MailConstant.DEFEND_REBEL_INVADE_FAIL, 1, 4);
         putMailParamNum(MailConstant.DEFEND_REBEL_INVADE_SUCCESS, 1, 3);
+
+        // 雄踞一方
+        putMailParamNum(MailConstant.MOLD_DOMINATE_ATTACK_FAIL, 4, 3);
+        putMailParamNum(MailConstant.MOLD_DOMINATE_ATTACK_SUCCESS, 4, 3);
+        putMailParamNum(MailConstant.MOLD_DOMINATE_ATTACK_DEFEND_SUCCESS, 4, 3);
+        putMailParamNum(MailConstant.MOLD_DOMINATE_ATTACK_DEFEND_FAIL, 4, 3);
+        putMailParamNum(MailConstant.MOLD_SI_LI_DOMINATE_AWARD, 0, 4);
     }
 
     /**

@@ -63,7 +63,8 @@ public class FightRecordDataManager {
      * cache配置重载
      */
     public void reload() {
-        if (cacheEntry != WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE || cacheExpirationTime != WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE) {
+        if (cacheEntry != WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE ||
+                cacheExpirationTime != WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE) {
             LoadingCache<Long, BattlePb.BattleRoundPb> recordCache_ = createLoadingCache();
             recordCache_.putAll(recordCache.asMap());
             this.recordCache = recordCache_;
@@ -79,7 +80,7 @@ public class FightRecordDataManager {
      */
     private LoadingCache<Long, BattlePb.BattleRoundPb> createLoadingCache() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE, TimeUnit.MINUTES)// 5分钟后失效
+                .expireAfterAccess(WarConstant.EXPIRATION_TIME_OF_WAR_REPORT_CACHE, TimeUnit.MINUTES)// 5分钟后失效
                 .maximumSize(WarConstant.MAXIMUM_ENTRIES_OF_WAR_REPORT_CACHE)
                 .removalListener((key, value, cause) -> {
                     // TODO: 2022/9/22 缓存卸载监听函数

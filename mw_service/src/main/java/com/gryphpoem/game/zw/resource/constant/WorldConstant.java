@@ -744,7 +744,8 @@ public class WorldConstant {
     /**
      * 城
      */
-    public static final int CITY_TYPE_3 = 3;
+    public static final int CITY_TYPE_3 = 3;  // 郡城
+    public static final int CITY_TYPE_6 = 6;  // 州城
     public static final int CITY_TYPE_HOME = 7;// 都城总部
     public static final int CITY_TYPE_8 = 8;// 名城
     public static final int CITY_TYPE_KING = 9;// 王城

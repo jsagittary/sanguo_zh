@@ -1,6 +1,8 @@
 package com.gryphpoem.game.zw.resource.domain;
 
 import com.gryphpoem.game.zw.gameplay.local.constant.cross.CrossFunction;
+import com.gryphpoem.game.zw.pb.GamePb8;
+import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.resource.domain.p.UploadCrossDataType;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActQuestionnaire;
 import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
@@ -222,6 +224,20 @@ public interface Events {
             this.heroId = heroId;
             this.curCount = curCount;
             this.player = player;
+        }
+    }
+
+    /**
+     * 同步雄踞一方地图信息变更
+     *
+     */
+    class SyncDominateWorldMapChangeEvent {
+        public int worldFunction;
+        public WorldPb.BaseWorldFunctionPb builder;
+
+        public SyncDominateWorldMapChangeEvent(int worldFunction, WorldPb.BaseWorldFunctionPb builder) {
+            this.worldFunction = worldFunction;
+            this.builder = builder;
         }
     }
 }

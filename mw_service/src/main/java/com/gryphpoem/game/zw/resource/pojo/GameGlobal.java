@@ -1,11 +1,16 @@
 package com.gryphpoem.game.zw.resource.pojo;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.*;
+import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.*;
 import com.gryphpoem.game.zw.pojo.p.AttrData;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
@@ -35,6 +40,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.pojo.world.battlepass.GlobalBattlePass;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.util.FightUtil;
 import org.springframework.util.ObjectUtils;
 
@@ -346,7 +352,7 @@ public class GameGlobal {
         global.setGestapo(serGestapo());
         global.setGlobalExt(serGlobalExt());
         global.setWorldSchedule(serWroldSchedule());
-
+        global.setDominateData(serDominateData());
         return global;
     }
 
@@ -495,6 +501,19 @@ public class GameGlobal {
         return ser.build().toByteArray();
     }
 
+    public void deDominateData(byte[] data) throws InvalidProtocolBufferException {
+        SerializePb.SerDominateData ser = SerializePb.SerDominateData.parseFrom(data);
+        DataResource.ac.getBean(DominateWorldMapService.class).setSer(ser);
+    }
+
+
+    public byte[] serDominateData() {
+        SerializePb.SerDominateData.Builder ser = SerializePb.SerDominateData.newBuilder();
+        ser.setStateMap(StateDominateWorldMap.getInstance().createWorldMapPb(true));
+        ser.setSiLiMap(SiLiDominateWorldMap.getInstance().createWorldMapPb(true));
+        return ser.build().toByteArray();
+    }
+
     private byte[] serGestapo() {
         SerGestapo.Builder ser = SerGestapo.newBuilder();
         for (Gestapo gestapo : gestapoMap.values()) {
@@ -553,7 +572,11 @@ public class GameGlobal {
     private byte[] serCity() {
         SerCity.Builder ser = SerCity.newBuilder();
         for (City city : cityMap.values()) {
-            ser.addCity(PbHelper.createCityPb(city));
+            if (city instanceof DominateSideCity) {
+                ser.addDominateCity(((DominateSideCity) city).createPb(true));
+            } else {
+                ser.addCity(PbHelper.createCityPb(city));
+            }
         }
         return ser.build().toByteArray();
     }
@@ -604,6 +627,7 @@ public class GameGlobal {
         dserGestapo(global.getGestapo());
         dserGlobalExt(global.getGlobalExt());
         dserWorldSchedule(global.getWorldSchedule());
+        deDominateData(global.getDominateData());
     }
 
     private void dserTrophy(byte[] data) throws InvalidProtocolBufferException {
@@ -804,6 +828,9 @@ public class GameGlobal {
         SerCity ser = SerCity.parseFrom(data);
         for (CommonPb.City city : ser.getCityList()) {
             cityMap.put(city.getCityId(), new City(city));
+        }
+        for (SerializePb.SerDominateSideCity city : ser.getDominateCityList()) {
+            cityMap.put(city.getCity().getCityId(), new DominateSideCity(city));
         }
     }
 

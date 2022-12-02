@@ -5,7 +5,7 @@
 <mapper namespace="GlobalDao">
 	<select id="selectGlobal" resultType="DbGlobal">
 		select
-		globalId,mapArea,city,bandit,mine,battle,worldTask,cabinetLead,privateChat,trophy,gestapo,globalExt,worldSchedule
+		globalId,mapArea,city,bandit,mine,battle,worldTask,cabinetLead,privateChat,trophy,gestapo,globalExt,worldSchedule,dominateData
 		from
 		p_global
 	</select>
@@ -13,13 +13,13 @@
 	<insert id="insertGlobal" parameterType="DbGlobal"
 		useGeneratedKeys="true" keyProperty="globalId">
 		insert into
-		p_global(mapArea,city,bandit,mine,battle,worldTask,cabinetLead,privateChat,trophy,gestapo,globalExt,worldSchedule)
-		values(#{mapArea},#{city},#{bandit},#{mine},#{battle},#{worldTask},#{cabinetLead},#{privateChat},#{trophy},#{gestapo},#{globalExt},#{worldSchedule})
+		p_global(mapArea,city,bandit,mine,battle,worldTask,cabinetLead,privateChat,trophy,gestapo,globalExt,worldSchedule,dominateData)
+		values(#{mapArea},#{city},#{bandit},#{mine},#{battle},#{worldTask},#{cabinetLead},#{privateChat},#{trophy},#{gestapo},#{globalExt},#{worldSchedule},#{dominateData})
 	</insert>
 
 	<update id="updateGlobal" parameterType="DbGlobal">
 		update p_global set
-		mapArea=#{mapArea},city=#{city},bandit=#{bandit},mine=#{mine},battle=#{battle},worldTask=#{worldTask}
+		mapArea=#{mapArea},city=#{city},bandit=#{bandit},mine=#{mine},battle=#{battle},worldTask=#{worldTask},dominateData=#{dominateData}
 		,cabinetLead=#{cabinetLead},privateChat=#{privateChat},trophy=#{trophy},gestapo=#{gestapo},globalExt=#{globalExt},worldSchedule=#{worldSchedule}
 		where
 		globalId=#{globalId}
@@ -28,7 +28,7 @@
 	<insert id="replaceGlobal" parameterType="DbGlobal">
 		replace into p_global
 		set
-		globalId=#{globalId},mapArea=#{mapArea},city=#{city},bandit=#{bandit},mine=#{mine},battle=#{battle},worldTask=#{worldTask}
+		globalId=#{globalId},mapArea=#{mapArea},city=#{city},bandit=#{bandit},mine=#{mine},battle=#{battle},worldTask=#{worldTask},dominateData=#{dominateData}
 		,cabinetLead=#{cabinetLead},privateChat=#{privateChat},trophy=#{trophy},gestapo=#{gestapo},globalExt=#{globalExt},worldSchedule=#{worldSchedule}
 	</insert>
 

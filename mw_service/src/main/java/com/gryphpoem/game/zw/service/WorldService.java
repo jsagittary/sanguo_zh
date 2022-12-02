@@ -65,6 +65,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.service.relic.RelicService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,6 +200,8 @@ public class WorldService {
     private MusicFestivalCreativeService musicFestivalCreativeService;
     @Autowired
     private CampService campService;
+    @Autowired
+    private DominateWorldMapService dominateWorldMapService;
 
     /**
      * 获取某个行政区域的数据
@@ -1777,6 +1780,9 @@ public class WorldService {
             airshipService.retreatArmy(player, army, type);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE) {
             DataResource.getBean(RelicService.class).retreatArmy(player, army);
+        } else if (army.getType() == ArmyConstant.ARMY_TYPE_STATE_DOMINATE_ATTACK ||
+                    army.getType() == ArmyConstant.ARMY_TYPE_SI_LI_DOMINATE_ATTACK) {
+            dominateWorldMapService.retreatArmy(player, army);
         } else {
             // 原来行军返回处理
             originalReturnArmyProcess(roleId, player, keyId, type, army);
@@ -2377,21 +2383,12 @@ public class WorldService {
             if (WorldConstant.ATTACK_STATE_NEED_LV > player.lord.getLevel()) {
                 throw new MwException(GameError.ATTACK_STATE_NEED_LV.getCode(), "指挥官先磨砺至45级，再发动阵营战吧, roleId:", roleId);
             }
-            // StaticCity staticCity =
-            // StaticWorldDataMgr.getCityByPos(battle.getPos());
-            // if (staticCity.getArea() != player.lord.getArea()) {
-            // throw new MwException(GameError.CAMP_BATTLE_AREA_ERROR.getCode(),
-            // "跨区域不允许,发起阵营战, roleId:", roleId,
-            // ", cityId:", staticCity.getCityId());
-            // }
+            // 不可从此协议攻击雄踞一方城池
+            if (battle.isCampBattle()) {
+                StaticCity staticCity = StaticWorldDataMgr.getCityByPos(battle.getPos());
+                dominateWorldMapService.checkDominateSideCity(staticCity);
+            }
         }
-
-        // 允许一个玩家多个部队加入
-        // if (player.battleMap.containsKey(battle.getPos())) {
-        // throw new MwException(GameError.HAS_JOIN_BATTLE.getCode(), "玩家已加入战斗,
-        // roleId:", roleId, ", battleId:",
-        // battleId);
-        // }
 
         if (battle.getAtkCamp() != camp && battle.getDefCamp() != camp) {
             throw new MwException(GameError.CAN_NOT_JOIN_BATTLE.getCode(), "不是本阵营的战斗，不能参加, roleId:", roleId,
@@ -2609,9 +2606,6 @@ public class WorldService {
             }
         }
 
-        // StaticArea staticArea =
-        // StaticWorldDataMgr.getAreaMap().get(staticCity.getArea());
-
         LinkedList<Battle> battleList = warDataManager.getBattlePosMap().get(staticCity.getCityPos());
         int camp = player.lord.getCamp();
         if (!CheckNull.isEmpty(battleList)) {
@@ -2622,23 +2616,6 @@ public class WorldService {
                 }
             }
         }
-
-        // 皇城必须在区域内
-        // if (staticCity.getArea() == WorldConstant.AREA_TYPE_13 &&
-        // staticCity.getArea() != player.lord.getArea()) {
-        // throw new MwException(GameError.CAMP_BATTLE_AREA_ERROR.getCode(),
-        // "跨区域不允许,发起阵营战, roleId:", roleId,
-        // ", cityId:", cityId);
-        // }
-
-        // 郡城只能打郡城
-        // if (staticArea.getOpenOrder() == 1 && staticArea.getOpenOrder() !=
-        // StaticWorldDataMgr.getAreaMap()
-        // .get(player.lord.getArea()).getOpenOrder()) {
-        // throw new MwException(GameError.CAMP_BATTLE_AREA_ERROR.getCode(),
-        // "跨区域不允许,发起阵营战, roleId:", roleId,
-        // ", cityId:", cityId);
-        // }
 
         City city = worldDataManager.getCityById(cityId);
 
@@ -2693,6 +2670,8 @@ public class WorldService {
                         roleId);
             }
         }
+        // 不可从此协议攻击雄踞一方城池
+        dominateWorldMapService.checkDominateSideCity(staticCity);
 
         if (CheckNull.isEmpty(battleList)) {
             city.setAttackCamp(player.lord.getCamp());// 记录进攻该城池的阵营
