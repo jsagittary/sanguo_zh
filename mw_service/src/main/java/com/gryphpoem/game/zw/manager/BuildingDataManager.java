@@ -98,8 +98,11 @@ public class BuildingDataManager {
         Map<Integer, StaticBuildingInit> initBuildingMap = StaticBuildingDataMgr.getBuildingInitMap();
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         for (StaticBuildingInit buildingInit : initBuildingMap.values()) {
+            int buildingType = buildingInit.getBuildingType() == BuildingType.TRAIN_FACTORY_1
+                    || buildingInit.getBuildingType() == BuildingType.TRAIN_FACTORY_2
+                    || buildingInit.getBuildingType() == BuildingType.TRAIN_FACTORY_3 ? 0 : buildingInit.getBuildingType();
             if (buildingData.get(buildingInit.getBuildingId()) == null) {
-                BuildingState buildingState = new BuildingState(buildingInit.getBuildingId(), buildingInit.getBuildingType());
+                BuildingState buildingState = new BuildingState(buildingInit.getBuildingId(), buildingType);
                 buildingState.setBuildingLv(buildingInit.getInitLv());
                 buildingData.put(buildingInit.getBuildingId(), buildingState);
             }

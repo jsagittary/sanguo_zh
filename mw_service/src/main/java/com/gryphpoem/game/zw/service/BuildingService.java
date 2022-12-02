@@ -3933,11 +3933,13 @@ public class BuildingService implements GmCmdService {
             return;
         }
         buildingData.remove(buildingId);
-        BuildingState buildingState = new BuildingState(staticBuildingInit.getBuildingId(), staticBuildingInit.getBuildingType());
+        int buildingType = staticBuildingInit.getBuildingType() == BuildingType.TRAIN_FACTORY_1
+                || staticBuildingInit.getBuildingType() == BuildingType.TRAIN_FACTORY_2
+                || staticBuildingInit.getBuildingType() == BuildingType.TRAIN_FACTORY_3 ? 0 : staticBuildingInit.getBuildingType();
+        BuildingState buildingState = new BuildingState(staticBuildingInit.getBuildingId(), buildingType);
         buildingState.setBuildingLv(staticBuildingInit.getInitLv());
-        int buildingType = staticBuildingInit.getBuildingType();
         buildingData.put(buildingId, buildingState);
-        if (BuildingDataManager.isResType(buildingType)) {
+        if (BuildingDataManager.isResType(staticBuildingInit.getBuildingType())) {
             mills.remove(buildingId);
             mills.put(staticBuildingInit.getBuildingId(), new Mill(staticBuildingInit.getBuildingId(),
                     staticBuildingInit.getBuildingType(), staticBuildingInit.getInitLv(), 0));
