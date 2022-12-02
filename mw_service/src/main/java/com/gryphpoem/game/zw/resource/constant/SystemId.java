@@ -1,5 +1,9 @@
 package com.gryphpoem.game.zw.resource.constant;
 
+import javax.swing.plaf.PanelUI;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author TanDonghai
  * @ClassName SystemId.java
@@ -1365,6 +1369,96 @@ public class SystemId {
      * 战斗所有buff触发成功最高次数
      */
     public static final int ALL_EFFECTIVE_TIMES_SINGLE_ROUND = 801;
+
+    /**
+     * 雄踞一方-司隶-开启纪元
+     */
+    public static final int SI_LI_DOMINATE_OPEN_SCHEDULE = 803;
+
+    /**
+     * 雄踞一方-司隶-预显示时间
+     */
+    public static final int SI_LI_DOMINATE_PREVIEW_TIME = 804;
+
+    /**
+     * 雄踞一方-司隶-开启时间
+     */
+    public static final int SI_LI_DOMINATE_BEGIN_TIME = 805;
+
+    /**
+     * 雄踞一方-司隶-胜利配置
+     */
+    public static final int SI_LI_DOMINATE_VICTORY_CONFIG = 806;
+    /**
+     * 雄踞一方-司隶-开放的城池
+     */
+    public static final int SI_LI_DOMINATE_OPEN_CITY = 807;
+    /**
+     * 雄踞一方-司隶-结束时间
+     */
+    public static final int SI_LI_DOMINATE_END_TIME = 808;
+
+    /**
+     * 雄踞一方-州郡-开启纪元
+     */
+    public static final int OPEN_STATE_DOMINATE_WORLD_MAP_FUNCTION_CONDITION = 810;
+    /**
+     * 州郡雄踞一方预显示时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME = 811;
+    /**
+     * 州郡雄踞一方开始时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_BEGIN_TIME = 812;
+    /**
+     * 州郡雄踞一方持续时间
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_DURATION = 813;
+    /**
+     * 雄踞一方-州郡-胜利配置
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_VICTORY_OCCUPY_CONFIG = 814;
+    /**
+     * 雄踞一方-州郡-返兵比例
+     */
+    public static final int STATE_DOMINATE_WORLD_MAP_RETURNING_SOLDIERS_RATIO = 815;
+
+    /**
+     * 雄踞一方活动，雄踞一方城池防守队列军团数量上限
+     */
+    public static final int MAXIMUM_NUMBER_OF_DOMINATE_DEFENSE_QUEUE = 816;
+
+
+    /**
+     * 雄踞一方活动，每个进攻兵团的最大战斗场数
+     */
+    public static final int DOMINATE_ARMY_FIGHT_MAX = 817;
+
+    /**
+     * 雄踞一方通用跑马灯触发条件
+     */
+    public static final int DOMINATE_CHAT_KILL_BROADCAST_MAP = 818;
+
+    /**
+     * 雄踞一方行军时间减少比例
+     */
+    public static final int DOMINATE_MARCH_SPEEDUP = 819;
+
+
+    /**
+     * 雄踞一方 疲劳debuff参数
+     */
+    public static final int DOMINATE_FATIGUE_DE_BUFF_PARAMETER = 820;
+
+    /**
+     * 领取占领奖励的最低累杀兵力要求
+     */
+    public static final int MINIMUM_FOR_KILLING_TO_RECEIVE_OCCUPATION_REWARDS = 821;
+
+    /**
+     * 单个大城和中城的占点奖励
+     */
+    public static final int BONUS_OCCUPATION_OF_SINGLE_BIG_CITY_AND_MIDDLE_CITY = 822;
 
     /**
      * 玩家登录刷新流寇距上次离线时间间隔

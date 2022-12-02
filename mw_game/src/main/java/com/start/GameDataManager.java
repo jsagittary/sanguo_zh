@@ -4,6 +4,8 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.SuperMineDataManager;
 import com.gryphpoem.game.zw.manager.WarDataManager;
@@ -23,6 +25,7 @@ import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.server.AppGameServer;
 import com.gryphpoem.game.zw.service.BerlinWarService;
 import com.gryphpoem.game.zw.service.WorldScheduleService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
@@ -51,7 +54,7 @@ public class GameDataManager {
      * 
      * @throws MwException
      */
-    public void dataHandle() throws MwException {
+    public void dataHandle() throws Exception {
         LogUtil.start("数据处理逻辑开始");
         // 处理数据加载完成后，数据检查、计算、整理等相关操作
         calculateLogic();
@@ -74,7 +77,18 @@ public class GameDataManager {
         // 填充武将列传初始信息
         fillingInitHeroBiography();
 
+        // 地图数据处理
+        handWorldMap();
+
         LogUtil.start("数据处理逻辑结束");
+    }
+
+    /**
+     * 处理世界地图
+     *
+     */
+    public void handWorldMap() throws Exception {
+        DataResource.ac.getBean(DominateWorldMapService.class).handleOnData();
     }
 
     /**
@@ -207,20 +221,8 @@ public class GameDataManager {
 	 */
 	private void repairGameDataLogic() throws MwException {
 		try {
-			// 2018-01-09 修改战斗力公式后,强制刷新全服所有玩家战斗力
-			// AppGameServer.ac.getBean(PlayerService.class).reCalcFightAllPlayer();
-			// AppGameServer.ac.getBean(PlayerService.class).checkHasHeroGivePortrait();
-			// LogUtil.start("修复全服玩家头像......");
-			
 			AppGameServer.ac.getBean(WorldScheduleService.class).clearBossPos();
 			LogUtil.start("检测世界boss位置是否被占用完毕");
-
-//            HeroService heroSrv = DataResource.ac.getBean(HeroService.class);
-//            Map<String, Player> players = DataResource.ac.getBean(PlayerDataManager.class).getAllPlayer();
-//            for (Map.Entry<String, Player> entry : players.entrySet()) {
-//                heroSrv.checkAndRepaireHero(entry.getValue(), false);
-//            }
-
 		} catch (Exception e) {
 			throw new MwException("临时修复逻辑出错", e);
 		}

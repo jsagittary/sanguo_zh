@@ -9,6 +9,8 @@ import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLightningWarDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.cross.serivce.CrossGamePlayService;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.manager.GlobalDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
@@ -40,6 +42,9 @@ import com.gryphpoem.game.zw.service.activity.ActivityAuctionService;
 import com.gryphpoem.game.zw.service.activity.ActivityChristmasService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
+import com.gryphpoem.game.zw.service.*;
+import com.gryphpoem.game.zw.service.activity.*;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -148,6 +153,7 @@ public class ScheduleManager {
         DataResource.ac.getBean(SeasonService.class).initSchedule(sched);
         DataResource.getBean(SeasonTalentService.class).initSchedule(sched);
         DataResource.getBean(CrossGamePlayService.class).initSchedule(sched);
+        DataResource.ac.getBean(DominateWorldMapService.class).initSchedule();
     }
 
     public void initSandTableContest() {

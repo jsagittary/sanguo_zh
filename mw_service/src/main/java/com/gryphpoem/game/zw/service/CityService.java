@@ -27,6 +27,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,8 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     private BattlePassDataManager battlePassDataManager;
     @Autowired
     private WorldScheduleService worldScheduleService;
+    @Autowired
+    private DominateWorldMapService dominateWorldMapService;
 
     /**
      * 城池征收
@@ -104,12 +107,12 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
                     cityId, ", cityCamp:", city.getCamp(), ", playerCamp:", player.lord.getCamp());
         }
 
-        // 检查玩家是否是本城所在区域的
-        int area = player.lord.getArea();
-        if (staticCity.getArea() != area) {
-            throw new MwException(GameError.CAN_NOT_LEVY_OTHER_AREA.getCode(), "不能跨区征收, roleId:", roleId, ", cityId:",
-                    cityId, ", roleArea:", area, ", cityArea:", staticCity.getArea());
-        }
+        // 跨地区征收允许
+//        int area = player.lord.getArea();
+//        if (staticCity.getArea() != area) {
+//            throw new MwException(GameError.CAN_NOT_LEVY_OTHER_AREA.getCode(), "不能跨区征收, roleId:", roleId, ", cityId:",
+//                    cityId, ", roleArea:", area, ", cityArea:", staticCity.getArea());
+//        }
 
         // 检查城池是否处于战斗中， 此限制去掉
         // if (city.isInBattle()) {
@@ -325,9 +328,6 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
     public CityRebuildRs cityRebuild(long roleId, int cityId) throws MwException {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        // if(checkIsCrossCity(cityId)){
-        // return crossCityService.crossCityRebuild(player, cityId);
-        // }
         // 检查城池是否存在
         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(cityId);
         City city = worldDataManager.getCityById(cityId);
@@ -390,11 +390,8 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             }
             // 检查并扣除消耗
             rewardDataManager.checkAndSubPlayerRes(player, staticCity.getRebuild(), AwardFrom.CITY_REBUILD);
-            // 更新城池拥有者
-            city.setOwner(roleId, TimeHelper.getCurrentSecond());
-            // 发送竞选成功邮件
-//            mailDataManager.sendNormalMail(player, MailConstant.MOLD_CAMPAIGN_SUCC, TimeHelper.getCurrentSecond(),
-//                    city.getCityId(), city.getCityId());
+            dominateWorldMapService.addCityGovernor(city, roleId);
+
             //发送重建奖励邮件
             Award ownerAward = PbHelper.createAward(staticCity.getOutAward());
             List<Award> ownerAwards = ListUtils.createList(ownerAward);
@@ -876,7 +873,7 @@ public class CityService extends AbsGameService implements DelayInvokeEnvironmen
             String nick = null;// 竞选成功玩家名称
             StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(city.getCityId());
             if (null != owner) {
-                city.setOwner(owner.roleId, now);
+                dominateWorldMapService.addCityGovernor(city, owner.roleId);
                 nick = owner.lord.getNick();
 
                 Award ownerAward = PbHelper.createAward(staticCity.getInAward());

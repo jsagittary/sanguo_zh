@@ -1000,6 +1000,31 @@ public class MailConstant {
      */
     public static final int MOLD_ACT_TIME_LIMIT_EXCHANGE_AWARD = 1000;
 
+    /**
+     * 雄踞一方进攻失败
+     */
+    public static final int MOLD_DOMINATE_ATTACK_FAIL = 1101;
+
+    /**
+     * 雄踞一方进攻胜利
+     */
+    public static final int MOLD_DOMINATE_ATTACK_SUCCESS = 1102;
+
+    /**
+     * 雄踞一方防守胜利
+     */
+    public static final int MOLD_DOMINATE_ATTACK_DEFEND_SUCCESS = 1103;
+
+    /**
+     * 雄踞一方防守失败
+     */
+    public static final int MOLD_DOMINATE_ATTACK_DEFEND_FAIL = 1104;
+
+    /**
+     * 司隶雄踞一方活动奖励
+     */
+    public static final int MOLD_SI_LI_DOMINATE_AWARD = 1105;
+
 
     //========================跨服邮件模板===================================
 

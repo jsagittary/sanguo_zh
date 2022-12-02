@@ -33,6 +33,7 @@ import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.activity.ActivityRobinHoodService;
 import com.gryphpoem.game.zw.service.activity.RamadanVisitAltarService;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 import com.gryphpoem.game.zw.service.plan.DrawCardPlanTemplateService;
 import com.gryphpoem.game.zw.service.relic.RelicsFightService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
@@ -122,13 +123,15 @@ public class MarchService {
     private RelicsFightService relicsFightService;
     @Autowired
     private FightRecordDataManager fightRecordDataManager;
+    @Autowired
+    private DominateWorldMapService dominateWorldMapService;
 
     /**
      * 行军结束处理逻辑
      *
      * @param player
-     * @param army
      * @param now
+     * @param army
      */
     public void marchEnd(Player player, Army army, int now) {
 
@@ -243,8 +246,6 @@ public class MarchService {
             // 攻打飞艇
             fightAirShip(player, army, now);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_ATTACK_SCHEDULE_BOSS) {
-            // 攻打世界boss
-            // worldScheduleService.fightSchedBossLogic(player, army, now);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_ALTAR) {
             ramadanVisitAltarService.marchEnd(player, army, now);
             // 不论是否拜访成功, 都需要返回行军
@@ -252,6 +253,9 @@ public class MarchService {
             worldService.synRetreatArmy(player, army, now);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE) {
             relicsFightService.marchEnd(player, army, now);
+        } else if (army.getType() == ArmyConstant.ARMY_TYPE_STATE_DOMINATE_ATTACK ||
+                army.getType() == ArmyConstant.ARMY_TYPE_SI_LI_DOMINATE_ATTACK) {
+            dominateWorldMapService.marchEnd(player, army, now);
         }
     }
 

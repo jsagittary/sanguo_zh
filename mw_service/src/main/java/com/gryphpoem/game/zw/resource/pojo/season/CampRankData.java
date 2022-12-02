@@ -11,6 +11,7 @@ public class CampRankData {
     public int value;
     public int time;
     public int rank;
+    public int data;
 
     public CampRankData() {
     }
@@ -22,8 +23,16 @@ public class CampRankData {
         this.rank = rank;
     }
 
+    public CampRankData(int camp, int value, int time, int rank, int data) {
+        this.camp = camp;
+        this.value = value;
+        this.time = time;
+        this.rank = rank;
+        this.data = data;
+    }
+
     public CampRankData copyNew() {
-        return new CampRankData(camp, value, time, rank);
+        return new CampRankData(camp, value, time, rank, data);
     }
 
     public CommonPb.CampRankInfo ser() {

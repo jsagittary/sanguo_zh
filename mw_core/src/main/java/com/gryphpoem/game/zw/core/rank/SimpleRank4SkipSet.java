@@ -1,9 +1,12 @@
 package com.gryphpoem.game.zw.core.rank;
 
+import com.gryphpoem.push.util.CheckNull;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -98,6 +101,12 @@ public class SimpleRank4SkipSet<T extends Comparable<T>> {
         version++;
     }
 
+    public synchronized void tickRankOut(long roleId) {
+        RankItem<T> old = lordMap.remove(roleId);
+        if (CheckNull.isNull(old)) return;
+        sortSet.remove(old);
+    }
+
     public void clear(){
         sortSet.clear();
         lordMap.clear();
@@ -117,5 +126,17 @@ public class SimpleRank4SkipSet<T extends Comparable<T>> {
         return item.getRankValue() + " --> " + item.getLordId();
     }
 
+    public void forEach(Consumer<RankItem> consumer) {
+        for (RankItem<T> rit : sortSet) {
+            consumer.accept(rit);
+        }
+    }
 
+    public RankItem<T> getRankItem(long roleId) {
+        return lordMap.get(roleId);
+    }
+
+    public long getVersion() {
+        return version;
+    }
 }

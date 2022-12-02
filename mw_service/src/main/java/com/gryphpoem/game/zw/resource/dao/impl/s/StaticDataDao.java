@@ -1084,4 +1084,8 @@ public class StaticDataDao extends BaseDao {
     public List<StaticHeroGradeInterior> selectHeroGradeInteriorList() {
         return getSqlSession().selectList("StaticDao.selectHeroGradeInteriorList");
     }
+
+    public List<StaticDominateWarAward> selectStaticDominateWarAwardList() {
+        return getSqlSession().selectList("StaticDao.selectStaticDominateWarAwardList");
+    }
 }

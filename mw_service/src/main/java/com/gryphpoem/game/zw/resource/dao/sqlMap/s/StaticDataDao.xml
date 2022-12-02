@@ -2807,6 +2807,16 @@
         SELECT * FROM s_hero_appoint
     </select>
 
+    <resultMap id="staticDominateWarAward" type="StaticDominateWarAward">
+        <result column="cond" property="cond"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+        <result column="schedule" property="schedule"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+    </resultMap>
+    <select id="selectStaticDominateWarAwardList" resultMap="staticDominateWarAward">
+        SELECT * FROM s_dominate_war_award
+    </select>
+
 
     <resultMap id="StaticBuff" type="StaticBuff">
         <id column="buffId" property="buffId"/>
