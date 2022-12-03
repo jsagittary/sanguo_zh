@@ -79,6 +79,9 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         this.curBeginDate = new Date(ser.getCurBeginDate());
         this.open = ser.getOpen();
         this.curTimes = ser.getCurTimes();
+        if (ser.hasFunctionOpenDay()) {
+            this.functionOpenDay = new Date(ser.getFunctionOpenDay());
+        }
         if (CheckNull.isNull(curOpenCityList)) {
             this.curOpenCityList = new HashMap<>();
         }
