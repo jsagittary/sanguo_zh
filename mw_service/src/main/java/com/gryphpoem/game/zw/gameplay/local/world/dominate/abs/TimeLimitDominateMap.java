@@ -192,6 +192,9 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
     }
 
     public SerializePb.SerTimeLimitDominateMap createMapPb(boolean isSaveDb) {
+        if (CheckNull.isNull(this.curPreviewDate))
+            return null;
+        
         SerializePb.SerTimeLimitDominateMap.Builder builder = SerializePb.SerTimeLimitDominateMap.newBuilder();
         builder.setCurTimes(this.curTimes);
         if (Objects.nonNull(this.curEndTime))
