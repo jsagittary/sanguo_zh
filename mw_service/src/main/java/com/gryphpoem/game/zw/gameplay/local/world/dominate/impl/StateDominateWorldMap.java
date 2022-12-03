@@ -90,6 +90,9 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
 
     public SerializePb.SerStateDominateWorldMap createWorldMapPb(boolean isSaveDb) {
         SerializePb.SerTimeLimitDominateMap timeLimitDominateMap = super.createMapPb(isSaveDb);
+        if (timeLimitDominateMap == null)
+            return null;
+        
         SerializePb.SerStateDominateWorldMap.Builder builder = SerializePb.SerStateDominateWorldMap.newBuilder();
         builder.setTimeLimitMap(timeLimitDominateMap);
         if (Objects.nonNull(this.nextBeginDate))

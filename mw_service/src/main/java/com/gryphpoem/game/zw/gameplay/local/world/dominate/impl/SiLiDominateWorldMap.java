@@ -298,6 +298,9 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
 
     public SerializePb.SerSiLiDominateWorldMap createWorldMapPb(boolean isSaveDb) {
         SerializePb.SerTimeLimitDominateMap timeLimitDominateMap = super.createMapPb(isSaveDb);
+        if (timeLimitDominateMap == null)
+            return null;
+
         SerializePb.SerSiLiDominateWorldMap.Builder builder = SerializePb.SerSiLiDominateWorldMap.newBuilder();
         builder.setTimeLimitMap(timeLimitDominateMap);
         if (CheckNull.nonEmpty(this.recordMap)) {

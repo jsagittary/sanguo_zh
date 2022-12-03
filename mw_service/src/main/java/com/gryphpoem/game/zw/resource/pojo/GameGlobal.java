@@ -504,7 +504,7 @@ public class GameGlobal {
     public void deDominateData(byte[] data) throws InvalidProtocolBufferException {
         if (data == null)
             return;
-        
+
         SerializePb.SerDominateData ser = SerializePb.SerDominateData.parseFrom(data);
         DataResource.ac.getBean(DominateWorldMapService.class).setSer(ser);
     }
@@ -512,8 +512,14 @@ public class GameGlobal {
 
     public byte[] serDominateData() {
         SerializePb.SerDominateData.Builder ser = SerializePb.SerDominateData.newBuilder();
-        ser.setStateMap(StateDominateWorldMap.getInstance().createWorldMapPb(true));
-        ser.setSiLiMap(SiLiDominateWorldMap.getInstance().createWorldMapPb(true));
+        SerializePb.SerStateDominateWorldMap pb = StateDominateWorldMap.getInstance().createWorldMapPb(true);
+        if (Objects.nonNull(pb)) {
+            ser.setStateMap(pb);
+        }
+        SerializePb.SerSiLiDominateWorldMap pb_ = SiLiDominateWorldMap.getInstance().createWorldMapPb(true);
+        if (Objects.nonNull(pb_)) {
+            ser.setSiLiMap(pb_);
+        }
         return ser.build().toByteArray();
     }
 
