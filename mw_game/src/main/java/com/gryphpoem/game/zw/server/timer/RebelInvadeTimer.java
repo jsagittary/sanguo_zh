@@ -12,7 +12,7 @@ import com.gryphpoem.game.zw.service.buildHomeCity.BuildHomeCityService;
  */
 public class RebelInvadeTimer extends TimerEvent {
     public RebelInvadeTimer() {
-        super(-1, 5000);
+        super(-1, 1000);
     }
 
     @Override

@@ -2237,6 +2237,16 @@ public class SystemId {
     public static final int BANDIT_DEBUFF = 5024;
 
     /**
+     * 叛军入侵触发后报警时间
+     */
+    public static final int REBEL_INVADE_WARN_TIME = 5026;
+
+    /**
+     * 每日土匪生成条件
+     */
+    public static final int BANDIT_REFRESH_CONDITION = 5027;
+
+    /**
      * 人口恢复基础时间
      */
     public static final int RESIDENT_RECOVERY_SPEED = 5025;

@@ -1145,6 +1145,11 @@ public final class Constant {
     public static int BANDIT_REMAIN_TIME;
 
     /**
+     * [距离创号时间天,需要玩家等级]
+     */
+    public static List<Integer> BANDIT_REFRESH_CONDITION;
+
+    /**
      * 土匪造成的资源减产debuff, [[buildingType,该类型建筑对应产出资源的单位产量减益万分比]]
      */
     public static List<List<Integer>> BANDIT_DEBUFF;
@@ -1153,6 +1158,11 @@ public final class Constant {
      * 人口恢复基础时间
      */
     public static int RESIDENT_RECOVERY_SPEED;
+
+    /**
+     * 叛军入侵预警时间
+     */
+    public static int REBEL_INVADE_WARN_TIME;
 
     /**
      * 天赋开启需求武将等级
@@ -1626,6 +1636,8 @@ public final class Constant {
         BANDIT_REMAIN_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.BANDIT_REMAIN_TIME, 0);
         BANDIT_DEBUFF = SystemTabLoader.getListListIntSystemValue(SystemId.BANDIT_DEBUFF, "[[]]");
         RESIDENT_RECOVERY_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.RESIDENT_RECOVERY_SPEED, 0);
+        BANDIT_REFRESH_CONDITION = SystemTabLoader.getListIntSystemValue(SystemId.BANDIT_REFRESH_CONDITION, "[]");
+        REBEL_INVADE_WARN_TIME = SystemTabLoader.getIntegerSystemValue(SystemId.REBEL_INVADE_WARN_TIME, 0);
         HERO_LEVEL_OF_OPEN_TALENT = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_LEVEL_OF_OPEN_TALENT, 0);
         StaticFightManager.ALL_EFFECTIVE_TIMES_SINGLE_ROUND = SystemTabLoader.getIntegerSystemValue(SystemId.ALL_EFFECTIVE_TIMES_SINGLE_ROUND, 10);
         NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT = SystemTabLoader.getFloatSystemValue(SystemId.NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT, 0.5f);

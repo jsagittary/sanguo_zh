@@ -163,8 +163,8 @@ public class BuildHomeCityService implements GmCmdService {
             simType = simInfo.get(0);
             simId = simInfo.get(1);
         }
-        mapCell.setSimType(banditId > 0 ? simType: 0);
-        mapCell.setSimId(banditId > 0 ? simId: 0);
+        mapCell.setSimType(banditId > 0 ? simType : 0);
+        mapCell.setSimId(banditId > 0 ? simId : 0);
         mapCell.setBanditRefreshTime(banditId > 0 ? -1 : 0);
         newAddMapCellData.add(mapCell);
         mapCellData.put(cellId, mapCell);
@@ -184,8 +184,8 @@ public class BuildHomeCityService implements GmCmdService {
                 simType_ = simInfo_.get(0);
                 simId_ = simInfo_.get(1);
             }
-            mapCell.setSimType(banditId_ > 0 ? simType_: 0);
-            mapCell.setSimId(banditId_ > 0 ? simId_: 0);
+            mapCell.setSimType(banditId_ > 0 ? simType_ : 0);
+            mapCell.setSimId(banditId_ > 0 ? simId_ : 0);
             bindCell.setBanditRefreshTime(banditId_ > 0 ? -1 : 0);
             if (!mapCellData.containsKey(bindCellId)) {
                 newAddMapCellData.add(bindCell);
@@ -359,17 +359,24 @@ public class BuildHomeCityService implements GmCmdService {
         if (CheckNull.isEmpty(simTypeList)) {
             return null;
         }
+
+        List<Integer> result = null;
         for (List<Integer> simType : simTypeList) {
             if (CheckNull.isEmpty(simType) || simType.size() < 3) {
                 continue;
             }
             boolean hit = RandomHelper.isHitRangeIn10000(simType.get(2));
             if (hit) {
-                return simType;
+                result = simType;
+                break;
             }
         }
+        if (CheckNull.isEmpty(result)) {
+            Collections.shuffle(simTypeList);
+            result = simTypeList.get(0);
+        }
 
-        return null;
+        return result;
     }
 
     /**
@@ -503,12 +510,17 @@ public class BuildHomeCityService implements GmCmdService {
                         .mapToInt(StaticCombat::getCombatId)
                         .max()
                         .orElse(0);
+                combatId = combatId == 0 ? Constant.INIT_COMBAT_ID : combatId;
             } else {
                 combatId = staticSimulatorChoose.getCombatId();
             }
             if (combatId > 0) {
                 StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
-                clearResult = doCombat(player, staticCombat, heroIdList, builder);
+                if (staticCombat == null) {
+                    clearResult = false;
+                } else {
+                    clearResult = doCombat(player, staticCombat, heroIdList, builder);
+                }
             }
             if (clearResult) {
                 finalRewardList = staticSimulatorChoose.getRewardList();
@@ -634,22 +646,34 @@ public class BuildHomeCityService implements GmCmdService {
     public void autoDelBanditTimerLogic() {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
+        int banditRemainTime = Constant.BANDIT_REMAIN_TIME;
+        if (banditRemainTime <= 0) {
+            LogUtil.error(String.format("土匪持续时间配置错误, BANDIT_REMAIN_TIME-5023:%s", banditRemainTime));
+            return;
+        }
         while (iterator.hasNext()) {
             Player player = iterator.next();
             try {
                 Map<Integer, MapCell> mapCellData = player.getMapCellData();
-                mapCellData.entrySet().stream()
-                        .filter(tmp ->
-                                tmp.getValue().getNpcId() > 0
-                                        && tmp.getValue().getBanditRefreshTime() != -1
-                                        && now > tmp.getValue().getBanditRefreshTime()
+                List<Integer> cellIds = mapCellData.values().stream()
+                        .filter(tmp -> tmp.getNpcId() > 0
+                                && tmp.getBanditRefreshTime() != -1
+                                && now - tmp.getBanditRefreshTime() > banditRemainTime
                         )
-                        .forEach(entry -> {
-                            MapCell value = entry.getValue();
-                            value.setNpcId(0);
-                            value.setSimType(0);
-                            value.setBanditRefreshTime(0);
-                        });
+                        .map(MapCell::getCellId)
+                        .collect(Collectors.toList());
+                if (CheckNull.isEmpty(cellIds)) {
+                    continue;
+                }
+                mapCellData.forEach((key, value) -> {
+                    if (cellIds.contains(key)) {
+                        value.setNpcId(0);
+                        value.setSimType(0);
+                        value.setSimId(0);
+                        value.setBanditRefreshTime(0);
+                    }
+                });
+                playerDataManager.syncRoleInfo(player);
             } catch (Exception e) {
                 LogUtil.error("土匪过期清除定时器报错, lordId:" + player.lord.getLordId(), e);
             }
@@ -663,9 +687,23 @@ public class BuildHomeCityService implements GmCmdService {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
         List<StaticHomeCityCell> canRefreshBanditCellList = StaticBuildCityDataMgr.getCanRefreshBanditCellList();
+        List<Integer> banditRefreshCondition = Constant.BANDIT_REFRESH_CONDITION;
+        if (CheckNull.isEmpty(banditRefreshCondition) || banditRefreshCondition.size() < 2) {
+            LogUtil.error(String.format("土匪每日刷新配置错误, BANDIT_REFRESH_CONDITION-5027:%s", banditRefreshCondition.toString()));
+            return;
+        }
         while (iterator.hasNext()) {
             Player player = iterator.next();
-            if (player.lord.getLevel() < 42 || DateHelper.isSameDate(player.account.getCreateDate(), new Date())) {
+            Date refreshDay = DateHelper.afterDayTimeDate(player.account.getCreateDate(), banditRefreshCondition.get(0) + 1);
+            if (player.lord.getLevel() < banditRefreshCondition.get(1) || DateHelper.isSameDate(refreshDay, new Date())) {
+                continue;
+            }
+            Map<Integer, MapCell> mapCellData = player.getMapCellData();
+            // 校验当天是否已经有格子刷过土匪了
+            List<MapCell> refreshedBanditMapCells = mapCellData.values().stream()
+                    .filter(tmp -> tmp.getNpcId() > 0 && DateHelper.isSameDate(TimeHelper.secondToDate(tmp.getBanditRefreshTime()), new Date()))
+                    .collect(Collectors.toList());
+            if (CheckNull.nonEmpty(refreshedBanditMapCells)) {
                 continue;
             }
             List<StaticSimNpc> npcList = StaticBuildCityDataMgr.getStaticSimNpcList().stream()
@@ -680,7 +718,6 @@ public class BuildHomeCityService implements GmCmdService {
                 continue;
             }
             try {
-                Map<Integer, MapCell> mapCellData = player.getMapCellData();
                 // 获取玩家没有土匪的格子
                 List<Integer> ownCellIds = mapCellData.entrySet().stream()
                         .filter(tmp -> tmp.getValue().getNpcId() == 0)
@@ -730,8 +767,9 @@ public class BuildHomeCityService implements GmCmdService {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
         List<Integer> rebelAttackConfig = Constant.REBEL_ATTACK_CONFIG;
-        if (CheckNull.isEmpty(rebelAttackConfig) || rebelAttackConfig.size() < 3) {
-            LogUtil.error("叛军入侵配置错误");
+        int rebelInvadeWarnTime = Constant.REBEL_INVADE_WARN_TIME;
+        if (CheckNull.isEmpty(rebelAttackConfig) || rebelAttackConfig.size() < 3 || rebelInvadeWarnTime <= 0) {
+            LogUtil.error(String.format("叛军入侵配置错误, REBEL_ATTACK_CONFIG-5003:%s, REBEL_INVADE_WARN_TIME-5026:%s", rebelAttackConfig.toString(), rebelInvadeWarnTime));
             return;
         }
         while (iterator.hasNext()) {
@@ -791,7 +829,7 @@ public class BuildHomeCityService implements GmCmdService {
                 Battle battle = new Battle();
                 battle.setType(WorldConstant.BATTLE_TYPE_REBEL_INVADE);
                 battle.setBattleType(staticCombat.getCombatId());
-                battle.setBattleTime(now + 3 * 60 * 60 - 1);
+                battle.setBattleTime(now + rebelInvadeWarnTime - 1);
                 battle.setBeginTime(now);
                 battle.setDefencerId(player.roleId);
                 battle.setPos(player.lord.getPos());
@@ -1163,8 +1201,8 @@ public class BuildHomeCityService implements GmCmdService {
                     simType = simInfo.get(0);
                     simId = simInfo.get(1);
                 }
-                mapCell.setSimType(banditId > 0 ? simType: 0);
-                mapCell.setSimId(banditId > 0 ? simId: 0);
+                mapCell.setSimType(banditId > 0 ? simType : 0);
+                mapCell.setSimId(banditId > 0 ? simId : 0);
                 mapCell.setBanditRefreshTime(-1);
                 mapCellData.put(sHomeCityCell.getId(), mapCell);
             }
