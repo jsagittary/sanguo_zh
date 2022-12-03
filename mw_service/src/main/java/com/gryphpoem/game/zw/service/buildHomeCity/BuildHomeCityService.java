@@ -391,7 +391,7 @@ public class BuildHomeCityService implements GmCmdService {
         if (mapCell == null || mapCell.getNpcId() == 0 || mapCell.getSimType() == 0) {
             throw new MwException(GameError.DATA_EXCEPTION, String.format("清剿土匪时, 地图格对应的土匪信息错误, roleId:%s, cellId:%s", roleId, cellId));
         }
-        int simulatorType = mapCell.getSimType();
+        /*int simulatorType = mapCell.getSimType();
         List<StaticSimulatorStep> staticSimulatorStepList = StaticBuildCityDataMgr.getStaticSimulatorStepByType(simulatorType);
         // 获取土匪引导对话模拟器的第1步，根据玩家选择的选项判断其清剿土匪的方式
         StaticSimulatorStep firstStep = staticSimulatorStepList.stream().min(Comparator.comparingLong(StaticSimulatorStep::getId)).orElse(null);
@@ -406,70 +406,66 @@ public class BuildHomeCityService implements GmCmdService {
             throw new MwException(GameError.NO_CONFIG, String.format("清剿土匪时, 未获取到土匪对应的对话模拟器配置, roleId:%s, cellId:%s", roleId, cellId));
         }
 
-        long selectedChooseId = firstStepChoose.get(0);
-        StaticSimulatorChoose staticSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(selectedChooseId);
-
+        long selectedChooseId = firstStepChoose.get(0);*/
+        long selectedChooseId = rq.getChooseId();
         boolean clearResult = rq.getClearResult();
+        List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = rq.getLifeSimulatorStepList();
 
+        StaticSimulatorChoose staticSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(selectedChooseId);
         List<List<Integer>> finalRewardList = new ArrayList<>();
         if (CheckNull.nonEmpty(staticSimulatorChoose.getMiniGame())) {
             // 小游戏结算
-            if (!clearResult) {
-                return builder.build();
-            }
             // 获取小游戏奖励
             List<List<Integer>> rewardList = staticSimulatorChoose.getRewardList();
             finalRewardList.addAll(rewardList);
-        } else if (firstStepChoose.get(1) == 0) {
+        } else if (CheckNull.nonEmpty(lifeSimulatorStepList)) {
             // 根据配置规则, 说明是进入模拟器结算方式
-            List<CommonPb.LifeSimulatorStep> lifeSimulatorStepList = rq.getLifeSimulatorStepList();
-            if (CheckNull.nonEmpty(lifeSimulatorStepList)) {
-                // 标识模拟器是否结束
-                boolean isEnd = false;
-                // List<List<Integer>> finalCharacterFixList = new ArrayList<>();
-                // List<Integer> delay = null;
-                for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
-                    int chooseId = lifeSimulatorStep.getChooseId();
-                    if (chooseId > 0) {
-                        StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
-                        // // 性格值变化
-                        // List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
-                        // finalCharacterFixList.addAll(characterFix);
-                        // 奖励变化
-                        List<List<Integer>> rewardList = sSimulatorChoose.getRewardList();
-                        finalRewardList.addAll(rewardList);
-                        // TODO buff增益
-                        List<List<Integer>> buff = sSimulatorChoose.getBuff();
-                    }
-                    long stepId = lifeSimulatorStep.getStepId();
-                    StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStepById(stepId);
-                    // 根据配置, 如果没有下一步, 则模拟器结束
-                    long nextId = staticSimulatorStep.getNextId();
-                    List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
-                    List<Long> playerChoose = new ArrayList<>();
-                    if (CheckNull.nonEmpty(staticChooseList)) {
-                        playerChoose = staticChooseList.stream().filter(tmp -> tmp.size() == 3 && tmp.get(0) == (long) chooseId && tmp.get(1) != 0L).findFirst().orElse(null);
-                    }
-                    if (CheckNull.nonEmpty(playerChoose)) {
-                        nextId = playerChoose.get(1);
-                    }
-                    if (!isEnd) {
-                        isEnd = nextId == 0L;
-                    }
-                    /*// 如果该步有延时执行, 新增模拟器器延时任务
-                    delay = staticSimulatorStep.getDelay();
-                    if (CheckNull.nonEmpty(delay)) {
-                        LifeSimulatorInfo delaySimulator = new LifeSimulatorInfo();
-                        delaySimulator.setType(delay.get(1));// 延时后执行哪一个模拟器
-                        delaySimulator.setPauseTime(TimeHelper.getCurrentDay());
-                        delaySimulator.setDelay(delay.get(0));// 延时时间
-                        List<LifeSimulatorInfo> lifeSimulatorInfos = player.getLifeSimulatorRecordMap().computeIfAbsent(4, k -> new ArrayList<>());
-                        lifeSimulatorInfos.add(delaySimulator);
-                    }*/
+            // 标识模拟器是否结束
+            boolean isEnd = false;
+            // List<List<Integer>> finalCharacterFixList = new ArrayList<>();
+            // List<Integer> delay = null;
+            for (CommonPb.LifeSimulatorStep lifeSimulatorStep : lifeSimulatorStepList) {
+                int chooseId = lifeSimulatorStep.getChooseId();
+                if (chooseId > 0) {
+                    StaticSimulatorChoose sSimulatorChoose = StaticBuildCityDataMgr.getStaticSimulatorChoose(chooseId);
+                    // // 性格值变化
+                    // List<List<Integer>> characterFix = sSimulatorChoose.getCharacterFix();
+                    // finalCharacterFixList.addAll(characterFix);
+                    // 奖励变化
+                    List<List<Integer>> rewardList = sSimulatorChoose.getRewardList();
+                    finalRewardList.addAll(rewardList);
+                    // TODO buff增益
+                    List<List<Integer>> buff = sSimulatorChoose.getBuff();
+                }
+                long stepId = lifeSimulatorStep.getStepId();
+                StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStepById(stepId);
+                // 根据配置, 如果没有下一步, 则模拟器结束
+                long nextId = staticSimulatorStep.getNextId();
+                List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
+                List<Long> playerChoose = new ArrayList<>();
+                if (CheckNull.nonEmpty(staticChooseList)) {
+                    playerChoose = staticChooseList.stream().filter(tmp -> tmp.size() == 3 && tmp.get(0) == (long) chooseId && tmp.get(1) != 0L).findFirst().orElse(null);
+                }
+                if (CheckNull.nonEmpty(playerChoose)) {
+                    nextId = playerChoose.get(1);
                 }
                 if (!isEnd) {
-                    throw new MwException(GameError.SIMULATOR_IS_NOT_END, String.format("记录模拟器结果时, 模拟器未结束, roleId:%s", roleId));
+                    isEnd = nextId == 0L;
                 }
+                /*// 如果该步有延时执行, 新增模拟器器延时任务
+                delay = staticSimulatorStep.getDelay();
+                if (CheckNull.nonEmpty(delay)) {
+                    LifeSimulatorInfo delaySimulator = new LifeSimulatorInfo();
+                    delaySimulator.setType(delay.get(1));// 延时后执行哪一个模拟器
+                    delaySimulator.setPauseTime(TimeHelper.getCurrentDay());
+                    delaySimulator.setDelay(delay.get(0));// 延时时间
+                    List<LifeSimulatorInfo> lifeSimulatorInfos = player.getLifeSimulatorRecordMap().computeIfAbsent(4, k -> new ArrayList<>());
+                    lifeSimulatorInfos.add(delaySimulator);
+                }*/
+            }
+            if (!isEnd) {
+                throw new MwException(GameError.SIMULATOR_IS_NOT_END, String.format("记录模拟器结果时, 模拟器未结束, roleId:%s", roleId));
+            }
                 /*// 更新性格值并发送对应奖励
                 if (CheckNull.nonEmpty(finalCharacterFixList)) {
                     if (CheckNull.isEmpty(player.getCharacterData())) {
@@ -488,58 +484,57 @@ public class BuildHomeCityService implements GmCmdService {
                     // 同步领主性格变化
                     playerDataManager.syncRoleInfo(player);
                 }*/
-                // 更新对应奖励变化
-                if (CheckNull.nonEmpty(finalRewardList)) {
-                    for (List<Integer> reward : finalRewardList) {
-                        int awardType = reward.get(0);
-                        int awardId = reward.get(1);
-                        int awardCount = reward.get(2);
-                        int addOrSub = reward.get(3);
-                        switch (addOrSub) {
-                            case 1:
-                                rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
-                                break;
-                            case 0:
-                                // 如果资源不足则扣减至0
-                                rewardDataManager.subPlayerResCanSubCount(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
-                                break;
-                        }
-                    }
-                    clearResult = true;
-                }
-            } else if (staticSimulatorChoose.getCombatId() > 0) {
-                // 战斗结算
-                List<Integer> heroIdList = rq.getHeroIdList();
-                if (CheckNull.isEmpty(heroIdList)) {
-                    throw new MwException(GameError.PARAM_ERROR, String.format("战斗方式清剿土匪时, 上阵将领为空, roleId:%s, cellId:%s", roleId, cellId));
-                }
-                int combatId = 0;
-                if (staticSimulatorChoose.getCombatId() == 0) {
-                    // 调用玩家当前所处战役章节前1章中最后1关的npc配置
-                    int maxSuccessCombatId = player.combats.values().stream().mapToInt(Combat::getCombatId).max().orElse(0);
-                    combatId = StaticCombatDataMgr.getCombatMap().values().stream()
-                            .filter(staticCombat -> staticCombat.getIndex() == 6 && staticCombat.getCombatId() <= maxSuccessCombatId)
-                            .mapToInt(StaticCombat::getCombatId)
-                            .max()
-                            .orElse(0);
-                } else {
-                    combatId = staticSimulatorChoose.getCombatId();
-                }
-                if (combatId > 0) {
-                    StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
-                    clearResult = doCombat(player, staticCombat, heroIdList, builder);
-                }
-                if (clearResult) {
-                    finalRewardList = staticSimulatorChoose.getRewardList();
-                }
+            // 模拟器结算根据是否有奖励来判断清剿结果
+            if (CheckNull.nonEmpty(finalRewardList)) {
+                clearResult = true;
+            }
+        } else {
+            // 战斗结算
+            List<Integer> heroIdList = rq.getHeroIdList();
+            if (CheckNull.isEmpty(heroIdList)) {
+                throw new MwException(GameError.PARAM_ERROR, String.format("战斗方式清剿土匪时, 上阵将领为空, roleId:%s, cellId:%s", roleId, cellId));
+            }
+            int combatId = 0;
+            if (staticSimulatorChoose.getCombatId() == 0) {
+                // 调用玩家当前所处战役章节前1章中最后1关的npc配置
+                int maxSuccessCombatId = player.combats.values().stream().mapToInt(Combat::getCombatId).max().orElse(0);
+                combatId = StaticCombatDataMgr.getCombatMap().values().stream()
+                        .filter(staticCombat -> staticCombat.getIndex() == 6 && staticCombat.getCombatId() <= maxSuccessCombatId)
+                        .mapToInt(StaticCombat::getCombatId)
+                        .max()
+                        .orElse(0);
+            } else {
+                combatId = staticSimulatorChoose.getCombatId();
+            }
+            if (combatId > 0) {
+                StaticCombat staticCombat = StaticCombatDataMgr.getStaticCombat(combatId);
+                clearResult = doCombat(player, staticCombat, heroIdList, builder);
+            }
+            if (clearResult) {
+                finalRewardList = staticSimulatorChoose.getRewardList();
             }
         }
 
-        // 清剿成功, 清除地图土匪状态
+        // 清剿成功, 发放奖励, 清除土匪状态
         if (clearResult) {
             for (List<Integer> list : finalRewardList) {
-                if (CheckNull.isEmpty(list) || list.size() < 3) {
+                if (CheckNull.isEmpty(list) || list.size() < 4) {
                     continue;
+                }
+                for (List<Integer> reward : finalRewardList) {
+                    int awardType = reward.get(0);
+                    int awardId = reward.get(1);
+                    int awardCount = reward.get(2);
+                    int addOrSub = reward.get(3);
+                    switch (addOrSub) {
+                        case 1:
+                            rewardDataManager.sendRewardSignle(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
+                            break;
+                        case 0:
+                            // 如果资源不足则扣减至0
+                            rewardDataManager.subPlayerResCanSubCount(player, awardType, awardId, awardCount, AwardFrom.SIMULATOR_CHOOSE_REWARD, "");
+                            break;
+                    }
                 }
                 CommonPb.Award.Builder awardBuilder = CommonPb.Award.newBuilder();
                 awardBuilder.setType(list.get(0));
@@ -548,8 +543,10 @@ public class BuildHomeCityService implements GmCmdService {
                 builder.addAward(awardBuilder.build());
             }
             delBanditStateOfCell(player, cellId);
+            playerDataManager.syncRoleInfo(player);
         }
 
+        builder.setClearResult(clearResult);
         return builder.build();
     }
 
@@ -732,9 +729,14 @@ public class BuildHomeCityService implements GmCmdService {
     public void rebelInvadeTimerLogic() {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
+        List<Integer> rebelAttackConfig = Constant.REBEL_ATTACK_CONFIG;
+        if (CheckNull.isEmpty(rebelAttackConfig) || rebelAttackConfig.size() < 3) {
+            LogUtil.error("叛军入侵配置错误");
+            return;
+        }
         while (iterator.hasNext()) {
             Player player = iterator.next();
-            if (player.lord.getLevel() < 42 || player.lord.getLevel() > 63) {
+            if (player.lord.getLevel() < rebelAttackConfig.get(0) || player.lord.getLevel() > rebelAttackConfig.get(1)) {
                 continue;
             }
             try {
@@ -758,12 +760,12 @@ public class BuildHomeCityService implements GmCmdService {
                 }
                 // 获取玩家最近一次被玩家攻击时间
                 int playerAttackTime = player.getPlayerAttackTime();
-                // 获取最近一次被叛军入侵时间
+                // 获取最近一次叛军入侵时间
                 int rebelInvadeTime = player.getRebelInvadeTime();
-                if (now - playerAttackTime < 24 * 60 * 60 && now - rebelInvadeTime < 24 * 60 * 60) {
+                if (now - playerAttackTime < rebelAttackConfig.get(2) && now - rebelInvadeTime < rebelAttackConfig.get(2)) {
                     continue;
                 }
-                // 如果二者都超过24小时, 进行叛军入侵
+                // 如果二者都超过配置的持续时间, 则触发叛军入侵
                 Combat combat = player.combats.values().stream()
                         .max(Comparator.comparingInt(Combat::getCombatId))
                         .orElse(null);
@@ -772,8 +774,10 @@ public class BuildHomeCityService implements GmCmdService {
                 }
                 int combatId = 0;
                 if (combat.getStar() <= 0) {
+                    // 星级数小于0时, 表示该关卡未通过, 则直接取该战役关卡
                     combatId = combat.getCombatId();
                 } else {
+                    // 星级数大于0, 表示该关卡已通过, 则该关卡后面的一关
                     combatId = StaticCombatDataMgr.getCombatMap().values().stream()
                             .filter(tmp -> tmp.getCombatId() > combat.getCombatId())
                             .mapToInt(StaticCombat::getCombatId)

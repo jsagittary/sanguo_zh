@@ -440,15 +440,17 @@ public class ChemicalService {
         double seasonTalentEffect = seasonTalentService.getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_403) / Constant.TEN_THROUSAND;
         // 居民加成
         double residentEffect = residentCnt * Constant.SINGLE_RESIDENT_REDUCE_WHARF_PRODUCT_TIME_COEFFICIENT / Constant.TEN_THROUSAND;
+        // 内政属性加成
+        double interiorEffect = DataResource.ac.getBean(BuildingService.class).calculateInteriorEffect(player, BuildingType.FERRY) / Constant.TEN_THROUSAND;
 
         if (staticChemical.getId() == 1) {
-            period = 8 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 8 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect) * ( 1.0 - interiorEffect);
         } else if (staticChemical.getId() == 2) {
-            period = 10 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 10 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect) * ( 1.0 - interiorEffect);
         } else if (staticChemical.getId() == 3) {
-            period = 12 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 12 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect) * ( 1.0 - interiorEffect);
         } else if (staticChemical.getId() == 4) {
-            period = 36 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
+            period = 36 * 3600 * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect) * ( 1.0 - interiorEffect);
         } else {
             period = (1.0 * staticChemical.getTime() / queNum) * 3600f * (1.0 - proportion - seasonTalentEffect) * (1.0 - residentEffect);
         }

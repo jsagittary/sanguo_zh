@@ -1444,7 +1444,12 @@ public class BuildingService implements GmCmdService {
      * @param landBuffType
      * @return
      */
-    public CommonPb.Award gainResource(Player player, int buildingType, int buildingLv, int resCnt, int residentCnt, int landBuffType) {
+    public CommonPb.Award gainResource(Player player,
+                                       int buildingType,
+                                       int buildingLv,
+                                       int resCnt,
+                                       int residentCnt,
+                                       int landBuffType) {
         if (buildingLv <= 0) {
             return null;
         }
@@ -4024,8 +4029,4 @@ public class BuildingService implements GmCmdService {
         buildingDataManager.updateBuildingLockState(player);
     }
 
-    public static void main(String[] args) {
-        int canDispatchNumByBuildingType = (int) Math.floor(4 * ((double) 7 / 8));
-        System.out.println("canDispatchNumByBuildingType = " + canDispatchNumByBuildingType);
-    }
 }
