@@ -216,6 +216,7 @@ public class DominateWorldMapService implements EventRegisterService {
     }
 
     public void deserialize() {
+        if (ser == null) return;
         if (ser.hasStateMap()) {
             StateDominateWorldMap.getInstance().deserialize(ser.getStateMap());
         }

@@ -318,13 +318,12 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
     public void handleOnStartup() throws ParseException {
         Calendar c = Calendar.getInstance();
         Date now = new Date();
-        WorldDataManager worldDataManager = DataResource.ac.getBean(WorldDataManager.class);
         if (getCurPreviewDate() == null) {
             String previewTimeCron = Constant.SI_LI_DOMINATE_PREVIEW_TIME;
             if (!StringUtils.isBlank(previewTimeCron)) {
                 CronExpression cronExpression = new CronExpression(previewTimeCron);
                 Date nextDate = cronExpression.getNextValidTimeAfter(now);
-                setCurPreviewDate(checkSameDate(now, nextDate, c));
+                setCurPreviewDate(checkSiLiSameDate(now, nextDate, c));
             }
             this.functionOpenDay = now;
         } else {
@@ -339,7 +338,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
             if (!StringUtils.isBlank(beginTimeCron)) {
                 CronExpression cronExpression = new CronExpression(beginTimeCron);
                 Date nextDate = cronExpression.getNextValidTimeAfter(now);
-                setCurBeginDate(checkSameDate(now, nextDate, c));
+                setCurBeginDate(checkSiLiSameDate(now, nextDate, c));
             }
         } else {
             if (now.after(getCurBeginDate()) && now.before(getCurEndTime())) {
@@ -364,7 +363,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
             if (!StringUtils.isBlank(endTimeCron)) {
                 CronExpression cronExpression = new CronExpression(endTimeCron);
                 Date nextDate = cronExpression.getNextValidTimeAfter(now);
-                setCurEndTime(checkSameDate(now, nextDate, c));
+                setCurEndTime(checkSiLiSameDate(now, nextDate, c));
             }
         } else {
             if (now.after(getCurEndTime())) {

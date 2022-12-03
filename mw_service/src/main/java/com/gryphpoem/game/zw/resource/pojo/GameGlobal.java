@@ -502,6 +502,9 @@ public class GameGlobal {
     }
 
     public void deDominateData(byte[] data) throws InvalidProtocolBufferException {
+        if (data == null)
+            return;
+        
         SerializePb.SerDominateData ser = SerializePb.SerDominateData.parseFrom(data);
         DataResource.ac.getBean(DominateWorldMapService.class).setSer(ser);
     }

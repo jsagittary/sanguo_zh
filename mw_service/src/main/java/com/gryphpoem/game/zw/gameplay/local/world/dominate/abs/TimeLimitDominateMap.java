@@ -257,6 +257,16 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         }
     }
 
+    protected Date checkSiLiSameDate(Date now, Date time, Calendar c) {
+        if (DateHelper.isSameDate(now, time)) {
+            c.setTimeInMillis(time.getTime());
+            c.add(Calendar.DAY_OF_YEAR, 7);
+            return c.getTime();
+        } else {
+            return time;
+        }
+    }
+
     public List<Integer> getVictoryConfig() {
         switch (getWorldMapFunction()) {
             case WorldPb.WorldFunctionDefine.STATES_AND_COUNTIES_DOMINATE_VALUE:
