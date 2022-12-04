@@ -92,6 +92,10 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         basePb.setState(state);
         basePb.setOpen(this.isOpen());
         basePb.setFunction(WorldPb.WorldFunctionDefine.SI_LI_DOMINATE_SIDE_VALUE);
+        basePb.setPreviewTime((int) (this.getCurPreviewDate().getTime() / 1000l));
+        basePb.setBeginTime((int) (this.getCurBeginDate().getTime() / 1000l));
+        basePb.setEndTime((int) (this.getCurEndTime().getTime() / 1000l));
+        
         if (this.isOpen() && state != WorldPb.WorldFunctionStateDefine.END_VALUE &&
                 state != WorldPb.WorldFunctionStateDefine.NOT_START_VALUE) {
             if (CheckNull.nonEmpty(this.curOpenCityList)) {

@@ -72,6 +72,29 @@ public class HeroUpgradeService implements GmCmdService {
         StaticHeroUpgrade preStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
         if (CheckNull.isNull(preStaticData) || (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= preStaticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= preStaticData.getLevel()))
             throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
+        if (CheckNull.isEmpty(HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT)) {
+            throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("player:%d, ALL_HERO_GRADE_UPPER_LIMIT config not found"));
+        }
+
+        // 校验武将品质是否达到品阶上限
+        switch (hero.getQuality()) {
+            case Constant.Quality.purple:
+                if (preStaticData.getGrade() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(0).get(0) &&
+                        preStaticData.getLevel() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(0).get(1)) {
+                    // 紫橙将拼接已达最大上限
+                    throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
+                }
+                break;
+            case Constant.Quality.orange:
+                if (preStaticData.getGrade() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(1).get(0) &&
+                        preStaticData.getLevel() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(1).get(1)) {
+                    // 紫橙将拼接已达最大上限
+                    throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
+                }
+            default:
+                break;
+        }
+
         if (CheckNull.isEmpty(preStaticData.getConsume()))
             throw new MwException(GameError.CONFIG_FORMAT_ERROR, String.format("player:%d upgrade hero, consume list is empty, curKeyId:%d", roleId, preStaticData.getKeyId()));
         StaticHeroUpgrade staticData = StaticHeroDataMgr.getNextLvHeroUpgrade(heroId, hero.getGradeKeyId());
@@ -357,7 +380,7 @@ public class HeroUpgradeService implements GmCmdService {
                     return;
                 }
                 // 天赋页天赋球均未升级，不用重置
-                if (talentData_.getTalentArr().entrySet().stream().filter(talentPart ->talentPart.getValue() > 0).count() < 1) {
+                if (talentData_.getTalentArr().entrySet().stream().filter(talentPart -> talentPart.getValue() > 0).count() < 1) {
                     return;
                 }
                 if (talentData_.getMaxPart() <= 0) {

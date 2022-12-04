@@ -159,7 +159,13 @@ public class HeroConstant {
      */
     public static List<Integer> TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG;
 
+    /**
+     * 全部英雄品阶等级上限
+     */
+    public static List<List<Integer>> ALL_HERO_GRADE_UPPER_LIMIT;
+
     public static void loadSystem() {
+        ALL_HERO_GRADE_UPPER_LIMIT = SystemTabLoader.getListListIntSystemValue(SystemId.ALL_HERO_GRADE_UPPER_LIMIT, "[[6,4],[7,4]]");
         HERO_EQUIP_NUM = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_EQUIP_NUM, 6);
         HERO_BATTLE_LEN = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_BATTLE_LEN, 4);
         HERO_SEARCH_ROLE_LV = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_SEARCH_ROLE_LV, 88);
@@ -244,7 +250,7 @@ public class HeroConstant {
      * 武将角色: 副将角色
      */
     public static final int HERO_ROLE_TYPE_DEPUTY = 2;
-    
+
     /**
      * 将领所在队列：空闲
      */
