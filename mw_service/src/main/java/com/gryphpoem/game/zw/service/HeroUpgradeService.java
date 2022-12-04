@@ -70,7 +70,7 @@ public class HeroUpgradeService implements GmCmdService {
         }
 
         StaticHeroUpgrade preStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
-        if (CheckNull.isNull(preStaticData) || (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= preStaticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= preStaticData.getLevel()))
+        if (CheckNull.isNull(preStaticData))
             throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
         if (CheckNull.isEmpty(HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT)) {
             throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("player:%d, ALL_HERO_GRADE_UPPER_LIMIT config not found"));
@@ -129,9 +129,22 @@ public class HeroUpgradeService implements GmCmdService {
         CalculateUtil.processAttr(player, hero);
 
         // 若武将升级到满阶, 发送跑马灯
-        if (HeroConstant.ALL_HERO_GRADE_CAPS.get(0) <= staticData.getGrade() && HeroConstant.ALL_HERO_GRADE_CAPS.get(1) <= staticData.getLevel()) {
-            chatDataManager.sendSysChat(ChatConst.CHAT_HERO_FULL_GRADE, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), heroId);
+        switch (hero.getQuality()) {
+            case Constant.Quality.purple:
+                if (preStaticData.getGrade() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(0).get(0) &&
+                        preStaticData.getLevel() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(0).get(1)) {
+                    chatDataManager.sendSysChat(ChatConst.CHAT_HERO_FULL_GRADE, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), heroId);
+                }
+                break;
+            case Constant.Quality.orange:
+                if (preStaticData.getGrade() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(1).get(0) &&
+                        preStaticData.getLevel() >= HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT.get(1).get(1)) {
+                    chatDataManager.sendSysChat(ChatConst.CHAT_HERO_FULL_GRADE, player.lord.getCamp(), 0, player.lord.getCamp(), player.lord.getNick(), heroId);
+                }
+            default:
+                break;
         }
+        
         taskDataManager.updTask(player, TaskType.COND_998, 1, hero.getGradeKeyId());
         GamePb5.UpgradeHeroRs.Builder builder = GamePb5.UpgradeHeroRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(hero, player));
