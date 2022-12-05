@@ -71,7 +71,7 @@ public class HeroUpgradeService implements GmCmdService {
 
         StaticHeroUpgrade preStaticData = StaticHeroDataMgr.getStaticHeroUpgrade(hero.getGradeKeyId());
         if (CheckNull.isNull(preStaticData))
-            throw new MwException(GameError.MAX_UPGRADE_CONFIG, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
+            throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("player:%d, has access max config, keyId:%d", hero.getGradeKeyId()));
         if (CheckNull.isEmpty(HeroConstant.ALL_HERO_GRADE_UPPER_LIMIT)) {
             throw new MwException(GameError.CONFIG_NOT_FOUND, String.format("player:%d, ALL_HERO_GRADE_UPPER_LIMIT config not found"));
         }
@@ -144,7 +144,7 @@ public class HeroUpgradeService implements GmCmdService {
             default:
                 break;
         }
-        
+
         taskDataManager.updTask(player, TaskType.COND_998, 1, hero.getGradeKeyId());
         GamePb5.UpgradeHeroRs.Builder builder = GamePb5.UpgradeHeroRs.newBuilder();
         builder.setHero(PbHelper.createHeroPb(hero, player));
