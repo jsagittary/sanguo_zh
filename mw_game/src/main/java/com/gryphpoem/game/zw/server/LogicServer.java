@@ -144,6 +144,8 @@ public class LogicServer extends AbsLogicServer {
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new AutoDelBanditTimer());
         // 叛军入侵定时器
         threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new RebelInvadeTimer());
+        // 前往大世界探索小游戏的斥候体力恢复定时器
+        threadPool.get(DealType.MAIN.getCode()).addTimerEvent(new RecoveryMiniGameScoutActTimer());
     }
 
     public void addCommand(Handler handler) {

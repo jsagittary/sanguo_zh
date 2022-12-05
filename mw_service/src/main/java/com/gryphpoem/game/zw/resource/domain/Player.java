@@ -157,6 +157,7 @@ import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.EconomicOrder;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.MapCell;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.MiniGameScoutState;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.PeaceAndWelfareRecord;
 import com.gryphpoem.game.zw.resource.pojo.chapterTask.ChapterTask;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
@@ -1158,6 +1159,19 @@ public class Player {
 
     public void setPlayerAttackTime(int playerAttackTime) {
         this.playerAttackTime = playerAttackTime;
+    }
+
+    /**
+     * 前往大世界进行小游戏探索的斥候状态, 里面包含探索的小游戏信息
+     */
+    public MiniGameScoutState miniGameScoutState;
+
+    public MiniGameScoutState getMiniGameScoutState() {
+        return miniGameScoutState;
+    }
+
+    public void setMiniGameScoutState(MiniGameScoutState miniGameScoutState) {
+        this.miniGameScoutState = miniGameScoutState;
     }
 
     /**

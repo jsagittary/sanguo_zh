@@ -23,6 +23,7 @@ import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb2;
+import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pojo.p.FightLogic;
 import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.pojo.p.Force;
@@ -51,6 +52,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticSimulatorStep;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.MapCell;
+import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.MiniGameScoutState;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.PeaceAndWelfareRecord;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -1022,6 +1024,68 @@ public class BuildHomeCityService implements GmCmdService {
         return list;
     }
 
+    // 斥候前往大世界地图探索小游戏事件
+    public GamePb1.ExploreMiniGameInWorldRs exploreMiniGameInWorld(long roleId) {
+        Player player = playerDataManager.checkPlayerIsExist(roleId);
+        MiniGameScoutState miniGameScoutState = player.getMiniGameScoutState();
+        int now = TimeHelper.getCurrentSecond();
+        if (miniGameScoutState == null) {
+            miniGameScoutState = new MiniGameScoutState();
+            miniGameScoutState.setAct(3);
+            miniGameScoutState.setLatestRecoveryActTime(now);
+            miniGameScoutState.setExploreTime(0);
+            player.setMiniGameScoutState(miniGameScoutState);
+        }
+        if (miniGameScoutState.getAct() <= 0) {
+            throw new MwException(GameError.PARAM_ERROR, String.format("斥候前往大世界探索小游戏时, 行动力不足, roleId:%s, scoutAct:%s", roleId, miniGameScoutState.getAct()));
+        }
+
+        miniGameScoutState.setAct(miniGameScoutState.getAct() - 1);
+        miniGameScoutState.setExploreTime(15);
+        GamePb1.ExploreMiniGameInWorldRs.Builder builder = GamePb1.ExploreMiniGameInWorldRs.newBuilder();
+        builder.setExploreTime(miniGameScoutState.getExploreTime());
+        return builder.build();
+    }
+
+    // 斥候体力恢复
+    public void recoveryMiniGameScoutActTimeLogic() {
+        Iterator<Player> playerIterator = playerDataManager.getAllPlayer().values().iterator();
+        while (playerIterator.hasNext()) {
+            Player player = playerIterator.next();
+            MiniGameScoutState miniGameScoutState = player.getMiniGameScoutState();
+            if (miniGameScoutState.getAct() >= 3) {
+                continue;
+            }
+            int now = TimeHelper.getCurrentSecond();
+            int period = now - miniGameScoutState.getLatestRecoveryActTime();
+            int addAct = period / 4 * 60 * 60;
+            if (addAct > 0) {
+                miniGameScoutState.setAct(Math.min(miniGameScoutState.getAct() + addAct, 3));
+                miniGameScoutState.setLatestRecoveryActTime(miniGameScoutState.getLatestRecoveryActTime() + addAct * 4 * 60 * 60);
+                synMiniGameScoutState(player);
+            }
+        }
+    }
+
+    /**
+     * 向客户端同步前往大世界探索小游戏的斥候的状态
+     *
+     * @param player
+     */
+    public void synMiniGameScoutState(Player player) {
+        GamePb1.SynMiniGameScoutStateRs.Builder builder = GamePb1.SynMiniGameScoutStateRs.newBuilder();
+        MiniGameScoutState miniGameScoutState = player.getMiniGameScoutState();
+        builder.setActPower(miniGameScoutState.getAct());
+        builder.setExploreTime(miniGameScoutState.getExploreTime());
+        builder.setMiniGameId(miniGameScoutState.getMiniGameId());
+        builder.setMiniGamePos(miniGameScoutState.getMiniGamePos());
+        if (player.ctx != null) {
+            BasePb.Base.Builder msg = PbHelper.createSynBase(GamePb1.SynMiniGameScoutStateRs.EXT_FIELD_NUMBER, GamePb1.SynMiniGameScoutStateRs.ext,
+                    builder.build());
+            MsgDataManager.getIns().add(new Msg(player.ctx, msg.build(), player.roleId));
+        }
+    }
+
     @GmCmd("buildCity")
     @Override
     public void handleGmCmd(Player player, String... params) throws Exception {
@@ -1051,8 +1115,10 @@ public class BuildHomeCityService implements GmCmdService {
                 player.setHappinessTime(0);
                 break;
             case "resetHappiness":
+                // 重置幸福度
                 player.setHappiness(50);
             case "randomBandit":
+                // 指定刷新土匪
                 randomBanditOnCell(player, Integer.parseInt(params[1]), Integer.parseInt(params[1]), Integer.parseInt(params[1]), Integer.parseInt(params[1]));
             default:
         }

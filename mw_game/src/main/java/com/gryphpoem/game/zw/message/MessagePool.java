@@ -110,6 +110,7 @@ import com.gryphpoem.game.zw.handler.inner.*;
 import com.gryphpoem.game.zw.pb.CrossPb.CrossAwardOpRs;
 import com.gryphpoem.game.zw.pb.CrossPb.CrossLoginRs;
 import com.gryphpoem.game.zw.pb.CrossPb.HeartRs;
+import com.gryphpoem.game.zw.pb.GamePb1;
 import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb2.*;
 import com.gryphpoem.game.zw.pb.GamePb3.*;
@@ -1411,6 +1412,10 @@ public class MessagePool implements IMessagePool {
         registerC(GamePb8.GetDominateGovernorListRq.EXT_FIELD_NUMBER, GamePb8.GetDominateGovernorListRs.EXT_FIELD_NUMBER, GetDominateGovernorListHandler.class);
         registerC(GamePb8.GetDominateRankRq.EXT_FIELD_NUMBER, GamePb8.GetDominateRankRs.EXT_FIELD_NUMBER, GetDominateRankHandler.class);
         registerC(GamePb8.GetDominateWorldMapInfoRq.EXT_FIELD_NUMBER, GamePb8.GetDominateWorldMapInfoRs.EXT_FIELD_NUMBER, GetDominateWorldMapInfoHandler.class);
+
+        // 派遣斥候前往大世界探索小游戏
+        registerC(GamePb1.ExploreMiniGameInWorldRq.EXT_FIELD_NUMBER, GamePb1.ExploreMiniGameInWorldRs.EXT_FIELD_NUMBER, ExploreMiniGameInWorldHandler.class);
+
     }
 
     /**
