@@ -76,7 +76,6 @@ public class StaticHeroDataMgr {
         StaticHeroDataMgr.heroBreakMap = staticDataDao.selectHeroBreakMap();
         StaticHeroDataMgr.resetTotalList = staticDataDao.selectRestTotal();
         initHeroLevel();
-        skillMap = staticDataDao.selectSkill();
         StaticHeroDataMgr.heroDecoratedMap = staticDataDao.selectHeroDecoratedMap();
         List<StaticHeroEvolve> heroEvolves = staticDataDao.selectHeroEvolveList();
         StaticHeroDataMgr.heroEvolveGroupMap = heroEvolves.stream().collect(Collectors.groupingBy(StaticHeroEvolve::getGroup));

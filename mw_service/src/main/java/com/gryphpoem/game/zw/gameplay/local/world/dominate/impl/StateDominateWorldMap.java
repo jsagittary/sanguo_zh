@@ -87,7 +87,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         if (CheckNull.nonEmpty(ser.getNextOpenCityList())) {
             WorldDataManager worldDataManager = DataResource.ac.getBean(WorldDataManager.class);
             for (SerializePb.SerOpenDominateSideCity pb : ser.getNextOpenCityList()) {
-                List<DominateSideCity> cityList = this.curOpenCityList.computeIfAbsent(pb.getTimes(), l -> new ArrayList<>());
+                List<DominateSideCity> cityList = this.nextOpenCityList.computeIfAbsent(pb.getTimes(), l -> new ArrayList<>());
                 if (CheckNull.nonEmpty(pb.getCityIdList())) {
                     pb.getCityIdList().forEach(cityId -> {
                         cityList.add((DominateSideCity) worldDataManager.getCityMap().get(cityId));
@@ -296,6 +296,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                     } else {
                         initCurMultiDominateCity(worldDataManager, stateList, areaMap, curScheduleId);
                     }
+
                     // 初始化下一次开放的城池 (与当前第一次的城池不能重复)
                     initMultiNextOpenCityList(worldDataManager, stateList, areaMap, curScheduleId, 0);
                 }
@@ -472,9 +473,12 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 if (CheckNull.isEmpty(sideCityList)) return;
                 for (DominateSideCity sideCity : sideCityList) {
                     StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
-                    if (CheckNull.isNull(sideCity)) continue;
-                    stateList.remove(staticCity.getArea());
-                    areaMap.remove(staticCity.getArea());
+                    if (CheckNull.isNull(staticCity)) continue;
+                    StaticArea staticArea = StaticWorldDataMgr.getAreaMap().get(staticCity.getArea());
+                    if (CheckNull.isNull(staticArea)) continue;
+                    if (CheckNull.isEmpty(staticArea.getGotoArea())) continue;
+                    stateList.remove(Integer.valueOf(staticArea.getGotoArea().get(0)));
+                    areaMap.remove(staticArea.getGotoArea().get(0));
                 }
             });
         }
@@ -490,11 +494,14 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         if (CheckNull.nonEmpty(stateList))
             return;
 
+        Set<Integer> stateSet = new HashSet<>();
         Collection<StaticArea> areaList = StaticWorldDataMgr.getAreaMap().values();
         if (CheckNull.nonEmpty(areaList)) {
             areaList.forEach(staticArea -> {
                 if (CheckNull.isEmpty(staticArea.getGotoArea())) return;
-                stateList.add(staticArea.getGotoArea().get(0));
+                if (stateSet.add(staticArea.getGotoArea().get(0))) {
+                    stateList.add(staticArea.getGotoArea().get(0));
+                }
                 areaMap.computeIfAbsent(staticArea.getGotoArea().get(0), l -> new ArrayList<>()).add(staticArea.getArea());
             });
         }
