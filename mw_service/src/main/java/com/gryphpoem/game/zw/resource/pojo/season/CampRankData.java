@@ -36,7 +36,7 @@ public class CampRankData {
     }
 
     public CommonPb.CampRankInfo ser() {
-        return CommonPb.CampRankInfo.newBuilder().setCamp(camp).setValue(value).setTime(time).setRank(rank).build();
+        return CommonPb.CampRankInfo.newBuilder().setCamp(camp).setValue(value).setTime(time).setRank(rank).setData(data).build();
     }
 
     public void dser(CommonPb.CampRankInfo campRankInfo) {
@@ -44,5 +44,6 @@ public class CampRankData {
         this.value = campRankInfo.getValue();
         this.time = campRankInfo.getTime();
         this.rank = campRankInfo.getRank();
+        this.data = campRankInfo.getData();
     }
 }
