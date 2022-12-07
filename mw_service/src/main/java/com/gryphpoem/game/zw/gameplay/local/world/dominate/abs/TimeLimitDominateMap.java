@@ -226,7 +226,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         }
         List<DominateSideCity> sideCityList;
         if (CheckNull.isEmpty(this.curOpenCityList) || CheckNull.isEmpty(
-                sideCityList = this.curOpenCityList.get(this.curTimes))) {
+                sideCityList = this.curOpenCityList.get(0))) {
             LogUtil.error("活动进行中, 正在开放的城池为空");
             return;
         }

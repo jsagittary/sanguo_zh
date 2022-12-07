@@ -192,7 +192,7 @@ public class FightCalc {
         // 基础伤害
         double baseHurt = baseHurt(actionDirection, battleType);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
-        baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        baseHurt = baseHurt * (effectLvData(actionDirection, effectConfig) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
                 Arrays.toString(effectConfig.toArray()), ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 技能修正
@@ -344,6 +344,24 @@ public class FightCalc {
                 ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
                 ">>>>>>");
         return (int) Math.ceil(damage_);
+    }
+
+    /**
+     * 获取技能等级加成的效果加成
+     *
+     * @param actionDirection
+     * @param effectConfig
+     * @return
+     */
+    private static double effectLvData(ActionDirection actionDirection, List<Integer> effectConfig) {
+        if (CheckNull.isNull(actionDirection.getSkill()))
+            return effectConfig.get(4);
+        StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
+        if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
+        if (CheckNull.isEmpty(staticHeroSkill.getWhetherGrow())) return effectConfig.get(4);
+        if (staticHeroSkill.getWhetherGrow().get(0) == 0)
+            return effectConfig.get(4);
+        return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
     }
 
     /**

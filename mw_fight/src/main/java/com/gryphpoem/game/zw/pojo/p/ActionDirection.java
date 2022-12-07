@@ -43,6 +43,10 @@ public class ActionDirection {
      * 技能
      */
     private SimpleHeroSkill skill;
+    /**
+     * 是否是技能主题效果
+     */
+    private boolean isSkillEffect = false;
 
     public ActionDirection() {
     }

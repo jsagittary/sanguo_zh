@@ -58,6 +58,10 @@ public class ConditionBuffImpl extends AbsConditionBuff {
                     this.effectiveTimesSingleRound, ", 当前buff单回合最高触发次数配置: ", this.staticBuff.getEffectiveTimesSingleRound());
             return;
         }
+        if (!triggerBuff()) {
+            LogUtil.fight("buff持有人: ", this.force.ownerId, "-", this.forceId, ", 触发buff: ", this.staticBuff.getBuffId(), " 未成功");
+            return;
+        }
 
 
         FightManager fightManager = DataResource.ac.getBean(FightManager.class);

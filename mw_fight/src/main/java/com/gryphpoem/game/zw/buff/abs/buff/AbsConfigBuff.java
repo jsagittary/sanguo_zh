@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
@@ -12,6 +13,7 @@ import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.IHeroSkill;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -274,6 +276,26 @@ public abstract class AbsConfigBuff implements IFightBuff {
                 continue;
             fightEffect.effectRestoration(this, contextHolder, effectList, rule, params);
             LogUtil.fight("buff挂载者: ", this.force.ownerId, "-", this.forceId, ", buff消失, 消失的效果配置: ", Arrays.toString(effectList.toArray()));
+        }
+    }
+
+    /**
+     * 是否触发buff
+     *
+     * @return
+     */
+    protected boolean triggerBuff() {
+        if (CheckNull.isNull(this.staticBuff) || CheckNull.isNull(this.sSkill)) return false;
+        if (CheckNull.isNull(this.staticBuff.getTriggerProb() == 0)) return true;
+        if (CheckNull.isEmpty(this.staticBuff.getWhetherGrow())) {
+            return RandomHelper.isHitRangeIn10000(this.staticBuff.getTriggerProb());
+        } else {
+            if (this.staticBuff.getWhetherGrow().size() < 2 ||
+                    this.staticBuff.getWhetherGrow().get(1) == 0)
+                return RandomHelper.isHitRangeIn10000(this.staticBuff.getTriggerProb());
+            SimpleHeroSkill skill = (SimpleHeroSkill) this.sSkill;
+            int prob = (int) Math.ceil(this.staticBuff.getTriggerProb() * (1 + ((skill.getS_skill().getLevel() - 1) / 9d)));
+            return RandomHelper.isHitRangeIn10000(prob);
         }
     }
 

@@ -99,7 +99,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
             throw new MwException(GameError.ACTIVITY_NOT_OPEN, String.format("活动未开始, req:%d", req.getWorldFunction()));
         }
         TimeLimitDominateMap timeLimitDominateMap = (TimeLimitDominateMap) worldMapPlay;
-        List<DominateSideCity> sideCityList = timeLimitDominateMap.getCurOpenCityList().get(timeLimitDominateMap.getCurTimes());
+        List<DominateSideCity> sideCityList = timeLimitDominateMap.getCurOpenCityList().get(0);
         DominateSideCity dominateSideCity;
         if (CheckNull.isEmpty(sideCityList) || Objects.isNull(dominateSideCity = sideCityList.stream().filter(city ->
                 city.getCityId() == req.getCityId()).findFirst().orElse(null))) {
@@ -367,7 +367,7 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
 
             // 城池不存在
             TimeLimitDominateMap timeLimitDominateMap = (TimeLimitDominateMap) worldMapPlay;
-            List<DominateSideCity> sideCityList = timeLimitDominateMap.getCurOpenCityList().get(timeLimitDominateMap.getCurTimes());
+            List<DominateSideCity> sideCityList = timeLimitDominateMap.getCurOpenCityList().get(0);
             DominateSideCity sideCity;
             if (CheckNull.isEmpty(sideCityList) || Objects.isNull(sideCity = sideCityList.stream().filter(city ->
                     city.getCityId() == army.getTargetId()).findFirst().orElse(null))) {

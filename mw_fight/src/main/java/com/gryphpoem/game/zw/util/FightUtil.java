@@ -62,7 +62,7 @@ public class FightUtil {
      * @return
      */
     public static long uniqueId() {
-        if (idGenerator >= 100000000) {
+        if (idGenerator >= 30000000) {
             idGenerator = 0;
         }
         return idGenerator++;

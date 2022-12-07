@@ -65,4 +65,12 @@ public class StaticBuff {
      * buff单回合生效次数
      */
     private int effectiveTimesSingleRound;
+    /**
+     * buff触发的概率
+     */
+    private int triggerProb;
+    /**
+     * buff是否跟随技能等级成长  <buff效果是否随等级成长, buff触发概率挂载概率>
+     */
+    private List<Integer> whetherGrow;
 }

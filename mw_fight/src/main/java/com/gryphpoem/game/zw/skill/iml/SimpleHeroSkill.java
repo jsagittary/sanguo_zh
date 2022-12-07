@@ -128,13 +128,14 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             actionDirection.setAtk(contextHolder.getCurAttacker());
             actionDirection.setCurAtkHeroId(contextHolder.getCurAtkHeroId());
             actionDirection.setSkill(this);
+            actionDirection.setSkillEffect(false);
             LinkedList<IFightBuff> removeBuffList = new LinkedList<>();
             BattleLogic battleLogic = DataResource.ac.getBean(BattleLogic.class);
 
             // 释放buff
             for (List<Integer> buffConfig : s_skill.getBuff()) {
                 // 概率释放
-                if (!RandomHelper.isHitRangeIn10000(buffConfig.get(2)))
+                if (!RandomHelper.isHitRangeIn10000(buffReleaseProbability(buffConfig)))
                     continue;
                 FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(buffConfig.get(0));
                 if (CheckNull.isNull(buffObjective))
