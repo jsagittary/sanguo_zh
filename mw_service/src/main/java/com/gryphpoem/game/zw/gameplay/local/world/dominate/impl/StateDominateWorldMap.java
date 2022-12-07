@@ -252,7 +252,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         // 活动已结束, 停服错过结束定时器
         if (this.isOpen() && !init && now.after(getCurEndTime())) {
             // 在停服期间, 活动已结束
-            onEnd(this.curTimes);
+            onEnd(endTimeExpired(c, now));
         }
 
         if (init) {
@@ -325,7 +325,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 initNextTime(0, true, false);
                 break;
         }
-        
+
         if (this.isOpen()) {
             EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
         }
@@ -368,6 +368,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      * @param curTimes
      */
     public void onEnd(int curTimes) throws ParseException {
+        if (curTimes == -1) return;
         this.curTimes = curTimes == 1 ? 2 : 1;
         // 修改当前活动时间
         switch (this.curTimes) {

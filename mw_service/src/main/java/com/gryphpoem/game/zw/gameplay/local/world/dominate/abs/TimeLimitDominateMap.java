@@ -22,7 +22,9 @@ import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
+import org.quartz.CronExpression;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -361,11 +363,40 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
      * @return
      */
     protected boolean isPreviewTimeExpired(Calendar c, Date now) {
-        if (this.open) return false;
+        if (CheckNull.isNull(this.curPreviewDate)) return true;
         c.setTime(this.curPreviewDate);
         int previewHour = c.get(Calendar.HOUR_OF_DAY);
         c.setTime(now);
         int nowHour = c.get(Calendar.HOUR_OF_DAY);
         return nowHour >= previewHour;
+    }
+
+    /**
+     * 获取当前时间是今日第一次活动结束
+     *
+     * @param c
+     * @param now
+     * @return
+     * @throws ParseException
+     */
+    protected int endTimeExpired(Calendar c, Date now) throws ParseException {
+        if (this.curEndTime == null) return -1;
+        if (CheckNull.isEmpty(Constant.STATE_DOMINATE_WORLD_MAP_END)) return -1;
+        c.setTime(now);
+        int nowHourOfDay = c.get(Calendar.HOUR_OF_DAY);
+        String firstEndTime = Constant.STATE_DOMINATE_WORLD_MAP_END.get(0);
+        c.setTime(new CronExpression(firstEndTime).getNextValidTimeAfter(now));
+        int firstHourOfDay = c.get(Calendar.HOUR_OF_DAY);
+        String secondEndTime = Constant.STATE_DOMINATE_WORLD_MAP_END.get(1);
+        c.setTime(new CronExpression(secondEndTime).getNextValidTimeAfter(now));
+        int secondHourOfDay = c.get(Calendar.HOUR_OF_DAY);
+        if (nowHourOfDay >= firstHourOfDay && nowHourOfDay < secondHourOfDay) {
+            return 1;
+        }
+        if (nowHourOfDay >= secondHourOfDay) {
+            return 2;
+        }
+
+        return -1;
     }
 }
