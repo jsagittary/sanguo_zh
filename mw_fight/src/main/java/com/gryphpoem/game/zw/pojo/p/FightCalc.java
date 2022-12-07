@@ -231,7 +231,7 @@ public class FightCalc {
                 ", 无敌或护盾效果作用前, 技能最终伤害值:  ", damage,
                 ", 无敌或护盾效果作用后, 技能最终伤害值:  ", damage_,
                 ">>>>>>");
-        return (int) damage_;
+        return (int) Math.ceil(damage_);
     }
 
     /**
@@ -284,7 +284,7 @@ public class FightCalc {
                 ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
                 ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
                 ">>>>>>");
-        return (int) damage_;
+        return (int) Math.ceil(damage_);
     }
 
     /**
@@ -343,7 +343,7 @@ public class FightCalc {
                 ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
                 ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
                 ">>>>>>");
-        return (int) damage_;
+        return (int) Math.ceil(damage_);
     }
 
     /**
