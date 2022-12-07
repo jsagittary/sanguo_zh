@@ -9,6 +9,7 @@ import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 import org.apache.commons.lang3.ArrayUtils;
@@ -356,12 +357,24 @@ public class FightCalc {
     private static double effectLvData(ActionDirection actionDirection, List<Integer> effectConfig) {
         if (CheckNull.isNull(actionDirection.getSkill()))
             return effectConfig.get(4);
-        StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
-        if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
-        if (CheckNull.isEmpty(staticHeroSkill.getWhetherGrow())) return effectConfig.get(4);
-        if (staticHeroSkill.getWhetherGrow().get(0) == 0)
-            return effectConfig.get(4);
-        return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
+        if (actionDirection.isSkillEffect()) {
+            // 技能主体效果由技能表控制是否随着技能成长
+            StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
+            if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
+            if (CheckNull.isEmpty(staticHeroSkill.getWhetherGrow())) return effectConfig.get(4);
+            if (staticHeroSkill.getWhetherGrow().get(0) == 0)
+                return effectConfig.get(4);
+            return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
+        } else {
+            // buff效果, 由buff表控制是否有随着技能成长
+            StaticBuff staticBuff = actionDirection.getFightBuff().getBuffConfig();
+            if (CheckNull.isEmpty(staticBuff.getWhetherGrow())) return effectConfig.get(4);
+            if (staticBuff.getWhetherGrow().get(0) == 0)
+                return effectConfig.get(4);
+            StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
+            if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
+            return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
+        }
     }
 
     /**

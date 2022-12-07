@@ -1,5 +1,6 @@
 package com.gryphpoem.game.zw.pojo.p;
 
+import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 import lombok.Data;
@@ -47,6 +48,10 @@ public class ActionDirection {
      * 是否是技能主题效果
      */
     private boolean isSkillEffect = false;
+    /**
+     * buff触发的相关动作
+     */
+    private IFightBuff fightBuff;
 
     public ActionDirection() {
     }

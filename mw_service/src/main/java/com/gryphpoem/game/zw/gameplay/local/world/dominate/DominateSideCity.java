@@ -105,7 +105,7 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
 
     public void init() {
         for (int camp : Constant.Camp.camps) {
-            campRankDataMap.put(camp, new CampRankData(camp, 0, 0, 0));
+            campRankDataMap.put(camp, new CampRankData(camp, 0, 0, 0, 0));
         }
     }
 
@@ -139,6 +139,10 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
 
     public int getCampOccupyTime(int now, int camp, List<Integer> config) {
         CampRankData campRankData = this.campRankDataMap.get(camp);
+        if (CheckNull.isNull(campRankData)) {
+            campRankData = new CampRankData(camp, 0, 0, 0, 0);
+            this.campRankDataMap.put(camp, campRankData);
+        }
         int hisInfluence = campRankData.data;
         if (camp == this.holdCamp && CheckNull.nonEmpty(config)) {
             // 当前战令的时间
@@ -210,6 +214,7 @@ public class DominateSideCity extends City implements GamePb<SerializePb.SerDomi
         this.holdCamp = Constant.Camp.NPC;
         this.startHold = 0;
         this.campRankDataMap.clear();
+        this.init();
         this.defendList.clear();
         this.holdArmyTime.clear();
         this.setOwnerId(0l);

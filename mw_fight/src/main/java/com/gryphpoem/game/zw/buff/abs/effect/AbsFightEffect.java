@@ -44,9 +44,11 @@ public abstract class AbsFightEffect implements IFightEffect {
         FightUtil.buffEffectActionDirection(fightBuff, contextHolder, defObj, actionDirection, false);
         if (Objects.nonNull(fightBuff)) {
             actionDirection.setSkill((SimpleHeroSkill) fightBuff.getSkill());
+            actionDirection.setFightBuff(fightBuff);
         } else {
             if (contextHolder.getCurSkillActionPb() != null) {
                 actionDirection.setSkillEffect(true);
+                actionDirection.setSkill(contextHolder.getActionDirection().getSkill());
             }
         }
         if (CheckNull.isEmpty(actionDirection.getDefHeroList())) {
