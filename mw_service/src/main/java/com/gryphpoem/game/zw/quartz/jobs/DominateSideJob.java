@@ -28,10 +28,18 @@ public class DominateSideJob extends AbsMainLogicThreadJob {
             case WorldPb.WorldFunctionDefine.STATES_AND_COUNTIES_DOMINATE_VALUE:
                 switch (jobNameArr[2]) {
                     case PREVIEW:
-                        StateDominateWorldMap.getInstance().onPreview(Integer.parseInt(jobNameArr[3]));
+                        try {
+                            StateDominateWorldMap.getInstance().onPreview(Integer.parseInt(jobNameArr[3]));
+                        } catch (ParseException e) {
+                            LogUtil.error("州郡雄踞一方预显示定时器报错, e: ", e);
+                        }
                         break;
                     case BEGIN:
-                        StateDominateWorldMap.getInstance().onBegin(Integer.parseInt(jobNameArr[3]));
+                        try {
+                            StateDominateWorldMap.getInstance().onBegin(Integer.parseInt(jobNameArr[3]));
+                        } catch (ParseException e) {
+                            LogUtil.error("州郡雄踞一方开始定时器报错, e: ", e);
+                        }
                         break;
                     case END:
                         try {

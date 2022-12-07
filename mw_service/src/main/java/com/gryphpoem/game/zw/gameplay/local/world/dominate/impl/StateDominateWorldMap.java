@@ -274,7 +274,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      *
      * @param curTimes
      */
-    public void onPreview(int curTimes) {
+    public void onPreview(int curTimes) throws ParseException {
         this.curTimes = curTimes;
         List<Integer> stateList = new ArrayList<>();
         Map<Integer, List<Integer>> areaMap = new HashMap<>();
@@ -316,8 +316,19 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 break;
         }
 
-        if (this.isOpen())
+        // 修改当前活动时间
+        switch (this.curTimes) {
+            case 1:
+                initNextTime(1, true, true);
+                break;
+            case 2:
+                initNextTime(0, true, false);
+                break;
+        }
+        
+        if (this.isOpen()) {
             EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        }
     }
 
     /**
@@ -325,7 +336,17 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      *
      * @param curTimes
      */
-    public void onBegin(int curTimes) {
+    public void onBegin(int curTimes) throws ParseException {
+        // 修改当前活动时间
+        switch (this.curTimes) {
+            case 1:
+                initNextTime(1, true, true);
+                break;
+            case 2:
+                initNextTime(0, true, false);
+                break;
+        }
+
         if (this.isOpen()) {
             LogUtil.common("worldFunction: ", getWorldMapFunction(), ", curTimes: ", curTimes, " begin");
             if (CheckNull.nonEmpty(this.curOpenCityList)) {
@@ -351,10 +372,10 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         // 修改当前活动时间
         switch (this.curTimes) {
             case 1:
-                initNextTime(1);
+                initNextTime(1, false, false);
                 break;
             case 2:
-                initNextTime(0);
+                initNextTime(0, true, false);
                 break;
         }
 
@@ -394,41 +415,48 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      * @param index
      * @throws ParseException
      */
-    private void initNextTime(int index) throws ParseException {
+    private void initNextTime(int index, boolean checkCur, boolean checkNext) throws ParseException {
         int curIndex = index == 0 ? 1 : 0;
 
         Date nextDate;
         String timeStr;
         Date now = new Date();
         CronExpression cronExpression;
+        Calendar c = Calendar.getInstance();
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME.get(curIndex);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(now);
+        nextDate = checkCur ? checkNotSameDate(now, nextDate, c) : nextDate;
         setCurPreviewDate(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME.get(index);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(this.getCurPreviewDate());
+        nextDate = checkNext ? checkNotSameDate(now, nextDate, c) : nextDate;
         setNextEndTime(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_BEGIN_TIME.get(curIndex);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(now);
+        nextDate = checkCur ? checkNotSameDate(now, nextDate, c) : nextDate;
         setCurBeginDate(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_BEGIN_TIME.get(index);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(this.getCurBeginDate());
+        nextDate = checkNext ? checkNotSameDate(now, nextDate, c) : nextDate;
         setNextBeginDate(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_END.get(curIndex);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(now);
+        nextDate = checkCur ? checkNotSameDate(now, nextDate, c) : nextDate;
         setCurEndTime(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_END.get(index);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(this.getCurEndTime());
+        nextDate = checkNext ? checkNotSameDate(now, nextDate, c) : nextDate;
         setNextEndTime(nextDate);
     }
 

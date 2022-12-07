@@ -250,6 +250,16 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         }
     }
 
+    protected Date checkNotSameDate(Date now, Date time, Calendar c) {
+        if (!DateHelper.isSameDate(now, time)) {
+            c.setTimeInMillis(time.getTime());
+            c.add(Calendar.DAY_OF_YEAR, -1);
+            return c.getTime();
+        } else {
+            return time;
+        }
+    }
+
     protected Date checkSameDate(Date now, Date time, Calendar c) {
         if (DateHelper.isSameDate(now, time)) {
             c.setTimeInMillis(time.getTime());

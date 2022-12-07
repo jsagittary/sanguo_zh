@@ -6,10 +6,10 @@ import org.quartz.JobExecutionContext;
 
 /**
  * 在主线程执行定时器逻辑
- * 
+ *
+ * @author QiuKun
  * @ClassName AbsJob.java
  * @Description
- * @author QiuKun
  * @date 2018年3月26日
  */
 public abstract class AbsMainLogicThreadJob extends AbsGameJob {
