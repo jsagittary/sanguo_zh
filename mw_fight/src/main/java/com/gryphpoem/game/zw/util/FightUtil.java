@@ -62,7 +62,7 @@ public class FightUtil {
      * @return
      */
     public static long uniqueId() {
-        if (idGenerator >= 100000000) {
+        if (idGenerator >= 30000000) {
             idGenerator = 0;
         }
         return idGenerator++;
@@ -74,68 +74,6 @@ public class FightUtil {
 
     public static long getFightIdAndIncrement() {
         return ++FIGHT_ID_GENERATOR;
-    }
-
-    /**
-     * 填充玩家作用列表
-     *
-     * @param fightBuff
-     * @param triggerForce
-     * @param buffObjective
-     */
-    public static void fillActingHeroList(IFightBuff fightBuff, Force triggerForce, List<Integer> heroList, FightContextHolder contextHolder, FightConstant.BuffObjective buffObjective) {
-        if (!CheckNull.isEmpty(heroList))
-            heroList.clear();
-
-        switch (buffObjective) {
-            case RELEASE_SKILL:
-                if (CheckNull.isNull(fightBuff)) {
-                    // 执行主体效果
-                    heroList.add(contextHolder.getCurAtkHeroId());
-                    break;
-                }
-                heroList.add(fightBuff.getBuffGiverId());
-                break;
-            case BUFF_LOADER:
-                if (!CheckNull.isEmpty(triggerForce.buffList)) {
-                    IFightBuff buff = triggerForce.buffList.stream().filter(t -> t.uniqueId() == fightBuff.uniqueId()).findFirst().orElse(null);
-                    if (Objects.nonNull(buff)) {
-                        heroList.add(triggerForce.id);
-                        break;
-                    }
-                }
-                if (!CheckNull.isEmpty(triggerForce.assistantHeroList)) {
-                    for (FightAssistantHero assistantHero : triggerForce.assistantHeroList) {
-                        if (CheckNull.isNull(assistantHero) || CheckNull.isEmpty(assistantHero.getBuffList()))
-                            continue;
-                        IFightBuff buff = assistantHero.getBuffList().stream().filter(t -> t.uniqueId() == fightBuff.uniqueId()).findFirst().orElse(null);
-                        if (Objects.nonNull(buff)) {
-                            heroList.add(assistantHero.getHeroId());
-                            break;
-                        }
-                    }
-                }
-                break;
-            case MY_PRINCIPAL_HERO:
-            case ENEMY_PRINCIPAL_HERO:
-                heroList.add(triggerForce.id);
-                break;
-            case MY_DEPUTY_HERO:
-            case ENEMY_DEPUTY_HERO:
-                if (!CheckNull.isEmpty(triggerForce.assistantHeroList)) {
-                    heroList.addAll(triggerForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
-                }
-                break;
-            case ALL_MY_HERO:
-            case ALL_ENEMY_HERO:
-            case AT_LEAST_ONE_HERO_FROM_MY_SIDE:
-            case AT_LEAST_ONE_HERO_FROM_ENEMY_SIDE:
-                heroList.add(triggerForce.id);
-                if (!CheckNull.isEmpty(triggerForce.assistantHeroList)) {
-                    heroList.addAll(triggerForce.assistantHeroList.stream().map(FightAssistantHero::getHeroId).collect(Collectors.toList()));
-                }
-                break;
-        }
     }
 
     /**

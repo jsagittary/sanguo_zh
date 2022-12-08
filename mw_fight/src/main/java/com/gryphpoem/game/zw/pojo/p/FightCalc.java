@@ -9,6 +9,7 @@ import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 import org.apache.commons.lang3.ArrayUtils;
@@ -192,7 +193,7 @@ public class FightCalc {
         // 基础伤害
         double baseHurt = baseHurt(actionDirection, battleType);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
-        baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        baseHurt = baseHurt * (effectLvData(actionDirection, effectConfig) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算技能伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
                 Arrays.toString(effectConfig.toArray()), ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 技能修正
@@ -231,7 +232,7 @@ public class FightCalc {
                 ", 无敌或护盾效果作用前, 技能最终伤害值:  ", damage,
                 ", 无敌或护盾效果作用后, 技能最终伤害值:  ", damage_,
                 ">>>>>>");
-        return (int) damage_;
+        return (int) Math.ceil(damage_);
     }
 
     /**
@@ -284,7 +285,7 @@ public class FightCalc {
                 ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
                 ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
                 ">>>>>>");
-        return (int) damage_;
+        return (int) Math.ceil(damage_);
     }
 
     /**
@@ -301,7 +302,7 @@ public class FightCalc {
         // 基础伤害
         double baseHurt = baseHurt(actionDirection, battleType);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
-        baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        baseHurt = baseHurt * (effectLvData(actionDirection, effectConfig) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算反击伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
                 Arrays.toString(effectConfig.toArray()), ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 血量衰减
@@ -343,7 +344,33 @@ public class FightCalc {
                 ", 无敌或护盾效果作用前, 普攻最终伤害值:  ", damage,
                 ", 无敌或护盾效果作用后, 普攻最终伤害值:  ", damage_,
                 ">>>>>>");
-        return (int) damage_;
+        return (int) Math.ceil(damage_);
+    }
+
+    /**
+     * 获取技能等级加成的效果加成
+     *
+     * @param actionDirection
+     * @param effectConfig
+     * @return
+     */
+    private static double effectLvData(ActionDirection actionDirection, List<Integer> effectConfig) {
+        if (CheckNull.isNull(actionDirection.getSkill()))
+            return effectConfig.get(4);
+        if (actionDirection.isSkillEffect()) {
+            // 技能主体效果由技能表控制是否随着技能成长
+            StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
+            if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
+            if (staticHeroSkill.getSkillEffectGrow() == 0) return effectConfig.get(4);
+            return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
+        } else {
+            // buff效果, 由buff表控制是否有随着技能成长
+            StaticBuff staticBuff = actionDirection.getFightBuff().getBuffConfig();
+            if (staticBuff.getEffectWhetherGrow() == 0) return effectConfig.get(4);
+            StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
+            if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
+            return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
+        }
     }
 
     /**

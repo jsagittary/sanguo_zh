@@ -53,16 +53,20 @@ public class SpecifiedBuffIdExistsEffectWork extends AbsFightEffectWork {
                     }
                     break;
                 default:
+                    boolean notFoundOne = false;
                     for (Integer heroId : actionDirection.getAtkHeroList()) {
                         LinkedList<IFightBuff> buffList = triggerForce.buffList(heroId.intValue());
-                        if (CheckNull.isEmpty(buffList))
-                            continue;
+                        if (CheckNull.isEmpty(buffList)) {
+                            notFoundOne = true;
+                            break;
+                        }
                         IFightBuff buff = buffList.stream().filter(b -> b.getBuffConfig().getBuffId() == conditionConfig.get(2)).findFirst().orElse(null);
                         if (Objects.isNull(buff)) {
+                            notFoundOne = true;
                             break;
                         }
                     }
-                    canRelease = true;
+                    if (!notFoundOne) canRelease = true;
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {

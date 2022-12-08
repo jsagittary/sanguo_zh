@@ -44,7 +44,7 @@ public interface IFightEffect<T> {
      * @param fightBuffEffect buff持有人的buff效果总览
      * @return
      */
-    IFightBuff compareTo(List<IFightBuff> sameIdBuffList, List<Integer> effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder);
+    IFightBuff compareTo(List<IFightBuff> sameIdBuffList, List<Integer> effectConfig, IFightBuff fightBuff, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder);
 
     /**
      * 公式结算时, 算出效果值参数

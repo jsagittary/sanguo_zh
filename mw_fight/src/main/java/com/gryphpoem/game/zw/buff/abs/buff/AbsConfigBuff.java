@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
@@ -12,6 +13,7 @@ import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.IHeroSkill;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightUtil;
 import com.gryphpoem.push.util.CheckNull;
 
@@ -74,7 +76,6 @@ public abstract class AbsConfigBuff implements IFightBuff {
     public AbsConfigBuff(StaticBuff staticBuff) {
         this.buffKeyId = FightUtil.uniqueId();
         this.staticBuff = staticBuff;
-        this.buffEffectiveRounds = this.staticBuff.getContinuousRound();
     }
 
     @Override
@@ -84,9 +85,8 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public void deductBuffRounds() {
-        if (this.buffEffectiveRounds == -1)
-            return;
-        this.buffEffectiveRounds--;
+        // 若buff配置回合数为0时, 则表示此buff只生效一次, 不管buff生效与否, 则清除
+        this.buffEffectiveRounds++;
     }
 
     @Override
@@ -151,9 +151,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public boolean hasRemainBuffRoundTimes(FightContextHolder contextHolder, Object... params) {
-        if (this.buffEffectiveRounds == -1)
-            return true;
-        return this.buffEffectiveRounds > 0;
+        return this.buffEffectiveRounds >= this.staticBuff.getContinuousRound();
     }
 
     @Override
@@ -166,7 +164,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public int getBuffEffectiveRounds() {
-        return buffEffectiveRounds;
+        return  buffEffectiveRounds;
     }
 
     @Override
@@ -248,8 +246,13 @@ public abstract class AbsConfigBuff implements IFightBuff {
             IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
             if (CheckNull.isNull(fightEffect))
                 continue;
-
+            // 释放某效果前, 触发buff效果
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_IMPLEMENTATION_OF_ANY_EFFECT_ID,
+                    new Object[]{this.force, this.forceId, effectList.get(2)});
             fightEffect.effectiveness(this, contextHolder, effectList, rule, timing, params);
+            // 释放某效果后, 触发buff效果
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_IMPLEMENTATION_OF_ANY_EFFECT_ID,
+                    new Object[]{this.force, this.forceId, effectList.get(2)});
         }
     }
 
@@ -274,6 +277,24 @@ public abstract class AbsConfigBuff implements IFightBuff {
                 continue;
             fightEffect.effectRestoration(this, contextHolder, effectList, rule, params);
             LogUtil.fight("buff挂载者: ", this.force.ownerId, "-", this.forceId, ", buff消失, 消失的效果配置: ", Arrays.toString(effectList.toArray()));
+        }
+    }
+
+    /**
+     * 是否触发buff
+     *
+     * @return
+     */
+    protected boolean triggerBuff() {
+        if (CheckNull.isNull(this.staticBuff) || CheckNull.isNull(this.sSkill)) return false;
+        if (CheckNull.isEmpty(this.staticBuff.getTriggerProb())) return true;
+        if (this.staticBuff.getTriggerProb().get(0) == 0) return true;
+        if (this.staticBuff.getTriggerProb().size() < 2 || this.staticBuff.getTriggerProb().get(1) == 0) {
+            return RandomHelper.isHitRangeIn10000(this.staticBuff.getTriggerProb().get(0));
+        } else {
+            SimpleHeroSkill skill = (SimpleHeroSkill) this.sSkill;
+            int prob = (int) Math.ceil(this.staticBuff.getTriggerProb().get(0) * (1 + ((skill.getS_skill().getLevel() - 1) / 9d)));
+            return RandomHelper.isHitRangeIn10000(prob);
         }
     }
 

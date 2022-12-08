@@ -24,6 +24,8 @@ import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.EventRegisterService;
+import com.gryphpoem.game.zw.service.GmCmd;
+import com.gryphpoem.game.zw.service.GmCmdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +39,7 @@ import java.util.Objects;
  * createTime: 2022-11-22 21:30
  */
 @Component
-public class DominateWorldMapService implements EventRegisterService {
+public class DominateWorldMapService implements EventRegisterService, GmCmdService {
     @Autowired
     private List<IDominateWorldMapService> serviceList;
     @Autowired
@@ -231,5 +233,30 @@ public class DominateWorldMapService implements EventRegisterService {
         if (CheckNull.isNull(service)) return;
 
         service.syncDominateWorldMapInfo(event.builder);
+    }
+
+    @GmCmd("dominate")
+    @Override
+    public void handleGmCmd(Player player, String... params) throws Exception {
+        String cmd = params[0];
+        int function = Integer.parseInt(params[1]);
+        if ("job".equalsIgnoreCase(cmd)) {
+            int times = Integer.parseInt(params[2]);
+            switch (function) {
+                case WorldPb.WorldFunctionDefine.STATES_AND_COUNTIES_DOMINATE_VALUE:
+                    switch (params[3]) {
+                        case "preview":
+                            StateDominateWorldMap.getInstance().onPreview(times);
+                            break;
+                    }
+                case WorldPb.WorldFunctionDefine.SI_LI_DOMINATE_SIDE_VALUE:
+                    switch (params[3]) {
+                        case "preview":
+                            SiLiDominateWorldMap.getInstance().onPreview();
+                            break;
+                    }
+            }
+
+        }
     }
 }

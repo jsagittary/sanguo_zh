@@ -29,4 +29,8 @@ public class StaticHeroSkill {
      * 技能登场时能量
      */
     private int debutEnergy;
+    /**
+     * 技能主体效果是否跟随技能等级成长
+     */
+    private int skillEffectGrow;
 }

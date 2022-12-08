@@ -95,11 +95,11 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
         basePb.setPreviewTime((int) (this.getCurPreviewDate().getTime() / 1000l));
         basePb.setBeginTime((int) (this.getCurBeginDate().getTime() / 1000l));
         basePb.setEndTime((int) (this.getCurEndTime().getTime() / 1000l));
-        
+
         if (this.isOpen() && state != WorldPb.WorldFunctionStateDefine.END_VALUE &&
                 state != WorldPb.WorldFunctionStateDefine.NOT_START_VALUE) {
             if (CheckNull.nonEmpty(this.curOpenCityList)) {
-                Optional.ofNullable(this.curOpenCityList.get(this.curTimes)).ifPresent(list -> {
+                Optional.ofNullable(this.curOpenCityList.get(0)).ifPresent(list -> {
                     WorldPb.CurDominateCityInfo.Builder cityPb = WorldPb.CurDominateCityInfo.newBuilder();
                     list.forEach(dsc -> {
                         cityPb.setCityId(dsc.getCityId());
@@ -189,7 +189,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
                 int now = TimeHelper.getCurrentSecond();
                 Map<Integer, Map<Integer, Integer>> campOccupyMap = null;
                 if (CheckNull.nonEmpty(this.curOpenCityList)) {
-                    Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
+                    Optional.ofNullable(this.curOpenCityList.get(0)).ifPresent(list -> {
                         list.forEach(sideCity -> {
                             retreatDominateArmy(sideCity);
                             if (sideCity.isOver())
@@ -208,7 +208,7 @@ public class SiLiDominateWorldMap extends TimeLimitDominateMap {
                     });
 
                     campOccupyMap = new HashMap<>();
-                    for (DominateSideCity sideCity : this.curOpenCityList.get(curTimes)) {
+                    for (DominateSideCity sideCity : this.curOpenCityList.get(0)) {
                         StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
                         if (CheckNull.isNull(staticCity)) continue;
                         int curCount = campOccupyMap.computeIfAbsent(sideCity.getCamp(), m -> new HashMap<>()).

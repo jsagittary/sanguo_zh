@@ -87,7 +87,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         if (CheckNull.nonEmpty(ser.getNextOpenCityList())) {
             WorldDataManager worldDataManager = DataResource.ac.getBean(WorldDataManager.class);
             for (SerializePb.SerOpenDominateSideCity pb : ser.getNextOpenCityList()) {
-                List<DominateSideCity> cityList = this.curOpenCityList.computeIfAbsent(pb.getTimes(), l -> new ArrayList<>());
+                List<DominateSideCity> cityList = this.nextOpenCityList.computeIfAbsent(pb.getTimes(), l -> new ArrayList<>());
                 if (CheckNull.nonEmpty(pb.getCityIdList())) {
                     pb.getCityIdList().forEach(cityId -> {
                         cityList.add((DominateSideCity) worldDataManager.getCityMap().get(cityId));
@@ -252,7 +252,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         // 活动已结束, 停服错过结束定时器
         if (this.isOpen() && !init && now.after(getCurEndTime())) {
             // 在停服期间, 活动已结束
-            onEnd(this.curTimes);
+            onEnd(endTimeExpired(c, now));
         }
 
         if (init) {
@@ -274,7 +274,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      *
      * @param curTimes
      */
-    public void onPreview(int curTimes) {
+    public void onPreview(int curTimes) throws ParseException {
         this.curTimes = curTimes;
         List<Integer> stateList = new ArrayList<>();
         Map<Integer, List<Integer>> areaMap = new HashMap<>();
@@ -296,6 +296,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                     } else {
                         initCurMultiDominateCity(worldDataManager, stateList, areaMap, curScheduleId);
                     }
+
                     // 初始化下一次开放的城池 (与当前第一次的城池不能重复)
                     initMultiNextOpenCityList(worldDataManager, stateList, areaMap, curScheduleId, 0);
                 }
@@ -315,8 +316,19 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 break;
         }
 
-        if (this.isOpen())
+        // 修改当前活动时间
+        switch (this.curTimes) {
+            case 1:
+                initNextTime(1, true, true);
+                break;
+            case 2:
+                initNextTime(0, true, false);
+                break;
+        }
+
+        if (this.isOpen()) {
             EventBus.getDefault().post(new Events.SyncDominateWorldMapChangeEvent(getWorldMapFunction(), createPb(false)));
+        }
     }
 
     /**
@@ -324,7 +336,17 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      *
      * @param curTimes
      */
-    public void onBegin(int curTimes) {
+    public void onBegin(int curTimes) throws ParseException {
+        // 修改当前活动时间
+        switch (this.curTimes) {
+            case 1:
+                initNextTime(1, true, true);
+                break;
+            case 2:
+                initNextTime(0, true, false);
+                break;
+        }
+
         if (this.isOpen()) {
             LogUtil.common("worldFunction: ", getWorldMapFunction(), ", curTimes: ", curTimes, " begin");
             if (CheckNull.nonEmpty(this.curOpenCityList)) {
@@ -346,14 +368,15 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      * @param curTimes
      */
     public void onEnd(int curTimes) throws ParseException {
+        if (curTimes == -1) return;
         this.curTimes = curTimes == 1 ? 2 : 1;
         // 修改当前活动时间
         switch (this.curTimes) {
             case 1:
-                initNextTime(1);
+                initNextTime(1, false, false);
                 break;
             case 2:
-                initNextTime(0);
+                initNextTime(0, true, false);
                 break;
         }
 
@@ -363,7 +386,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
             // 城池结算
             int now = TimeHelper.getCurrentSecond();
             if (CheckNull.nonEmpty(this.curOpenCityList)) {
-                Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
+                Optional.ofNullable(this.curOpenCityList.get(0)).ifPresent(list -> {
                     list.forEach(sideCity -> {
                         retreatDominateArmy(sideCity);
                         if (sideCity.isOver())
@@ -393,41 +416,48 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
      * @param index
      * @throws ParseException
      */
-    private void initNextTime(int index) throws ParseException {
+    private void initNextTime(int index, boolean checkCur, boolean checkNext) throws ParseException {
         int curIndex = index == 0 ? 1 : 0;
 
         Date nextDate;
         String timeStr;
         Date now = new Date();
         CronExpression cronExpression;
+        Calendar c = Calendar.getInstance();
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME.get(curIndex);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(now);
+        nextDate = checkCur ? checkNotSameDate(now, nextDate, c) : nextDate;
         setCurPreviewDate(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME.get(index);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(this.getCurPreviewDate());
+        nextDate = checkNext ? checkNotSameDate(now, nextDate, c) : nextDate;
         setNextEndTime(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_BEGIN_TIME.get(curIndex);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(now);
+        nextDate = checkCur ? checkNotSameDate(now, nextDate, c) : nextDate;
         setCurBeginDate(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_BEGIN_TIME.get(index);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(this.getCurBeginDate());
+        nextDate = checkNext ? checkNotSameDate(now, nextDate, c) : nextDate;
         setNextBeginDate(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_END.get(curIndex);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(now);
+        nextDate = checkCur ? checkNotSameDate(now, nextDate, c) : nextDate;
         setCurEndTime(nextDate);
 
         timeStr = Constant.STATE_DOMINATE_WORLD_MAP_END.get(index);
         cronExpression = new CronExpression(timeStr);
         nextDate = cronExpression.getNextValidTimeAfter(this.getCurEndTime());
+        nextDate = checkNext ? checkNotSameDate(now, nextDate, c) : nextDate;
         setNextEndTime(nextDate);
     }
 
@@ -472,9 +502,12 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 if (CheckNull.isEmpty(sideCityList)) return;
                 for (DominateSideCity sideCity : sideCityList) {
                     StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(sideCity.getCityId());
-                    if (CheckNull.isNull(sideCity)) continue;
-                    stateList.remove(staticCity.getArea());
-                    areaMap.remove(staticCity.getArea());
+                    if (CheckNull.isNull(staticCity)) continue;
+                    StaticArea staticArea = StaticWorldDataMgr.getAreaMap().get(staticCity.getArea());
+                    if (CheckNull.isNull(staticArea)) continue;
+                    if (CheckNull.isEmpty(staticArea.getGotoArea())) continue;
+                    stateList.remove(Integer.valueOf(staticArea.getGotoArea().get(0)));
+                    areaMap.remove(staticArea.getGotoArea().get(0));
                 }
             });
         }
@@ -490,11 +523,14 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         if (CheckNull.nonEmpty(stateList))
             return;
 
+        Set<Integer> stateSet = new HashSet<>();
         Collection<StaticArea> areaList = StaticWorldDataMgr.getAreaMap().values();
         if (CheckNull.nonEmpty(areaList)) {
             areaList.forEach(staticArea -> {
                 if (CheckNull.isEmpty(staticArea.getGotoArea())) return;
-                stateList.add(staticArea.getGotoArea().get(0));
+                if (stateSet.add(staticArea.getGotoArea().get(0))) {
+                    stateList.add(staticArea.getGotoArea().get(0));
+                }
                 areaMap.computeIfAbsent(staticArea.getGotoArea().get(0), l -> new ArrayList<>()).add(staticArea.getArea());
             });
         }

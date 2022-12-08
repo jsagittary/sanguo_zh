@@ -30,18 +30,8 @@ public class OrdinaryAttackEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
+    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, IFightBuff fightBuff, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
         return null;
-    }
-
-    @Override
-    protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return false;
-    }
-
-    @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
     }
 
     @Override

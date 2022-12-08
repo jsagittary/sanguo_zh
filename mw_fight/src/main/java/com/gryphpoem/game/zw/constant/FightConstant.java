@@ -178,6 +178,22 @@ public interface FightConstant {
          * 存在一定数量BUFF分组
          */
         int BUFF_GROUP_NUM_EXISTS = 109;
+        /**
+         * 血量高于百分比
+         */
+        int BLOOD_VOLUME_ABOVE_PERCENTAGE = 110;
+        /**
+         * 存在指定效果ID
+         */
+        int SPECIFIED_EFFECT_ID_EXISTS = 111;
+        /**
+         * 某效果ID执行前
+         */
+        int BEFORE_IMPLEMENTATION_OF_ANY_EFFECT_ID = 112;
+        /**
+         * 某效果ID执行后
+         */
+        int AFTER_IMPLEMENTATION_OF_ANY_EFFECT_ID = 113;
     }
 
     interface BuffEffectiveType {
@@ -317,6 +333,10 @@ public interface FightConstant {
     }
 
     interface ReplacementBuffRule {
+        /**
+         * 不比较
+         */
+        int NO_VALUE = 0;
         /**
          * 效果强度优先
          */

@@ -65,4 +65,17 @@ public class StaticBuff {
      * buff单回合生效次数
      */
     private int effectiveTimesSingleRound;
+    /**
+     * <buff触发的概率, buff触发概率是否随着技能等级成长>
+     */
+    private List<Integer> triggerProb;
+    /**
+     * buff效果是否跟随技能等级成长
+     */
+    private int effectWhetherGrow;
+
+    public int getCoexistingIdNum() {
+        if (this.coexistingIdNum == 0) return 1;
+        return coexistingIdNum;
+    }
 }

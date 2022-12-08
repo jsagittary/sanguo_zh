@@ -51,23 +51,13 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
-    }
-
-    @Override
     protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
         return (int) params[0] < (int) params[1];
     }
 
     @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
-    }
-
-    @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.get(5));
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), skillLvGrow(effectConfig.get(5), fightBuff));
     }
 
     @Override
@@ -76,7 +66,7 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
         FightBuffEffect fbe = (FightBuffEffect) params[1];
         StaticEffectRule rule = (StaticEffectRule) params[2];
         if (CheckNull.isNull(data) || CheckNull.isEmpty(data.getData())) return;
-        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getData().get(0)));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getValue()));
 
         // 计算效果影响最终值
         Object value = effectCalculateValue(fbe, rule.getEffectLogicId());

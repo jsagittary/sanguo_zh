@@ -11,11 +11,13 @@ import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pojo.p.*;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Description: 加buff
@@ -27,26 +29,6 @@ public class AddBuffEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
         return new int[]{FightConstant.EffectLogicId.ADD_BUFF_TO_THE_EFFECT};
-    }
-
-    @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
-    }
-
-    @Override
-    protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return false;
-    }
-
-    @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
-    }
-
-    @Override
-    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return null;
     }
 
     @Override
@@ -62,7 +44,17 @@ public class AddBuffEffectImpl extends AbsFightEffect {
             LogUtil.error("add buff, config: ", CheckNull.isEmpty(effectConfig_) ? "" : Arrays.toString(effectConfig_.toArray()), ", staticBuff not found");
             return;
         }
-        if (!RandomHelper.isHitRangeIn10000(effectConfig_.get(4))) {
+
+        // 判断加buff是否随着技能等级成长
+        int prob = effectConfig_.get(4);
+        if (Objects.nonNull(fightBuff) && Objects.nonNull(fightBuff.getBuffConfig()) &&
+                Objects.nonNull(fightBuff.getSkill()) && fightBuff.getBuffConfig().getEffectWhetherGrow() == 1) {
+            if (fightBuff.getSkill() instanceof SimpleHeroSkill) {
+                SimpleHeroSkill skill = (SimpleHeroSkill) fightBuff.getSkill();
+                prob = (int) Math.ceil(prob * (1 + ((skill.getS_skill().getLevel() - 1) / 9d)));
+            }
+        }
+        if (!RandomHelper.isHitRangeIn10000(prob)) {
             LogUtil.debug("添加buff随机值不够, 无法添加buff, buffConfig: ", fightBuff.getBuffConfig());
             return;
         }
@@ -80,6 +72,6 @@ public class AddBuffEffectImpl extends AbsFightEffect {
 
     @Override
     public void effectRestoration(IFightBuff fightBuff, FightContextHolder contextHolder, List effectConfig, StaticEffectRule rule, Object... params) {
-        
+
     }
 }

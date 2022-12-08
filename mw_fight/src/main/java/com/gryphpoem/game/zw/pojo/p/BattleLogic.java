@@ -61,12 +61,17 @@ public class BattleLogic {
         }
 
         // buff列表是否重复
+        IFightBuff newFightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
+        newFightBuff.setSkill(heroSkill);
         if (!CheckNull.isEmpty(buffs)) {
             List<IFightBuff> sameIdBuffList = buffs.stream().filter(b ->
                     b.getBuffConfig().getBuffId() == staticBuff.getBuffId()).collect(Collectors.toList());
             if (!CheckNull.isEmpty(sameIdBuffList)) {
                 if (sameIdBuffList.size() >= staticBuff.getCoexistingIdNum()) {
                     switch (staticBuff.getSameIdReplacementRule()) {
+                        case FightConstant.ReplacementBuffRule.NO_VALUE:
+                            addBuff = true;
+                            break;
                         // 比较buff留存规则
                         case FightConstant.ReplacementBuffRule.LONGER_ROUNDS:
                             // 保留更长回合数buff
@@ -90,7 +95,7 @@ public class BattleLogic {
                                         continue;
                                     IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
                                     if (CheckNull.isNull(fightEffect)) continue;
-                                    if ((removedBuff = fightEffect.compareTo(sameIdBuffList, effectConfig, fightBuffEffect, contextHolder)) != null) {
+                                    if ((removedBuff = fightEffect.compareTo(sameIdBuffList, effectConfig, newFightBuff, fightBuffEffect, contextHolder)) != null) {
                                         removeBuffList.add(removedBuff);
                                         removed = true;
                                         break;
@@ -107,25 +112,23 @@ public class BattleLogic {
         if (!addBuff)
             return null;
 
-        IFightBuff fightBuff = fightManager.createFightBuff(staticBuff.getBuffEffectiveWay(), staticBuff);
-        fightBuff.setForce(actingForce);
-        fightBuff.setForceId(actionDirection.getCurDefHeroId());
-        fightBuff.setBuffGiver(CheckNull.isNull(actionDirection.getAtk()) ? heroSkill.getSkillOwner() :
+        newFightBuff.setForce(actingForce);
+        newFightBuff.setForceId(actionDirection.getCurDefHeroId());
+        newFightBuff.setBuffGiver(CheckNull.isNull(actionDirection.getAtk()) ? heroSkill.getSkillOwner() :
                 actionDirection.getAtk());
-        fightBuff.setBuffGiverId(CheckNull.isNull(actionDirection.getAtk()) ? heroSkill.getSkillHeroId() :
+        newFightBuff.setBuffGiverId(CheckNull.isNull(actionDirection.getAtk()) ? heroSkill.getSkillHeroId() :
                 actionDirection.getCurAtkHeroId());
-        fightBuff.setSkill(heroSkill);
-        contextHolder.addBuff(fightBuff);
+        contextHolder.addBuff(newFightBuff);
 
         LogUtil.fight("执行方: ", CheckNull.isNull(actionDirection.getAtk()) ? "无" :
                         actionDirection.getAtk().ownerId, ", 被执行方: ", actingForce.ownerId, "的武将: ",
-                actingForce.id, ", 加buff: ", fightBuff.getBuffConfig());
+                actingForce.id, ", 加buff: ", newFightBuff.getBuffConfig());
         // 触发buff
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BUFF_GROUP_EXISTS);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BUFF_GROUP_NUM_EXISTS);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFIED_BUFF_ID_EXISTS);
         FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.SPECIFY_BUFF_TO_STACK_TO_THE_SPECIFIED_LAYER_NUM);
-        fightBuff.releaseBuff(buffs, contextHolder, buffConfig, params);
+        newFightBuff.releaseBuff(buffs, contextHolder, buffConfig, params);
         if (!CheckNull.isEmpty(removeBuffList)) {
             buffs.removeAll(removeBuffList);
             // TODO 预留buff失效还原逻辑
@@ -135,7 +138,7 @@ public class BattleLogic {
             // TODO 客户端表现PB 处理
             removeBuffList.clear();
         }
-        return fightBuff;
+        return newFightBuff;
     }
 
     /**

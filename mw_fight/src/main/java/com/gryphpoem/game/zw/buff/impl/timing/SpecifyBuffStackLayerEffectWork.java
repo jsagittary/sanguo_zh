@@ -51,15 +51,21 @@ public class SpecifyBuffStackLayerEffectWork extends AbsFightEffectWork {
                     }
                     break;
                 default:
+                    boolean notFoundOne = false;
                     for (Integer heroId : actionDirection.getAtkHeroList()) {
                         LinkedList<IFightBuff> buffs = triggerForce.buffList(heroId.intValue());
+                        if (CheckNull.isEmpty(buffs)) {
+                            notFoundOne = true;
+                            break;
+                        }
                         List<IFightBuff> sameIdBuffList = buffs.stream().filter(b ->
                                 b.getBuffConfig().getBuffId() == conditionConfig.get(2)).collect(Collectors.toList());
                         if (sameIdBuffList.size() < conditionConfig.get(3)) {
+                            notFoundOne = true;
                             break;
                         }
                     }
-                    canRelease = true;
+                    if (!notFoundOne) canRelease = true;
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {
