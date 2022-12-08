@@ -51,18 +51,8 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
-    }
-
-    @Override
     protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
         return (int) params[0] < (int) params[1];
-    }
-
-    @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
     }
 
     @Override

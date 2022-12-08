@@ -4,6 +4,7 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.abs.effect.AbsFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.manager.annotation.BuffEffectType;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.FightBuffEffect;
@@ -15,9 +16,7 @@ import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Description: 武将属性变化效果
@@ -46,11 +45,6 @@ public class AttributeEffectImpl extends AbsFightEffect {
                 FightConstant.EffectLogicId.CRITICAL_DAMAGE_INCREASED,
                 FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_HIT_RATE_OF_SKILL,
                 FightConstant.EffectLogicId.INCREASED_EXTRA_CRITICAL_DAMAGE_OF_SKILL};
-    }
-
-    @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
     }
 
     /**
@@ -148,6 +142,96 @@ public class AttributeEffectImpl extends AbsFightEffect {
                     rule.getEffectLogicId(), dataValue.getA(), dataValue.getB());
         }
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, curValue));
+    }
+
+    @Override
+    public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
+        if (CheckNull.isEmpty(fightBuffEffect.getEffectMap()))
+            return null;
+        Map<Integer, List<FightEffectData>> effectDataMap = fightBuffEffect.getEffectMap().get(effectLogicId);
+        if (CheckNull.isEmpty(effectDataMap)) {
+            return null;
+        }
+
+        Map<Integer, Map<Integer, Turple<Integer, Integer>>> effectValue = new HashMap<>();
+        // 合并相同buff来源的效果
+        for (Map.Entry<Integer, List<FightEffectData>> entry : effectDataMap.entrySet()) {
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(entry.getKey());
+            if (CheckNull.isNull(rule)) continue;
+            if (CheckNull.isEmpty(entry.getValue())) continue;
+            Map<Integer, Turple<Integer, Integer>> buffIdMap = effectValue.computeIfAbsent(entry.getKey(), m -> new HashMap<>());
+            entry.getValue().forEach(data -> {
+                Turple<Integer, Integer> value = buffIdMap.computeIfAbsent(data.getBuffId(), l -> new Turple<>(0, 0));
+                if (value.getA() == 0 && value.getB() == 0) {
+                    value.setA(data.getData().get(0));
+                    value.setB(data.getData().get(1));
+                    return;
+                }
+                switch (rule.getSameBuffRule()) {
+                    case 1:
+                        if (compareValue(fightBuffEffect.getForce(), fightBuffEffect.getHeroId(),
+                                effectLogicId, value.getA(), value.getB(), data.getData())) {
+                            value.setA(data.getData().get(0));
+                            value.setB(data.getData().get(1));
+                        }
+                        break;
+                    case 0:
+                    case 2:
+                        value.setA(value.getA() + data.getData().get(0));
+                        value.setB(value.getB() + data.getData().get(1));
+                        break;
+                    default:
+                        break;
+                }
+            });
+        }
+        if (CheckNull.isEmpty(effectValue))
+            return null;
+
+        // 合并不同buff来源的效果
+        Map<Integer, Turple<Integer, Integer>> resultMap = new HashMap<>(effectValue.size());
+        for (Map.Entry<Integer, Map<Integer, Turple<Integer, Integer>>> entry : effectValue.entrySet()) {
+            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(entry.getKey());
+            if (CheckNull.isNull(rule))
+                continue;
+            if (CheckNull.isEmpty(entry.getValue()))
+                continue;
+            Turple<Integer, Integer> tuple = null;
+            for (Turple<Integer, Integer> t : entry.getValue().values()) {
+                if (CheckNull.isNull(t))
+                    continue;
+                if (tuple == null) {
+                    tuple = t;
+                    resultMap.put(entry.getKey(), tuple);
+                    continue;
+                }
+                switch (rule.getDiffBuffRule()) {
+                    case 1:
+                        if (compareValue(fightBuffEffect.getForce(), fightBuffEffect.getHeroId(),
+                                effectLogicId, tuple.getA(), tuple.getB(), t)) {
+                            tuple = t;
+                        }
+                        break;
+                    case 0:
+                    case 2:
+                        tuple.setA(tuple.getA() + t.getA());
+                        tuple.setB(tuple.getB() + t.getB());
+                        break;
+                }
+            }
+        }
+        if (CheckNull.isEmpty(resultMap)) {
+            return null;
+        }
+
+        // 合并不同效果id的效果值
+        Turple<Integer, Integer> data = new Turple<>(0, 0);
+        resultMap.values().forEach(t -> {
+            data.setA(data.getA() + t.getA());
+            data.setB(data.getB() + t.getB());
+        });
+
+        return data;
     }
 
     /**

@@ -28,7 +28,7 @@ public class ShieldEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
+    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, IFightBuff newFightBuff, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
         List<Integer> effectConfig_ = effectConfig;
         FightConstant.BuffObjective buffObjective = FightConstant.BuffObjective.convertTo(effectConfig_.get(1));
         if (CheckNull.isNull(buffObjective)) {
@@ -47,7 +47,7 @@ public class ShieldEffectImpl extends AbsFightEffect {
         Map<IFightBuff, Integer> effectValue = new HashMap<>(sameIdBuffList_.size());
         Force executorForce = actionDirection.getDef();
         for (Integer heroId : actionDirection.getDefHeroList()) {
-            curShieldValue += calEffectValue(executorForce, heroId, effectConfig_);
+            curShieldValue += calEffectValue(newFightBuff, executorForce, heroId, effectConfig_);
             FightBuffEffect buffEffect = executorForce.getFightEffectMap(heroId.intValue());
             if (CheckNull.isNull(buffEffect) || (effectMap = buffEffect.getEffectMap().get(FightConstant.EffectLogicId.SHIELD)) == null)
                 continue;
@@ -76,9 +76,10 @@ public class ShieldEffectImpl extends AbsFightEffect {
      * @param effectConfig
      * @return
      */
-    private int calEffectValue(Force force, int heroId, List<Integer> effectConfig) {
+    private int calEffectValue(IFightBuff fightBuff, Force force, int heroId, List<Integer> effectConfig) {
         double attributeValue = FightCalc.attributeValue(effectConfig.get(3), force, heroId);
-        return (int) (attributeValue * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5));
+        return (int) (attributeValue * (skillLvGrow(effectConfig.get(4), fightBuff) / FightConstant.TEN_THOUSAND) +
+                skillLvGrow(effectConfig.get(5), fightBuff));
     }
 
     @Override
@@ -87,13 +88,8 @@ public class ShieldEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
-    }
-
-    @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), calEffectValue(fbe.getForce(), fbe.getHeroId(), effectConfig));
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), calEffectValue(fightBuff, fbe.getForce(), fbe.getHeroId(), effectConfig));
     }
 
     @Override

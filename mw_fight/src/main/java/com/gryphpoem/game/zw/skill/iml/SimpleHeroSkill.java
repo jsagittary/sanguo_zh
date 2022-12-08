@@ -109,7 +109,14 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
             if (CheckNull.isNull(fightEffect)) continue;
             LogUtil.fight("进攻方: ", contextHolder.getCurAttacker().ownerId, "-", contextHolder.getCurAtkHeroId(), isOnStageSkill ? " 释放开场技能: " : "释放主动技能: ",
                     s_skill.getSkillId(), ", 技能主体效果: ", CheckNull.isEmpty(list) ? "null" : Arrays.toString(list.toArray()));
+
+            // 释放某效果前, 触发buff效果
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_IMPLEMENTATION_OF_ANY_EFFECT_ID,
+                    new Object[]{contextHolder.getCurAttacker(), contextHolder.getCurAttacker().ownerId, list.get(2)});
             fightEffect.effectiveness(null, contextHolder, list, rule, FightConstant.BuffEffectTiming.ACTIVE_RELEASE);
+            // 释放某效果后, 触发buff效果
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_IMPLEMENTATION_OF_ANY_EFFECT_ID,
+                    new Object[]{contextHolder.getCurAttacker(), contextHolder.getCurAttacker().ownerId, list.get(2)});
         }
     }
 

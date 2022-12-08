@@ -73,4 +73,9 @@ public class StaticBuff {
      * buff效果是否跟随技能等级成长
      */
     private int effectWhetherGrow;
+
+    public int getCoexistingIdNum() {
+        if (this.coexistingIdNum == 0) return 1;
+        return coexistingIdNum;
+    }
 }

@@ -12,13 +12,11 @@ import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Description: 恢复型的战斗属性(士气, 能量)
@@ -32,11 +30,6 @@ public class RecoveredInBattleEffectImpl extends AbsFightEffect {
         return new int[]{FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_INCREASED, FightConstant.EffectLogicId.ENERGY_RECOVERY_VALUE_DECREASES,
                 FightConstant.EffectLogicId.MORALE_RECOVERY_VALUE_INCREASED, FightConstant.EffectLogicId.MORALE_RECOVERY_VALUE_REDUCED,
                 FightConstant.EffectLogicId.MORALE_DEDUCTION_VALUE_INCREASED, FightConstant.EffectLogicId.REDUCED_MORALE_DEDUCTION};
-    }
-
-    @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
     }
 
     @Override
@@ -62,13 +55,26 @@ public class RecoveredInBattleEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
-    }
-
-    @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.subList(4, 6));
+        List<Integer> effectDataList = new ArrayList<>(effectConfig.subList(4, 6));
+        Integer ratio = Optional.ofNullable(effectDataList.remove(0)).orElse(0);
+        Integer fixValue = Optional.ofNullable(effectDataList.remove(1)).orElse(0);
+        if (!CheckNull.isEmpty(effectDataList) && Objects.nonNull(fightBuff) && Objects.nonNull(fightBuff.getSkill())) {
+            if (fightBuff.getSkill() instanceof SimpleHeroSkill) {
+                SimpleHeroSkill skill = (SimpleHeroSkill) fightBuff.getSkill();
+                double lvRatio = (1 + ((skill.getS_skill().getLevel() - 1) / 9d));
+                if (Objects.nonNull(ratio) && ratio > 0) {
+                    ratio = (int) Math.ceil(ratio * lvRatio);
+                }
+                if (Objects.nonNull(fixValue) && fixValue > 0) {
+                    fixValue = (int) Math.ceil(fixValue * lvRatio);
+                }
+            }
+        }
+
+        effectDataList.add(ratio);
+        effectDataList.add(fixValue);
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectDataList);
     }
 
     @Override

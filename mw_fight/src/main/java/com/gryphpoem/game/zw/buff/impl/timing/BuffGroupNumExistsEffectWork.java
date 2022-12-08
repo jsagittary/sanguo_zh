@@ -55,16 +55,20 @@ public class BuffGroupNumExistsEffectWork extends AbsFightEffectWork {
                     }
                     break;
                 default:
+                    boolean notFoundOne = false;
                     for (Integer heroId : actionDirection.getAtkHeroList()) {
                         LinkedList<IFightBuff> buffList = triggerForce.buffList(heroId.intValue());
-                        if (CheckNull.isEmpty(buffList))
-                            continue;
+                        if (CheckNull.isEmpty(buffList)) {
+                            notFoundOne = true;
+                            break;
+                        }
                         List<IFightBuff> buffs = buffList.stream().filter(b -> b.getBuffConfig().getTypeGrouping().contains(conditionConfig.get(2))).collect(Collectors.toList());
                         if (buffs.size() < conditionConfig.get(3)) {
+                            notFoundOne = true;
                             break;
                         }
                     }
-                    canRelease = true;
+                    if (!notFoundOne) canRelease = true;
                     break;
             }
         } else if (conditionConfig.get(0) == 0) {

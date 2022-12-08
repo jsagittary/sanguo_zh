@@ -302,7 +302,7 @@ public class FightCalc {
         // 基础伤害
         double baseHurt = baseHurt(actionDirection, battleType);
         // （基础伤害*伤害系数【效果3万分比】+固伤【效果3固定值】）
-        baseHurt = baseHurt * (effectConfig.get(4) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
+        baseHurt = baseHurt * (effectLvData(actionDirection, effectConfig) / FightConstant.TEN_THOUSAND) + effectConfig.get(5);
         LogUtil.fight("计算反击伤害公式部分-固伤部分, 攻击方基础伤害: ", baseHurt, ", 技能效果: ",
                 Arrays.toString(effectConfig.toArray()), ", 计算完固伤部分的基础伤害: ", baseHurt);
         // 血量衰减

@@ -61,93 +61,13 @@ public abstract class AbsFightEffect implements IFightEffect {
     }
 
     @Override
+    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, IFightBuff fightBuff, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
+        return (IFightBuff) sameIdBuffList.get(0);
+    }
+
+    @Override
     public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
-        if (CheckNull.isEmpty(fightBuffEffect.getEffectMap()))
-            return null;
-        Map<Integer, List<FightEffectData>> effectDataMap = fightBuffEffect.getEffectMap().get(effectLogicId);
-        if (CheckNull.isEmpty(effectDataMap)) {
-            return null;
-        }
-
-        Map<Integer, Map<Integer, Turple<Integer, Integer>>> effectValue = new HashMap<>();
-        // 合并相同buff来源的效果
-        for (Map.Entry<Integer, List<FightEffectData>> entry : effectDataMap.entrySet()) {
-            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(entry.getKey());
-            if (CheckNull.isNull(rule)) continue;
-            if (CheckNull.isEmpty(entry.getValue())) continue;
-            Map<Integer, Turple<Integer, Integer>> buffIdMap = effectValue.computeIfAbsent(entry.getKey(), m -> new HashMap<>());
-            entry.getValue().forEach(data -> {
-                Turple<Integer, Integer> value = buffIdMap.computeIfAbsent(data.getBuffId(), l -> new Turple<>(0, 0));
-                if (value.getA() == 0 && value.getB() == 0) {
-                    value.setA(data.getData().get(0));
-                    value.setB(data.getData().get(1));
-                    return;
-                }
-                switch (rule.getSameBuffRule()) {
-                    case 1:
-                        if (compareValue(fightBuffEffect.getForce(), fightBuffEffect.getHeroId(),
-                                effectLogicId, value.getA(), value.getB(), data.getData())) {
-                            value.setA(data.getData().get(0));
-                            value.setB(data.getData().get(1));
-                        }
-                        break;
-                    case 0:
-                    case 2:
-                        value.setA(value.getA() + data.getData().get(0));
-                        value.setB(value.getB() + data.getData().get(1));
-                        break;
-                    default:
-                        break;
-                }
-            });
-        }
-        if (CheckNull.isEmpty(effectValue))
-            return null;
-
-        // 合并不同buff来源的效果
-        Map<Integer, Turple<Integer, Integer>> resultMap = new HashMap<>(effectValue.size());
-        for (Map.Entry<Integer, Map<Integer, Turple<Integer, Integer>>> entry : effectValue.entrySet()) {
-            StaticEffectRule rule = StaticFightManager.getStaticEffectRule(entry.getKey());
-            if (CheckNull.isNull(rule))
-                continue;
-            if (CheckNull.isEmpty(entry.getValue()))
-                continue;
-            Turple<Integer, Integer> tuple = null;
-            for (Turple<Integer, Integer> t : entry.getValue().values()) {
-                if (CheckNull.isNull(t))
-                    continue;
-                if (tuple == null) {
-                    tuple = t;
-                    resultMap.put(entry.getKey(), tuple);
-                    continue;
-                }
-                switch (rule.getDiffBuffRule()) {
-                    case 1:
-                        if (compareValue(fightBuffEffect.getForce(), fightBuffEffect.getHeroId(),
-                                effectLogicId, tuple.getA(), tuple.getB(), t)) {
-                            tuple = t;
-                        }
-                        break;
-                    case 0:
-                    case 2:
-                        tuple.setA(tuple.getA() + t.getA());
-                        tuple.setB(tuple.getB() + t.getB());
-                        break;
-                }
-            }
-        }
-        if (CheckNull.isEmpty(resultMap)) {
-            return null;
-        }
-
-        // 合并不同效果id的效果值
-        Turple<Integer, Integer> data = new Turple<>(0, 0);
-        resultMap.values().forEach(t -> {
-            data.setA(data.getA() + t.getA());
-            data.setB(data.getB() + t.getB());
-        });
-
-        return data;
+        return null;
     }
 
     @Override
@@ -258,6 +178,31 @@ public abstract class AbsFightEffect implements IFightEffect {
     }
 
     /**
+     * 计算效果值
+     *
+     * @param force
+     * @param heroId
+     * @param effectLogicId
+     * @param params
+     * @return
+     */
+    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
+        return 0;
+    }
+
+    /**
+     * 创建战斗效果实体
+     *
+     * @param fightBuff
+     * @param effectConfig
+     * @param fbe
+     * @return
+     */
+    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
+        return null;
+    }
+
+    /**
      * 添加效果pb显示值
      *
      * @param builder
@@ -274,26 +219,7 @@ public abstract class AbsFightEffect implements IFightEffect {
      * @param params
      * @return
      */
-    protected abstract boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params);
-
-    /**
-     * 计算效果值
-     *
-     * @param force
-     * @param heroId
-     * @param effectLogicId
-     * @param params
-     * @return
-     */
-    protected abstract double calValue(Force force, int heroId, int effectLogicId, Object... params);
-
-    /**
-     * 创建战斗效果实体
-     *
-     * @param fightBuff
-     * @param effectConfig
-     * @param fbe
-     * @return
-     */
-    protected abstract FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params);
+    protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
+        return false;
+    }
 }

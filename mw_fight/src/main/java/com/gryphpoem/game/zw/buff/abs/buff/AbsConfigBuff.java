@@ -76,7 +76,6 @@ public abstract class AbsConfigBuff implements IFightBuff {
     public AbsConfigBuff(StaticBuff staticBuff) {
         this.buffKeyId = FightUtil.uniqueId();
         this.staticBuff = staticBuff;
-        this.buffEffectiveRounds = this.staticBuff.getContinuousRound();
     }
 
     @Override
@@ -86,9 +85,8 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public void deductBuffRounds() {
-        if (this.buffEffectiveRounds == -1)
-            return;
-        this.buffEffectiveRounds--;
+        // 若buff配置回合数为0时, 则表示此buff只生效一次, 不管buff生效与否, 则清除
+        this.buffEffectiveRounds++;
     }
 
     @Override
@@ -153,9 +151,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public boolean hasRemainBuffRoundTimes(FightContextHolder contextHolder, Object... params) {
-        if (this.buffEffectiveRounds == -1)
-            return true;
-        return this.buffEffectiveRounds > 0;
+        return this.buffEffectiveRounds >= this.staticBuff.getContinuousRound();
     }
 
     @Override
@@ -168,7 +164,7 @@ public abstract class AbsConfigBuff implements IFightBuff {
 
     @Override
     public int getBuffEffectiveRounds() {
-        return buffEffectiveRounds;
+        return  buffEffectiveRounds;
     }
 
     @Override
@@ -250,8 +246,13 @@ public abstract class AbsConfigBuff implements IFightBuff {
             IFightEffect fightEffect = fightManager.getSkillEffect(rule.getEffectLogicId());
             if (CheckNull.isNull(fightEffect))
                 continue;
-
+            // 释放某效果前, 触发buff效果
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.BEFORE_IMPLEMENTATION_OF_ANY_EFFECT_ID,
+                    new Object[]{this.force, this.forceId, effectList.get(2)});
             fightEffect.effectiveness(this, contextHolder, effectList, rule, timing, params);
+            // 释放某效果后, 触发buff效果
+            FightUtil.releaseAllBuffEffect(contextHolder, FightConstant.BuffEffectTiming.AFTER_IMPLEMENTATION_OF_ANY_EFFECT_ID,
+                    new Object[]{this.force, this.forceId, effectList.get(2)});
         }
     }
 

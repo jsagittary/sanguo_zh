@@ -25,4 +25,14 @@ public class StaticEffectRule {
      * 不同buff来源规则
      */
     private int diffBuffRule;
+
+    public int getSameBuffRule() {
+        if (this.sameBuffRule == 0) return 2;
+        return sameBuffRule;
+    }
+
+    public int getDiffBuffRule() {
+        if (this.diffBuffRule == 0) return 2;
+        return diffBuffRule;
+    }
 }

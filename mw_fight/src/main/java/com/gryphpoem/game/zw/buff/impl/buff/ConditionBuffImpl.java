@@ -81,35 +81,46 @@ public class ConditionBuffImpl extends AbsConditionBuff {
                 return;
             }
         }
-        if (!CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
-            List<Integer> triggerConfig = this.staticBuff.getBuffTriggerCondition().get(0);
-            if (!CheckNull.isEmpty(triggerConfig) && triggerConfig.size() >= 2) {
-                // 与第一个触发时机不匹配, 直接返回
-                if (triggerConfig.get(1) != timing) return;
-            }
+        if (this.staticBuff.getContinuousRound() == 0 && this.effect) {
+            // 配置中持续回合为0次, 且buff尝试生效过, 则buff不再生效, 下回合时清除
+            return;
+        }
+        try {
+            if (!CheckNull.isEmpty(this.staticBuff.getBuffTriggerCondition())) {
+                List<Integer> triggerConfig = this.staticBuff.getBuffTriggerCondition().get(0);
+                if (!CheckNull.isEmpty(triggerConfig) && triggerConfig.size() >= 2) {
+                    // 与第一个触发时机不匹配, 直接返回
+                    if (triggerConfig.get(1) != timing) return;
+                }
 
-            boolean canRelease = true;
-            for (List<Integer> config : this.staticBuff.getBuffTriggerCondition()) {
-                if (CheckNull.isEmpty(config) || config.size() < 2) continue;
-                if (!fightManager.buffCanRelease(this, contextHolder, config.get(1), config, params)) {
-                    canRelease = false;
-                    break;
+                boolean canRelease = true;
+                for (List<Integer> config : this.staticBuff.getBuffTriggerCondition()) {
+                    if (CheckNull.isEmpty(config) || config.size() < 2) continue;
+                    if (!fightManager.buffCanRelease(this, contextHolder, config.get(1), config, params)) {
+                        canRelease = false;
+                        break;
+                    }
+                }
+                // 触发条件未通过, 无法触发效果
+                if (!canRelease) {
+                    return;
                 }
             }
-            // 触发条件未通过, 无法触发效果
-            if (!canRelease) {
-                return;
-            }
-        }
 
-        // 释放此buff所有效果
-        releaseBuffEffect(contextHolder, timing);
-        this.effect = true;
-        if (this.staticBuff.getBuffEffectiveTimes() > 0) {
-            this.buffEffectiveTimes++;
-        }
-        if (this.staticBuff.getEffectiveTimesSingleRound() > 0) {
-            this.effectiveTimesSingleRound++;
+            // 释放此buff所有效果
+            releaseBuffEffect(contextHolder, timing);
+            this.effect = true;
+            if (this.staticBuff.getBuffEffectiveTimes() > 0) {
+                this.buffEffectiveTimes++;
+            }
+            if (this.staticBuff.getEffectiveTimesSingleRound() > 0) {
+                this.effectiveTimesSingleRound++;
+            }
+        } catch (Exception e) {
+            LogUtil.error("触发buff报错, e: ", e);
+        } finally {
+            if (this.staticBuff.getContinuousRound() == 0)
+                this.effect = true;
         }
     }
 

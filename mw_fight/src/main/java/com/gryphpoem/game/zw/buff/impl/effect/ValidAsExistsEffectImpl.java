@@ -29,21 +29,6 @@ public class ValidAsExistsEffectImpl extends AbsFightEffect {
     }
 
     @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
-    }
-
-    @Override
-    protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return false;
-    }
-
-    @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0;
-    }
-
-    @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
         return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), -1);
     }

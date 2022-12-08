@@ -12,7 +12,10 @@ import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -25,31 +28,6 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
     @Override
     public int[] effectType() {
         return new int[]{FightConstant.EffectLogicId.ENERGY_RECOVERY, FightConstant.EffectLogicId.ENERGY_DEDUCTION};
-    }
-
-    @Override
-    public IFightBuff compareTo(List sameIdBuffList, List effectConfig, FightBuffEffect fightBuffEffect, FightContextHolder contextHolder) {
-        return (IFightBuff) sameIdBuffList.get(0);
-    }
-
-    @Override
-    protected boolean compareValue(Force actingForce, int actingHeroId, int effectLogicId, Object... params) {
-        return false;
-    }
-
-    @Override
-    protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
-        return 0d;
-    }
-
-    @Override
-    public Object effectCalculateValue(FightBuffEffect fightBuffEffect, int effectLogicId, Object... params) {
-        return null;
-    }
-
-    @Override
-    protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.subList(4, 6));
     }
 
     /**
@@ -75,22 +53,35 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
                 List<SimpleHeroSkill> activeSkillList = skillList.stream().filter(skill -> !skill.isOnStageSkill()).collect(Collectors.toList());
                 if (CheckNull.isEmpty(activeSkillList)) continue;
                 // 公式计算
+                // 计算技能等级加成的值
+                List<Integer> config = new ArrayList<>(effectConfig_.subList(4, 6));
+                Integer ratio = Optional.ofNullable(config.remove(0)).orElse(0);
+                Integer fixValue = Optional.ofNullable(config.remove(1)).orElse(0);
+                if (Objects.nonNull(ratio) && ratio > 0) {
+                    ratio = skillLvGrow(ratio, fightBuff);
+                }
+                if (Objects.nonNull(fixValue) && fixValue > 0) {
+                    fixValue = skillLvGrow(fixValue, fightBuff);
+                }
+                config.add(ratio);
+                config.add(fixValue);
+
                 switch (rule.getEffectLogicId()) {
                     case FightConstant.EffectLogicId.ENERGY_RECOVERY:
-                        activeSkillList.forEach(skill -> {
+                        for (SimpleHeroSkill skill : activeSkillList) {
                             int beforeRecoveredEnergy = skill.getCurEnergy();
-                            double originValue = ((skill.getS_skill().getEnergyUpperLimit()) * effectConfig_.get(4) / FightConstant.TEN_THOUSAND) + effectConfig_.get(5);
+                            double originValue = ((skill.getS_skill().getEnergyUpperLimit()) * ratio / FightConstant.TEN_THOUSAND) + fixValue;
                             int recoveredEnergy = FightCalc.skillEnergyRecovery(force, heroId, originValue);
                             skill.setCurEnergy(skill.getCurEnergy() + recoveredEnergy);
                             LogUtil.fight("执行能量恢复效果, 能量恢复方: ", actionDirection.getDef().ownerId,
                                     ", 武将: ", heroId, ", 技能: ", skill.getS_skill().getSkillId(), ", 恢复的能量: ", recoveredEnergy,
                                     ", 恢复前能量: ", beforeRecoveredEnergy, ", 恢复后能量: ", skill.getCurEnergy());
 
-                            addEffectPb(fightBuff, contextHolder, effectConfig_, rule.getEffectLogicId(), timing, recoveredEnergy, skill.getCurEnergy());
-                        });
+                            addEffectPb(fightBuff, contextHolder, config, rule.getEffectLogicId(), timing, recoveredEnergy, skill.getCurEnergy());
+                        }
                         break;
                     case FightConstant.EffectLogicId.ENERGY_DEDUCTION:
-                        activeSkillList.forEach(skill -> {
+                        for (SimpleHeroSkill skill : activeSkillList) {
                             int beforeReducedEnergy = skill.getCurEnergy();
                             int reducedEnergy = FightCalc.skillEnergyDeduction(skill.getS_skill(), effectConfig_);
                             skill.setCurEnergy(skill.getCurEnergy() - reducedEnergy);
@@ -98,8 +89,8 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
                                     ", 武将: ", heroId, ", 技能: ", skill.getS_skill().getSkillId(), ", 减少的能量: ", reducedEnergy,
                                     ", 减少前前能量: ", beforeReducedEnergy, ", 减少后能量: ", skill.getCurEnergy());
 
-                            addEffectPb(fightBuff, contextHolder, effectConfig_, rule.getEffectLogicId(), timing, reducedEnergy, skill.getCurEnergy());
-                        });
+                            addEffectPb(fightBuff, contextHolder, config, rule.getEffectLogicId(), timing, reducedEnergy, skill.getCurEnergy());
+                        }
                         break;
                 }
             }
@@ -123,8 +114,8 @@ public class EnergyChangeEffectImpl extends AbsFightEffect {
      */
     private void addEffectPb(IFightBuff fightBuff, FightContextHolder contextHolder, List<Integer> effectConfig_, int effectLogicId, int timing, int changeValue, int curValue) {
         BattlePb.CommonEffectAction.Builder builder = BattlePb.CommonEffectAction.newBuilder();
-        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, effectConfig_.get(4)));
-        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, effectConfig_.get(5)));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, effectConfig_.get(0)));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, effectConfig_.get(1)));
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, changeValue));
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, curValue));
         SimpleHeroSkill simpleHeroSkill = (SimpleHeroSkill) fightBuff.getSkill();
