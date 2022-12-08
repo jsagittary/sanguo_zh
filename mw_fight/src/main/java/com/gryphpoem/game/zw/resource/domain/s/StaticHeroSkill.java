@@ -30,7 +30,7 @@ public class StaticHeroSkill {
      */
     private int debutEnergy;
     /**
-     * 技能是否跟随技能等级成长  <技能主题效果是否成长, buff挂载概率>
+     * 技能主体效果是否跟随技能等级成长
      */
-    private List<Integer> whetherGrow;
+    private int skillEffectGrow;
 }

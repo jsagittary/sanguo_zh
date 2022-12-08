@@ -8,6 +8,7 @@ import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pojo.p.*;
+import com.gryphpoem.game.zw.resource.domain.s.StaticBuff;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
@@ -215,6 +216,23 @@ public abstract class AbsFightEffect implements IFightEffect {
     @Override
     public boolean canEffect(FightContextHolder contextHolder, StaticEffectRule staticEffectRule, Object... params) {
         return true;
+    }
+
+    /**
+     * 计算技能等级后加成
+     *
+     * @param originalValue
+     * @param fightBuff
+     * @return
+     */
+    protected int skillLvGrow(int originalValue, IFightBuff fightBuff) {
+        if (CheckNull.isNull(fightBuff)) return originalValue;
+        StaticBuff staticBuff = fightBuff.getBuffConfig();
+        if (CheckNull.isNull(staticBuff) || CheckNull.isNull(fightBuff.getSkill())) return originalValue;
+        if (staticBuff.getEffectWhetherGrow() == 0 || fightBuff.getSkill() instanceof SimpleHeroSkill == false)
+            return originalValue;
+        SimpleHeroSkill skill = (SimpleHeroSkill) fightBuff.getSkill();
+        return (int) Math.ceil(originalValue * (1 + ((skill.getS_skill().getLevel() - 1) / 9d)));
     }
 
     /**

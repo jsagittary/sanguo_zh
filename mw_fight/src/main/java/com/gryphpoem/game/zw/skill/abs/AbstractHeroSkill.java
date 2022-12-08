@@ -86,11 +86,17 @@ public abstract class AbstractHeroSkill<SkillConfig> implements IHeroSkill {
         this.assistantHeroSkill = assistantHeroSkill;
     }
 
+    /**
+     * 获取buff挂载概率
+     *
+     * @param buffConfig
+     * @return
+     */
     public int buffReleaseProbability(List<Integer> buffConfig) {
+        if (CheckNull.isEmpty(buffConfig)) return 0;
         if (CheckNull.isNull(this.s_skill)) return buffConfig.get(2);
-        if (CheckNull.isEmpty(this.s_skill.getWhetherGrow()) ||
-                this.s_skill.getWhetherGrow().size() < 2) return buffConfig.get(2);
-        if (this.s_skill.getWhetherGrow().get(1) == 0)
+        if (buffConfig.size() < 4) return buffConfig.get(2);
+        if (buffConfig.get(3) == 0)
             return buffConfig.get(2);
         return (int) Math.ceil(buffConfig.get(2) * (1 + ((this.s_skill.getLevel() - 1) / 9d)));
     }

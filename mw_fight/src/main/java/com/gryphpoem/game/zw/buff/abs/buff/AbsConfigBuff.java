@@ -286,15 +286,13 @@ public abstract class AbsConfigBuff implements IFightBuff {
      */
     protected boolean triggerBuff() {
         if (CheckNull.isNull(this.staticBuff) || CheckNull.isNull(this.sSkill)) return false;
-        if (CheckNull.isNull(this.staticBuff.getTriggerProb() == 0)) return true;
-        if (CheckNull.isEmpty(this.staticBuff.getWhetherGrow())) {
-            return RandomHelper.isHitRangeIn10000(this.staticBuff.getTriggerProb());
+        if (CheckNull.isEmpty(this.staticBuff.getTriggerProb())) return true;
+        if (this.staticBuff.getTriggerProb().get(0) == 0) return true;
+        if (this.staticBuff.getTriggerProb().size() < 2 || this.staticBuff.getTriggerProb().get(1) == 0) {
+            return RandomHelper.isHitRangeIn10000(this.staticBuff.getTriggerProb().get(0));
         } else {
-            if (this.staticBuff.getWhetherGrow().size() < 2 ||
-                    this.staticBuff.getWhetherGrow().get(1) == 0)
-                return RandomHelper.isHitRangeIn10000(this.staticBuff.getTriggerProb());
             SimpleHeroSkill skill = (SimpleHeroSkill) this.sSkill;
-            int prob = (int) Math.ceil(this.staticBuff.getTriggerProb() * (1 + ((skill.getS_skill().getLevel() - 1) / 9d)));
+            int prob = (int) Math.ceil(this.staticBuff.getTriggerProb().get(0) * (1 + ((skill.getS_skill().getLevel() - 1) / 9d)));
             return RandomHelper.isHitRangeIn10000(prob);
         }
     }

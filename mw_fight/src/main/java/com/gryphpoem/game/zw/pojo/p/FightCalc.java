@@ -361,16 +361,12 @@ public class FightCalc {
             // 技能主体效果由技能表控制是否随着技能成长
             StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
             if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
-            if (CheckNull.isEmpty(staticHeroSkill.getWhetherGrow())) return effectConfig.get(4);
-            if (staticHeroSkill.getWhetherGrow().get(0) == 0)
-                return effectConfig.get(4);
+            if (staticHeroSkill.getSkillEffectGrow() == 0) return effectConfig.get(4);
             return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));
         } else {
             // buff效果, 由buff表控制是否有随着技能成长
             StaticBuff staticBuff = actionDirection.getFightBuff().getBuffConfig();
-            if (CheckNull.isEmpty(staticBuff.getWhetherGrow())) return effectConfig.get(4);
-            if (staticBuff.getWhetherGrow().get(0) == 0)
-                return effectConfig.get(4);
+            if (staticBuff.getEffectWhetherGrow() == 0) return effectConfig.get(4);
             StaticHeroSkill staticHeroSkill = actionDirection.getSkill().getS_skill();
             if (CheckNull.isNull(staticHeroSkill)) return effectConfig.get(4);
             return effectConfig.get(4) * (1 + ((staticHeroSkill.getLevel() - 1) / 9d));

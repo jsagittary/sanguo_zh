@@ -67,7 +67,7 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
 
     @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.get(5));
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), skillLvGrow(effectConfig.get(5), fightBuff));
     }
 
     @Override
@@ -76,7 +76,7 @@ public class DamageChangeEffectImpl extends AbsFightEffect {
         FightBuffEffect fbe = (FightBuffEffect) params[1];
         StaticEffectRule rule = (StaticEffectRule) params[2];
         if (CheckNull.isNull(data) || CheckNull.isEmpty(data.getData())) return;
-        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getData().get(0)));
+        builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getValue()));
 
         // 计算效果影响最终值
         Object value = effectCalculateValue(fbe, rule.getEffectLogicId());

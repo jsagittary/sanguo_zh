@@ -11,9 +11,11 @@ import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.FightEffectData;
 import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.domain.s.StaticEffectRule;
+import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,8 +62,10 @@ public class AttributeEffectImpl extends AbsFightEffect {
      * @param params
      * @return
      */
+    @Override
     protected double calValue(Force force, int heroId, int effectLogicId, Object... params) {
         int tenThousandthRatio = (int) params[0], fixValue = (int) params[1];
+
         switch (effectLogicId) {
             case FightConstant.EffectLogicId.ATTACK_INCREASED:
                 return force.calcAttack(heroId) * (1 + (tenThousandthRatio / FightConstant.TEN_THOUSAND)) + fixValue;
@@ -98,7 +102,25 @@ public class AttributeEffectImpl extends AbsFightEffect {
 
     @Override
     protected FightEffectData createFightEffectData(IFightBuff fightBuff, List<Integer> effectConfig, FightBuffEffect fbe, Object... params) {
-        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectConfig.subList(4, 6));
+        List<Integer> effectDataList = new ArrayList<>(effectConfig.subList(4, 6));
+        Integer ratio = effectDataList.remove(0);
+        Integer fixValue = effectDataList.remove(1);
+        if (!CheckNull.isEmpty(effectDataList) && Objects.nonNull(fightBuff) && Objects.nonNull(fightBuff.getSkill())) {
+            if (fightBuff.getSkill() instanceof SimpleHeroSkill) {
+                SimpleHeroSkill skill = (SimpleHeroSkill) fightBuff.getSkill();
+                double lvRatio = (1 + ((skill.getS_skill().getLevel() - 1) / 9d));
+                if (Objects.nonNull(ratio) && ratio > 0) {
+                    ratio = (int) Math.ceil(ratio * lvRatio);
+                }
+                if (Objects.nonNull(fixValue) && fixValue > 0) {
+                    fixValue = (int) Math.ceil(fixValue * lvRatio);
+                }
+            }
+        }
+
+        effectDataList.add(ratio);
+        effectDataList.add(fixValue);
+        return new FightEffectData(fightBuff.uniqueId(), fightBuff.getBuffConfig().getBuffId(), effectDataList);
     }
 
     @Override
@@ -109,6 +131,7 @@ public class AttributeEffectImpl extends AbsFightEffect {
         if (CheckNull.isNull(data) || CheckNull.isEmpty(data.getData())) return;
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.RATIO, data.getData().get(0)));
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, data.getData().get(1)));
+        // 计算当前效果加成后的增加值
         builder.addData(FightPbUtil.createDataInt(FightConstant.ValueType.FIX_VALUE, (int) calValue(fbe.getForce(), fbe.getHeroId(),
                 rule.getEffectLogicId(), data.getData().get(0), data.getData().get(1))));
 
@@ -120,6 +143,7 @@ public class AttributeEffectImpl extends AbsFightEffect {
         }
         int curValue = 0;
         if (Objects.nonNull(dataValue)) {
+            // 计算加成后的属性最终值
             curValue = (int) calValue(fbe.getForce(), fbe.getHeroId(),
                     rule.getEffectLogicId(), dataValue.getA(), dataValue.getB());
         }
