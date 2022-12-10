@@ -1413,9 +1413,6 @@ public class MessagePool implements IMessagePool {
         registerC(GamePb8.GetDominateRankRq.EXT_FIELD_NUMBER, GamePb8.GetDominateRankRs.EXT_FIELD_NUMBER, GetDominateRankHandler.class);
         registerC(GamePb8.GetDominateWorldMapInfoRq.EXT_FIELD_NUMBER, GamePb8.GetDominateWorldMapInfoRs.EXT_FIELD_NUMBER, GetDominateWorldMapInfoHandler.class);
 
-        // 派遣斥候前往大世界探索小游戏
-        registerC(GamePb1.ExploreMiniGameInWorldRq.EXT_FIELD_NUMBER, GamePb1.ExploreMiniGameInWorldRs.EXT_FIELD_NUMBER, ExploreMiniGameInWorldHandler.class);
-
     }
 
     /**
