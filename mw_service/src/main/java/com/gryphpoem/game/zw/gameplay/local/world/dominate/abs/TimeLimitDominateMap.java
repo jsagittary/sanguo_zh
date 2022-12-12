@@ -70,7 +70,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
 
     public TimeLimitDominateMap(int worldFunction) {
         this.worldFunction = worldFunction;
-        this.curOpenCityList = new HashMap<>();
+        this.curOpenCityList = new HashMap<>(1);
     }
 
     public void deserialize(SerializePb.SerTimeLimitDominateMap ser) {
@@ -194,7 +194,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
     public SerializePb.SerTimeLimitDominateMap createMapPb(boolean isSaveDb) {
         if (CheckNull.isNull(this.curPreviewDate))
             return null;
-        
+
         SerializePb.SerTimeLimitDominateMap.Builder builder = SerializePb.SerTimeLimitDominateMap.newBuilder();
         builder.setCurTimes(this.curTimes);
         if (Objects.nonNull(this.curEndTime))
@@ -300,7 +300,7 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         this.curOpenCityList.computeIfAbsent(times, l -> new ArrayList<>(2)).
                 add(sideCity);
         // 重置城池归属
-        sideCity.reset();
+//        sideCity.reset();
         worldDataManager.getCityMap().put(cityId, sideCity);
     }
 

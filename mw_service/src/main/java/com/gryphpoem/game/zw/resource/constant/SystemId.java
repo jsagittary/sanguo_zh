@@ -1,9 +1,5 @@
 package com.gryphpoem.game.zw.resource.constant;
 
-import javax.swing.plaf.PanelUI;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author TanDonghai
  * @ClassName SystemId.java
@@ -2008,6 +2004,11 @@ public class SystemId {
      * 宝具副本产出单位时间
      */
     public static final int TREASURE_WARE_RES_OUTPUT_TIME_UNIT = 1096;
+
+    /**
+     * 全部英雄品阶等级上限
+     */
+    public static final int ALL_HERO_GRADE_UPPER_LIMIT = 1103;
 
     /**
      * 搜索叛军范围（以自身城池为中心）
