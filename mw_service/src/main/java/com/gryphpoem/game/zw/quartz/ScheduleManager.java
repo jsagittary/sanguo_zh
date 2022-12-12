@@ -131,9 +131,9 @@ public class ScheduleManager {
         // 过期宝具定时清除
         addJob(sched, "DelTreasureWareJob", "DelTreasureWareJob", DelTreasureWareJob.class, "5 0 * * * ? *");// 整点处理, 有五秒的偏移, [21:00:5, 22:00:5, 23:00:5, 00:00:5]
 
-        // 定时刷新土匪
-//        List<Integer> banditRefreshTime = Constant.BANDIT_REFRESH_TIME;
-//        addJob(sched, "RefreshBanditJob", "RefreshBanditJob", RefreshBanditJob.class, "0 " + banditRefreshTime.get(1) + " " + banditRefreshTime.get(0) + " * * * *");
+        // 定时刷新土匪 0 0 12 * * ?
+        List<Integer> banditRefreshTime = Constant.BANDIT_REFRESH_TIME;
+        addJob(sched, "RefreshBanditJob", "RefreshBanditJob", RefreshBanditJob.class, "0 " + banditRefreshTime.get(1) + " " + banditRefreshTime.get(0) + " * * ?");
 
         initBerlinJob();
         initLightningWarJob();

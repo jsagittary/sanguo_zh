@@ -1378,7 +1378,26 @@ public class BuildingService implements GmCmdService {
                 buildingState.setBuildingLv(sBuildingInit.getInitLv());
                 player.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
             }
-            CommonPb.Award award = gainResource(player, mill.getType(), mill.getLv(), resCnt, buildingState.getResidentCnt(), buildingState.getLandType());
+            // 计算资源建筑所在地块是否有土匪
+            int foundationId = buildingState.getFoundationId();
+            boolean hasBandit = false;
+            if (foundationId > 0) {
+                StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                if (staticFoundation != null && CheckNull.nonEmpty(staticFoundation.getCellList())) {
+                    List<Integer> cellList = staticFoundation.getCellList();
+                    hasBandit = player.getMapCellData().values().stream().anyMatch(tmp -> cellList.contains(tmp.getCellId()) && tmp.getNpcId() > 0);
+                }
+            }
+
+            CommonPb.Award award = gainResource(
+                    player,
+                    mill.getType(),
+                    mill.getLv(),
+                    resCnt,
+                    buildingState.getResidentCnt(),
+                    buildingState.getLandType(),
+                    hasBandit
+            );
             if (award != null) {
                 builder.addAward(award);
             }
@@ -1439,9 +1458,10 @@ public class BuildingService implements GmCmdService {
      * @param player
      * @param buildingType
      * @param buildingLv
-     * @param resCnt
-     * @param residentCnt
-     * @param landBuffType
+     * @param resCnt       征收次数
+     * @param residentCnt  建筑被派遣的居民数
+     * @param landBuffType 建筑所在地基的地貌buff
+     * @param hasBandit    建筑所在地块是否被土匪占领
      * @return
      */
     public CommonPb.Award gainResource(Player player,
@@ -1449,7 +1469,8 @@ public class BuildingService implements GmCmdService {
                                        int buildingLv,
                                        int resCnt,
                                        int residentCnt,
-                                       int landBuffType) {
+                                       int landBuffType,
+                                       boolean hasBandit) {
         if (buildingLv <= 0) {
             return null;
         }
@@ -1465,6 +1486,20 @@ public class BuildingService implements GmCmdService {
         }
 
         int resOut = resOuts.get(2) * residentCnt;
+        // 计算土匪造成的资源减产debuff
+        List<Integer> banditDebuff = null;
+        if (hasBandit) {
+            List<List<Integer>> banditDebuffConfig = Constant.BANDIT_DEBUFF;
+            if (CheckNull.nonEmpty(banditDebuffConfig)) {
+                banditDebuff = banditDebuffConfig.stream()
+                        .filter(tmp -> CheckNull.nonEmpty(tmp) && tmp.size() >= 2 && tmp.get(0) == buildingType)
+                        .findFirst()
+                        .orElse(null);
+            }
+        }
+        if (CheckNull.nonEmpty(banditDebuff)) {
+            resOut = (int) Math.floor(resOut * (1 - (banditDebuff.get(1) / Constant.TEN_THROUSAND)));
+        }
         int gain = buildingDataManager.getResourceMult(player, buildingType, resOut);
 
         // 计算幸福度加成
@@ -3220,7 +3255,7 @@ public class BuildingService implements GmCmdService {
     }
 
     /**
-     * 建筑摆放(交换建筑位置)
+     * 建筑搬迁
      *
      * @param roleId
      * @param rq
@@ -3235,63 +3270,83 @@ public class BuildingService implements GmCmdService {
         // 校验目标地基是否已解锁
         List<Integer> foundationData = player.getFoundationData();
         if (!foundationData.contains(targetFoundationId)) {
-            // TODO 定义指定code
-            throw new MwException(GameError.INVALID_PARAM, String.format("交换建筑位置时, 目标地基未解锁, roleId:%s, targetFoundationId:%s", roleId, targetFoundationId));
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 目标地基未解锁, roleId:%s, targetFoundationId:%s", roleId, targetFoundationId));
         }
-        // 校验原建筑地基信息
+        // 校验原建筑信息
         Map<Integer, BuildingState> buildingData = player.getBuildingData();
         BuildingState sourceBuildingState = buildingData.get(sourceBuildingId);
+        if (sourceBuildingState == null || sourceBuildingState.getBuildingLv() <= 0) {
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 未获取到原建筑的状态信息或原建筑未建造, roleId:%s, sourceBuildingId:%s", roleId, sourceBuildingId));
+        }
         int sourceFoundationId = sourceBuildingState.getFoundationId();
         if (sourceBuildingState.getFoundationId() <= 0) {
-            // TODO 定义指定code
-            throw new MwException(GameError.INVALID_PARAM, String.format("交换建筑位置时, 未获取到原建筑的地基信息, roleId:%s, sourceBuildingId:%s", roleId, sourceBuildingId));
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 未获取到原建筑的地基信息, roleId:%s, sourceBuildingId:%s", roleId, sourceBuildingId));
+        }
+        // 原建筑正在建造 不能进行搬迁
+        for (BuildQue buildQue : player.buildQue.values()) {
+            if (buildQue.getPos() == sourceBuildingId || buildQue.getIsCreate()) {
+                throw new MwException(GameError.BUILD_IS_UPPING.getCode(), "搬迁建筑时, 建筑正在建造, roleId:" + roleId + ",buildingPos:" + sourceBuildingId);
+            }
         }
         StaticHomeCityFoundation staticTargetFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(targetFoundationId);
         StaticHomeCityFoundation staticSourceFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(sourceFoundationId);
         if (staticTargetFoundation == null || staticSourceFoundation == null) {
-            // TODO 定义指定code
-            throw new MwException(GameError.INVALID_PARAM, String.format("交换建筑位置时, 未获取到原地基与目标地基的配置, roleId:%s, sourceBuildingId:%s, targetFoundationId:%s", roleId, sourceBuildingId, targetFoundationId));
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 未获取到原地基与目标地基的配置信息, roleId:%s, sourceBuildingId:%s, targetFoundationId:%s", roleId, sourceBuildingId, targetFoundationId));
         }
         // 城内建筑不能换到城外去, 城外建筑反之同理
         if (staticTargetFoundation.getFoundationType() != staticSourceFoundation.getFoundationType()) {
-            // TODO 定义指定code
-            throw new MwException(GameError.INVALID_PARAM, String.format("交换建筑位置时, 城内建筑不能与城外建筑互换, roleId:%s, sourceBuildingId:%s, targetFoundationId:%s", roleId, sourceBuildingId, targetFoundationId));
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 城内建筑不能与城外建筑互换, roleId:%s, sourceBuildingId:%s, targetFoundationId:%s", roleId, sourceBuildingId, targetFoundationId));
         }
-
-        // 目标地基是否已有建筑
+        // 目标地基无法建造原建筑, 不能搬迁
+        int sourceBuildingType = sourceBuildingState.getBuildingType();
+        if (CheckNull.isEmpty(staticTargetFoundation.getBuildType()) || !staticTargetFoundation.getBuildType().contains(sourceBuildingType)) {
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 目标地基不能摆放原建筑, roleId:%s, sourceBuildingId:%s, targetFoundationId:%s", roleId, sourceBuildingId, targetFoundationId));
+        }
+        // 获取目标地基的建筑信息
         int targetBuildingId = buildingData.values().stream()
                 .filter(tmp -> tmp.getFoundationId() == targetFoundationId)
                 .map(BuildingState::getBuildingId)
                 .findFirst()
                 .orElse(0);
-        // TODO 建筑正在升级, 兵营处于产兵中, 资源建筑处于产出中
+        int targetLandType = 0;
+        int targetBuildingType = 0;
+        BuildingState targetBuildingState = null;
+        if (targetBuildingId > 0) {
+            targetBuildingState = buildingData.get(targetBuildingId);
+            targetBuildingState.setFoundationId(sourceFoundationId);
+            targetLandType = targetBuildingState.getLandType();
+            targetBuildingType = targetBuildingState.getBuildingType();
+        }
+        // 原地基无法建造目标建筑, 不能搬迁
+        if (targetBuildingType > 0
+                && CheckNull.isEmpty(staticSourceFoundation.getBuildType())
+                && staticSourceFoundation.getBuildType().contains(targetBuildingType)) {
+            throw new MwException(GameError.INVALID_PARAM, String.format("搬迁建筑时, 原地基不能摆放目标建筑, roleId:%s, sourceFoundationId:%s, targetBuildingId:%s", roleId, sourceFoundationId, targetBuildingId));
+        }
 
         // 交换位置
-        List<Integer> millIds = new ArrayList<>();
+        List<Integer> millIds = new ArrayList<>(); // 资源建筑进行搬迁时, 涉及到地貌buff有变化的, 强制将资源进行征收后再搬迁
         GamePb1.SwapBuildingPosRs.Builder builder = GamePb1.SwapBuildingPosRs.newBuilder();
         sourceBuildingState.setFoundationId(targetFoundationId);
-        int targetLandType = 0;
         int sourceLandType = sourceBuildingState.getLandType();
-        if (BuildingDataManager.isResType(sourceBuildingState.getBuildingType())) {
-            millIds.add(sourceBuildingId);
-        }
-        if (targetBuildingId > 0) {
-            BuildingState targetBuildingState = buildingData.get(targetBuildingId);
-            targetBuildingState.setFoundationId(sourceFoundationId);
-
-            targetLandType = targetBuildingState.getLandType();
-            if (BuildingDataManager.isResType(targetBuildingState.getBuildingType())) {
+        if (targetLandType != sourceLandType) {
+            if (BuildingDataManager.isResType(sourceBuildingType) && sourceBuildingType != BuildingType.RESIDENT_HOUSE) {
+                millIds.add(sourceBuildingId);
+            }
+            if (BuildingDataManager.isResType(targetBuildingType) && targetBuildingType != BuildingType.RESIDENT_HOUSE) {
                 millIds.add(targetBuildingId);
             }
-            if (targetLandType != sourceLandType) {
-                // 更新建筑的地貌buff, 更新之前, 先将资源给征收了
-                forceGainResource(player, millIds);
-                sourceBuildingState.setLandType(targetLandType);
+            forceGainResource(player, millIds);
+            sourceBuildingState.setLandType(targetLandType);
+            if (targetBuildingState != null) {
                 targetBuildingState.setLandType(sourceLandType);
             }
+        }
+
+        builder.addBuildingState(sourceBuildingState.creatPb());
+        if (targetBuildingState != null) {
             builder.addBuildingState(targetBuildingState.creatPb());
         }
-        builder.addBuildingState(sourceBuildingState.creatPb());
         return builder.build();
     }
 
@@ -3735,7 +3790,17 @@ public class BuildingService implements GmCmdService {
                 buildingState.setBuildingLv(sBuildingInit.getInitLv());
                 player.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
             }
-            gainResource(player, mill.getType(), mill.getLv(), resCnt, buildingState.getResidentCnt(), buildingState.getLandType());
+            // 计算资源建筑所在地块是否有土匪
+            int foundationId = buildingState.getFoundationId();
+            boolean hasBandit = false;
+            if (foundationId > 0) {
+                StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                if (staticFoundation != null && CheckNull.nonEmpty(staticFoundation.getCellList())) {
+                    List<Integer> cellList = staticFoundation.getCellList();
+                    hasBandit = player.getMapCellData().values().stream().anyMatch(tmp -> cellList.contains(tmp.getCellId()) && tmp.getNpcId() > 0);
+                }
+            }
+            gainResource(player, mill.getType(), mill.getLv(), resCnt, buildingState.getResidentCnt(), buildingState.getLandType(), hasBandit);
             mill.setResCnt(0);
             mill.setResTime(TimeHelper.getCurrentSecond());
             taskDataManager.updTask(player, TaskType.COND_RES_AWARD, 1, mill.getType());

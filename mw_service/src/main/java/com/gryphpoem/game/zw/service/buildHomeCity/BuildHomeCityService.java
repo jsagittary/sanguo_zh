@@ -637,6 +637,7 @@ public class BuildHomeCityService implements GmCmdService {
         }
         mapCell.setNpcId(0);
         mapCell.setSimType(0);
+        mapCell.setSimId(0);
         mapCell.setBanditRefreshTime(0);
     }
 
@@ -686,8 +687,8 @@ public class BuildHomeCityService implements GmCmdService {
     public void refreshBanditJob() {
         Iterator<Player> iterator = playerDataManager.getPlayers().values().iterator();
         int now = TimeHelper.getCurrentSecond();
-        List<StaticHomeCityCell> canRefreshBanditCellList = StaticBuildCityDataMgr.getCanRefreshBanditCellList();
-        List<Integer> banditRefreshCondition = Constant.BANDIT_REFRESH_CONDITION;
+        List<StaticHomeCityCell> canRefreshBanditCellList = StaticBuildCityDataMgr.getCanRefreshBanditCellList(); // 所有可刷新土匪的主城地图格
+        List<Integer> banditRefreshCondition = Constant.BANDIT_REFRESH_CONDITION; // 土匪每日刷新开启条件
         if (CheckNull.isEmpty(banditRefreshCondition) || banditRefreshCondition.size() < 2) {
             LogUtil.error(String.format("土匪每日刷新配置错误, BANDIT_REFRESH_CONDITION-5027:%s", banditRefreshCondition.toString()));
             return;
@@ -696,6 +697,7 @@ public class BuildHomeCityService implements GmCmdService {
             Player player = iterator.next();
             Date refreshDay = DateHelper.afterDayTimeDate(player.account.getCreateDate(), banditRefreshCondition.get(0) + 1);
             if (player.lord.getLevel() < banditRefreshCondition.get(1) || DateHelper.isSameDate(refreshDay, new Date())) {
+                // 领主等级未达到, 或当前时间距离玩家创建账号的时间未达到配置要求的间隔时间, 则不刷新
                 continue;
             }
             Map<Integer, MapCell> mapCellData = player.getMapCellData();
@@ -704,8 +706,10 @@ public class BuildHomeCityService implements GmCmdService {
                     .filter(tmp -> tmp.getNpcId() > 0 && DateHelper.isSameDate(TimeHelper.secondToDate(tmp.getBanditRefreshTime()), new Date()))
                     .collect(Collectors.toList());
             if (CheckNull.nonEmpty(refreshedBanditMapCells)) {
+                // 当天已经刷新过了不再刷新
                 continue;
             }
+            // 获取可随机的npc, 类型为每日土匪, 领主等级和君王殿等级满足要求
             List<StaticSimNpc> npcList = StaticBuildCityDataMgr.getStaticSimNpcList().stream()
                     .filter(tmp -> tmp.getType() == 2
                             && CheckNull.nonEmpty(tmp.getNpcLock())
@@ -1048,6 +1052,8 @@ public class BuildHomeCityService implements GmCmdService {
                 break;
             case "resetHappiness":
                 player.setHappiness(50);
+            case "randomBandit":
+                randomBanditOnCell(player, Integer.parseInt(params[1]), Integer.parseInt(params[1]), Integer.parseInt(params[1]), Integer.parseInt(params[1]));
             default:
         }
         playerDataManager.syncRoleInfo(player);
@@ -1244,4 +1250,26 @@ public class BuildHomeCityService implements GmCmdService {
         buildingData.values().forEach(buildingState -> buildingState.setResidentCnt(0));
         player.addResidentTopLimit(sum);
     }
+
+    /**
+     * 指定刷新土匪
+     *
+     * @param player
+     * @param cellId
+     * @param banditId
+     * @param simType
+     * @param simId
+     */
+    public void randomBanditOnCell(Player player, int cellId, int banditId, int simType, int simId) {
+        Map<Integer, MapCell> mapCellData = player.getMapCellData();
+        MapCell mapCell = mapCellData.get(cellId);
+        if (mapCell != null) {
+            mapCell.setNpcId(banditId);
+            mapCell.setSimType(simType);
+            mapCell.setSimId(simId);
+            mapCell.setBanditRefreshTime(TimeHelper.getCurrentSecond());
+        }
+        playerDataManager.syncRoleInfo(player);
+    }
+
 }

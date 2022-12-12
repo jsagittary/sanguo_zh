@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service.robot;
 
 import com.gryphpoem.game.zw.core.executor.NonOrderedQueuePoolExecutor;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildCityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb.RobotDataRs;
@@ -10,6 +11,7 @@ import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Mill;
 import com.gryphpoem.game.zw.resource.domain.p.Robot;
 import com.gryphpoem.game.zw.resource.domain.s.StaticBuildingInit;
+import com.gryphpoem.game.zw.resource.domain.s.StaticHomeCityFoundation;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
@@ -337,7 +339,17 @@ public class RobotService {
                     buildingState.setBuildingLv(sBuildingInit.getInitLv());
                     robot.getBuildingData().put(sBuildingInit.getBuildingId(), buildingState);
                 }
-                buildingService.gainResource(robot, mill.getType(), mill.getLv(), resCnt, buildingState.getResidentCnt(), buildingState.getLandType());
+                // 计算资源建筑所在地块是否有土匪
+                int foundationId = buildingState.getFoundationId();
+                boolean hasBandit = false;
+                if (foundationId > 0) {
+                    StaticHomeCityFoundation staticFoundation = StaticBuildCityDataMgr.getStaticHomeCityFoundationById(foundationId);
+                    if (staticFoundation != null && CheckNull.nonEmpty(staticFoundation.getCellList())) {
+                        List<Integer> cellList = staticFoundation.getCellList();
+                        hasBandit = robot.getMapCellData().values().stream().anyMatch(tmp -> cellList.contains(tmp.getCellId()) && tmp.getNpcId() > 0);
+                    }
+                }
+                buildingService.gainResource(robot, mill.getType(), mill.getLv(), resCnt, buildingState.getResidentCnt(), buildingState.getLandType(), hasBandit);
                 if (robotLogSwitch()) {
                     LogUtil.robot("征收资源, type:" + mill.getType() + ", count:" + resCnt);
                 }

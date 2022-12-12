@@ -83,6 +83,9 @@ public class LifeSimulatorService {
             }
             long stepId = lifeSimulatorStep.getStepId();
             StaticSimulatorStep staticSimulatorStep = StaticBuildCityDataMgr.getStaticSimulatorStepById(stepId);
+            if (staticSimulatorStep == null) {
+                throw new MwException(GameError.NO_CONFIG, String.format("记录模拟器结果时, 未获取到模拟器的步骤配置, roleId:%s, stepId:%s", roleId, stepId));
+            }
             // 根据配置, 如果没有下一步, 则模拟器结束
             long nextId = staticSimulatorStep.getNextId();
             List<List<Long>> staticChooseList = staticSimulatorStep.getChoose();
