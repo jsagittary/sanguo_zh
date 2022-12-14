@@ -174,6 +174,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
 
         if (getCurPreviewDate() == null) {
             try {
+                this.functionOpenDay = now;
                 String firstPreviewTimeStr = Constant.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME.get(0);
                 String secondPreviewTimeStr = Constant.STATE_DOMINATE_WORLD_MAP_PREVIEW_TIME.get(1);
                 if (!StringUtils.isBlank(firstPreviewTimeStr) && !StringUtils.isBlank(secondPreviewTimeStr)) {
@@ -264,7 +265,6 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
                 setNextPreviewDate(checkSameDate(now, initNextPreviewTime, c));
                 setNextBeginDate(checkSameDate(now, initNextBeginTime, c));
                 setNextEndTime(checkSameDate(now, initNextEndTime, c));
-                this.functionOpenDay = now;
             }
         }
     }

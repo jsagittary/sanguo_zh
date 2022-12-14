@@ -1961,10 +1961,6 @@ public class SystemId {
     public static final int TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT = 781;
 
     /**
-     * 全部英雄品阶等级上限
-     */
-    public static int ALL_HERO_GRADE_CAPS = 1103;
-    /**
      * 默认铭牌id
      */
     public static final int DEFAULT_NAME_PLATE_ID = 1070;

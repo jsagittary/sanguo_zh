@@ -140,11 +140,6 @@ public class HeroConstant {
      */
     public static int NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS;
     /**
-     * 全部英雄品阶等级上限
-     */
-    public static List<Integer> ALL_HERO_GRADE_CAPS;
-
-    /**
      * 寻访武将保底紫橙品质权重
      */
     public static List<List<Integer>> DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE;
@@ -194,7 +189,6 @@ public class HeroConstant {
         DRAW_CARD_WISH_VALUE_LIMIT = SystemTabLoader.getIntegerSystemValue(SystemId.DRAW_CARD_WISH_VALUE_LIMIT, 100);
         TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_DRAW_DEFEATED_REBELS_NUM_AND_FREE_TIMES, "[]");
         NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS = SystemTabLoader.getIntegerSystemValue(SystemId.NUMBER_OF_SHARDS_REQUIRED_FOR_HERO_SYNTHESIS, 80);
-        ALL_HERO_GRADE_CAPS = SystemTabLoader.getListIntSystemValue(SystemId.ALL_HERO_GRADE_CAPS, "[]");
         DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE = SystemTabLoader.getListListIntSystemValue(SystemId.DRAW_CARD_GUARANTEE_QUALITY_WEIGHT_OF_PURPLE_ORANGE, "[]");
         OPTIONAL_BOX_FROM_TIME_LIMITED_DRAW_CARD_CONFIG = SystemTabLoader.getListListIntSystemValue(SystemId.TIME_LIMITED_DRAW_CARD_GUARANTEED_BUY_BOX, "[]");
         TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT_CONFIG = SystemTabLoader.getListIntSystemValue(SystemId.TIME_LIMITED_OPTIONAL_BOX_ACTIVE_COUNT, "[]");
