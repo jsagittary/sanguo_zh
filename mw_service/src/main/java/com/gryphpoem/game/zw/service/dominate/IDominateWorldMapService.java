@@ -1,9 +1,13 @@
 package com.gryphpoem.game.zw.service.dominate;
 
+import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.pb.GamePb8;
 import com.gryphpoem.game.zw.pb.WorldPb;
 import com.gryphpoem.game.zw.resource.domain.Player;
+import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
+
+import java.util.Map;
 
 /**
  * Description:
@@ -77,4 +81,16 @@ public interface IDominateWorldMapService {
      * @return
      */
     int getWorldMapFunction();
+
+    /**
+     * 撤回部队
+     *
+     * @param player
+     * @param army
+     * @param changeMap
+     * @param sideCity
+     * @param nowSec
+     * @param b
+     */
+    void retreatArmy(Player player, Army army, Map<Long, ChangeInfo> changeMap, DominateSideCity sideCity, int nowSec, boolean b);
 }

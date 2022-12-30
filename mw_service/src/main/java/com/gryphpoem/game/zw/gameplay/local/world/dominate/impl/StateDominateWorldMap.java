@@ -362,6 +362,7 @@ public class StateDominateWorldMap extends TimeLimitDominateMap {
         if (CheckNull.nonEmpty(this.curOpenCityList)) {
             Optional.ofNullable(this.curOpenCityList.get(curTimes)).ifPresent(list -> {
                 list.forEach(sideCity -> {
+                    retreatDominateArmy(sideCity);
                     if (sideCity.isOver())
                         return;
                     sideCity.settleCampOccupyTime(now);

@@ -7,6 +7,7 @@ import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideGovernor;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.SiLiDominateWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.impl.StateDominateWorldMap;
+import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.GamePb8;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.WorldPb;
@@ -17,16 +18,20 @@ import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
+import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.EventRegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Description:
@@ -37,6 +42,8 @@ import java.util.List;
 public class DominateWorldMapService implements EventRegisterService {
     @Autowired
     private List<IDominateWorldMapService> serviceList;
+    @Autowired
+    private WorldDataManager worldDataManager;
 
     private volatile SerializePb.SerDominateData ser;
 
@@ -180,6 +187,29 @@ public class DominateWorldMapService implements EventRegisterService {
         if (city instanceof DominateSideCity) {
             DominateSideCity sideCity = (DominateSideCity) city;
             sideCity.getGovernorList().addFirst(new DominateSideGovernor(roleId, System.currentTimeMillis(), city.getCityId()));
+        }
+    }
+
+    /**
+     * 撤回部队
+     *
+     * @param player
+     * @param army
+     */
+    public void retreatArmy(Player player, Army army) {
+        City city = worldDataManager.getCityById(army.getTargetId());
+        if (city instanceof DominateSideCity == false) {
+            return;
+        }
+        DominateSideCity sideCity = (DominateSideCity) city;
+        Turple<Long, Integer> turPle = sideCity.getDefendList().stream().filter(o -> o.getB() == army.getKeyId()).findFirst().orElse(null);
+        if (Objects.nonNull(turPle)) {
+            sideCity.getDefendList().remove(turPle);
+            sideCity.removeHolder(player.roleId, army.getKeyId());
+        }
+        IDominateWorldMapService worldMapService = getService(getWorldFunctionByArmyType(army));
+        if (Objects.nonNull(worldMapService)) {
+           worldMapService.retreatArmy(player, army, null, sideCity, TimeHelper.getCurrentSecond(), true);
         }
     }
 

@@ -1771,6 +1771,9 @@ public class WorldService {
             airshipService.retreatArmy(player, army, type);
         } else if (army.getType() == ArmyConstant.ARMY_TYPE_RELIC_BATTLE) {
             DataResource.getBean(RelicService.class).retreatArmy(player, army);
+        } else if (army.getType() == ArmyConstant.ARMY_TYPE_STATE_DOMINATE_ATTACK ||
+                    army.getType() == ArmyConstant.ARMY_TYPE_SI_LI_DOMINATE_ATTACK) {
+            dominateWorldMapService.retreatArmy(player, army);
         } else {
             // 原来行军返回处理
             originalReturnArmyProcess(roleId, player, keyId, type, army);

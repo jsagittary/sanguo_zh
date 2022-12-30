@@ -600,7 +600,8 @@ public abstract class AbsDominateWorldMapService implements IDominateWorldMapSer
      * @param nowSec
      * @param b
      */
-    protected void retreatArmy(Player player, Army army, Map<Long, ChangeInfo> changeMap, DominateSideCity sideCity, int nowSec, boolean b) {
+    @Override
+    public void retreatArmy(Player player, Army army, Map<Long, ChangeInfo> changeMap, DominateSideCity sideCity, int nowSec, boolean b) {
         try {
             Map<Integer, Integer> recoverMap = army.getRecoverMap();
             if (CheckNull.nonEmpty(recoverMap)) doRecoverArmy(player, army, recoverMap, changeMap);

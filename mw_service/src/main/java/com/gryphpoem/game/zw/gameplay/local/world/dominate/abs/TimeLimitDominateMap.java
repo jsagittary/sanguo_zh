@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.DominateSideCity;
 import com.gryphpoem.game.zw.gameplay.local.world.dominate.WorldMapPlay;
+import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
 import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.WorldPb;
@@ -12,13 +13,16 @@ import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.Events;
+import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
+import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.season.CampRankData;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.DateHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.dominate.DominateWorldMapService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -276,4 +280,18 @@ public abstract class TimeLimitDominateMap implements WorldMapPlay {
         }
         return 0;
     };
+
+    protected void retreatDominateArmy(DominateSideCity sideCity) {
+        if (!CheckNull.isEmpty(sideCity.getDefendList())) {
+            PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
+            DominateWorldMapService service = DataResource.ac.getBean(DominateWorldMapService.class);
+            sideCity.getDefendList().forEach(tuePle -> {
+                Player player = playerDataManager.getPlayer(tuePle.getA());
+                if (CheckNull.isNull(player)) return;
+                Army army = player.armys.get(tuePle.getB());
+                if (CheckNull.isNull(army)) return;
+                service.retreatArmy(player, army);
+            });
+        }
+    }
 }
