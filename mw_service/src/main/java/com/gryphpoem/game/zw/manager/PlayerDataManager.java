@@ -1131,6 +1131,7 @@ public class PlayerDataManager implements PlayerDM {
             System.arraycopy(playerFormation.getHeroAcq(), 0, heroIds, playerFormation.getHeroBattle().length, playerFormation.getHeroAcq().length);
 
             for (PartnerHero partnerHero : heroIds) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
                 hero = partnerHero.getPrincipalHero();
                 if (hero == null) {
                     continue;
