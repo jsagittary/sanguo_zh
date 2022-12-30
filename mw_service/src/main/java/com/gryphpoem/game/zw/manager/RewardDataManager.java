@@ -3967,7 +3967,7 @@ public class RewardDataManager {
         Integer ownNum = player.getDrawCardData().getFragmentData().getOrDefault(heroId, 0);
         if (CheckNull.isNull(ownNum) || ownNum < need) {
             throw new MwException(GameError.NOT_ENOUGH_HERO_FRAGMENTS, String.format("player:%d, not enough hero fragments, ownNum:%d, need:%d, heroId:%d, message:%s",
-                    player.roleId, ownNum, need, heroId, message));
+                    player.roleId, ownNum, need, heroId, ObjectUtils.isEmpty(message) ? "" : Arrays.toString(message)));
         }
     }
 

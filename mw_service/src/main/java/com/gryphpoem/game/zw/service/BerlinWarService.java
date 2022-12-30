@@ -1450,6 +1450,7 @@ public class BerlinWarService {
                 cityHurt = force.count <= cityHurt ? force.count : cityHurt;
                 force.lost = cityHurt;
                 force.subHp(null);
+                force.switchPlatoon();
                 LogUtil.debug("柏林会战战斗日志, 城防将:", force.id, ", 剩余血量:", force.hp, ", 被AOE造成伤害:", cityHurt);
                 LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "aoe", battleFront.getCityId(), 0, 0, battleFront.getCityId(), battleFront.getPos(), cityHurt, 0, 0, 0, 0, force.lost, force.count, force.id);
                 cityInfo.subDefArm(cityHurt);
@@ -1470,6 +1471,7 @@ public class BerlinWarService {
                         // 扣除柏林CityInfo对象中的Force兵力
                         cityInfo.subDefArm(defHurt);
                         berlinForce.subHp(null);
+                        berlinForce.switchPlatoon();
                         LogUtil.debug("柏林会战战斗日志, roleId: ", berlinForce.ownerId, ", 玩家的防守将领:", berlinForce.id, ", 剩余血量:", berlinForce.hp, ", 被AOE造成伤害:", defHurt);
                         LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "aoe", battleFront.getCityId(), berlinForce.ownerId, 0, battleFront.getCityId(), battleFront.getPos(), defHurt, 0, 0, 0, 0, berlinForce.lost, berlinForce.count, berlinForce.id);
                         // 投石车伤害也计入参战玩家
