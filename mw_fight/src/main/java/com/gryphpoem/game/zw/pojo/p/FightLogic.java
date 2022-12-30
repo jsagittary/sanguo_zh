@@ -194,8 +194,6 @@ public class FightLogic {
             ));
             // 双方武将以及副将战斗
             fight(force, target);
-            // 当前回合结束处理
-            contextHolder.getBattleLogic().nextRoundBefore(force, target, contextHolder);
 
             // 添加战斗结束pb到双方武将战报中
             BattlePb.BattleEndStage.Builder battleEndPb = BattlePb.BattleEndStage.newBuilder();
@@ -208,6 +206,9 @@ public class FightLogic {
 
             // 将双方武将战斗情况加到总战报中
             contextHolder.getRecordData().addBothForce(contextHolder.getCurBothBattleEntityPb().build());
+
+            // 当前回合结束处理
+            contextHolder.getBattleLogic().nextSessionBefore(force, target, contextHolder);
         }
 
     }
@@ -262,7 +263,7 @@ public class FightLogic {
                 contextHolder.getInitAttackActionPb();
                 contextHolder.getBattleLogic().ordinaryAttack(atk, def, fe.getHeroId(), heroList, contextHolder.getBattleType(), contextHolder);
                 contextHolder.getRoundActionPb().setAttack(contextHolder.getCurAttackActionPb().build());
-                atk.attackCount++;
+                atk.sessionAttackCount++;
                 contextHolder.clearCurAttackActionPb();
 
                 // 清除没有作用次数的buff

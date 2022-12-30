@@ -382,7 +382,7 @@ public class BattleLogic {
      * @param force
      * @param target
      */
-    public void nextRoundBefore(Force force, Force target, FightContextHolder contextHolder) {
+    public void nextSessionBefore(Force force, Force target, FightContextHolder contextHolder) {
         // 清除战败武将施加的buff
         clearDeadBuff(force, target, contextHolder);
         // 战败武将去掉光环
@@ -392,6 +392,8 @@ public class BattleLogic {
             contextHolder.getFightEntity().clear();
         // 清除回合数
         contextHolder.clearRoundNum();
+        // 场次转换
+        contextHolder.sessionChange();
     }
 
     /**

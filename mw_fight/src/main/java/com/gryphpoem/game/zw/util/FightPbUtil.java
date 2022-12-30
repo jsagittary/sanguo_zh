@@ -119,7 +119,7 @@ public class FightPbUtil {
         BattlePb.ActionDetails.Builder detailPb = BattlePb.ActionDetails.newBuilder();
         detailPb.setActionType(BattlePb.ActionTypeDefine.ORDINARY_ATTACK_VALUE);
         detailPb.setKilled(force.getAttackKilled(heroId));
-        detailPb.setActionCnt(force.attackCount);
+        detailPb.setActionCnt(force.sessionAttackCount);
         builder.addDetails(detailPb.build());
 
         detailPb.clear();

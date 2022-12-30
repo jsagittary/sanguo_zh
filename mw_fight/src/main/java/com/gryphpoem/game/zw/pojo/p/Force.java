@@ -5,6 +5,7 @@ import com.gryphpoem.game.zw.buff.IFightEffect;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.listener.impl.SessionListener;
 import com.gryphpoem.game.zw.manager.FightManager;
 import com.gryphpoem.game.zw.skill.iml.SimpleHeroSkill;
 import com.gryphpoem.push.util.CheckNull;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * @Description 记录战斗中单个将领或npc的战斗信息
  * @date 创建时间：2017年3月31日 下午5:14:08
  */
-public class Force {
+public class Force implements SessionListener {
     public int id;//将领id
     public int hp;// 当前血量，兵力
     public int maxHp;// 总血量，兵力
@@ -45,10 +46,10 @@ public class Force {
     public int effect; // 强化克制比
     public int isBcs;//是否有勋章  闪击奇兵 特技   0否  1是
     public int isIronBas;//是否有勋章  铜墙铁壁 特技  0否 1是
-    // 普攻次数
-    public int attackCount;
-    // 普攻伤害
-    public int attackDamage;
+    // 对敌方单个武将普攻次数
+    public int sessionAttackCount;
+    // 对敌方单个武将普攻伤害
+    public int sessionAttackDamage;
     // 回合损兵
     public int roundLost;
 
@@ -502,27 +503,27 @@ public class Force {
 
     public void addAttackDamage(int damage, int heroId) {
         if (heroId == this.id) {
-            this.attackDamage += damage;
+            this.sessionAttackDamage += damage;
             return;
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
             FightAssistantHero assistantHero = this.assistantHeroList.stream().filter(ass ->
                     Objects.nonNull(ass) && ass.getHeroId() == heroId).findFirst().orElse(null);
             if (Objects.nonNull(assistantHero)) {
-                assistantHero.setAttackDamage(assistantHero.getAttackDamage() + damage);
+                assistantHero.setSessionAttackDamage(assistantHero.getSessionAttackDamage() + damage);
             }
         }
     }
 
     public int getAttackKilled(int heroId) {
         if (heroId == this.id) {
-            return this.attackDamage;
+            return this.sessionAttackDamage;
         }
         if (!CheckNull.isEmpty(this.assistantHeroList)) {
             FightAssistantHero assistantHero = this.assistantHeroList.stream().filter(ass ->
                     Objects.nonNull(ass) && ass.getHeroId() == heroId).findFirst().orElse(null);
             if (Objects.nonNull(assistantHero)) {
-                return assistantHero.getAttackDamage();
+                return assistantHero.getSessionAttackDamage();
             }
         }
 
@@ -595,5 +596,11 @@ public class Force {
                 ", isIronBas=" + isIronBas +
                 ", treasureWare =" + 1 +
                 '}';
+    }
+
+    @Override
+    public void sessionEnd() {
+        this.sessionAttackDamage = 0;
+        this.sessionAttackCount = 0;
     }
 }

@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.pojo.p;
 
 import com.gryphpoem.game.zw.buff.IFightBuff;
+import com.gryphpoem.game.zw.listener.Listener;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import lombok.Data;
 
@@ -49,6 +50,10 @@ public class FightContext {
      * 所有触发类型的buff (主动buff-回合开始时触发)
      */
     private HashMap<Integer, List<IFightBuff>> triggerBuffMap;
+    /**
+     * 监听器
+     */
+    private List<Listener> listeners;
 
     // TODO 战斗PB信息
     private BattlePb.BattleRoundPb.Builder recordDataPb;                              // 总战报

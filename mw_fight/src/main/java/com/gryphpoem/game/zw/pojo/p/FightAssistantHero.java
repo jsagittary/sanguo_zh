@@ -28,11 +28,11 @@ public class FightAssistantHero {
      */
     private FightBuffEffect fightBuffEffect;
     /**
-     * 普攻伤害
+     * 对敌方单个武将普攻伤害
      */
-    private int attackDamage;
-    // 普攻次数
-    public int attackCount;
+    private int sessionAttackDamage;
+    // 对敌方单个武将普攻次数
+    public int sessionAttackCount;
 
     public FightAssistantHero(Force force, int heroId, AttrData attrData, List<SimpleHeroSkill> skillList) {
         this.heroId = heroId;

@@ -5,6 +5,8 @@ import com.gryphpoem.game.zw.buff.IFightBuff;
 import com.gryphpoem.game.zw.buff.impl.buff.ConditionBuffImpl;
 import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.listener.Listener;
+import com.gryphpoem.game.zw.listener.impl.SessionListener;
 import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.util.FightPbUtil;
 import com.gryphpoem.push.util.CheckNull;
@@ -46,6 +48,7 @@ public class FightContextHolder {
         LOCAL.get().setBattleType(battleType);
         LOCAL.get().setActionDirection(new ActionDirection());
         LOCAL.get().setBattleLogic(DataResource.ac.getBean(BattleLogic.class));
+        initListeners(atk, def);
     }
 
     public void setRecordData(BattlePb.BattleRoundPb.Builder recordData) {
@@ -270,6 +273,44 @@ public class FightContextHolder {
         LOCAL.get().setRoundNum(getRoundNum() + 1);
     }
 
+    public void initListeners(Fighter atk, Fighter def) {
+        if (CheckNull.isNull(LOCAL.get().getListeners()))
+            LOCAL.get().setListeners(new ArrayList<>());
+        addForceListeners(atk);
+        addForceListeners(def);
+    }
+
+    private void addForceListeners(Fighter atk) {
+        if (CheckNull.isNull(atk)) return;
+        if (!CheckNull.isEmpty(atk.getForces())) {
+            atk.forces.forEach(force -> {
+                if (CheckNull.isNull(force)) return;
+                LOCAL.get().getListeners().add(force);
+                if (!CheckNull.isEmpty(force.skillList))
+                    LOCAL.get().getListeners().addAll(force.skillList);
+                if (!CheckNull.isEmpty(force.assistantHeroList)) {
+                    force.assistantHeroList.forEach(ass -> {
+                        if (CheckNull.isNull(ass) || CheckNull.isEmpty(ass.getSkillList())) return;
+                        LOCAL.get().getListeners().addAll(ass.getSkillList());
+                    });
+                }
+            });
+        }
+    }
+
+    /**
+     * 场次结束
+     */
+    public void sessionChange() {
+        if (CheckNull.isEmpty(LOCAL.get().getListeners()))
+            return;
+        List<Listener> listeners = LOCAL.get().getListeners();
+        for (Listener listener : listeners) {
+            if (CheckNull.isNull(listener) || listener instanceof SessionListener == false)
+                continue;
+            listener.fireAfterEventInvoked(null);
+        }
+    }
 
     //********************************************pb****************************************************************
 

@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.skill;
 
 import com.gryphpoem.game.zw.buff.IUniqueId;
+import com.gryphpoem.game.zw.listener.impl.SessionListener;
 import com.gryphpoem.game.zw.pojo.p.FightContextHolder;
 import com.gryphpoem.game.zw.pojo.p.Force;
 
@@ -9,7 +10,7 @@ import com.gryphpoem.game.zw.pojo.p.Force;
  * Author: zhangpeng
  * createTime: 2022-10-20 16:40
  */
-public interface IHeroSkill extends IUniqueId {
+public interface IHeroSkill extends IUniqueId, SessionListener {
     /**
      * 释放技能
      *

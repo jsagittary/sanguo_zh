@@ -41,11 +41,11 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
      */
     private boolean isOnStageSkill = false;
     /**
-     * 技能伤害
+     * 对敌方单个武将技能伤害
      */
     private int skillDamage;
     /**
-     * 技能释放次数
+     * 对敌方单个技能释放次数
      */
     private int releaseCount;
 
@@ -229,5 +229,11 @@ public class SimpleHeroSkill extends AbstractHeroSkill {
     @Override
     public int hashCode() {
         return Objects.hash(skillKeyId);
+    }
+
+    @Override
+    public void sessionEnd() {
+        this.skillDamage = 0;
+        this.releaseCount = 0;
     }
 }
