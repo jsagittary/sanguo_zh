@@ -3,6 +3,7 @@ package com.gryphpoem.game.zw.service;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticTreasureWareDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
@@ -11,13 +12,13 @@ import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.TaskDataManager;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticTreasureCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticVip;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureChallengePlayer;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureCombat;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -138,7 +139,7 @@ public class TreasureCombatService implements GmCmdService {
             Fighter defender = fightService.createNpcFighter(sCombat.getForm());
 
             FightLogic fightLogic = new FightLogic(attacker, defender, true);
-            fightLogic.fight();
+            fightLogic.start();
             int winState = fightLogic.getWinState();
             if (winState == 1) {
                 combatInfo.put(combatId, 1);
@@ -165,7 +166,7 @@ public class TreasureCombatService implements GmCmdService {
             builder.setRecord(fightLogic.generateRecord());
             builder.setChallengePlayer(treasureChallengePlayerService.getChallengeData(player));
             builder.addAllAtkHero(fightSettleLogic.stoneCombatCreateRptHero(player, attacker.forces));
-            builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force.id, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
+            builder.addAllDefHero(defender.forces.stream().map(force -> PbHelper.createRptHero(Constant.Role.BANDIT, force.killed, 0, force, null, 0, 0, force.totalLost)).collect(Collectors.toList()));
         } else if (wipe == 2) {
             checkOpenNextSection(player, treasureCombat);
             Integer nextSectionId = StaticTreasureWareDataMgr.getNextSectionId(treasureCombat.getSectionId());
@@ -266,10 +267,9 @@ public class TreasureCombatService implements GmCmdService {
      */
     private void checkHeroCombat(Player player, List<Integer> heroIds) throws MwException {
         // 检测上阵英雄
-        List<Integer> battleHeroId = Arrays.stream(player.heroBattle)
-                .filter(i -> i > 0)
-                .boxed()
-                .collect(Collectors.toList());
+        List<Integer> battleHeroId = Arrays.stream(player.getPlayerFormation().getHeroBattle())
+                .filter(i -> !HeroUtil.isEmptyPartner(i))
+                .map(i -> i.getPrincipalHero().getHeroId()).collect(Collectors.toList());
 
         List<Integer> heroList = heroIds.stream()
                 .filter(id -> id > 0)
@@ -279,8 +279,6 @@ public class TreasureCombatService implements GmCmdService {
             throw new MwException(GameError.PARAM_ERROR, "宝具副本挑战关卡 - 上阵英雄错误; roleId = " + player.getLordId() + "heroIdList = " + heroIds);
         }
 
-//        TreasureChallengePlayer treasureChallengePlayer = treasureChallengePlayerService.getAndRefreshChallengePlayerData(player);
-//        treasureChallengePlayer.setBattleHeroList(heroList);
     }
 
     /**

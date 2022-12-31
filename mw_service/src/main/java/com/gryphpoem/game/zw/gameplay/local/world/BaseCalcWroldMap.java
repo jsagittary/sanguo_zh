@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.gameplay.local.world;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.manager.TechDataManager;
 import com.gryphpoem.game.zw.resource.constant.*;
@@ -12,16 +13,15 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCastleSkinStar;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName BaseCalcWroldMap.java
  * @Description 主要用于计算坐标使用 ,cellId 从1开始; pos 是从0开始
- * @author QiuKun
  * @date 2019年3月20日
  */
 public class BaseCalcWroldMap {
@@ -42,11 +42,17 @@ public class BaseCalcWroldMap {
     @SuppressWarnings("unused")
     private final int cellHeightLength;
     private final int cellWidthLength;
-    /** 最大的块id,块id是从1开始 */
+    /**
+     * 最大的块id,块id是从1开始
+     */
     private final int maxCellId;
-    /** 位置标号 从0开始 */
+    /**
+     * 位置标号 从0开始
+     */
     private final int maxPos;
-    /** 缓存用过的cell的坐标 <cellId,List<pos>> */
+    /**
+     * 缓存用过的cell的坐标 <cellId,List<pos>>
+     */
     private Map<Integer, List<Integer>> cacheCellPosListMap;
 
     public BaseCalcWroldMap(int mapId, int width, int height, int cellSize) {
@@ -77,7 +83,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 获取块的开始的坐标
-     * 
+     *
      * @param cellId
      * @return
      */
@@ -94,7 +100,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 块转换成xy, 块的开始坐标
-     * 
+     *
      * @param cellId
      * @return
      */
@@ -107,12 +113,12 @@ public class BaseCalcWroldMap {
         int cellY = c / cellWidthLength;
         int startX = cellX * cellSize;
         int startY = cellY * cellSize;
-        return new int[] { startX, startY };
+        return new int[]{startX, startY};
     }
 
     /**
      * 获取这个块的所有点
-     * 
+     *
      * @param cellId
      * @return
      */
@@ -146,7 +152,7 @@ public class BaseCalcWroldMap {
 
     /**
      * pos转成 cellId
-     * 
+     *
      * @param pos
      * @return
      */
@@ -161,7 +167,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 坐标转化为块
-     * 
+     *
      * @param x
      * @param y
      * @return -1表示非法的块坐标
@@ -189,7 +195,7 @@ public class BaseCalcWroldMap {
         }
         int x = pos % width;
         int y = pos / width;
-        return new int[] { x, y };
+        return new int[]{x, y};
     }
 
     public Turple<Integer, Integer> posToTurple(int pos) {
@@ -203,7 +209,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 检测x y坐标是否合法
-     * 
+     *
      * @param x
      * @param y
      * @return
@@ -214,7 +220,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 检测块是否合法
-     * 
+     *
      * @param cellId
      * @return
      */
@@ -224,7 +230,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 检测 pos是否合法
-     * 
+     *
      * @param pos
      * @return
      */
@@ -242,8 +248,8 @@ public class BaseCalcWroldMap {
 
     /**
      * 获取以某个点为中心,周围的坐标点(包括本身),生成的坐标都是中心区域内的
-     * 
-     * @param pos 中心点坐标
+     *
+     * @param pos    中心点坐标
      * @param radius 半径
      * @return
      */
@@ -304,7 +310,7 @@ public class BaseCalcWroldMap {
 
     /**
      * 计算两个点之间的距离
-     * 
+     *
      * @param pos1
      * @param pos2
      * @return -1 非法值
@@ -321,10 +327,10 @@ public class BaseCalcWroldMap {
     /**
      * 计算玩家行军到目标坐标需要的时间 行军时间（秒）=8*（|X差|+|Y差|）*（1-行军加速_科技[%])*(1-行军加速_道具[%])/(1+军曹官加成[%]） 向上取整
      *
-     * @param cMap 新地图数据, 可以取玩家个人buff, 和城池的buff
+     * @param cMap   新地图数据, 可以取玩家个人buff, 和城池的buff
      * @param player 玩家
-     * @param pos1 出发点
-     * @param pos2 目标点
+     * @param pos1   出发点
+     * @param pos2   目标点
      * @return
      */
     public int marchTime(CrossWorldMap cMap, Player player, int pos1, int pos2) {
@@ -364,7 +370,7 @@ public class BaseCalcWroldMap {
         // 皮肤Buff加成
         List<StaticCastleSkin> staticCastleSkinList = player.getOwnCastleSkin().stream().map(StaticLordDataMgr::getCastleSkinMapById).filter(staticCastleSkin -> staticCastleSkin.getEffectType() == 4).collect(Collectors.toList());
         int skinAdd = 0;
-        for(StaticCastleSkin o : staticCastleSkinList){
+        for (StaticCastleSkin o : staticCastleSkinList) {
             int star = player.getCastleSkinStarById(o.getId());
             StaticCastleSkinStar staticCastleSkinStar = StaticLordDataMgr.getCastleSkinStarById(o.getId() * 100 + star);
             skinAdd += staticCastleSkinStar.getEffectVal();
@@ -372,13 +378,13 @@ public class BaseCalcWroldMap {
         int addRatio5 = skinAdd;
         // 行军时间（秒）=8*（|X差|+|Y差|）/（1+行军加速_科技[%]+官职加成[%])*(1-道具加成[%])*(1-军曹官加成[%])*(1-柏林战前加成[%])*(1-战火燎原城池加成[%])*(1-皮肤Buff加成[%])*战火燎原行军时间系数
         try {
-            time = (int) Math.ceil((time / (1 + (addRatio + berlinJobEffect + seasonTalentEffect) / Constant.TEN_THROUSAND )
+            time = (int) Math.ceil((time / (1 + (addRatio + berlinJobEffect + seasonTalentEffect) / Constant.TEN_THROUSAND)
                     * (1 - addRatio1 / Constant.TEN_THROUSAND)
                     * (1 - addRatio2 / Constant.TEN_THROUSAND)
                     * (1 - addRatio3 / Constant.TEN_THROUSAND)
                     * (1 - addRatio4 / Constant.TEN_THROUSAND)
                     * (1 - addRatio5 / Constant.TEN_THROUSAND))
-                    * (WorldConstant.WAR_FIRE_MARCH_TIME_COEF / Constant.TEN_THROUSAND)) ;
+                    * (WorldConstant.WAR_FIRE_MARCH_TIME_COEF / Constant.TEN_THROUSAND));
         } catch (Exception e) {
             LogUtil.error("行军时间计算出错", e);
         }

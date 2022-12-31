@@ -19,7 +19,7 @@ public class StaticCrossFort {
     private int camp;// 默认的阵营
     private String name; // 默认的阵营
     private List<Integer> neighbor; // 相邻的堡垒的id 格式[id,id]
-    private List<Integer> form; // 阵型 格式:[npcId,npcId]
+    private List<List<Integer>> form; // 阵型 格式:[[npcId,副将1npcId,副将2npcId],...]
 
     public int getId() {
         return id;
@@ -61,11 +61,11 @@ public class StaticCrossFort {
         this.neighbor = neighbor;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

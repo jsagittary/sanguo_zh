@@ -16,6 +16,7 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -89,8 +90,8 @@ public class City {
             setExtraReward(city.getExtraReward());
         }
         formList = new ArrayList<>();
-        for (TwoInt twoInt : city.getFormList()) {
-            formList.add(new CityHero(twoInt.getV1(), twoInt.getV2()));
+        for (CommonPb.PartnerHeroIdPb partnerHeroIdPb : city.getFormList()) {
+            formList.add(new CityHero(partnerHeroIdPb.getPrincipleHeroId(), partnerHeroIdPb.getCount(), partnerHeroIdPb.getDeputyHeroIdList()));
         }
         if (city.hasName()) {
             setName(city.getName());
@@ -179,10 +180,11 @@ public class City {
             StaticCity staticCity = StaticWorldDataMgr.getCityMap().get(cityId);
             if (staticCity != null) {
                 // 城池的阵型配置
-                List<Integer> formList = staticCity.getFormList(isNpcCity());
+                List<List<Integer>> formList = staticCity.getFormList(isNpcCity());
                 if (!CheckNull.isEmpty(formList)) {
-                    for (Integer npcId : formList) {
-                        StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+                    for (List<Integer> npcIdList : formList) {
+                        if (CheckNull.isEmpty(npcIdList)) continue;
+                        StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
                         if (npc != null) totalArm += npc.getTotalArm();
                     }
                 }
@@ -330,10 +332,12 @@ public class City {
             formList = new ArrayList<>();
         }
         formList.clear();
-        List<Integer> tmpFormList = staticCity.getFormList(isNpcCity());
-        for (Integer npcId : tmpFormList) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        List<List<Integer>> tmpFormList = staticCity.getFormList(isNpcCity());
+        for (List<Integer> npcIdList : tmpFormList) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            hero = fightService.createCityHero(npcIdList);
+            if (CheckNull.isNull(hero)) continue;
             formList.add(hero);
         }
         LogUtil.debug("初始化NPC守军阵型=" + formList + ",ownerId=" + ownerId + " cityId=" + cityId);
@@ -357,12 +361,15 @@ public class City {
             formList = new ArrayList<>();
         }
         formList.clear();
-        List<Integer> tmpFormList = staticCity.getFormList(isNpcCity());
-        for (Integer npcId : tmpFormList) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        List<List<Integer>> tmpFormList = staticCity.getFormList(isNpcCity());
+        for (List<Integer> npcIdList : tmpFormList) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+            if (CheckNull.isNull(npc)) continue;
             int arm = addArm ? npc.getTotalArm() : 0;
             // NPC守军阵型,初始化兵力为0,等待城主修复
-            hero = new CityHero(npcId, arm);
+            hero = new CityHero(npcIdList.get(0), arm, npcIdList.size() > 1 ?
+                    npcIdList.subList(1, npcIdList.size()) : null);
             formList.add(hero);
         }
         LogUtil.debug("初始化NPC守军阵型=" + formList + ",ownerId=" + ownerId + " cityId=" + cityId);
@@ -707,12 +714,14 @@ public class City {
             formList = new ArrayList<>();
         }
         formList.clear();
-        List<Integer> tmpFormList = staticCity.getFormList(isNpcCity());
-        for (Integer npcId : tmpFormList) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        List<List<Integer>> tmpFormList = staticCity.getFormList(isNpcCity());
+        for (List<Integer> npcIdList : tmpFormList) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
+            if (CheckNull.isNull(npc)) continue;
             int arm = addArm ? npc.getTotalArm() : 0;
             // NPC守军阵型,初始化兵力为0,等待城主修复
-            hero = new CityHero(npcId, arm);
+            hero = new CityHero(npcIdList.get(0), arm, npcIdList.size() > 1 ? npcIdList.subList(1, npcIdList.size()) : null);
             formList.add(hero);
         }
         LogUtil.debug("合服初始化NPC守军阵型=" + formList + ",ownerId=" + ownerId + " cityId=" + cityId);
@@ -734,10 +743,11 @@ public class City {
             formList = new ArrayList<>();
         }
         formList.clear();
-        List<Integer> tmpFormList = staticCity.getFormList(isNpcCity());
-        for (Integer npcId : tmpFormList) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        List<List<Integer>> tmpFormList = staticCity.getFormList(isNpcCity());
+        for (List<Integer> npcIdList : tmpFormList) {
+            hero = fightService.createCityHero(npcIdList);
+            if (CheckNull.isNull(hero)) continue;
             formList.add(hero);
         }
         LogUtil.debug("合服初始化NPC守军阵型=" + formList + ",ownerId=" + ownerId + " cityId=" + cityId);

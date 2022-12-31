@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.resource.constant;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.SentryHelper;
+import com.gryphpoem.game.zw.manager.StaticFightManager;
 import com.gryphpoem.game.zw.resource.util.ActParamTabLoader;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.SystemTabLoader;
@@ -1159,10 +1160,39 @@ public final class Constant {
     public static int HERO_LEVEL_OF_OPEN_TALENT;
 
     /**
+     * 正常攻打副本及其他战斗经验系数
+     */
+    public static float NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT;
+
+    /**
+     * 阵营战（打NPC城池）：军工=杀敌数**系数      system表390
+     */
+    public static float SYSTEM_ID_390;
+
+    /**
+     * 城池战（打玩家城池）：军工=损兵数**系数      system表391
+     */
+    public static float SYSTEM_ID_391;
+
+    /**
+     * 矿点战（资源点战斗）：军工=损兵数**系数      system表392
+     */
+    public static float SYSTEM_ID_392;
+
+
+    /**
+     * 燃油=20000+（杀敌数+损兵数）*系数      system表393
+     */
+    public static float SYSTEM_ID_393;
+
+    /**
      * s_system表中定义的常量初始化
      */
     public static void loadSystem() {
-
+        SYSTEM_ID_393 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_393, 1);
+        SYSTEM_ID_392 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_392, 1);
+        SYSTEM_ID_391 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_391, 1);
+        SYSTEM_ID_390 = SystemTabLoader.getFloatSystemValue(SystemId.SYSTEM_ID_390, 1);
         TREASURE_WARE_ATTR_STAGE_SCORE = SystemTabLoader.getMapIntSystemValue(SystemId.TREASURE_WARE_ATTR_STAGE_SCORE, "[[]]");
         TREASURE_WARE_HIGHER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_HIGHER_STAGE, "[[]]");
         TREASURE_WARE_LOWER_STAGE = SystemTabLoader.getListListIntSystemValue(SystemId.TREASURE_WARE_LOWER_STAGE, "[[]]");
@@ -1487,6 +1517,9 @@ public final class Constant {
         BANDIT_DEBUFF = SystemTabLoader.getListListIntSystemValue(SystemId.BANDIT_DEBUFF, "[[]]");
         RESIDENT_RECOVERY_SPEED = SystemTabLoader.getIntegerSystemValue(SystemId.RESIDENT_RECOVERY_SPEED, 0);
         HERO_LEVEL_OF_OPEN_TALENT = SystemTabLoader.getIntegerSystemValue(SystemId.HERO_LEVEL_OF_OPEN_TALENT, 0);
+        StaticFightManager.ALL_EFFECTIVE_TIMES_SINGLE_ROUND = SystemTabLoader.getIntegerSystemValue(SystemId.ALL_EFFECTIVE_TIMES_SINGLE_ROUND, 10);
+        NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT = SystemTabLoader.getFloatSystemValue(SystemId.NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT, 0.5f);
+
     }
 
     private static Map<Integer, List<Integer>> initMailExpireData(List<List<Integer>> systemList) {
@@ -1531,65 +1564,55 @@ public final class Constant {
         int[] camps = {EMPIRE, ALLIED, UNION};
     }
 
-    /**
-     * 将领属性id定义
-     */
-    public interface AttrId {
-        int ATTACK = 1;// 攻击
-        int DEFEND = 2;// 防御
-        int LEAD = 3;// 兵力
-        int LINE = 4;// 排数
-        int ATK_MUT = 11;// 攻击附加万分比
-        int DEF_MUT = 12;// 防御附加万分比
-        int LEAD_MUT = 13;// 兵力附加万分比
-        int ATTACK_TOWN = 21;// 攻坚
-        int DEFEND_TOWN = 22;// 据守
-        int CRIT = 31;// 暴击伤害倍率
-        int CRIT_CHANCE = 32;// 暴击概率
-        int CRITDEF = 33;// 免暴值
-        int ATTACK_EXT = 35;// 穿甲
-        int DEFEND_EXT = 36;// 防护
-        int EVADE = 44;// 闪避
-        int MORE_INFANTRY_DAMAGE = 46;//对步兵伤害加成
-        int MORE_CAVALRY_DAMAGE = 47;//对骑兵伤害加成
-        int MORE_ARCHER_DAMAGE = 48;//对弓兵伤害加成
-        int FIGHT = 999;// 战斗力, 直接加战斗力
-        //----程序使用的特殊属性,用来优化代码执行,目前未加入到策划属性体系
-        int DMG_INC = 10001;//增伤
-        int DMG_DEC = 10002;//伤害减免
-        int SPEED = 11001;
-        int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
-        int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
-        int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
-        int MORE_INFANTRY_ATTACK = 101;//对步兵攻击提升
-        int MORE_INFANTRY_ATTACK_EXT = 135;//对步兵破甲提升
-        int MORE_CAVALRY_ATTACK = 201;//对骑兵攻击提升
-        int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
-        int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
-        int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
-        /*===========内政属性==========*/
-        int MORE_FOOD = 401; // 产粮, 提高农田生产效率, 绝对值
-        int MORE_WOOD = 402; // 伐木, 提高铸币厂生产效率, 绝对值
-        int MORE_SILVER = 403; // 铸币, 提高铸币厂生产效率, 绝对值
-        int MORE_ORE = 404; // 产矿, 提高矿石厂生产效率, 绝对值
-        int MORE_ARMY1 = 405; // 步兵训练, 增加步兵训练数量, 绝对值
-        int MORE_ARMY2 = 406; // 骑兵训练, 增加骑兵训练数量, 绝对值
-        int MORE_ARMY3 = 407; // 弓兵训练, 增加弓兵训练数量, 绝对值
-        int MORE_BETTER_ORDER_PROB = 408; // 商贸, 增加高品质订单获取的概率
-        int LESS_FERRY_PRODUCT_TIME = 409; // 海贸, 增加渡口材料获取速度
-        int LESS_HAPPINESS_RECOVERY_TIME = 410; // 文娱, 增加幸福度恢复速度
-    }
-
-    public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,
-            AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT, AttrId.DEFEND_EXT};
-
-    public static int[] BASE_ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD};
-
-    /**
-     * 扩展属性
-     */
-    public static int[] EXT_ATTRS = new int[]{AttrId.ATTACK_TOWN, AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT,
-            AttrId.DEFEND_EXT, AttrId.FIGHT, AttrId.LESS_INFANTRY_MUT, AttrId.LESS_CAVALRY_MUT, AttrId.LESS_ARCHER_MUT};
+//    /**
+//     * 将领属性id定义
+//     */
+//    public interface AttrId {
+//        int ATTACK = 1;// 攻击
+//        int DEFEND = 2;// 防御
+//        int LEAD = 3;// 兵力
+//        int LINE = 4;// 排数
+//        int SPEED = 5;// 速度
+//        int ATK_MUT = 11;// 攻击附加万分比
+//        int DEF_MUT = 12;// 防御附加万分比
+//        int LEAD_MUT = 13;// 兵力附加万分比
+//        int ATTACK_TOWN = 21;// 攻坚
+//        int DEFEND_TOWN = 22;// 据守
+//        int CRIT = 31;// 暴击伤害倍率
+//        int CRIT_CHANCE = 32;// 暴击概率
+//        int CRITDEF = 33;// 免暴值
+//        int ATTACK_EXT = 35;// 穿甲
+//        int DEFEND_EXT = 36;// 防护
+//        int EVADE = 44;// 闪避
+//        int MORE_INFANTRY_DAMAGE = 46;//对步兵伤害加成
+//        int MORE_CAVALRY_DAMAGE = 47;//对骑兵伤害加成
+//        int MORE_ARCHER_DAMAGE = 48;//对弓兵伤害加成
+//        int FIGHT = 999;// 战斗力, 直接加战斗力
+//        //----程序使用的特殊属性,用来优化代码执行,目前未加入到策划属性体系
+//        int DMG_INC = 10001;//增伤
+//        int DMG_DEC = 10002;//伤害减免
+//        int LESS_INFANTRY_MUT = 50;//对步兵战斗时减伤最终伤害的万分比
+//        int LESS_CAVALRY_MUT = 51;//对骑兵战斗时减伤最终伤害的万分比
+//        int LESS_ARCHER_MUT = 52;//对弓兵战斗时减伤最终伤害的万分比
+//        int MORE_INFANTRY_ATTACK = 101;//对步兵攻击提升
+//        int MORE_INFANTRY_ATTACK_EXT = 135;//对步兵破甲提升
+//        int MORE_CAVALRY_ATTACK = 201;//对骑兵攻击提升
+//        int MORE_CAVALRY_ATTACK_EXT = 235;//对骑兵破甲提升
+//        int MORE_ARCHER_ATTACK = 301;//对弓兵攻击提升
+//        int MORE_ARCHER_ATTACK_EXT = 335;//对弓兵破甲提升
+//
+//    }
+//
+//    public static int[] ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD, AttrId.ATTACK_TOWN,
+//            AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT, AttrId.DEFEND_EXT};
+//
+//    public static int[] BASE_ATTRS = new int[]{AttrId.ATTACK, AttrId.DEFEND, AttrId.LEAD};
+//
+//    /**
+//     * 扩展属性
+//     */
+//    public static int[] EXT_ATTRS = new int[]{AttrId.ATTACK_TOWN, AttrId.DEFEND_TOWN, AttrId.ATTACK_EXT,
+//            AttrId.DEFEND_EXT, AttrId.FIGHT, AttrId.LESS_INFANTRY_MUT, AttrId.LESS_CAVALRY_MUT, AttrId.LESS_ARCHER_MUT};
 
     /**
      * 显示战力id定义
@@ -1628,6 +1651,7 @@ public final class Constant {
         int WALL = 4;// 城墙NPC(s_wall_hero_lv)
         int GESTAPO = 5;// 盖世太保NPC(s_npc)
     }
+
 
     /**
      * 商店

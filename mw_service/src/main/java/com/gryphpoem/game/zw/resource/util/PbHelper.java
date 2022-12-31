@@ -2,10 +2,12 @@ package com.gryphpoem.game.zw.resource.util;
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.rank.RankItem;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.BattlePassDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -18,6 +20,8 @@ import com.gryphpoem.game.zw.pb.SerializePb;
 import com.gryphpoem.game.zw.pb.SerializePb.DbActivity;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7Act;
 import com.gryphpoem.game.zw.pb.SerializePb.DbDay7ActStatus;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.ActivityAuctionParam;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
@@ -59,8 +63,6 @@ import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.buildHomeCity.BuildingState;
 import com.gryphpoem.game.zw.resource.pojo.daily.DailyReport;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.hero.AwakenData;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -416,7 +418,7 @@ public class PbHelper {
         builder.setExtraReward(city.getExtraReward());
         if (city.getFormList() != null) {
             for (CityHero hero : city.getFormList()) {
-                builder.addForm(createTwoIntPb(hero.getNpcId(), hero.getCurArm()));
+                builder.addForm(hero.createPartnerHeroIdPb());
             }
         }
         if (!CheckNull.isNullTrim(city.getName())) {
@@ -491,12 +493,6 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue() + addAttrValue));
         }
         int value;
-//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-//            value = hero.getWash()[i];
-//            if (value > 0) {
-//                builder.addWash(createTwoIntPb(i, value));
-//            }
-//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -583,9 +579,6 @@ public class PbHelper {
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
         builder.setCgyLv(hero.getCgyLv());
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
-        }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
         Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
             if (hero.getTotemKey(j) > 0) {
@@ -597,6 +590,10 @@ public class PbHelper {
         }
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
+        builder.setHeroRoleType(hero.getRoleType());
+        if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            builder.setPartnerPosIndex(hero.getPartnerPosIndex());
+        }
         builder.setIsDispatched(hero.getIsDispatched());
         builder.setBuildingType(hero.getBuildingType());
         if (CheckNull.nonEmpty(hero.getInteriorAttr())) {
@@ -619,12 +616,6 @@ public class PbHelper {
             builder.addAttr(createTwoIntPb(entry.getKey(), entry.getValue()));
         }
         int value;
-//        for (int i = 0; i < hero.getWash().length; i++) {// 将领洗炼数据
-//            value = hero.getWash()[i];
-//            if (value > 0) {
-//                builder.addWash(createTwoIntPb(i, value));
-//            }
-//        }
         for (int i = 0; i < hero.getEquip().length; i++) {// 将领装备信息
             value = hero.getEquip()[i];
             if (value > 0) {
@@ -711,9 +702,6 @@ public class PbHelper {
         builder.setFightVal(hero.getFightVal());
         builder.setCgyStage(hero.getCgyStage());
         builder.setCgyLv(hero.getCgyLv());
-        for (Entry<Integer, Integer> entry : hero.getSkillLevels().entrySet()) {
-            builder.addSkillLevel(createTwoIntPb(entry.getKey(), entry.getValue()));
-        }
         builder.setIsOnBaitTeam(hero.isOnBaitTeam() ? 1 : 0);
         Stream.iterate(1, i -> i + 1).limit(hero.getTotem().length - 1).forEach(j -> {
             if (hero.getTotemKey(j) > 0) {
@@ -725,6 +713,10 @@ public class PbHelper {
         }
         builder.setGrade(hero.getGradeKeyId());
         builder.setShowClient(hero.isShowClient());
+        builder.setHeroRoleType(hero.getRoleType());
+        if (hero.getRoleType() == HeroConstant.HERO_ROLE_TYPE_DEPUTY) {
+            builder.setPartnerPosIndex(hero.getPartnerPosIndex());
+        }
         builder.setIsDispatched(hero.getIsDispatched());
         builder.setBuildingType(hero.getBuildingType());
         if (CheckNull.nonEmpty(hero.getInteriorAttr())) {
@@ -1238,7 +1230,7 @@ public class PbHelper {
         builder.setArmyState(march.getArmy().getState());
         builder.setArmyType(march.getArmy().getType());
         if (!CheckNull.isEmpty(march.getArmy().getHero())) {
-            builder.addAllHeroId(march.getArmy().getHero().stream().map(ti -> ti.getV1()).collect(Collectors.toList()));
+            builder.addAllHeroId(march.getArmy().getHero().stream().map(ti -> ti.getPrincipleHeroId()).collect(Collectors.toList()));
         }
         builder.setBattleType(battleType);
         builder.setLordId(march.getPlayer().roleId);
@@ -1306,9 +1298,23 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.RptHero createRptHero(int type, int kill, int award, int heroId, String owner, int lv,
-                                                 int addExp, int lost, Hero hero) {
-        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
+    /**
+     * 创建主将战斗实体
+     *
+     * @param type
+     * @param kill
+     * @param award
+     * @param heroId
+     * @param owner
+     * @param lv
+     * @param addExp
+     * @param lost
+     * @param hero
+     * @return
+     */
+    public static CommonPb.RptBattleEntity createChiefBattleEntity(int type, int kill, int award, int heroId, String owner, int lv,
+                                                                   int addExp, int lost, Hero hero) {
+        CommonPb.RptBattleEntity.Builder builder = CommonPb.RptBattleEntity.newBuilder();
         builder.setType(type);
         builder.setKill(kill);
         builder.setLost(lost);
@@ -1332,18 +1338,95 @@ public class PbHelper {
                 builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
             }
         }
-        return builder.build();
+        return builder.setBattleHeroType(FightConstant.HeroType.PRINCIPAL_HERO).build();
     }
 
-    public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,
-                                                 int addExp, int lost) {
-        if (hero instanceof Integer) {
-            Integer heroId = (Integer) hero;
-            return createRptHero(type, kill, award, CheckNull.isNull(heroId) ? 0 : heroId, owner, lv, addExp, lost, null);
-        } else {
-            Hero hero_ = (Hero) hero;
-            return createRptHero(type, kill, award, CheckNull.isNull(hero_) ? 0 : hero_.getHeroId(), owner, lv, addExp, lost, hero_);
+    /**
+     * 创建副将战斗实体
+     *
+     * @param type
+     * @param heroId
+     * @param owner
+     * @param lv
+     * @param addExp
+     * @param hero
+     * @return
+     */
+    public static CommonPb.RptBattleEntity createAssBattleEntity(int type, int heroId, String owner, int lv,
+                                                                 int addExp, Hero hero) {
+        CommonPb.RptBattleEntity.Builder builder = CommonPb.RptBattleEntity.newBuilder();
+        builder.setType(type);
+        if (heroId > 0) {
+            builder.setHeroId(heroId);
         }
+        if (null != owner) {
+            builder.setOwner(owner);
+        }
+        if (lv > 0) {
+            builder.setLv(lv);
+        }
+        if (addExp > 0) {
+            builder.setExp(addExp);
+        }
+        builder.setHeroDecorated(CheckNull.isNull(hero) ? 0 : hero.getDecorated());
+        if (Objects.nonNull(hero)) {
+            builder.setGradeKeyId(hero.getGradeKeyId());
+            if (!ObjectUtils.isEmpty(hero.getAttr())) {
+                builder.setHp(hero.getAttr()[HeroConstant.ATTR_LEAD]);
+            }
+        }
+        return builder.setBattleHeroType(FightConstant.HeroType.DEPUTY_HERO).build();
+    }
+
+//    public static CommonPb.RptHero createRptHero(int type, int kill, int award, Object hero, String owner, int lv,
+//                                                 int addExp, int lost) {
+//        if (hero instanceof Integer) {
+//            Integer heroId = (Integer) hero;
+//            return createRptHero(type, kill, award, CheckNull.isNull(heroId) ? 0 : heroId, owner, lv, addExp, lost, null);
+//        } else {
+//            Hero hero_ = (Hero) hero;
+//            return createRptHero(type, kill, award, CheckNull.isNull(hero_) ? 0 : hero_.getHeroId(), owner, lv, addExp, lost, hero_);
+//        }
+//    }
+
+    public static CommonPb.RptHero createRptHero(int type, int kill, int award, com.gryphpoem.game.zw.pojo.p.Force force, String owner, int lv,
+                                                 int addExp, int lost) {
+        if (CheckNull.isNull(force)) return null;
+
+        CommonPb.RptHero.Builder builder = CommonPb.RptHero.newBuilder();
+        if (force.ownerId <= 0l) {
+            // 未初始化玩家id, 则为副本武将
+            if (force.id > 0) {
+                CommonPb.RptBattleEntity battleEntityPb = createChiefBattleEntity(type, kill, award, force.id, owner, lv,
+                        addExp, lost, null);
+                builder.addEntity(battleEntityPb);
+            }
+            if (CheckNull.nonEmpty(force.assistantHeroList)) {
+                force.assistantHeroList.forEach(ass -> {
+                    CommonPb.RptBattleEntity battleEntityPb = createAssBattleEntity(type, ass.getHeroId(), owner, lv,
+                            addExp, null);
+                    builder.addEntity(battleEntityPb);
+                });
+            }
+        } else {
+            Player player = DataResource.ac.getBean(PlayerDataManager.class).getPlayer(force.ownerId);
+            if (CheckNull.isNull(player)) return null;
+            Hero hero = player.heros.get(force.id);
+            CommonPb.RptBattleEntity battleEntityPb = createChiefBattleEntity(type, kill, award, force.id, owner, lv,
+                    addExp, lost, hero);
+            builder.addEntity(battleEntityPb);
+
+            if (CheckNull.nonEmpty(force.assistantHeroList)) {
+                force.assistantHeroList.forEach(ass -> {
+                    Hero hero_ = player.heros.get(ass.getHeroId());
+                    CommonPb.RptBattleEntity battleEntityPb_ = createAssBattleEntity(type, ass.getHeroId(), owner, lv,
+                            addExp, hero_);
+                    builder.addEntity(battleEntityPb_);
+                });
+            }
+        }
+
+        return builder.build();
     }
 
     public static CommonPb.Mail saveMailPb(Mail mail, Player player) {
@@ -1666,15 +1749,15 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.BattleRole createBattleRolePb(long roleId, int keyId, List<Integer> heroIdList) {
-        CommonPb.BattleRole.Builder builder = CommonPb.BattleRole.newBuilder();
-        builder.setRoleId(roleId);
-        builder.setKeyId(keyId);
-        if (null != heroIdList) {
-            builder.addAllHeroId(heroIdList);
-        }
-        return builder.build();
-    }
+//    public static CommonPb.BattleRole createBattleRolePb(long roleId, int keyId, List<Integer> heroIdList) {
+//        CommonPb.BattleRole.Builder builder = CommonPb.BattleRole.newBuilder();
+//        builder.setRoleId(roleId);
+//        builder.setKeyId(keyId);
+//        if (null != heroIdList) {
+//            builder.addAllHeroId(heroIdList);
+//        }
+//        return builder.build();
+//    }
 
     public static CommonPb.BattlePO createBattlePOPb(Battle battle) {
         CommonPb.BattlePO.Builder builder = CommonPb.BattlePO.newBuilder();
@@ -1728,7 +1811,7 @@ public class PbHelper {
         CommonPb.WallHero.Builder builder = CommonPb.WallHero.newBuilder();
         builder.setKeyId(army.getKeyId());
         builder.setLordId(army.getLordId());
-        builder.setHeroId(army.getHero().get(0).getV1());
+        builder.setHero(CommonPb.PartnerHeroIdPb.newBuilder(army.getHero().get(0)));
         builder.setLevel(level);
         builder.setCount(armyCnt);
         builder.setName(name);
@@ -1995,42 +2078,42 @@ public class PbHelper {
         return builder.build();
     }
 
-    public static CommonPb.Friend createFriendAndHeroPb(Man man, List<FriendHero> heros, DbFriend dbFriend) {
+    public static CommonPb.Friend createFriendAndHeroPb(Man man, List<CommonPb.PartnerHeroPb> heroPbList, DbFriend dbFriend) {
         CommonPb.Friend.Builder builder = CommonPb.Friend.newBuilder();
         builder.setMan(man);
         builder.setAddTime(dbFriend.getAddTime());
         builder.setState(dbFriend.getState());
-        builder.addAllHero(heros);
+        builder.addAllHero(heroPbList);
         return builder.build();
     }
 
-    public static CommonPb.FriendHero createFriendAndHeroPb(Hero hero, Player player) {
-        CommonPb.FriendHero.Builder builder = CommonPb.FriendHero.newBuilder();
-        builder.setHeroId(hero.getHeroId());
-        builder.setLevel(hero.getLevel());
-        builder.setExp(hero.getExp());
-        if (hero.isOnBattle()) {
-            builder.setCount(hero.getCount());
-            builder.setPos(hero.getPos());
-        }
-        List<Integer> warPlanes = hero.getWarPlanes();
-        if (!CheckNull.isEmpty(warPlanes)) {
-            for (int planeId : warPlanes) {
-                try {
-                    WarPlane warPlane = player.checkWarPlaneIsExist(planeId);
-                    if (!CheckNull.isNull(warPlane)) {
-                        builder.addPlanes(createTwoIntPb(planeId, warPlane.getLevel()));
-                        builder.addPlanePos(createTwoIntPb(warPlane.getBattlePos(), planeId));
-                    }
-                } catch (MwException e) {
-                    LogUtil.error(e);
-                }
-            }
-        }
-        builder.setDecorated(hero.getDecorated());
-        builder.setGradeKeyId(hero.getGradeKeyId());
-        return builder.build();
-    }
+//    public static CommonPb.FriendHero createFriendAndHeroPb(Hero hero, Player player) {
+//        CommonPb.FriendHero.Builder builder = CommonPb.FriendHero.newBuilder();
+//        builder.setHeroId(hero.getHeroId());
+//        builder.setLevel(hero.getLevel());
+//        builder.setExp(hero.getExp());
+//        if (hero.isOnBattle()) {
+//            builder.setCount(hero.getCount());
+//            builder.setPos(hero.getPos());
+//        }
+//        List<Integer> warPlanes = hero.getWarPlanes();
+//        if (!CheckNull.isEmpty(warPlanes)) {
+//            for (int planeId : warPlanes) {
+//                try {
+//                    WarPlane warPlane = player.checkWarPlaneIsExist(planeId);
+//                    if (!CheckNull.isNull(warPlane)) {
+//                        builder.addPlanes(createTwoIntPb(planeId, warPlane.getLevel()));
+//                        builder.addPlanePos(createTwoIntPb(warPlane.getBattlePos(), planeId));
+//                    }
+//                } catch (MwException e) {
+//                    LogUtil.error(e);
+//                }
+//            }
+//        }
+//        builder.setDecorated(hero.getDecorated());
+//        builder.setGradeKeyId(hero.getGradeKeyId());
+//        return builder.build();
+//    }
 
     public static CommonPb.DbMasterApprentice createDbMasterApprenticePb(DbMasterApprentice masterApprentice) {
         CommonPb.DbMasterApprentice.Builder builder = CommonPb.DbMasterApprentice.newBuilder();
@@ -2464,7 +2547,7 @@ public class PbHelper {
         builder.setCityId(boss.getId());
         builder.setPos(boss.getPos());
         if (!CheckNull.isNull(boss.getFighter())) {
-            for (com.gryphpoem.game.zw.resource.pojo.fight.Force force : boss.getFighter().getForces()) {
+            for (com.gryphpoem.game.zw.pojo.p.Force force : boss.getFighter().getForces()) {
                 builder.addForce(
                         CommonPb.Force.newBuilder().setNpcId(force.id).setHp(force.hp).setCurLine(force.curLine));
             }
@@ -2666,14 +2749,13 @@ public class PbHelper {
 
     private static List<CommonPb.WallHero> createWallHeroPbBySuperMine(Player player, Army army) {
         List<CommonPb.WallHero> list = new ArrayList<>(army.getHero().size());
-        for (TwoInt heroIdCnt : army.getHero()) {
+        for (CommonPb.PartnerHeroIdPb heroIdCnt : army.getHero()) {
             CommonPb.WallHero.Builder wallBuilder = CommonPb.WallHero.newBuilder();
             wallBuilder.setKeyId(army.getKeyId());
             wallBuilder.setLordId(army.getLordId());
             wallBuilder.setLevel(player.lord.getLevel());
             wallBuilder.setName(player.lord.getNick());
-            wallBuilder.setHeroId(heroIdCnt.getV1());
-            wallBuilder.setCount(heroIdCnt.getV2());
+            wallBuilder.setHero(CommonPb.PartnerHeroIdPb.newBuilder(heroIdCnt));
             list.add(wallBuilder.build());
         }
         return list;
@@ -2685,7 +2767,7 @@ public class PbHelper {
         builder.setLv(player.lord.getLevel());
         builder.setRoleId(player.roleId);
         builder.setName(player.lord.getNick());
-        int heroId = sg.getArmy().getHero().get(0).getV1();
+        int heroId = sg.getArmy().getHero().get(0).getPrincipleHeroId();
         Hero hero = player.heros.get(heroId);
         builder.setHeroLv(hero.getLevel());
         builder.setHeroId(hero.getHeroId());
@@ -3005,11 +3087,11 @@ public class PbHelper {
                             if (joinP != null) {
                                 int attackCnt = joinRole.stream()
                                         .filter(jr -> jr.getRoleId() == roleId)
-                                        .map(BattleRole::getHeroIdList)
+                                        .map(BattleRole::getPartnerHeroIdList)
                                         // 获取进攻将领的上阵兵力
                                         .flatMapToInt(list ->
                                                 list.stream()
-                                                        .map(heroId -> joinP.heros.get(heroId))
+                                                        .map(partnerHeroIdPb -> joinP.heros.get(partnerHeroIdPb.getPrincipleHeroId()))
                                                         .filter(Objects::nonNull)
                                                         .mapToInt(Hero::getCount))
                                         .sum();

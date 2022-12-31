@@ -57,6 +57,8 @@ public class StaticHeroDataMgr {
     private static Map<Integer, StaticHeroUpgrade> staticHeroUpgradeMap = new TreeMap<>();
     // 武将初始等级自适应配置， key：heroId
     private static Map<Integer, StaticHeroAppoint> staticHeroAppointMap = new HashMap<>();
+    // 屬性配置表 (戰鬥力係數)
+    private static Map<Integer, StaticAttribute> attributeMap = new HashMap<>();
     // 武将品阶对应的类型属性
     private static List<StaticHeroGradeInterior> staticHeroGradeInteriorList = new ArrayList<>();
     // 武将品阶对应的内政属性 key1-品阶, key2-品阶等级
@@ -97,6 +99,7 @@ public class StaticHeroDataMgr {
         initHeroUpgrade();
         //初始化武将初始等级自适应配置
         initHeroAppoint();
+        initAttribute();
     }
 
     /**
@@ -108,6 +111,15 @@ public class StaticHeroDataMgr {
             int heroId = staticHeroAppoint.getHeroId();
             staticHeroAppointMap.putIfAbsent(heroId, staticHeroAppoint);
         }
+    }
+
+    private static void initAttribute() {
+        attributeMap = staticDataDao.selectStaticAttribute();
+    }
+
+    public static int getStaticAttribute(int attrId) {
+        StaticAttribute staticAttribute = attributeMap.get(attrId);
+        return CheckNull.isNull(staticAttribute) ? 0 : staticAttribute.getFight();
     }
 
     /**

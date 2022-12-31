@@ -1,11 +1,7 @@
 package com.hundredcent.game.client;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.gryphpoem.game.zw.core.util.ChannelUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.manager.ActivityDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
@@ -17,16 +13,9 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticActAuction;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityAuctionData;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityAuctionItem;
 import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -38,11 +27,15 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ObjectUtils;
 
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * @Description 模拟客户端
  * @author TanDonghai
+ * @Description 模拟客户端
  * @date 创建时间：2017年10月26日 下午3:36:34
- *
  */
 public class BaseClient implements Runnable {
     public ChannelHandlerContext ctx;
@@ -127,6 +120,7 @@ public class BaseClient implements Runnable {
 
     private static AtomicInteger a = new AtomicInteger(0);
     private static int type = 100;
+
     public void purchase_() {
         GamePb4.PurchaseAuctionItemRq.Builder builder = GamePb4.PurchaseAuctionItemRq.newBuilder();
         builder.setId(217);
@@ -163,6 +157,7 @@ public class BaseClient implements Runnable {
         baseBuilder.setExtension(GamePb4.PurchaseAuctionItemRq.ext, builder.build());
         sendMsgToServer(baseBuilder);
     }
+
     protected void BeginGameHandler(long roleId) {
 
     }
@@ -255,7 +250,7 @@ public class BaseClient implements Runnable {
     /**
      * 按协议号获取服务端返回消息，在收到该协议号的消息之前等待一段时间，如果超过时间未收到协议，将返回null，如果不是对应的协议，将被丢弃
      *
-     * @param cmd 协议号
+     * @param cmd     协议号
      * @param timeout 如果一直等不到服务端返回消息的超时时间（毫秒）
      * @return
      */

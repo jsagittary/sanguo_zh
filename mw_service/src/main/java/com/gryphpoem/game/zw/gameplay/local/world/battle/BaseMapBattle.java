@@ -1,8 +1,11 @@
 package com.gryphpoem.game.zw.gameplay.local.world.battle;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayInvokeEnvironment;
 import com.gryphpoem.game.zw.gameplay.local.util.DelayRun;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
@@ -15,23 +18,22 @@ import com.gryphpoem.game.zw.gameplay.local.world.army.MapMarch;
 import com.gryphpoem.game.zw.gameplay.local.world.army.PlayerArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.WallNpc;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWallHeroLv;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.WallService;
 import com.gryphpoem.game.zw.service.WarService;
@@ -39,12 +41,11 @@ import com.gryphpoem.game.zw.service.WarService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName BaseMapBattle.java
  * @Description
- * @author QiuKun
  * @date 2019年3月21日
  */
 public abstract class BaseMapBattle implements DelayRun {
@@ -70,19 +71,27 @@ public abstract class BaseMapBattle implements DelayRun {
     }
 
     public static enum CancelBattleType {
-        /** 未知 ,不用处理 */
+        /**
+         * 未知 ,不用处理
+         */
         UNKNOW,
-        /** 防守方迁城而取消 */
+        /**
+         * 防守方迁城而取消
+         */
         DEFMOVECITY,
-        /** 发起方取消 */
+        /**
+         * 发起方取消
+         */
         ATKCANCEL,
-        /** 玩家已经被击飞 */
+        /**
+         * 玩家已经被击飞
+         */
         DEF_HITFLY,
     }
 
     /**
      * battle添加战斗
-     * 
+     *
      * @param army
      */
     public void addBattleArmy(CrossWorldMap cmap, BaseArmy army) {
@@ -90,9 +99,8 @@ public abstract class BaseMapBattle implements DelayRun {
         Player armyPlayer = army.checkAndGetAmryHasPlayer(cmap.getMapMarchArmy());
         if (armyPlayer == null) return;
         int camp = armyPlayer.lord.getCamp();
-        List<Integer> heroList = army.getArmy().getHero().stream().map(h -> h.getV1()).collect(Collectors.toList());
         BattleRole battleRole = BattleRole.newBuilder().setKeyId(army.getKeyId()).setRoleId(armyPlayer.roleId)
-                .addAllHeroId(heroList).build();
+                .addAllPartnerHeroId(army.getArmy().getHero()).build();
         // 柏林争霸攻击防守阵营特殊处理
         if (battle.getType() == WorldConstant.BATTLE_TYPE_NEW_YORK_WAR) {
             if (camp == battle.getDefCamp()) {
@@ -111,7 +119,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 创建battle的工厂方法
-     * 
+     *
      * @param battle
      * @return
      */
@@ -143,7 +151,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 开战
-     * 
+     *
      * @param now
      * @param mapWarData
      */
@@ -151,7 +159,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 返回正在去的路上的部队
-     * 
+     *
      * @param mapWarData
      * @param baseMapBattle
      * @return
@@ -185,7 +193,7 @@ public abstract class BaseMapBattle implements DelayRun {
     }
 
     public static List<MapEvent> returnArmyBattle(MapWarData mapWarData, BaseMapBattle baseMapBattle,
-            CancelBattleType cancelType) {
+                                                  CancelBattleType cancelType) {
         List<MapEvent> mapEvents = returnArmyBattle(mapWarData, baseMapBattle);
         if (cancelType == CancelBattleType.DEFMOVECITY || cancelType == CancelBattleType.DEF_HITFLY
                 || cancelType == CancelBattleType.ATKCANCEL) {
@@ -196,7 +204,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 返回某个战斗的所参与的所有部队
-     * 
+     *
      * @param mapWarData
      * @param baseMapBattle
      * @return 地图通知事件
@@ -230,7 +238,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 取消该战斗,并且返回部队
-     * 
+     *
      * @param mapWarData
      */
     public void cancelBattleAndReturnArmy(MapWarData mapWarData, CancelBattleType cancelType) {
@@ -260,7 +268,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 取消城战之后执行
-     * 
+     *
      * @param mapWarData
      */
     protected void onCancelBattleAfter(MapWarData mapWarData, CancelBattleType cancelType) {
@@ -269,7 +277,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 获取战斗的防守兵力
-     * 
+     *
      * @param battle
      * @param cMap
      * @return
@@ -278,7 +286,7 @@ public abstract class BaseMapBattle implements DelayRun {
         int defArm = battle.getDefArm();
         if (battle.getType() == WorldConstant.BATTLE_TYPE_CITY || battle.isRebellionBattle()
                 || (battle.isCounterAtkBattle() && battle.getBattleType() == WorldConstant.COUNTER_ATK_ATK
-                        || battle.isDecisiveBattle())) {
+                || battle.isDecisiveBattle())) {
             PlayerDataManager playerDataManager = DataResource.ac.getBean(PlayerDataManager.class);
             WallService wallService = DataResource.ac.getBean(WallService.class);
             int realDefArm = 0;
@@ -291,10 +299,11 @@ public abstract class BaseMapBattle implements DelayRun {
                 LogUtil.error("获取Battle补兵出错", e);
             }
             // 空闲上阵将领,和城防军
-            List<Hero> heroList = defencer.getDefendHeros();
-            for (Hero hero : heroList) {
-                if (hero.getCount() > 0) {
-                    realDefArm += hero.getCount();
+            List<PartnerHero> heroList = defencer.getDefendHeroList();
+            for (PartnerHero hero : heroList) {
+                if (HeroUtil.isEmptyPartner(hero)) continue;
+                if (hero.getPrincipalHero().getCount() > 0) {
+                    realDefArm += hero.getPrincipalHero().getCount();
                 }
             }
             // 城防NPC
@@ -304,7 +313,7 @@ public abstract class BaseMapBattle implements DelayRun {
                     wallNpc = ks.getValue();
                     StaticWallHeroLv staticSuperEquipLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                             wallNpc.getLevel());
-                    int maxArmy = staticSuperEquipLv.getAttr().get(AttrId.LEAD);
+                    int maxArmy = staticSuperEquipLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                     if (wallNpc.getCount() < maxArmy) {
                         continue;
                     }
@@ -317,14 +326,14 @@ public abstract class BaseMapBattle implements DelayRun {
             for (BattleRole br : battle.getDefList()) {
                 Player player = playerDataManager.getPlayer(br.getRoleId());
                 if (player != null) {
-                    List<Integer> heroIdList = br.getHeroIdList();
+                    List<CommonPb.PartnerHeroIdPb> heroIdList = br.getPartnerHeroIdList();
                     if (!CheckNull.isEmpty(heroIdList)) {
-                        for (Integer heroId : heroIdList) {
-                            StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                        for (CommonPb.PartnerHeroIdPb partnerHero : heroIdList) {
+                            StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(partnerHero.getPrincipleHeroId());
                             if (null == sHero) {
                                 continue;
                             }
-                            Hero hero = player.heros.get(heroId);
+                            Hero hero = player.heros.get(partnerHero.getPrincipleHeroId());
                             if (null == hero) {
                                 continue;
                             }
@@ -354,9 +363,7 @@ public abstract class BaseMapBattle implements DelayRun {
             for (BaseArmy baseArmy : playerArmy.getArmy().values()) {
                 Army army = baseArmy.getArmy();
                 if (army.getTarget() == pos && army.getState() == ArmyConstant.ARMY_STATE_MARCH) {
-                    for (TwoInt kv : army.getHero()) {
-                        cnt += kv.getV2();
-                    }
+                    cnt += army.getArmCount();
                 }
             }
         }
@@ -365,7 +372,7 @@ public abstract class BaseMapBattle implements DelayRun {
 
     /**
      * 防守方是人的情况,将城防NPC,驻防部队加入都battle中
-     * 
+     *
      * @param mapWarData
      */
     public void addDefendRoleHeros(MapWarData mapWarData) {
@@ -374,16 +381,17 @@ public abstract class BaseMapBattle implements DelayRun {
         // 自动补兵
         WarService warService = DataResource.ac.getBean(WarService.class);
         warService.autoFillArmy(defencer);
-        List<Hero> heroList = defencer.getDefendHeros();
-        List<Integer> heroIdList = new ArrayList<>();
-        for (Hero hero : heroList) {
-            if (hero.getCount() <= 0) {
+        List<PartnerHero> heroList = defencer.getDefendHeroList();
+        List<CommonPb.PartnerHeroIdPb> heroIdList = new ArrayList<>();
+        for (PartnerHero hero : heroList) {
+            if (HeroUtil.isEmptyPartner(hero)) continue;
+            if (hero.getPrincipalHero().getCount() <= 0) {
                 continue;
             }
-            heroIdList.add(hero.getHeroId());
+            heroIdList.add(hero.convertTo());
         }
         battle.getDefList().add(BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_HLEP)
-                .setRoleId(defencer.roleId).addAllHeroId(heroIdList).build());
+                .setRoleId(defencer.roleId).addAllPartnerHeroId(heroIdList).build());
         LogUtil.debug(defencer.lord.getPos() + "自己部队驻防信息=" + heroList + ",防守方Defs=" + battle.getDefList());
         int now = TimeHelper.getCurrentSecond();
         // 城防NPC
@@ -393,13 +401,15 @@ public abstract class BaseMapBattle implements DelayRun {
                 wallNpc = ks.getValue();
                 StaticWallHeroLv staticSuperEquipLv = StaticBuildingDataMgr.getWallHeroLv(wallNpc.getHeroNpcId(),
                         wallNpc.getLevel());
-                int maxArmy = staticSuperEquipLv.getAttr().get(AttrId.LEAD);
+                int maxArmy = staticSuperEquipLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (wallNpc.getCount() < maxArmy) {
                     continue;
                 }
                 wallNpc.setAddTime(now); // 刷新一下补兵的时间
+                CommonPb.PartnerHeroIdPb.Builder builder = CommonPb.PartnerHeroIdPb.newBuilder();
+                builder.setPrincipleHeroId(ks.getKey());
                 battle.getDefList().add(BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_WALL_NPC)
-                        .setRoleId(defencer.roleId).addHeroId(ks.getKey()).build());
+                        .setRoleId(defencer.roleId).addPartnerHeroId(builder.build()).build());
             }
         }
 
@@ -410,11 +420,9 @@ public abstract class BaseMapBattle implements DelayRun {
             PlayerMapEntity playerMapEntity = (PlayerMapEntity) baseWorldEntity;
             List<Guard> helpGuradList = playerMapEntity.getHelpGurad();
             for (Guard guard : helpGuradList) {
-                List<Integer> helpHeroIds = guard.getArmy().getHero().stream().map(h -> h.getV1())
-                        .collect(Collectors.toList());
                 // 防止防守成功,守军被撤回(撤回时会判断有部队ID的)
                 battle.getDefList().add(BattleRole.newBuilder().setKeyId(WorldConstant.ARMY_TYPE_HLEP)
-                        .setRoleId(guard.getPlayer().roleId).addAllHeroId(helpHeroIds).build());
+                        .setRoleId(guard.getPlayer().roleId).addAllPartnerHeroId(guard.getArmy().getHero()).build());
             }
         }
     }

@@ -1,16 +1,22 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLightningWarDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
@@ -23,10 +29,8 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticLightningWar;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.LightningWarBoss;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -45,35 +49,50 @@ import java.util.stream.Collectors;
  * @description: 闪电战消息推送, 战斗逻辑, 加入闪电战, 同步闪电战信息
  * @modified By:
  */
-@Service public class LightningWarService {
+@Service
+public class LightningWarService {
 
-    @Autowired private FightService fightService;
+    @Autowired
+    private FightService fightService;
 
-    @Autowired private WorldService worldService;
+    @Autowired
+    private WorldService worldService;
 
-    @Autowired private WarService warService;
+    @Autowired
+    private WarService warService;
 
-    @Autowired private WorldDataManager worldDataManager;
+    @Autowired
+    private WorldDataManager worldDataManager;
 
-    @Autowired private PlayerDataManager playerDataManager;
+    @Autowired
+    private PlayerDataManager playerDataManager;
 
-    @Autowired private ActivityDataManager activityDataManager;
+    @Autowired
+    private ActivityDataManager activityDataManager;
 
-    @Autowired private WarDataManager warDataManager;
+    @Autowired
+    private WarDataManager warDataManager;
 
-    @Autowired private RewardDataManager rewardDataManager;
+    @Autowired
+    private RewardDataManager rewardDataManager;
 
-    @Autowired private MailDataManager mailDataManager;
+    @Autowired
+    private MailDataManager mailDataManager;
 
-    @Autowired private SolarTermsDataManager solarTermsDataManager;
+    @Autowired
+    private SolarTermsDataManager solarTermsDataManager;
 
-    @Autowired private HonorDailyDataManager honorDailyDataManager;
+    @Autowired
+    private HonorDailyDataManager honorDailyDataManager;
 
-    @Autowired private MedalDataManager medalDataManager;
+    @Autowired
+    private MedalDataManager medalDataManager;
 
-    @Autowired private ChatDataManager chatDataManager;
+    @Autowired
+    private ChatDataManager chatDataManager;
 
-    @Autowired private CounterAtkService counterAtkService;
+    @Autowired
+    private CounterAtkService counterAtkService;
 
     @Autowired
     private BattlePassDataManager battlePassDataManager;
@@ -193,8 +212,6 @@ import java.util.stream.Collectors;
      *
      * @param now
      * @param lightningWar
-     * @param player
-     * @param lightningWarBoss
      */
     private void createLightningWarBattle(int now, StaticLightningWar lightningWar, LightningWarBoss boss) {
         Battle battle = new Battle();
@@ -326,13 +343,13 @@ import java.util.stream.Collectors;
         int totalHp = defender.getTotal();// 总血量
         int lostTotal = defender.getLost();// 总损失兵力
 
-        fightLogic.fight();// 战斗
+        fightLogic.start();// 战斗
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 兵力恢复
@@ -360,7 +377,7 @@ import java.util.stream.Collectors;
             }
         }
 
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
         rpt.setRecord(record);
@@ -442,11 +459,8 @@ import java.util.stream.Collectors;
         // 通知客户端玩家资源变化
         warService.sendRoleResChange(changeMap);
         // 战斗打日志
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
     }
-
-
-
 
 
     /**
@@ -461,8 +475,8 @@ import java.util.stream.Collectors;
      * @param recoverArmyAwardMap
      */
     private void sendLightningWarBattleMail(Battle battle, StaticCity staticCity, boolean atkSuccess,
-            CommonPb.Report.Builder report, Map<Long, List<CommonPb.Award>> awardProp, int now,
-            Map<Long, List<CommonPb.Award>> recoverArmyAwardMap) {
+                                            CommonPb.Report.Builder report, Map<Long, List<CommonPb.Award>> awardProp, int now,
+                                            Map<Long, List<CommonPb.Award>> recoverArmyAwardMap) {
         List<CommonPb.BattleRole> atkList = battle.getAtkList();
         Set<Long> ids = new HashSet<>();
         for (CommonPb.BattleRole battleRole : atkList) {
@@ -509,8 +523,8 @@ import java.util.stream.Collectors;
      * @param battle
      */
     private void addAttackReaward(List<Force> forces, AwardFrom lightningWarAttack,
-            HashMap<Long, List<List<Integer>>> attackAward, Fighter defender, LightningWarBoss boss, Battle battle,
-            int totalHp, int curLost) {
+                                  HashMap<Long, List<List<Integer>>> attackAward, Fighter defender, LightningWarBoss boss, Battle battle,
+                                  int totalHp, int curLost) {
         HashMap<Long, Integer> killCnt = mergeKill(forces);
         for (Map.Entry<Long, Integer> entry : killCnt.entrySet()) {
             Long roleId = entry.getKey();
@@ -671,11 +685,12 @@ import java.util.stream.Collectors;
         rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood,
                 AwardFrom.ATK_POS);
 
-        List<CommonPb.TwoInt> form = new ArrayList<>();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
         for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            form.add(partnerHero.convertTo());
         }
 
         Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_LIGHTNING_WAR, pos, ArmyConstant.ARMY_STATE_MARCH,
@@ -704,7 +719,7 @@ import java.util.stream.Collectors;
 
         // 破护盾 攻击方
         if (camp != battle.getDefCamp()) {
-            worldService.removeProTect(player,AwardFrom.LIGHTNING_WAR,pos);
+            worldService.removeProTect(player, AwardFrom.LIGHTNING_WAR, pos);
             battle.getAtkRoles().add(roleId);
         }
 

@@ -1,5 +1,10 @@
 package com.gryphpoem.game.zw.resource.pojo.world;
 
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+
+import java.util.List;
+
 /**
  * @ClassName CityHero.java
  * @Description 城池守卫军
@@ -10,13 +15,15 @@ package com.gryphpoem.game.zw.resource.pojo.world;
 public class CityHero {
 	private int npcId;
 	private int curArm;// 当前兵力
+	private List<Integer> deputyIdList;
 
 	public CityHero() {
 	}
 
-	public CityHero(int npcId, int curArm) {
+	public CityHero(int npcId, int curArm, List<Integer> deputyIdList) {
 		this.npcId = npcId;
 		this.curArm = curArm;
+		this.deputyIdList = deputyIdList;
 	}
 
 	public int getNpcId() {
@@ -44,6 +51,23 @@ public class CityHero {
 		if (curArm < 0) {
 			this.curArm = 0;
 		}
+	}
+
+	public List<Integer> getDeputyIdList() {
+		return deputyIdList;
+	}
+
+	public void setDeputyIdList(List<Integer> deputyIdList) {
+		this.deputyIdList = deputyIdList;
+	}
+
+	public CommonPb.PartnerHeroIdPb createPartnerHeroIdPb() {
+		CommonPb.PartnerHeroIdPb.Builder builder = CommonPb.PartnerHeroIdPb.newBuilder();
+		builder.setPrincipleHeroId(npcId);
+		builder.setCount(this.curArm);
+		if (CheckNull.nonEmpty(this.deputyIdList))
+			builder.addAllDeputyHeroId(this.deputyIdList);
+		return builder.build();
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package com.gryphpoem.game.zw.resource.pojo.sandtable;
 
 import com.gryphpoem.game.zw.pb.SerializePb;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +25,11 @@ public class LinePlayer implements Comparable<LinePlayer> {
 
     public boolean isAlive = true;//是否存活
 
-    public LinePlayer(){
+    public LinePlayer() {
         this.heroIds = new ArrayList<>();
     }
-    public LinePlayer(long lordId){
+
+    public LinePlayer(long lordId) {
         this.lordId = lordId;
         this.heroIds = new ArrayList<>();
     }
@@ -48,14 +49,14 @@ public class LinePlayer implements Comparable<LinePlayer> {
 
     @Override
     public int compareTo(LinePlayer o) {
-        return Integer.compare(this.fightVal,o.fightVal);
+        return Integer.compare(this.fightVal, o.fightVal);
     }
 
     public int getFightVal() {
         return fightVal;
     }
 
-    public void deser(SerializePb.SerLinePlayer serLinePlayer){
+    public void deser(SerializePb.SerLinePlayer serLinePlayer) {
         this.lordId = serLinePlayer.getLordId();
         this.heroIds.addAll(serLinePlayer.getHeroIdsList());
         this.fightTimes = serLinePlayer.getFightTimes();

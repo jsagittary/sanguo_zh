@@ -1,10 +1,13 @@
 package com.gryphpoem.game.zw.manager;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonWeekIntegralService;
@@ -1024,7 +1027,7 @@ public class RewardDataManager {
             int attack = sEquip.getAttack();
             if (attack > 0) {
                 Map<Integer, Integer> attr = equip.getAttr();
-                attr.put(Constant.AttrId.ATTACK, attack);
+                attr.put(FightCommonConstant.AttrId.ATTACK, attack);
                 equip.setAttr(attr);
             }
 
@@ -1035,7 +1038,7 @@ public class RewardDataManager {
                 int defense = RandomUtils.nextInt(defenseLow, defenseHigh + 1);
                 if (defense > 0) {
                     Map<Integer, Integer> extAttr = equip.getExtAttr();
-                    extAttr.put(Constant.AttrId.DEFEND, defense);
+                    extAttr.put(FightCommonConstant.AttrId.DEFEND, defense);
                 }
             }
             keyList.add(equip.getKeyId());
@@ -2444,7 +2447,7 @@ public class RewardDataManager {
             } else {// 按权重随机
                 if (staticEquipQualityExtra != null && staticEquipQualityExtra.getExtraNum() > 0) {
                     for (int j = 0; j < staticEquipQualityExtra.getExtraNum(); j++) {
-                        attrLv.add(new Turple<>(Constant.ATTRS[RandomUtils.nextInt(0, Constant.ATTRS.length)],
+                        attrLv.add(new Turple<>(FightCommonConstant.ATTRS[RandomUtils.nextInt(0, FightCommonConstant.ATTRS.length)],
                                 staticEquipQualityExtra.getExtraLv()));
                     }
                 }
@@ -2585,14 +2588,14 @@ public class RewardDataManager {
             hero.setInteriorAttr(interiorAttr);
             //如果是赛季英雄则初始化英雄技能
             if (staticHero.getSeason() > 0) {
-                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
-                if (Objects.nonNull(skillMap)) {
-                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
-                        int skillId = entry.getKey();
-                        int initLv = entry.getValue().firstKey();
-                        hero.getSkillLevels().put(skillId, initLv);
-                    }
-                }
+//                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+//                if (Objects.nonNull(skillMap)) {
+//                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+//                        int skillId = entry.getKey();
+//                        int initLv = entry.getValue().firstKey();
+//                        hero.getSkillLevels().put(skillId, initLv);
+//                    }
+//                }
                 hero.setCgyStage(1);
                 hero.setCgyLv(0);
 
@@ -2706,14 +2709,14 @@ public class RewardDataManager {
             hero.setGradeKeyId(gradeKeyId);
             //如果是赛季英雄则初始化英雄技能
             if (staticHero.getSeason() > 0) {
-                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
-                if (Objects.nonNull(skillMap)) {
-                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
-                        int skillId = entry.getKey();
-                        int initLv = entry.getValue().firstKey();
-                        hero.getSkillLevels().put(skillId, initLv);
-                    }
-                }
+//                Map<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> skillMap = StaticHeroDataMgr.getHeroSkill(heroId);
+//                if (Objects.nonNull(skillMap)) {
+//                    for (Entry<Integer, TreeMap<Integer, StaticHeroSeasonSkill>> entry : skillMap.entrySet()) {
+//                        int skillId = entry.getKey();
+//                        int initLv = entry.getValue().firstKey();
+//                        hero.getSkillLevels().put(skillId, initLv);
+//                    }
+//                }
                 hero.setCgyStage(1);
                 hero.setCgyLv(0);
 
@@ -4103,7 +4106,7 @@ public class RewardDataManager {
         Integer ownNum = player.getDrawCardData().getFragmentData().getOrDefault(heroId, 0);
         if (CheckNull.isNull(ownNum) || ownNum < need) {
             throw new MwException(GameError.NOT_ENOUGH_HERO_FRAGMENTS, String.format("player:%d, not enough hero fragments, ownNum:%d, need:%d, heroId:%d, message:%s",
-                    player.roleId, ownNum, need, heroId, message));
+                    player.roleId, ownNum, need, heroId, ObjectUtils.isEmpty(message) ? "" : Arrays.toString(message)));
         }
     }
 

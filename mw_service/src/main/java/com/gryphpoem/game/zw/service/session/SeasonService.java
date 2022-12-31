@@ -3,7 +3,6 @@ package com.gryphpoem.game.zw.service.session;
 import com.alibaba.fastjson.JSON;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
-import com.gryphpoem.game.zw.core.util.ChannelUtil;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
@@ -28,7 +27,6 @@ import com.gryphpoem.game.zw.resource.pojo.ActRank;
 import com.gryphpoem.game.zw.resource.pojo.FunCard;
 import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.season.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.PlayerService;
@@ -147,6 +145,7 @@ public class SeasonService {
 
     /**
      * 初始化宝库任务的前置条件，下一次的重置时间需<=赛季的结束时间displaytime
+     *
      * @param player
      */
     private void initTreasuryTaskData(Player player) {
@@ -168,8 +167,8 @@ public class SeasonService {
 
                 //检查是否已经完成
                 ETask eTask = ETask.getByType(tmp.getTaskType());
-                if(Objects.nonNull(eTask) && eTask.isHandle()){
-                    this.handleTreasuryTask(player,eTask);
+                if (Objects.nonNull(eTask) && eTask.isHandle()) {
+                    this.handleTreasuryTask(player, eTask);
                 }
             });
             playerSeasonData.setTreasuryState(SeasonConst.TREASURY_STATE_DOING);
@@ -217,7 +216,7 @@ public class SeasonService {
             //有宝库任务数据、且过了重置时间、且下一个重置时间<=赛季的endTime，则重置任务数据并处理未领取的奖励
             if (!playerSeasonData.getTreasuryMap().isEmpty() && playerSeasonData.getTreasuryResetTime() < now
                     && resetTime <= globalSeasonData.getStaticSeasonPlan().getEndTime().getTime() / 1000) {
-                if(playerSeasonData.getTreasuryState() == SeasonConst.TREASURY_STATE_GENERATED){
+                if (playerSeasonData.getTreasuryState() == SeasonConst.TREASURY_STATE_GENERATED) {
                     //根据任务分类，再取每个大类下的第一个已完成了的任务奖励
                     List<AwardItem> awardItemList = this.getTreasuryUnreward(playerSeasonData);
                     List<CommonPb.Award> awards = PbHelper.createAwards(awardItemList);
@@ -318,23 +317,23 @@ public class SeasonService {
     }
 
     private void initSeasonTaskData(Player player, int season) {
-        if(getSeasonState() != SeasonConst.STATE_OPEN){
+        if (getSeasonState() != SeasonConst.STATE_OPEN) {
             return;
         }
         if (season > 0 && player.getPlayerSeasonData().getCurrTasks().isEmpty() && player.getPlayerSeasonData().getFinishedTasks().isEmpty()) {
             //init task data
             Optional.ofNullable(StaticIniDataMgr.getStaticSeasonTaskGroupMap().get(season)).ifPresent(tmps -> {
                 tmps.forEach(tmp -> {
-                    if(tmp.getPreTaskId() == 0){
+                    if (tmp.getPreTaskId() == 0) {
                         SeasonTask seasonTask = new SeasonTask(tmp.getTaskId());
                         player.getPlayerSeasonData().getCurrTasks().put(seasonTask.getTaskId(), seasonTask);
 
                         ETask eTask = ETask.getByType(tmp.getTaskType());
-                        if(Objects.nonNull(eTask) && eTask.isHandle()){
-                            if(eTask == ETask.FINISHED_TASK || eTask == ETask.GET_TASKAWARD){
-                                this.handleJourneyTask(player,eTask,TaskCategory.TREASURY.getCategory());
-                            }else {
-                                this.handleJourneyTask(player,eTask);
+                        if (Objects.nonNull(eTask) && eTask.isHandle()) {
+                            if (eTask == ETask.FINISHED_TASK || eTask == ETask.GET_TASKAWARD) {
+                                this.handleJourneyTask(player, eTask, TaskCategory.TREASURY.getCategory());
+                            } else {
+                                this.handleJourneyTask(player, eTask);
                             }
                         }
                     }
@@ -368,7 +367,7 @@ public class SeasonService {
             return false;
         }
         int season = this.getCurrSeason();
-        if(sfc.getSeason() != season){
+        if (sfc.getSeason() != season) {
             LogUtil.error("购买赛季月卡失败，月卡和当前赛季不匹配，" + season + ", " + sfc.getSeason());
             return false;
         }
@@ -466,7 +465,7 @@ public class SeasonService {
 
         List<CommonPb.Award> awards = PbHelper.createAwards(awardItemList);
         if (!awards.isEmpty()) {
-            rewardDataManager.sendRewardByAwardList(player, awards, AwardFrom.SEASON_TREASURY_GET_AWARD,req.getTaskIdList());
+            rewardDataManager.sendRewardByAwardList(player, awards, AwardFrom.SEASON_TREASURY_GET_AWARD, req.getTaskIdList());
         }
         playerSeasonData.setTreasuryState(SeasonConst.TREASURY_STATE_GOT);
         playerSeasonData.getTreasuryMap().clear();
@@ -490,20 +489,20 @@ public class SeasonService {
         int scoreId = req.getScoreId();
         PlayerSeasonData playerSeasonData = player.getPlayerSeasonData();
         int season = this.getCurrSeason();
-        if(season == 0){
-            throw new MwException(GameError.SEASON_NON_OPEN.getCode(),GameError.SEASON_NON_OPEN.errMsg(roleId));
+        if (season == 0) {
+            throw new MwException(GameError.SEASON_NON_OPEN.getCode(), GameError.SEASON_NON_OPEN.errMsg(roleId));
         }
         if (taskId > 0 && scoreId == 0) {//任务奖励
             SeasonTask seasonTask = playerSeasonData.getCurrTasks().get(taskId);
             if (Objects.isNull(seasonTask)) {
-                throw new MwException(GameError.SEASON_TASK_GET_AWARD_NO.getCode(), GameError.SEASON_TASK_GET_AWARD_NO.errMsg(roleId,taskId));
+                throw new MwException(GameError.SEASON_TASK_GET_AWARD_NO.getCode(), GameError.SEASON_TASK_GET_AWARD_NO.errMsg(roleId, taskId));
             }
             if (seasonTask.getStatus() != TaskConst.STATUS_FINISH) {
-                throw new MwException(GameError.SEASON_TASK_GET_AWARD_NO.getCode(), GameError.SEASON_TASK_GET_AWARD_NO.errMsg(roleId,taskId), "任务未完成");
+                throw new MwException(GameError.SEASON_TASK_GET_AWARD_NO.getCode(), GameError.SEASON_TASK_GET_AWARD_NO.errMsg(roleId, taskId), "任务未完成");
             }
             StaticSeasonTask staticSeasonTask = StaticIniDataMgr.getStaticSeasonTaskMap().get(taskId);
             if (Objects.nonNull(staticSeasonTask)) {
-                rewardDataManager.sendReward(player, staticSeasonTask.getTaskAward(), AwardFrom.SEASON_TASK_GET_AWARD,taskId);
+                rewardDataManager.sendReward(player, staticSeasonTask.getTaskAward(), AwardFrom.SEASON_TASK_GET_AWARD, taskId);
 
                 int taskScore = player.getPlayerSeasonData().getTaskScore();
                 player.getPlayerSeasonData().setTaskScore(taskScore + staticSeasonTask.getTaskScore());
@@ -518,18 +517,18 @@ public class SeasonService {
                     SeasonTask nextTask = new SeasonTask(nextStatic.getTaskId());
                     player.getPlayerSeasonData().getCurrTasks().put(nextTask.getTaskId(), nextTask);
                     ETask eTask = ETask.getByType(nextStatic.getTaskType());
-                    if(Objects.nonNull(eTask) && eTask.isHandle()){
-                        if(eTask == ETask.FINISHED_TASK || eTask == ETask.GET_TASKAWARD){
-                            this.handleJourneyTask(player,eTask,TaskCategory.TREASURY.getCategory());
-                        }else {
-                            this.handleJourneyTask(player,eTask);
+                    if (Objects.nonNull(eTask) && eTask.isHandle()) {
+                        if (eTask == ETask.FINISHED_TASK || eTask == ETask.GET_TASKAWARD) {
+                            this.handleJourneyTask(player, eTask, TaskCategory.TREASURY.getCategory());
+                        } else {
+                            this.handleJourneyTask(player, eTask);
                         }
                     }
                 }
             }
         }
         if (scoreId > 0 && taskId == 0) {//积分奖励
-            StaticSeasonTaskScore staticSeasonTaskScore = StaticIniDataMgr.getStaticSeasonTaskScoreMap().values().stream().filter(tmp -> tmp.getId()==scoreId&&tmp.getSeason()==season).findFirst().orElse(null);
+            StaticSeasonTaskScore staticSeasonTaskScore = StaticIniDataMgr.getStaticSeasonTaskScoreMap().values().stream().filter(tmp -> tmp.getId() == scoreId && tmp.getSeason() == season).findFirst().orElse(null);
             if (Objects.isNull(staticSeasonTaskScore)) {
                 throw new MwException(GameError.SEASON_TASK_GET_AWARD_NO.getCode(), "领取旅程任务积分奖励失败");
             }
@@ -606,18 +605,18 @@ public class SeasonService {
             });
             List<CommonPb.Award> journeyAwards = PbHelper.createAwardsPb(unrewardList);
             if (ListUtils.isNotBlank(journeyAwards)) {
-                rewardDataManager.sendRewardByAwardList(p,journeyAwards,AwardFrom.SEASON_JOURNEY_UNREWARD_ON_END);
+                rewardDataManager.sendRewardByAwardList(p, journeyAwards, AwardFrom.SEASON_JOURNEY_UNREWARD_ON_END);
 //                mailDataManager.sendAttachMail(p, journeyAwards, MailConstant.MOLD_SEASON_524, null, now);
-                mailDataManager.sendReportMail(p,null,MailConstant.MOLD_SEASON_524,journeyAwards,now);
+                mailDataManager.sendReportMail(p, null, MailConstant.MOLD_SEASON_524, journeyAwards, now);
             }
         });
 
         //处理玩家排行奖励
-        int i =0;
-        int max = StaticIniDataMgr.getSeasonRankMax().getOrDefault(currSeason,100);
-        List<StaticSeasonRank> staticSeasonRankList0 = StaticIniDataMgr.getStaticSeasonRankGroupMap().get(currSeason).stream().filter(tmp -> tmp.getType()==1).collect(Collectors.toList());
+        int i = 0;
+        int max = StaticIniDataMgr.getSeasonRankMax().getOrDefault(currSeason, 100);
+        List<StaticSeasonRank> staticSeasonRankList0 = StaticIniDataMgr.getStaticSeasonRankGroupMap().get(currSeason).stream().filter(tmp -> tmp.getType() == 1).collect(Collectors.toList());
         for (ActRank rank : globalSeasonData.getRanks()) {
-            if(i > max){
+            if (i > max) {
                 break;
             }
             int j = i + 1;
@@ -625,8 +624,8 @@ public class SeasonService {
             Optional.ofNullable(staticSeasonRank).ifPresent(tmp -> {
                 List<CommonPb.Award> awardList = PbHelper.createAwardsPb(staticSeasonRank.getAward());
                 Player player = playerDataManager.getPlayer(rank.getLordId());
-                if(Objects.nonNull(player)){
-                    mailDataManager.sendAttachMail(player, awardList, MailConstant.MOLD_SEASON_522, AwardFrom.SEASON_PLAYER_RANK_AWARD, now + 2,j);
+                if (Objects.nonNull(player)) {
+                    mailDataManager.sendAttachMail(player, awardList, MailConstant.MOLD_SEASON_522, AwardFrom.SEASON_PLAYER_RANK_AWARD, now + 2, j);
                 }
             });
             i++;
@@ -634,14 +633,14 @@ public class SeasonService {
 
         //处理阵营排行奖励
         globalSeasonData.getCampRank().sort(COMPARATOR_CAMP_RANK);
-        List<StaticSeasonRank> staticSeasonRankList1 = StaticIniDataMgr.getStaticSeasonRankGroupMap().get(currSeason).stream().filter(tmp -> tmp.getType()==2).collect(Collectors.toList());
+        List<StaticSeasonRank> staticSeasonRankList1 = StaticIniDataMgr.getStaticSeasonRankGroupMap().get(currSeason).stream().filter(tmp -> tmp.getType() == 2).collect(Collectors.toList());
         playerDataManager.getPlayers().values().forEach(player -> {
-            CampRankData campRankData = getCampRankData(player.getCamp(),globalSeasonData.getCampRank());
-            if(Objects.nonNull(campRankData)){
-                StaticSeasonRank staticSeasonRank = staticSeasonRankList1.stream().filter(tmp -> campRankData.rank >= tmp.getRank().get(0)&&campRankData.rank<=tmp.getRank().get(1)&&player.lord.getJob()==tmp.getPartyJob()).findFirst().orElse(null);
-                if(Objects.nonNull(staticSeasonRank)){
+            CampRankData campRankData = getCampRankData(player.getCamp(), globalSeasonData.getCampRank());
+            if (Objects.nonNull(campRankData)) {
+                StaticSeasonRank staticSeasonRank = staticSeasonRankList1.stream().filter(tmp -> campRankData.rank >= tmp.getRank().get(0) && campRankData.rank <= tmp.getRank().get(1) && player.lord.getJob() == tmp.getPartyJob()).findFirst().orElse(null);
+                if (Objects.nonNull(staticSeasonRank)) {
                     List<CommonPb.Award> awardList = PbHelper.createAwardsPb(staticSeasonRank.getAward());
-                    mailDataManager.sendAttachMail(player, awardList, MailConstant.MOLD_SEASON_523, AwardFrom.SEASON_CAMP_RANK_AWARD, now + 2,campRankData.rank);
+                    mailDataManager.sendAttachMail(player, awardList, MailConstant.MOLD_SEASON_523, AwardFrom.SEASON_CAMP_RANK_AWARD, now + 2, campRankData.rank);
                 }
             }
         });
@@ -777,7 +776,7 @@ public class SeasonService {
     }
 
     public static boolean checkServerId(List<List<Integer>> serverIds, int checkId) {
-        if(ListUtils.isNotBlank(serverIds)){
+        if (ListUtils.isNotBlank(serverIds)) {
             for (List<Integer> tmps : serverIds) {
                 if (checkId >= tmps.get(0) && checkId <= tmps.get(1)) {
                     return true;
@@ -791,13 +790,13 @@ public class SeasonService {
         Date now = new Date();
         int serverId = serverSetting.getServerID();
         StaticIniDataMgr.getStaticSeasonPlanList().stream().filter(tmp -> checkServerId(tmp.getServerId(), serverId)).forEach(tmp -> {
-            this.addSeasonJob(scheduler,tmp,now);
+            this.addSeasonJob(scheduler, tmp, now);
         });
 
         this.initSeasonOnStartup();
     }
 
-    private void addSeasonJob(Scheduler scheduler,StaticSeasonPlan tmp,Date now){
+    private void addSeasonJob(Scheduler scheduler, StaticSeasonPlan tmp, Date now) {
         if (now.before(tmp.getPreviewTime())) {
             QuartzHelper.addJob(scheduler, SeasonJob.NAME_PRE + tmp.getId(), SeasonJob.GROUP_SEASON, SeasonJob.class, tmp.getPreviewTime());
         }
@@ -815,24 +814,24 @@ public class SeasonService {
     /**
      * 服务器启动时处理赛季数据
      */
-    private void initSeasonOnStartup(){
+    private void initSeasonOnStartup() {
         Date now = new Date();
         int serverId = serverSetting.getServerID();
         GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
         int currSeasonId = globalSeasonData.getCurrSeasonId();
         //当前没有开放的赛季，则根据配置设置当前赛季
-        if(currSeasonId == 0){
+        if (currSeasonId == 0) {
             StaticSeasonPlan staticSeasonPlan = StaticIniDataMgr.getStaticSeasonPlanList().stream().filter(tmp ->
                     checkServerId(tmp.getServerId(), serverId) && now.after(tmp.getPreviewTime()) && now.before(tmp.getDisplayTime())).findFirst().orElse(null);
-            if(Objects.nonNull(staticSeasonPlan)){
+            if (Objects.nonNull(staticSeasonPlan)) {
                 globalSeasonData.setCurrSeasonId(staticSeasonPlan.getId());
                 int state = this.getSeasonState();
-                if(state == SeasonConst.STATE_PRE){
+                if (state == SeasonConst.STATE_PRE) {
                     this.execJob4Pre(staticSeasonPlan.getId());
-                }else if(state == SeasonConst.STATE_OPEN){
+                } else if (state == SeasonConst.STATE_OPEN) {
                     this.execJob4Pre(staticSeasonPlan.getId());
                     this.execJob4Begin(staticSeasonPlan.getId());
-                }else if(state == SeasonConst.STATE_DISPLAY){
+                } else if (state == SeasonConst.STATE_DISPLAY) {
                     this.execJob4Pre(staticSeasonPlan.getId());
                     this.execJob4Begin(staticSeasonPlan.getId());
                     this.execJob4End(staticSeasonPlan.getId());
@@ -842,14 +841,14 @@ public class SeasonService {
         //当前有开放的赛季，若当前时间已不在开放时间内则结束当前赛季并根据配表中当前开放的赛季设置；若当前时间在开放时间内则刷新配置
         else {
             StaticSeasonPlan staticSeasonPlan = StaticIniDataMgr.getStaticSeasonPlanById(currSeasonId);
-            if(Objects.nonNull(staticSeasonPlan)){
-                if(now.after(staticSeasonPlan.getPreviewTime()) && now.before(staticSeasonPlan.getDisplayTime())){
+            if (Objects.nonNull(staticSeasonPlan)) {
+                if (now.after(staticSeasonPlan.getPreviewTime()) && now.before(staticSeasonPlan.getDisplayTime())) {
                     globalSeasonData.setStaticSeasonPlan(staticSeasonPlan);
-                }else {
+                } else {
                     this.execJob4Over(currSeasonId);
                     staticSeasonPlan = StaticIniDataMgr.getStaticSeasonPlanList().stream().filter(tmp ->
                             checkServerId(tmp.getServerId(), serverId) && now.after(tmp.getPreviewTime()) && now.before(tmp.getDisplayTime())).findFirst().orElse(null);
-                    if(Objects.nonNull(staticSeasonPlan)){
+                    if (Objects.nonNull(staticSeasonPlan)) {
                         this.execJob4Pre(staticSeasonPlan.getId());
                     }
                 }
@@ -868,10 +867,10 @@ public class SeasonService {
         }
     }
 
-    public void handleTreasuryTask0(Player player,ETask eTask,int...params){
+    public void handleTreasuryTask0(Player player, ETask eTask, int... params) {
         this.initTreasuryTaskData(player);
 
-        this.handleTreasuryTask(player,eTask,params);
+        this.handleTreasuryTask(player, eTask, params);
     }
 
     /**
@@ -913,8 +912,8 @@ public class SeasonService {
                         playerSeasonData.setFinishedCount(playerSeasonData.getFinishedCount() + 1);
 
                         this.handleJourneyTask(player, ETask.FINISHED_TASK, TaskCategory.TREASURY.getCategory());
-                        ActivityDiaoChanService.completeTask(player,ETask.FINISHED_TASK,TaskCategory.TREASURY.getCategory());
-                        TaskService.processTask(player,ETask.FINISHED_TASK,TaskCategory.TREASURY.getCategory());
+                        ActivityDiaoChanService.completeTask(player, ETask.FINISHED_TASK, TaskCategory.TREASURY.getCategory());
+                        TaskService.processTask(player, ETask.FINISHED_TASK, TaskCategory.TREASURY.getCategory());
                     }
                 }
             }
@@ -926,11 +925,11 @@ public class SeasonService {
         }
     }
 
-    public void handleJourneyTask0(Player player, ETask eTask, int... params){
+    public void handleJourneyTask0(Player player, ETask eTask, int... params) {
         int season = this.getCurrSeason();
         this.initSeasonTaskData(player, season);
 
-        this.handleJourneyTask(player,eTask,params);
+        this.handleJourneyTask(player, eTask, params);
     }
 
     /**
@@ -987,7 +986,8 @@ public class SeasonService {
     /**
      * 获得赛季积分
      * 1、在endTime时发放未领取的旅程奖励里面有积分，但此刻添加积分已不在开放期；
-     *      原本要求只能在开放期内才能获得积分，但为了兼容此逻辑则改为展示期也能获得积分
+     * 原本要求只能在开放期内才能获得积分，但为了兼容此逻辑则改为展示期也能获得积分
+     *
      * @param player
      * @param count
      * @param awardFrom
@@ -1010,24 +1010,24 @@ public class SeasonService {
         LogLordHelper.activityScore("seasonScore", awardFrom, player, playerSeasonData.getSeasonScore(), count, null);
     }
 
-    private void updateCampRank(Player player,int count){
+    private void updateCampRank(Player player, int count) {
         GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
-        CampRankData campRankdata = globalSeasonData.getCampRank().stream().filter(tmp -> tmp.camp==player.getCamp()).findFirst().orElse(null);
-        if(campRankdata == null){
-            campRankdata = new CampRankData(player.getCamp(),count,TimeHelper.getCurrentSecond(),0);
+        CampRankData campRankdata = globalSeasonData.getCampRank().stream().filter(tmp -> tmp.camp == player.getCamp()).findFirst().orElse(null);
+        if (campRankdata == null) {
+            campRankdata = new CampRankData(player.getCamp(), count, TimeHelper.getCurrentSecond(), 0);
             globalSeasonData.getCampRank().add(campRankdata);
-        }else {
+        } else {
             campRankdata.value = campRankdata.value + count;
             campRankdata.time = TimeHelper.getCurrentSecond();
         }
 //        globalSeasonData.getCampRank().sort(COMPARATOR_CAMP_RANK);
     }
 
-    private CampRankData getCampRankData(int camp,List<CampRankData> sortedList){
-        int i=1;
+    private CampRankData getCampRankData(int camp, List<CampRankData> sortedList) {
+        int i = 1;
         for (CampRankData campRankData : sortedList) {
             campRankData.rank = i;
-            if(camp == campRankData.camp){
+            if (camp == campRankData.camp) {
                 return campRankData;
             }
             i++;
@@ -1050,11 +1050,11 @@ public class SeasonService {
         return 0;
     };
 
-    public int getSeasonScore(Player player){
+    public int getSeasonScore(Player player) {
         return player.getPlayerSeasonData().getSeasonScore();
     }
 
-    public void updatePlayerRank(Player player,int now) {
+    public void updatePlayerRank(Player player, int now) {
         int newValue = player.getPlayerSeasonData().getSeasonScore();
         if (newValue <= 0) {
             return;
@@ -1077,17 +1077,17 @@ public class SeasonService {
                 ranks.add(new ActRank(player.roleId, 0, newValue, now));
                 isSort = true;
             } else {
-                if(myRank.getRankValue() != newValue){
+                if (myRank.getRankValue() != newValue) {
                     myRank.setRankValue(newValue);
                     myRank.setRankTime(now);
                     isSort = true;
                 }
             }
         }
-        if(isSort){
+        if (isSort) {
             ranks.sort(RANK1);
         }
-        if(ranks.size() > MAX_RANK_NUM){
+        if (ranks.size() > MAX_RANK_NUM) {
             ranks.removeLast();
         }
     }
@@ -1109,42 +1109,42 @@ public class SeasonService {
         return 0;
     };
 
-    public GamePb4.SeasonGetRankRs getSeasonRank(long roleId,int page) throws MwException {
+    public GamePb4.SeasonGetRankRs getSeasonRank(long roleId, int page) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
         int currSeason = this.getCurrSeason();
-        if(currSeason == 0){
+        if (currSeason == 0) {
             throw new MwException(GameError.SEASON_NON_OPEN.getCode(), GameError.SEASON_NON_OPEN.errMsg(roleId));
         }
         GamePb4.SeasonGetRankRs.Builder resp = GamePb4.SeasonGetRankRs.newBuilder();
         GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
         ActRank myRank = globalSeasonData.getRank(player.roleId);
-        if(Objects.nonNull(myRank)){
-            resp.setMyRank(PbHelper.createActRank(myRank,player.lord.getNick(),player.lord.getCamp(),player.lord.getPortrait(), player.getDressUp().getCurPortraitFrame()));
+        if (Objects.nonNull(myRank)) {
+            resp.setMyRank(PbHelper.createActRank(myRank, player.lord.getNick(), player.lord.getCamp(), player.lord.getPortrait(), player.getDressUp().getCurPortraitFrame()));
         }
-        int pageSize=10;
-        int maxSize = StaticIniDataMgr.getSeasonRankMax().getOrDefault(currSeason,100);
+        int pageSize = 10;
+        int maxSize = StaticIniDataMgr.getSeasonRankMax().getOrDefault(currSeason, 100);
         int size_ = globalSeasonData.getRanks().size();
         size_ = size_ > maxSize ? maxSize : size_;
         int a = size_ % pageSize;
         int b = size_ / pageSize;
-        int totalPage_ = a == 0? b : b + 1;
-        if(page > totalPage_){
+        int totalPage_ = a == 0 ? b : b + 1;
+        if (page > totalPage_) {
 
-        }else {
+        } else {
             int startIdx = (page - 1) * pageSize;
             int endIdx = pageSize * page;
 
-            for(int i=0;i<size_;i++) {
+            for (int i = 0; i < size_; i++) {
                 if (i < startIdx) {
                     continue;
                 }
-                if(i >= endIdx){
+                if (i >= endIdx) {
                     break;
                 }
                 ActRank actRank = globalSeasonData.getRanks().get(i);
                 actRank.setRank(i + 1);
                 Player p = playerDataManager.getPlayer(actRank.getLordId());
-                resp.addRanks(PbHelper.createActRank(actRank, p.lord.getNick(), p.lord.getCamp(), p.lord.getPortrait(),player.getDressUp().getCurPortraitFrame()));
+                resp.addRanks(PbHelper.createActRank(actRank, p.lord.getNick(), p.lord.getCamp(), p.lord.getPortrait(), player.getDressUp().getCurPortraitFrame()));
             }
         }
 
@@ -1153,14 +1153,14 @@ public class SeasonService {
         for (CampRankData campRankData : globalSeasonData.getCampRank()) {
             campRankData.rank = j;
             resp.addCampRank(globalSeasonData.buildCampRankInfo(campRankData));
-            j ++;
+            j++;
         }
         return resp.build();
     }
 
-    public void loadRankDataOnStartup(){
+    public void loadRankDataOnStartup() {
         playerDataManager.getPlayers().values().forEach(player -> {
-            if(player.getPlayerSeasonData().getSeasonScore() > 0){
+            if (player.getPlayerSeasonData().getSeasonScore() > 0) {
                 this.updatePlayerRank(player, player.getPlayerSeasonData().getSeasonScoreTime());
                 // 更新所属阵营积分
                 this.updateCampRank(player, player.getPlayerSeasonData().getSeasonScore());
@@ -1168,12 +1168,12 @@ public class SeasonService {
         });
     }
 
-    public boolean checkPropUse(StaticProp staticProp){
-        if(staticProp.getSeason() > 0){
+    public boolean checkPropUse(StaticProp staticProp) {
+        if (staticProp.getSeason() > 0) {
             GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
             StaticSeasonPlan staticSeasonPlan = StaticIniDataMgr.getStaticSeasonPlanById(globalSeasonData.getLastSeasonId());
             int lastSeason = Objects.isNull(staticSeasonPlan) ? 0 : staticSeasonPlan.getSeason();
-            if(lastSeason < staticProp.getSeason()){
+            if (lastSeason < staticProp.getSeason()) {
                 LogUtil.error("使用道具的赛季小于开过的赛季, 开过的赛季=" + globalSeasonData.getLastSeasonId());
                 return false;
             }
@@ -1188,21 +1188,21 @@ public class SeasonService {
                 checkServerId(tmp.getServerId(), serverId) && now.after(tmp.getPreviewTime()) && now.before(tmp.getDisplayTime())).findFirst().orElse(null);
         if (Objects.nonNull(staticSeasonPlan)) {
             this.execJob4Pre(staticSeasonPlan.getId());
-            this.addSeasonJob(ScheduleManager.getInstance().getSched(),staticSeasonPlan,now);
+            this.addSeasonJob(ScheduleManager.getInstance().getSched(), staticSeasonPlan, now);
         }
     }
 
-    public void gm_reload(){
+    public void gm_reload() {
         this.initSchedule(ScheduleManager.getInstance().getSched());
         DataResource.getBean(SeasonTalentService.class).initSchedule(ScheduleManager.getInstance().getSched());
         syncSeasonInfo();
     }
 
-    public void gm_seasonOver(){
+    public void gm_seasonOver() {
         GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
         int currSeasonId = globalSeasonData.getCurrSeasonId();
         this.execJob4Over(globalSeasonData.getCurrSeasonId());
-        if(currSeasonId != 0){
+        if (currSeasonId != 0) {
             QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(), SeasonJob.NAME_PRE + currSeasonId, SeasonJob.GROUP_SEASON);
             QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(), SeasonJob.NAME_BEGIN + currSeasonId, SeasonJob.GROUP_SEASON);
             QuartzHelper.removeJob(ScheduleManager.getInstance().getSched(), SeasonJob.NAME_END + currSeasonId, SeasonJob.GROUP_SEASON);
@@ -1210,13 +1210,13 @@ public class SeasonService {
         }
     }
 
-    public void gm_seasonEnd(){
+    public void gm_seasonEnd() {
         GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
         int currSeasonId = globalSeasonData.getCurrSeasonId();
         this.execJob4End(currSeasonId);
     }
 
-    public void gm_clearSeason(){
+    public void gm_clearSeason() {
         GlobalSeasonData globalSeasonData = globalDataManager.getGameGlobal().getGlobalSeasonData();
         globalSeasonData.clear();
         syncSeasonInfo();
@@ -1224,17 +1224,17 @@ public class SeasonService {
 
     // <editor-fold desc="自己测试用的方法" defaultstate="collapsed">
     public void test_protocol(Player player, String... params) throws Exception {
-        if(params[1].equalsIgnoreCase("fixCampRank")){
+        if (params[1].equalsIgnoreCase("fixCampRank")) {
             int state = this.getSeasonState();
-            if(state != SeasonConst.STATE_NON){
+            if (state != SeasonConst.STATE_NON) {
                 LinkedList<CampRankData> campRankDatas = globalDataManager.getGameGlobal().getGlobalSeasonData().getCampRank();
-                Map<Integer,Integer> fixMap = new HashMap<>();
+                Map<Integer, Integer> fixMap = new HashMap<>();
                 for (Player target : playerDataManager.getPlayers().values()) {
-                    if(target.getPlayerSeasonData().getSeasonScore() > 0){
-                        if(fixMap.containsKey(target.getCamp())){
-                            fixMap.put(target.getCamp(),fixMap.get(target.getCamp()) + target.getPlayerSeasonData().getSeasonScore());
-                        }else {
-                            fixMap.put(target.getCamp(),target.getPlayerSeasonData().getSeasonScore());
+                    if (target.getPlayerSeasonData().getSeasonScore() > 0) {
+                        if (fixMap.containsKey(target.getCamp())) {
+                            fixMap.put(target.getCamp(), fixMap.get(target.getCamp()) + target.getPlayerSeasonData().getSeasonScore());
+                        } else {
+                            fixMap.put(target.getCamp(), target.getPlayerSeasonData().getSeasonScore());
                         }
                     }
                 }
@@ -1252,13 +1252,13 @@ public class SeasonService {
                         currData = new CampRankData(entry.getKey(), entry.getValue(), TimeHelper.getCurrentSecond(), 0);
                         campRankDatas.add(currData);
                         isFix = true;
-                    }else {
+                    } else {
                         if (currData.value != entry.getValue().intValue()) {
                             currData.value = entry.getValue();
                             isFix = true;
                         }
                     }
-                    if(isFix){
+                    if (isFix) {
                         LogUtil.error("修复赛季阵营排行数据CampRankData=" + JSON.toJSONString(currData));
                     }
                 }
@@ -1266,14 +1266,14 @@ public class SeasonService {
             }
             LogUtil.error("修复赛季阵营排行数据赛季状态=" + state);
         }
-        if(params[1].equalsIgnoreCase("clearCampRank")){
+        if (params[1].equalsIgnoreCase("clearCampRank")) {
             globalDataManager.getGameGlobal().getGlobalSeasonData().getCampRank().clear();
             LogUtil.error("测试用清除阵营排行数据, " + JSON.toJSONString(globalDataManager.getGameGlobal().getGlobalSeasonData().getCampRank()));
         }
         if (params[1].equalsIgnoreCase("setSeason")) {
             this.gm_setSeason();
         }
-        if(params[1].equalsIgnoreCase("seasonEnd")){
+        if (params[1].equalsIgnoreCase("seasonEnd")) {
             this.gm_seasonEnd();
         }
         if (params[1].equalsIgnoreCase("seasonOver")) {
@@ -1291,24 +1291,14 @@ public class SeasonService {
         if (params[1].equals("task")) {
             int taskId = Integer.parseInt(params[2]);
         }
-        if (params[1].equals("cleartask")) {
-            player.getPlayerSeasonData().clearData();
-            Hero hero = player.heros.get(2000);
-            if(Objects.nonNull(hero)){
-                if(hero.getPos() > 0){
-                    player.heroBattle[hero.getPos()] = 0;
-                }
-                player.heros.remove(2000);
-            }
-        }
-        if(params[1].equalsIgnoreCase("clear")){
+        if (params[1].equalsIgnoreCase("clear")) {
             this.gm_clearSeason();
         }
-        if(params[1].equalsIgnoreCase("addscore")){
-            this.updateSeasonScore(player,Integer.parseInt(params[2]),AwardFrom.GM_SEND);
+        if (params[1].equalsIgnoreCase("addscore")) {
+            this.updateSeasonScore(player, Integer.parseInt(params[2]), AwardFrom.GM_SEND);
         }
-        if(params[1].equalsIgnoreCase("allscore")){
-            playerDataManager.getPlayers().values().forEach(player1 -> this.updateSeasonScore(player, RandomUtil.randomIntIncludeEnd(1,5000),null));
+        if (params[1].equalsIgnoreCase("allscore")) {
+            playerDataManager.getPlayers().values().forEach(player1 -> this.updateSeasonScore(player, RandomUtil.randomIntIncludeEnd(1, 5000), null));
         }
     }
 // </editor-fold>

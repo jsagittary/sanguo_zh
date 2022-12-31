@@ -2,32 +2,21 @@ package com.gryphpoem.game.zw.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.handler.DealType;
 import com.gryphpoem.game.zw.core.util.Java8Utils;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCiaDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticPartyDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.cross.serivce.CrossGamePlayService;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.manger.CrossWorldMapDataManager;
 import com.gryphpoem.game.zw.gameplay.local.service.CrossAttackService;
 import com.gryphpoem.game.zw.gameplay.local.service.newyork.NewYorkWarService;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonAttackCityService;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyAttackTaskService;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonMomentOverService;
-import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonWeekIntegralService;
+import com.gryphpoem.game.zw.gameplay.local.service.worldwar.*;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.MapEntityGenerator;
 import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
@@ -38,140 +27,42 @@ import com.gryphpoem.game.zw.gameplay.local.world.battle.MapWarData;
 import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
-import com.gryphpoem.game.zw.manager.ActivityDataManager;
-import com.gryphpoem.game.zw.manager.BattlePassDataManager;
-import com.gryphpoem.game.zw.manager.BuildingDataManager;
-import com.gryphpoem.game.zw.manager.CampDataManager;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.DressUpDataManager;
-import com.gryphpoem.game.zw.manager.GlobalDataManager;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.MedalDataManager;
-import com.gryphpoem.game.zw.manager.MentorDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RankDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.SolarTermsDataManager;
-import com.gryphpoem.game.zw.manager.TaskDataManager;
-import com.gryphpoem.game.zw.manager.VipDataManager;
-import com.gryphpoem.game.zw.manager.WarDataManager;
-import com.gryphpoem.game.zw.manager.WarPlaneDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.manager.prop.PropDataManager;
-import com.gryphpoem.game.zw.pb.BasePb;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.*;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.Mail;
 import com.gryphpoem.game.zw.pb.GamePb1.DoSomeRq;
-import com.gryphpoem.game.zw.pb.GamePb2;
-import com.gryphpoem.game.zw.pb.GamePb3;
-import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRq;
-import com.gryphpoem.game.zw.pb.HttpPb;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
-import com.gryphpoem.game.zw.resource.constant.ActParamConstant;
-import com.gryphpoem.game.zw.resource.constant.ActivityConst;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.BuildingType;
-import com.gryphpoem.game.zw.resource.constant.ChatConst;
-import com.gryphpoem.game.zw.resource.constant.Constant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.constant.Constant.CombatType;
-import com.gryphpoem.game.zw.resource.constant.DataSaveConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.GlobalConstant;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.PlaneConstant;
-import com.gryphpoem.game.zw.resource.constant.PlayerConstant;
-import com.gryphpoem.game.zw.resource.constant.PropConstant;
-import com.gryphpoem.game.zw.resource.constant.PushConstant;
-import com.gryphpoem.game.zw.resource.constant.ScheduleConstant;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.dao.impl.p.AccountDao;
 import com.gryphpoem.game.zw.resource.dao.impl.p.GlobalDao;
 import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.domain.p.Account;
-import com.gryphpoem.game.zw.resource.domain.p.ActTurnplat;
-import com.gryphpoem.game.zw.resource.domain.p.Activity;
-import com.gryphpoem.game.zw.resource.domain.p.ArmQue;
-import com.gryphpoem.game.zw.resource.domain.p.BuildQue;
-import com.gryphpoem.game.zw.resource.domain.p.Building;
-import com.gryphpoem.game.zw.resource.domain.p.Combat;
-import com.gryphpoem.game.zw.resource.domain.p.CombatFb;
-import com.gryphpoem.game.zw.resource.domain.p.EquipQue;
-import com.gryphpoem.game.zw.resource.domain.p.Factory;
-import com.gryphpoem.game.zw.resource.domain.p.Mentor;
-import com.gryphpoem.game.zw.resource.domain.p.MentorEquip;
-import com.gryphpoem.game.zw.resource.domain.p.MentorInfo;
-import com.gryphpoem.game.zw.resource.domain.p.MentorSkill;
-import com.gryphpoem.game.zw.resource.domain.p.Mill;
-import com.gryphpoem.game.zw.resource.domain.p.MultCombat;
-import com.gryphpoem.game.zw.resource.domain.p.PitchCombat;
-import com.gryphpoem.game.zw.resource.domain.p.PlayerRebellion;
-import com.gryphpoem.game.zw.resource.domain.p.StoneCombat;
-import com.gryphpoem.game.zw.resource.domain.p.TechLv;
-import com.gryphpoem.game.zw.resource.domain.s.StaticActAward;
-import com.gryphpoem.game.zw.resource.domain.s.StaticAgent;
-import com.gryphpoem.game.zw.resource.domain.s.StaticArea;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
-import com.gryphpoem.game.zw.resource.domain.s.StaticCombat;
-import com.gryphpoem.game.zw.resource.domain.s.StaticMedal;
-import com.gryphpoem.game.zw.resource.domain.s.StaticPitchCombat;
-import com.gryphpoem.game.zw.resource.domain.s.StaticSchedule;
-import com.gryphpoem.game.zw.resource.domain.s.StaticScheduleBoss;
-import com.gryphpoem.game.zw.resource.domain.s.StaticStoneCombat;
-import com.gryphpoem.game.zw.resource.domain.s.StaticTechLv;
-import com.gryphpoem.game.zw.resource.pojo.ActRank;
-import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.Equip;
-import com.gryphpoem.game.zw.resource.pojo.GameGlobal;
-import com.gryphpoem.game.zw.resource.pojo.GlobalActivityData;
-import com.gryphpoem.game.zw.resource.pojo.GlobalRoyalArena;
-import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.pojo.Trophy;
-import com.gryphpoem.game.zw.resource.pojo.WarPlane;
+import com.gryphpoem.game.zw.resource.domain.p.*;
+import com.gryphpoem.game.zw.resource.domain.s.*;
+import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.dressup.BaseDressUpEntity;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.ScheduleBoss;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.medal.Medal;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.sandtable.HisCampRank;
 import com.gryphpoem.game.zw.resource.pojo.sandtable.SandTableCamp;
 import com.gryphpoem.game.zw.resource.pojo.sandtable.SandTableContest;
 import com.gryphpoem.game.zw.resource.pojo.treasureware.TreasureWare;
-import com.gryphpoem.game.zw.resource.pojo.world.Area;
-import com.gryphpoem.game.zw.resource.pojo.world.Battle;
-import com.gryphpoem.game.zw.resource.pojo.world.BerlinCityInfo;
-import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
-import com.gryphpoem.game.zw.resource.pojo.world.City;
-import com.gryphpoem.game.zw.resource.pojo.world.CounterAttack;
-import com.gryphpoem.game.zw.resource.pojo.world.SuperMine;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.DateHelper;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.MapHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.PushMessageUtil;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.pojo.world.*;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.server.thread.SendEventDataThread;
-import com.gryphpoem.game.zw.service.activity.AbsRankActivityService;
-import com.gryphpoem.game.zw.service.activity.ActivityAuctionService;
-import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
-import com.gryphpoem.game.zw.service.activity.ActivityService;
-import com.gryphpoem.game.zw.service.activity.ActivityTemplateService;
-import com.gryphpoem.game.zw.service.activity.PersonalActService;
+import com.gryphpoem.game.zw.service.activity.*;
 import com.gryphpoem.game.zw.service.robot.RobotService;
 import com.gryphpoem.game.zw.service.sandtable.SandTableContestService;
 import com.gryphpoem.game.zw.service.session.SeasonService;
@@ -181,19 +72,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -670,7 +550,7 @@ public class GmService {
                 } else if (type.contains("enrollself")) {//
                     String[] strArr = type.split("-");
                     List<Integer> heroIds = new ArrayList<>();
-                    player.getAllOnBattleHeros().stream().forEach(o -> heroIds.add(o.getHeroId()));
+                    player.getAllOnBattleHeroList().stream().forEach(o -> heroIds.add(o.getPrincipalHero().getHeroId()));
                     sandTableContestService.enroll(player.roleId, Integer.parseInt(strArr[1]), heroIds);
                 } else if (type.equalsIgnoreCase("getHisContest")) {
                     sandTableContestService.getHisContest(player.roleId);
@@ -689,7 +569,7 @@ public class GmService {
                                 tmpLine = 1;
                             }
                             try {
-                                sandTableContestService.enroll(p.roleId, tmpLine, p.getAllOnBattleHeros().stream().map(hero -> hero.getHeroId()).collect(Collectors.toList()));
+                                sandTableContestService.enroll(p.roleId, tmpLine, p.getAllOnBattleHeroList().stream().map(hero -> hero.getPrincipalHero().getHeroId()).collect(Collectors.toList()));
                                 tmpLine++;
                             } catch (Exception e) {
 
@@ -698,7 +578,7 @@ public class GmService {
                     } else {
                         for (Player p : campPlayers.values()) {
                             try {
-                                sandTableContestService.enroll(p.roleId, line, p.getAllOnBattleHeros().stream().map(hero -> hero.getHeroId()).collect(Collectors.toList()));
+                                sandTableContestService.enroll(p.roleId, line, p.getAllOnBattleHeroList().stream().map(hero -> hero.getPrincipalHero().getHeroId()).collect(Collectors.toList()));
                             } catch (Exception e) {
 
                             }
@@ -1075,8 +955,8 @@ public class GmService {
             }).limit(Integer.valueOf(count)).forEach(p -> {
                 // 对方开启自动补兵
                 playerDataManager.autoAddArmy(p);
-                List<Integer> heros = p.getAllOnBattleHeros().stream()
-                        .filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE).map(hero -> hero.getHeroId())
+                List<Integer> heros = p.getAllOnBattleHeroList().stream()
+                        .filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE).map(hero -> hero.getPrincipalHero().getHeroId())
                         .collect(Collectors.toList());
                 GamePb4.AttackCounterBossRq.Builder builder = GamePb4.AttackCounterBossRq.newBuilder();
                 builder.addAllHeroId(heros);
@@ -1176,11 +1056,11 @@ public class GmService {
                 }
                 return flag;
             }).limit(Integer.valueOf(count)).forEach(p -> {
-                List<Hero> heros = p.getAllOnBattleHeros();
-                heros.stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE).forEach(hero -> {
+                List<PartnerHero> heros = p.getAllOnBattleHeroList();
+                heros.stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE).forEach(hero -> {
                     try {
                         berlinWarService.attackBerlinWar(p.roleId, PbHelper.createAttackBerlinWarRq(cityId,
-                                hero.getHeroId(), WorldConstant.BERLIN_ATTACK_TYPE_COMMON));
+                                hero.getPrincipalHero().getHeroId(), WorldConstant.BERLIN_ATTACK_TYPE_COMMON));
                     } catch (MwException e) {
                         LogUtil.error(e, "自动参加柏林会战");
                     }
@@ -1422,22 +1302,23 @@ public class GmService {
                     e.printStackTrace();
                 }
             }
-            for (int i = 1; i < player.heroBattle.length; i++) {
-                int heroId = player.heroBattle[i];
-                Hero hero = player.heros.get(heroId);
-                if (hero != null) {
-                    hero.setState(HeroConstant.HERO_STATE_IDLE);
+            Optional.ofNullable(player.getPlayerFormation().getHeroBattle()).ifPresent(heroes -> {
+                for (PartnerHero partnerHero : heroes) {
+                    if (HeroUtil.isEmptyPartner(partnerHero))
+                        continue;
+
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
                 }
-                LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-            }
-            for (int i = 1; i < player.heroAcq.length; i++) {
-                int heroId = player.heroAcq[i];
-                Hero hero = player.heros.get(heroId);
-                if (hero != null) {
-                    hero.setState(HeroConstant.HERO_STATE_IDLE);
+            });
+
+            Optional.ofNullable(player.getPlayerFormation().getHeroAcq()).ifPresent(heroes -> {
+                for (PartnerHero partnerHero : heroes) {
+                    if (HeroUtil.isEmptyPartner(partnerHero))
+                        continue;
+
+                    partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
                 }
-                LogUtil.debug("--------------修复将领状态到空闲 heroId: ", heroId);
-            }
+            });
             LogUtil.debug("--------------修复玩家部队状态 结束  roleId:", player.roleId);
         } else if (str.equalsIgnoreCase("gestapaoRank")) { // 修复盖世太保个人排行进度
             GlobalActivityData actData = activityDataManager.getActivityMap().get(ActivityConst.ACT_GESTAPO_RANK);
@@ -1497,15 +1378,15 @@ public class GmService {
         } else if (str.equalsIgnoreCase("famousGeneralRank")) { // 名将转盘活动修复
             fixFamousGeneralRank();
         } else if (str.equalsIgnoreCase("planeStatus")) {
-            playerDataManager.getPlayers().forEach((lordId, p) -> {
-                player.getAllOnBattleHeros().forEach(e -> e.getWarPlanes().clear());
-                player.warPlanes.values().forEach(e -> {
-                    e.setHeroId(0);
-                    e.setPos(0);
-                    e.setBattlePos(0);
-                    e.setState(PlaneConstant.PLANE_STATE_IDLE);
-                });
-            });
+//            playerDataManager.getPlayers().forEach((lordId, p) -> {
+//                player.getAllOnBattleHeros().forEach(e -> e.getWarPlanes().clear());
+//                player.warPlanes.values().forEach(e -> {
+//                    e.setHeroId(0);
+//                    e.setPos(0);
+//                    e.setBattlePos(0);
+//                    e.setState(PlaneConstant.PLANE_STATE_IDLE);
+//                });
+//            });
         } else if (str.equalsIgnoreCase("mentorEquip")) {
             playerDataManager.getPlayers().values().forEach(p -> {
                 p.getMentorInfo().getMentors().values()
@@ -2082,10 +1963,10 @@ public class GmService {
             } else if (str.equalsIgnoreCase("allEquipsAndHeros")) {
                 player.equips.clear();
                 player.heros.clear();
-                Arrays.fill(player.heroBattle, 0);
-                Arrays.fill(player.heroWall, 0);
-                Arrays.fill(player.heroAcq, 0);
-                Arrays.fill(player.heroDef, 0);
+//                Arrays.fill(player.heroBattle, 0);
+//                Arrays.fill(player.heroWall, 0);
+//                Arrays.fill(player.heroAcq, 0);
+//                Arrays.fill(player.heroDef, 0);
             } else if (str.equalsIgnoreCase("hero")) {
                 Hero hero = player.heros.get(count);
                 if (hero != null) {
@@ -2272,15 +2153,15 @@ public class GmService {
                                         return flag;
                                     }).limit(count)
                                     .forEach(p -> {
-                                        List<Hero> heros = p.getAllOnBattleHeros();
-                                        heros.stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_STATE_IDLE)
+                                        List<PartnerHero> heros = p.getAllOnBattleHeroList();
+                                        heros.stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_STATE_IDLE)
                                                 .forEach(hero -> {
                                                     try {
                                                         AttackCrossPosRq.Builder builder = AttackCrossPosRq.newBuilder();
                                                         int pos = cme.getPos();
                                                         builder.setPos(pos);
                                                         builder.setMapId(CrossWorldMapConstant.CROSS_MAP_ID);
-                                                        builder.addHeroId(hero.getHeroId());
+                                                        builder.addHeroId(hero.getPrincipalHero().getHeroId());
                                                         crossAttackService.attackCrossPos(p.roleId, builder.build());
                                                     } catch (MwException e) {
                                                         LogUtil.error(e, "自动进攻战火燎原城池");
@@ -2318,15 +2199,15 @@ public class GmService {
                                     .forEach(p -> {
                                         // 对方开启自动补兵
                                         playerDataManager.autoAddArmy(p);
-                                        p.getAllOnBattleHeros()
+                                        p.getAllOnBattleHeroList()
                                                 .stream()
-                                                .filter(Hero::isIdle)
-                                                .peek(hero -> hero.setCount(hero.getAttr()[Constant.AttrId.LEAD]))
+                                                .filter(p_ -> p_.getPrincipalHero().isIdle())
+                                                .peek(hero -> hero.getPrincipalHero().setCount(hero.getPrincipalHero().getAttr()[FightCommonConstant.AttrId.LEAD]))
                                                 .findAny()
                                                 .ifPresent(hero -> {
                                                     GamePb2.AttackPosRq.Builder builder = GamePb2.AttackPosRq.newBuilder();
                                                     builder.setPos(pos);
-                                                    builder.addHeroId(hero.getHeroId());
+                                                    builder.addHeroId(hero.getPrincipalHero().getHeroId());
                                                     builder.setType(id);
                                                     try {
                                                         worldService.attackPos(p.roleId, builder.build());
@@ -2756,11 +2637,11 @@ public class GmService {
         } else if (str.equalsIgnoreCase("chip")) { // 清除所有碎片
             player.palneChips.clear();
         } else if (str.equalsIgnoreCase("planeData")) { // 清除所有战机相关数据
-            playerDataManager.getPlayers().values().stream().forEach(p -> {
-                p.getAllOnBattleHeros().stream().forEach(hero -> hero.getWarPlanes().clear());
-                p.warPlanes.clear();
-                p.palneChips.clear();
-            });
+//            playerDataManager.getPlayers().values().stream().forEach(p -> {
+//                p.getAllOnBattleHeros().stream().forEach(hero -> hero.getWarPlanes().clear());
+//                p.warPlanes.clear();
+//                p.palneChips.clear();
+//            });
         } else if (str.equalsIgnoreCase("actGiftPacket")) { // 清除全服玩家特价礼包进度
             playerDataManager.getPlayers().values().stream().forEach(p -> {
                 Activity activity = p.activitys.get(ActivityConst.ACT_VIP_BAG);

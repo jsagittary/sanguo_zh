@@ -1,14 +1,19 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -21,12 +26,10 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCounterAttack;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCounterAttackShop;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
+import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
@@ -162,11 +165,12 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD, needFood,
                 AwardFrom.ATK_POS);
 
-        List<CommonPb.TwoInt> form = new ArrayList<>();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
         for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            form.add(partnerHero.convertTo());
         }
 
         // 添加兵力到进攻方
@@ -272,8 +276,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
             builder.setAward(rewardDataManager.addAwardSignle(player, shopConf.getAward(), AwardFrom.COUNTER_SHOP_BUY));
             LogLordHelper.commonLog("counterAtkCredit", AwardFrom.COUNTER_SHOP_BUY, player, redit, shopConf.getPrice());
             //上报数数
-            EventDataUp.credits(player.account,player.lord,player.getMixtureDataById(PlayerConstant.COUNTER_ATK_CREDIT),-shopConf.getPrice(), CreditsConstant.COUNTER_ATK,AwardFrom.COUNTER_SHOP_BUY);
-            
+            EventDataUp.credits(player.account, player.lord, player.getMixtureDataById(PlayerConstant.COUNTER_ATK_CREDIT), -shopConf.getPrice(), CreditsConstant.COUNTER_ATK, AwardFrom.COUNTER_SHOP_BUY);
+
         }
 
         if (!CheckNull.isEmpty(counterShop)) {
@@ -307,15 +311,9 @@ public class CounterAtkService extends BaseAwkwardDataManager {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_DEF);
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_COUNTER_BOSS_DEF);
 
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_DEF);
-            heroIdList.add(hero.getHeroId());
-        }
-        worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+        worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
     }
 
     /**
@@ -333,13 +331,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         Battle battle = warDataManager.getSpecialBattleMap().get(battleId);
         if (battle != null && target != null) {
             army.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_ATK_HELP);
-            List<Integer> heroIdList = new ArrayList<>();
-            for (CommonPb.TwoInt twoInt : army.getHero()) {
-                Hero hero = player.heros.get(twoInt.getV1());
-                hero.setState(ArmyConstant.ARMY_STATE_COUNTER_BOSS_ATK_HELP);
-                heroIdList.add(hero.getHeroId());
-            }
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), false);
+            army.setHeroState(player, ArmyConstant.ARMY_STATE_COUNTER_BOSS_ATK_HELP);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), false);
         } else {
             // 目标丢失
             Turple<Integer, Integer> xy = MapHelper.reducePos(pos);
@@ -742,8 +735,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
             // 对方开启自动补兵
             playerDataManager.autoAddArmy(player);
             int defArm = 0;
-            for (Hero hero : player.getAllOnBattleHeros()) {
-                defArm += hero.getCount();
+            for (PartnerHero hero : player.getAllOnBattleHeroList()) {
+                defArm += hero.getPrincipalHero().getCount();
             }
             if (!CheckNull.isNull(player)) {
                 Battle battle = new Battle();
@@ -874,13 +867,13 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         int beforeTotal = defender.getTotal();// 总血量
         int beforeLost = defender.getLost();// 总损失兵力
 
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
-        boolean atkSuc = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuc = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 兵力恢复
@@ -925,25 +918,25 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         Turple<Integer, Integer> cityXY = MapHelper.reducePos(counterAttack.getPos());
         if (atkSuc && !CheckNull.isNull(config)) { // 进攻成功
             int credit = config.getScore(); // 获得的积分
-            CommonPb.Round lastRound = fightLogic.getLastRound();
-            if (!CheckNull.isNull(lastRound)) {
-                CommonPb.Action actionB = lastRound.getActionB();
-                long targetRoleId = actionB.getTargetRoleId();
-                if (targetRoleId != 0) {
-                    Player player = playerDataManager.getPlayer(targetRoleId); // 最后的击杀玩家
-                    if (!CheckNull.isNull(player)) {
-                        sendCreditAward(credit, player.roleId); // 发送积分
-                        Object[] params = {counterAttack.getCityId(), cityXY.getA(), cityXY.getB(), credit};
-                        if (counterAtkFail()) {
-                            mailDataManager
-                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_END, sendMailTime, params);
-                        } else {
-                            mailDataManager
-                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_DEAD, sendMailTime, params);
-                        }
-                    }
-                }
-            }
+//            CommonPb.Round lastRound = fightLogic.getLastRound();
+//            if (!CheckNull.isNull(lastRound)) {
+//                CommonPb.Action actionB = lastRound.getActionB();
+//                long targetRoleId = actionB.getTargetRoleId();
+//                if (targetRoleId != 0) {
+//                    Player player = playerDataManager.getPlayer(targetRoleId); // 最后的击杀玩家
+//                    if (!CheckNull.isNull(player)) {
+//                        sendCreditAward(credit, player.roleId); // 发送积分
+//                        Object[] params = {counterAttack.getCityId(), cityXY.getA(), cityXY.getB(), credit};
+//                        if (counterAtkFail()) {
+//                            mailDataManager
+//                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_END, sendMailTime, params);
+//                        } else {
+//                            mailDataManager
+//                                    .sendNormalMail(player, MailConstant.MOLD_COUNTER_BOSS_DEF_DEAD, sendMailTime, params);
+//                        }
+//                    }
+//                }
+//            }
 
             if (counterAtkFail()) { // 没有下一个boss了
                 List<Integer> battleIds = warDataManager.getSpecialBattleMap().values().stream()
@@ -966,7 +959,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         }
 
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 部队返回
         warService.retreatBattleArmy(battle, sendMailTime);
     }
@@ -1003,13 +996,13 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         LogUtil.debug("defender=" + defender + ",attacker=" + attacker);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, battle.getType());
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
-        ActivityDiaoChanService.killedAndDeathTask0(defender,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
+        ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
-        boolean defSuc = !(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
+        boolean defSuc = !(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
 
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
@@ -1074,7 +1067,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         LogLordHelper.commonLog("counterAtkBattle", AwardFrom.COUNTER_BOSS_ATK, defPlayer, defSuc);
 
         // 日志记录
-        warService.logBattle(battle, fightLogic.getWinState(),attacker,defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
+        warService.logBattle(battle, fightLogic.getWinState(), attacker, defender, rpt.getAtkHeroList(), rpt.getDefHeroList());
         // 部队返回
         warService.retreatBattleArmy(battle, sendMailTime);
     }
@@ -1110,7 +1103,7 @@ public class CounterAtkService extends BaseAwkwardDataManager {
         player.setMixtureData(PlayerConstant.COUNTER_ATK_CREDIT, add + credit);
         LogLordHelper.commonLog("counterAtkCredit", AwardFrom.COUNTER_FIGHT_AWARD, player, credit, add);
         //上报数数
-        EventDataUp.credits(player.account,player.lord,add + credit,add, CreditsConstant.COUNTER_ATK,AwardFrom.COUNTER_FIGHT_AWARD);
+        EventDataUp.credits(player.account, player.lord, add + credit, add, CreditsConstant.COUNTER_ATK, AwardFrom.COUNTER_FIGHT_AWARD);
     }
 
     /**
@@ -1231,8 +1224,8 @@ public class CounterAtkService extends BaseAwkwardDataManager {
             }
         }
         worldService.buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
-        CommonPb.Record record = fightLogic.generateRecord();
-        rpt.setRecord(record);
+//        CommonPb.Record record = fightLogic.generateRecord();
+//        rpt.setRecord(record);
         return rpt;
     }
 

@@ -1,12 +1,13 @@
 package com.gryphpoem.game.zw.gameplay.local.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticScoutDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.PlayerMapEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticScoutDataMgr;
 import com.gryphpoem.game.zw.manager.BuildingDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -14,7 +15,8 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb2.ScoutPosRs;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRq;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -22,6 +24,7 @@ import com.gryphpoem.game.zw.resource.domain.p.Resource;
 import com.gryphpoem.game.zw.resource.domain.s.StaticScoutCost;
 import com.gryphpoem.game.zw.resource.pojo.Mail;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.HonorDailyService;
 import com.gryphpoem.game.zw.service.WorldService;
@@ -35,9 +38,9 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName CrossAttackService.java
  * @Description 跨服攻打的业务逻辑
- * @author QiuKun
  * @date 2019年3月22日
  */
 @Component
@@ -59,7 +62,7 @@ public class CrossAttackService {
 
     /**
      * 攻击某个点
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -115,7 +118,7 @@ public class CrossAttackService {
 
     /**
      * 检查玩家的出征将领
-     * 
+     *
      * @param player
      * @param heroIdList
      * @param pos
@@ -177,15 +180,15 @@ public class CrossAttackService {
                         ", heroIdList.size:", heroIdList.size());
             }
             int stateAcqCount = 0; // 有多少个将领正在采集
-            for (int heroId : player.heroAcq) {
-                Hero h = player.heros.get(heroId);
-                if (null != h && h.getState() == HeroConstant.HERO_STATE_COLLECT) {
+            for (PartnerHero partnerHero : player.getPlayerFormation().getHeroAcq()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (partnerHero.getPrincipalHero().getState() == HeroConstant.HERO_STATE_COLLECT) {
                     stateAcqCount++;
                 }
             }
-            for (int heroId : player.heroBattle) {
-                Hero h = player.heros.get(heroId);
-                if (null != h && h.getState() == HeroConstant.HERO_STATE_COLLECT) {
+            for (PartnerHero partnerHero : player.getPlayerFormation().getHeroBattle()) {
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                if (partnerHero.getPrincipalHero().getState() == HeroConstant.HERO_STATE_COLLECT) {
                     stateAcqCount++;
                 }
             }
@@ -198,7 +201,7 @@ public class CrossAttackService {
 
     /**
      * 侦查
-     * 
+     *
      * @param player
      * @param pos
      * @param type
@@ -291,14 +294,14 @@ public class CrossAttackService {
                     city = PbHelper.createScoutCityPb(target.building.getWall(), tarLord.getFight(),
                             (int) res.getArm1(), (int) res.getArm2(), (int) res.getArm3());
                     if (ret >= WorldConstant.SCOUT_RET_SUCC3) {// 获取资源、城池、将领信息
-                        List<Hero> defheros = target.getAllOnBattleHeros();// 玩家所有上阵将领信息
+                        List<PartnerHero> defheros = target.getAllOnBattleHeroList();// 玩家所有上阵将领信息
                         sHeroList = new ArrayList<>();
                         int state;
                         int source;
-                        for (Hero hero : defheros) {
+                        for (PartnerHero partnerHero : defheros) {
                             source = WorldConstant.HERO_SOURCE_BATTLE;
-                            state = worldService.getScoutHeroState(source, hero.getState());
-                            sHeroList.add(PbHelper.createScoutHeroPb(hero, source, state, target));
+                            state = worldService.getScoutHeroState(source, partnerHero.getPrincipalHero().getState());
+                            sHeroList.add(PbHelper.createScoutHeroPb(partnerHero.getPrincipalHero(), source, state, target));
                         }
                     }
                 }

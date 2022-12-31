@@ -26,6 +26,7 @@ import com.gryphpoem.game.zw.resource.domain.p.CrossWarFireLocalData;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGamePlayPlan;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCrossGroup;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.CounterAttack;
 import com.gryphpoem.game.zw.resource.pojo.world.GlobalRebellion;
@@ -266,33 +267,30 @@ public class CrossGamePlayService implements GmCmdService {
     }
 
     public void fixHeroStatus(Player player) {
-        Optional.ofNullable(player.heroBattle).ifPresent(heroes -> {
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+        Optional.ofNullable(player.getPlayerFormation().getHeroBattle()).ifPresent(heroes -> {
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
 
-                hero.setState(HeroConstant.HERO_STATE_IDLE);
+                partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
             }
         });
 
-        Optional.ofNullable(player.heroAcq).ifPresent(heroes -> {
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+        Optional.ofNullable(player.getPlayerFormation().getHeroAcq()).ifPresent(heroes -> {
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
 
-                hero.setState(HeroConstant.HERO_STATE_IDLE);
+                partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
             }
         });
 
-        Optional.ofNullable(player.heroWall).ifPresent(heroes -> {
-            for (Integer heroId : heroes) {
-                Hero hero = player.heros.get(heroId);
-                if (CheckNull.isNull(hero))
+        Optional.ofNullable(player.getPlayerFormation().getHeroWall()).ifPresent(heroes -> {
+            for (PartnerHero partnerHero : heroes) {
+                if (HeroUtil.isEmptyPartner(partnerHero))
                     continue;
 
-                hero.setState(HeroConstant.HERO_STATE_IDLE);
+                partnerHero.setState(HeroConstant.HERO_STATE_IDLE);
             }
         });
     }
@@ -427,7 +425,7 @@ public class CrossGamePlayService implements GmCmdService {
         // 添加新位置
         player.lord.setPos(newPos);
         CrossFunction crossFunction = CrossFunction.convertTo(functionId);
-        Optional.ofNullable(player.crossPlayerLocalData.getCrossFunctionData(crossFunction, 0,true)).ifPresent(crossFunctionData -> {
+        Optional.ofNullable(player.crossPlayerLocalData.getCrossFunctionData(crossFunction, 0, true)).ifPresent(crossFunctionData -> {
             switch (crossFunction) {
                 case CROSS_WAR_FIRE:
                     CrossWarFireLocalData crossWarFireLocalData = (CrossWarFireLocalData) crossFunctionData;

@@ -2,6 +2,7 @@ package com.gryphpoem.game.zw.service;
 
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.manager.DressUpDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
@@ -17,7 +18,6 @@ import com.gryphpoem.game.zw.resource.pojo.dressup.DressUp;
 import com.gryphpoem.game.zw.resource.pojo.world.BerlinWar;
 import com.gryphpoem.game.zw.resource.util.CalculateUtil;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.rpc.DubboRpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -89,7 +89,7 @@ public class DressUpService implements LoginService, GmCmdService {
                 throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId:", roleId, ", type:", type, ", 未拥有该装扮:", id);
             }
             BaseDressUpEntity dressUpEntity = dressUpMap.get(id);
-            if (Objects.isNull(dressUpEntity)&&type != AwardType.TITLE) {
+            if (Objects.isNull(dressUpEntity) && type != AwardType.TITLE) {
                 throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId:", roleId, ", type:", type, ", 未拥有该装扮:", id);
             }
             if (type == AwardType.CASTLE_SKIN) {
@@ -119,17 +119,17 @@ public class DressUpService implements LoginService, GmCmdService {
                     throw new MwException(GameError.NO_CONFIG.getCode(), "roleId:", roleId, ", 行军特效未配置 skinId:", id);
                 }
                 dressUp.setCurMarchEffect(id);
-            } else if(type == AwardType.CHAT_BUBBLE){
+            } else if (type == AwardType.CHAT_BUBBLE) {
                 dressUp.setCurrChatBubble(id);
-            }else if (type == AwardType.TITLE){
-                if(id==-1){
+            } else if (type == AwardType.TITLE) {
+                if (id == -1) {
                     dressUp.setCurTitle(0);
-                }else{
+                } else {
                     StaticTitle title = StaticLordDataMgr.getTitleMapById(id);
                     if (Objects.isNull(title)) {
                         throw new MwException(GameError.NO_CONFIG.getCode(), "roleId:", roleId, ", 称号未配置 skinId:", id);
                     }
-                    if (!dressUpEntity.isPermanentHas()&&dressUpEntity.getDuration()<=0){
+                    if (!dressUpEntity.isPermanentHas() && dressUpEntity.getDuration() <= 0) {
                         throw new MwException(GameError.PARAM_ERROR.getCode(), "roleId:", roleId, ", 称号未解锁 skinId:", id);
                     }
                     dressUp.setCurTitle(id);
@@ -250,23 +250,23 @@ public class DressUpService implements LoginService, GmCmdService {
     }
 
     @Override
-    public void afterLogin(Player player){
+    public void afterLogin(Player player) {
         try {
-            dressUpDataManager.getDressUpByType(player,AwardType.CHAT_BUBBLE);
-            if(player.getCurChatBubble() > 0 && player.getDressUp().getCurrChatBubble() <= 0){
+            dressUpDataManager.getDressUpByType(player, AwardType.CHAT_BUBBLE);
+            if (player.getCurChatBubble() > 0 && player.getDressUp().getCurrChatBubble() <= 0) {
                 player.getDressUp().setCurrChatBubble(player.getCurChatBubble());
                 player.setCurChatBubble(0);
             }
             dressUpDataManager.checkVipChatBubble(player);
             //检查当前是否是霸主
             Turple<Integer, Long> perWinner = BerlinWar.getCurWinner();
-            if(perWinner == null || (perWinner != null && !perWinner.getB().equals(player.roleId))){
-                Map<Integer, BaseDressUpEntity> map = dressUpDataManager.getDressUpByType(player,AwardType.PORTRAIT);
-                if(map.containsKey(11)){
-                    dressUpDataManager.subDressUp(player,AwardType.PORTRAIT,11,0, AwardFrom.DO_SOME);
+            if (perWinner == null || (perWinner != null && !perWinner.getB().equals(player.roleId))) {
+                Map<Integer, BaseDressUpEntity> map = dressUpDataManager.getDressUpByType(player, AwardType.PORTRAIT);
+                if (map.containsKey(11)) {
+                    dressUpDataManager.subDressUp(player, AwardType.PORTRAIT, 11, 0, AwardFrom.DO_SOME);
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             LogUtil.error(e);
         }
     }

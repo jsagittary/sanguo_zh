@@ -1,15 +1,23 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Msg;
@@ -19,11 +27,6 @@ import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.plan.FunctionTrigger;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
 import com.gryphpoem.game.zw.resource.util.*;
@@ -265,13 +268,7 @@ public class MarchService {
         // 部队返回
 
         // 将领返回
-        Hero hero;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            if (Objects.nonNull(hero)) {
-                hero.setState(ArmyConstant.ARMY_STATE_IDLE);
-            }
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_IDLE);
 
         // 加资源
         if (!CheckNull.isEmpty(army.getGrab())) {
@@ -351,26 +348,14 @@ public class MarchService {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_STATE_BATTLE);
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_BATTLE);
 
-        Hero hero;
-        // int armCount = 0;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_BATTLE);
-            heroIdList.add(hero.getHeroId());
-            // armCount += hero.getCount();
-        }
-        // 去掉只有城战才能加入的限制， 打玩家打城都可以加入
-        // if (!battle.isCityBattle() || player.roleId !=
-        // battle.getSponsor().roleId) {
         int camp = player.lord.getCamp();
         if (camp == battle.getAtkCamp()) {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
         } else {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), false);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), false);
         }
-        // }
 
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
     }
@@ -447,10 +432,11 @@ public class MarchService {
         }
 
         StaticNpc npc;
-        for (Integer npcId : staticBandit.getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : staticBandit.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (null == npc) {
-                LogUtil.error("NPCid未配置, npcId:", npcId);
+                LogUtil.error("NPCid未配置, npcId:", npcIdList.get(0));
 
                 // 部队返回
                 worldService.retreatArmy(player, army, now);
@@ -462,11 +448,12 @@ public class MarchService {
         Fighter attacker = fightService.createFighter(player, army.getHero());
         Fighter defender = fightService.createBanditFighter(banditId);
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
 
+        int totalRecovery = 0;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 兵力恢复
@@ -490,6 +477,8 @@ public class MarchService {
             medalDataManager.angelInWhite(attacker, recoverArmyAwardMap);
             //执行赛季天赋技能---伤病恢复
             seasonTalentService.execSeasonTalentEffect303(attacker, recoverArmyAwardMap);
+            // 打叛军损兵恢复
+            totalRecovery = fightService.recoverArmSpecifyBattle(attacker, WorldConstant.FIGHT_BANDIT_LOST_RECOVER_ARMS);
             if (!CheckNull.isEmpty(recoverArmyAwardMap)) {
                 List<CommonPb.Award> awards = recoverArmyAwardMap.get(player.roleId);
                 if (!CheckNull.isEmpty(awards)) {
@@ -499,16 +488,17 @@ public class MarchService {
         }
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         Lord lord = player.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));
         rpt.setDefend(PbHelper.createRptBandit(banditId, pos));
-        rpt.setAtkSum(PbHelper.createRptSummary(attacker.total, attacker.lost, lord.getCamp(), lord.getNick(),
-                lord.getPortrait(), player.getDressUp().getCurPortraitFrame()));
+        CommonPb.RptSummary atkRptSummary = PbHelper.createRptSummary(attacker.total, attacker.lost, lord.getCamp(), lord.getNick(),
+                lord.getPortrait(), player.getDressUp().getCurPortraitFrame());
+        rpt.setAtkSum(atkRptSummary.toBuilder().setHealingArmy(totalRecovery).build());
         rpt.setDefSum(PbHelper.createRptSummary(defender.total, defender.lost, 0, null, -1, -1));
         // 给将领加经验
         rpt.addAllAtkHero(fightSettleLogic.banditFightHeroExpReward(player, attacker.forces));
@@ -1053,11 +1043,7 @@ public class MarchService {
         army.setDuration(marchTime);
         army.setEndTime(now + marchTime);
 
-        Hero hero;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_RETREAT);
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_RETREAT);
     }
 
     /**
@@ -1117,7 +1103,7 @@ public class MarchService {
         Turple<Integer, Integer> xyInArea = MapHelper.reducePos(pos);
         int heroId = 0;
         if (!CheckNull.isEmpty(army.getHero())) {
-            heroId = army.getHero().get(0).getV1();
+            heroId = army.getHero().get(0).getPrincipleHeroId();
         }
 
         // 对方已被击飞了, 发送驻防部队返回邮件
@@ -1161,12 +1147,7 @@ public class MarchService {
 
         worldDataManager.addPlayerGuard(pos, army);
 
-        Hero hero;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_GUARD);
-        }
-
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_GUARD);
         worldService.synWallCallBackRs(1, army);
     }
 
@@ -1195,17 +1176,11 @@ public class MarchService {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_GESTAPO_BATTLE);
+        army.setHeroState(player, ArmyConstant.ARMY_GESTAPO_BATTLE);
 
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_GESTAPO_BATTLE);
-            heroIdList.add(hero.getHeroId());
-        }
         int camp = player.lord.getCamp();
         if (camp == battle.getAtkCamp()) {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
         }
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
     }
@@ -1235,17 +1210,10 @@ public class MarchService {
 
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_LIGHTNING_WAR);
-
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_LIGHTNING_WAR);
-            heroIdList.add(hero.getHeroId());
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_LIGHTNING_WAR);
         int camp = player.lord.getCamp();
         if (camp != battle.getDefCamp()) {
-            worldService.addBattleArmy(battle, player.roleId, heroIdList, army.getKeyId(), true);
+            worldService.addBattleArmy(battle, player.roleId, army.getHero(), army.getKeyId(), true);
         }
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
     }
@@ -1288,10 +1256,11 @@ public class MarchService {
         int banditId = staticCabinetPlan.getBanditId();
         StaticBandit staticBandit = StaticBanditDataMgr.getBanditMap().get(banditId);
 
-        for (Integer npcId : staticBandit.getForm()) {
-            StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : staticBandit.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (null == npc) {
-                LogUtil.error("NPCid未配置, npcId:", npcId);
+                LogUtil.error("NPCid未配置, npcId:", npcIdList.get(0));
                 // 部队返回
                 worldService.retreatArmy(player, army, now);
                 return;
@@ -1302,7 +1271,7 @@ public class MarchService {
         Fighter attacker = fightService.createFighter(player, army.getHero());
         Fighter defender = fightService.createBanditFighter(banditId);
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
@@ -1328,10 +1297,10 @@ public class MarchService {
         }
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         Lord lord = player.lord;
         // 是否战胜目标
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
@@ -1466,12 +1435,12 @@ public class MarchService {
         army.setState(ArmyConstant.ARMY_BERLIN_WAR);
 
         // 创建BerlinForce对象
-        CommonPb.TwoInt twoInt = army.getHero().get(0);
-        Hero hero = player.heros.get(twoInt.getV1());
-        hero.setState(ArmyConstant.ARMY_BERLIN_WAR);
-        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getV1());
+        CommonPb.PartnerHeroIdPb twoInt = army.getHero().get(0);
+        HeroUtil.setHeroState(twoInt, player, ArmyConstant.ARMY_BERLIN_WAR);
+
+        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(twoInt.getPrincipleHeroId());
         if (null == staticHero) {
-            LogUtil.error("创建Fighter，heroId未配置, heroId:", twoInt.getV1());
+            LogUtil.error("创建Fighter，heroId未配置, heroId:", twoInt.getPrincipleHeroId());
             // 据点对象未找到，部队返回
             worldService.retreatArmy(player, army, now);
             worldService.synRetreatArmy(player, army, now);
@@ -1479,7 +1448,7 @@ public class MarchService {
         }
         int atkOrDef = cityInfo.getCamp() == player.lord.getCamp() ? WorldConstant.BERLIN_DEF
                 : WorldConstant.BERLIN_ATK;
-        BerlinForce berlinForce = fightService.createBerlinForce(player, staticHero, twoInt.getV1(), twoInt.getV2(),
+        BerlinForce berlinForce = fightService.createBerlinForce(player, staticHero, twoInt,
                 atkOrDef, atkType, now, player.lord.getCamp());
         cityInfo.getRoleQueue().add(berlinForce);
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", berlinForce:", berlinForce);
@@ -1513,15 +1482,7 @@ public class MarchService {
         // 设置部队状态
         army.setState(ArmyConstant.ARMY_STATE_BATTLE);
 
-        Hero hero;
-        // int armCount = 0;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_BATTLE);
-            heroIdList.add(hero.getHeroId());
-        }
-
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_BATTLE);
         LogUtil.debug("最终玩家参加战斗信息, roleId:", player.roleId, ", battle:", battle);
 
     }
@@ -1557,18 +1518,8 @@ public class MarchService {
         }
 
         // 修改hero状态
-        Hero hero;
-        List<Integer> heroIdList = new ArrayList<>();
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_ATTACK_AIRSHIP_WAIT);
-            heroIdList.add(hero.getHeroId());
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_ATTACK_AIRSHIP_WAIT);
 
-        // long belongRoleId = airShip.getBelongRoleId();
-        // if (belongRoleId == 0) { // 飞艇还没有归属
-        // fightAirBelongLogic(player, army, airShip);
-        // } else{}
         int camp = player.lord.getCamp();
         List<CommonPb.BattleRole> battleRoles = airShip.getJoinRoles().get(camp);
         if (CheckNull.isNull(battleRoles)) {
@@ -1581,7 +1532,7 @@ public class MarchService {
 
         // 加入玩家的信息
         battleRoles.add(CommonPb.BattleRole.newBuilder().setKeyId(army.getKeyId()).setRoleId(player.roleId)
-                .addAllHeroId(heroIdList).build());
+                .addAllPartnerHeroId(army.getHero()).build());
 
         // 这里参与人数不走通用配置
         long joinRoleCnt = battleRoles.stream().mapToLong(CommonPb.BattleRole::getRoleId).distinct().count();
@@ -1621,13 +1572,13 @@ public class MarchService {
         Fighter attacker = fightService.createFighterByBattleRole(battleRoles);
         Fighter defender = fightService.createFighter(airShip.getNpc());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, false, true);
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
 
         // 需要返回的玩家
         Set<Long> retreatPlayers;
@@ -1721,7 +1672,9 @@ public class MarchService {
                 airShip.getNpc().clear();
                 for (Force force : defender.forces) {
                     if (force.alive()) {
-                        airShip.getNpc().add(new NpcForce(force.id, force.hp, force.curLine));
+                        List<Integer> deputyList = Optional.ofNullable(force.assistantHeroList).map(list ->
+                                list.stream().map(ass -> ass.getHeroId()).collect(Collectors.toList())).orElse(null);
+                        airShip.getNpc().add(new NpcForce(force.id, force.hp, force.curLine, deputyList));
                     }
                 }
             }
@@ -1837,9 +1790,9 @@ public class MarchService {
                                  int airShipPos, Fighter attacker, Player firstAttackPlayer, List<CommonPb.RptHero> atkHero, Object... param) {
         String win;
         if (atkSuccess) {
-            win = String.valueOf(ArmyConstant.FIGHT_RESULT_SUCCESS);
+            win = String.valueOf(FightConstant.FIGHT_RESULT_SUCCESS);
         } else {
-            win = String.valueOf(ArmyConstant.FIGHT_RESULT_FAIL);
+            win = String.valueOf(FightConstant.FIGHT_RESULT_FAIL);
         }
         battleRoles.stream().map(rb -> rb.getRoleId()).distinct().map(rId -> playerDataManager.getPlayer(rId))
                 .filter(p -> p != null)
@@ -1870,7 +1823,7 @@ public class MarchService {
             }
         }
         DataResource.ac.getBean(WorldService.class).buildRptHeroData(defender, rpt, Constant.Role.BANDIT, false);
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         rpt.setRecord(record);
         return rpt;
     }

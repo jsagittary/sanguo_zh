@@ -221,7 +221,7 @@ public class ActTaskUtil {
                 hero = player.heros.get(cfgParams.get(0));
                 if (Objects.nonNull(hero)) {
                     b = true;
-                    activityTask.setProgress(hero.getSkillLevels().getOrDefault(cfgParams.get(1), 0));
+//                    activityTask.setProgress(hero.getSkillLevels().getOrDefault(cfgParams.get(1), 0));
                 }
                 break;
             case HERO_LEVELUP:

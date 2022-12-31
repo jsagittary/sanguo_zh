@@ -5,6 +5,7 @@ import com.gryphpoem.cross.constants.PlayerUploadTypeDefine;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticMedalDataMgr;
@@ -100,7 +101,7 @@ public class MedalService {
 
     /**
      * @param roleId
-     * @param keyId 勋章 私有id
+     * @param keyId  勋章 私有id
      * @return GamePb1.MedalLockRs
      * @throws MwException
      * @Title: medalLock
@@ -132,10 +133,11 @@ public class MedalService {
 
     /**
      * 将领穿戴或更换勋章
-     * @param roleId    玩家唯一Id
-     * @param heroId    将领id
-     * @param keyId     勋章唯一Id
-     * @param type      0 穿戴(如果当前位置有勋章, 服务器主动卸下), 1 卸下
+     *
+     * @param roleId 玩家唯一Id
+     * @param heroId 将领id
+     * @param keyId  勋章唯一Id
+     * @param type   0 穿戴(如果当前位置有勋章, 服务器主动卸下), 1 卸下
      * @return
      * @throws MwException
      */
@@ -143,8 +145,8 @@ public class MedalService {
         // 检查角色是否存在
         Player player = playerDataManager.checkPlayerIsExist(roleId);
 
-        if(type < 0 || type > 2){
-            throw new MwException(GameError.PARAM_ERROR.getCode(),GameError.err(roleId,"将领穿戴兵书参数错误",type));
+        if (type < 0 || type > 2) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.err(roleId, "将领穿戴兵书参数错误", type));
         }
 
         // 检查玩家是否有该将领
@@ -177,28 +179,28 @@ public class MedalService {
             }
             // 穿戴
             upMedal(player, hero, medal, index);
-        } else if(type ==1) {
+        } else if (type == 1) {
             // 卸下
             downMedal(player, hero, medal, index);
         } else {
             //将领之间交换兵书
             Hero tgtHero = player.heros.get(medal.getHeroId());
-            Medal srcMedal = medalDataManager.getHeroMedalByHeroIdAndIndex(player,heroId,index);
+            Medal srcMedal = medalDataManager.getHeroMedalByHeroIdAndIndex(player, heroId, index);
             int srcIndex = 0;
-            if(Objects.nonNull(srcMedal)){//卸载源将领兵书
+            if (Objects.nonNull(srcMedal)) {//卸载源将领兵书
                 srcIndex = srcMedal instanceof RedMedal ? MedalConst.HERO_MEDAL_INDEX_1 : MedalConst.HERO_MEDAL_INDEX_0;
-                downMedal(player,hero,srcMedal,srcIndex);
+                downMedal(player, hero, srcMedal, srcIndex);
             }
-            if(Objects.nonNull(tgtHero)){//卸载目标将领兵书
-                downMedal(player,tgtHero,medal,index);
+            if (Objects.nonNull(tgtHero)) {//卸载目标将领兵书
+                downMedal(player, tgtHero, medal, index);
                 // 重新计算并更新将领属性
                 CalculateUtil.processAttr(player, tgtHero);
             }
             //源将领穿戴目标兵书
-            upMedal(player,hero,medal,index);
+            upMedal(player, hero, medal, index);
             //目标将领穿戴源兵书
-            if(Objects.nonNull(tgtHero) && Objects.nonNull(srcMedal)){
-                upMedal(player,tgtHero,srcMedal,srcIndex);
+            if (Objects.nonNull(tgtHero) && Objects.nonNull(srcMedal)) {
+                upMedal(player, tgtHero, srcMedal, srcIndex);
 
                 // 检测红色勋章的技能激活
                 checkRedMedalUnLock(player, tgtHero);
@@ -225,6 +227,7 @@ public class MedalService {
 
     /**
      * 检测红色勋章的技能激活
+     *
      * @param player
      * @param hero
      */
@@ -262,11 +265,12 @@ public class MedalService {
 
     /**
      * 穿戴勋章, Hero属性在外层重新计算
-     * @param player    玩家对象
-     * @param hero      将领对象
-     * @param medal     勋章对象
-     * @param index     勋章位置索引
-     * @throws MwException  自定义异常
+     *
+     * @param player 玩家对象
+     * @param hero   将领对象
+     * @param medal  勋章对象
+     * @param index  勋章位置索引
+     * @throws MwException 自定义异常
      */
     public void upMedal(Player player, Hero hero, Medal medal, int index) throws MwException {
         long roleId = player.roleId;
@@ -291,12 +295,13 @@ public class MedalService {
 
     /**
      * 卸下勋章, Hero属性在外层重新计算
-     * @param player    玩家对象
-     * @param hero      将领对象
-     * @param medal     勋章对象
-     * @param index     勋章位置索引
+     *
+     * @param player 玩家对象
+     * @param hero   将领对象
+     * @param medal  勋章对象
+     * @param index  勋章位置索引
      */
-    public void downMedal( Player player, Hero hero, Medal medal, int index) {
+    public void downMedal(Player player, Hero hero, Medal medal, int index) {
         if (medal != null) {
             medal.downMedal();
             if (index == MedalConst.HERO_MEDAL_INDEX_1) {
@@ -336,7 +341,7 @@ public class MedalService {
 
     /**
      * @param roleId
-     * @param type 1获取 2刷新
+     * @param type   1获取 2刷新
      * @return GamePb1.GetMedalGoodsRs
      * @throws MwException
      * @Title: getMedalGoods
@@ -411,7 +416,7 @@ public class MedalService {
     /**
      * 购买勋章
      *
-     * @param roleId 角色id
+     * @param roleId       角色id
      * @param medalGoodsId 商品id
      * @return
      * @throws MwException

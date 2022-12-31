@@ -1,24 +1,28 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
-import com.gryphpoem.game.zw.gameplay.local.service.CrossAirshipService;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
+import com.gryphpoem.game.zw.gameplay.local.service.CrossAirshipService;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackAirshipRq;
 import com.gryphpoem.game.zw.pb.GamePb4.AttackAirshipRs;
 import com.gryphpoem.game.zw.pb.GamePb4.GetAirshipListRq;
 import com.gryphpoem.game.zw.pb.GamePb4.GetAirshipListRs;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.AbsDailyClear;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
 import com.gryphpoem.game.zw.resource.pojo.global.GlobalSchedule;
 import com.gryphpoem.game.zw.resource.pojo.global.WorldSchedule;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
@@ -524,16 +528,14 @@ public class AirshipService {
      * @param aswd
      * @param form
      */
-    public static void addNpcForce(AirshipWorldData aswd, List<Integer> form) {
+    public static void addNpcForce(AirshipWorldData aswd, List<List<Integer>> form) {
         if (aswd != null && !CheckNull.isEmpty(form)) {
             aswd.getNpc().clear(); // 先清除原来的npc
-            for (Integer npcId : form) {
-                StaticNpc staticNpc = StaticNpcDataMgr.getNpcMap().get(npcId);
-                if (staticNpc != null) {
-                    int hp = staticNpc.getAttr().getOrDefault(Constant.AttrId.LEAD, 1);
-                    NpcForce npcForce = new NpcForce(staticNpc.getNpcId(), hp, 0);
-                    aswd.getNpc().add(npcForce);
-                }
+            FightService fightService = DataResource.ac.getBean(FightService.class);
+            for (List<Integer> npcIdList : form) {
+                NpcForce npcForce = fightService.createCacheNpcForce(npcIdList);
+                if (CheckNull.isNull(npcForce)) continue;
+                aswd.getNpc().add(npcForce);
             }
         }
     }
@@ -631,7 +633,8 @@ public class AirshipService {
 
     /**
      * 获取多人判断行军加成
-     * @param player 玩家
+     *
+     * @param player    玩家
      * @param marchTime 行军时间
      * @return
      */

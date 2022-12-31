@@ -18,10 +18,14 @@
         <property name="COMMON_LOG_FILE_NAME">${LOG_HOME}/common</property>
         <property name="CALC_LOG_FILE_NAME">${LOG_HOME}/calculate</property>
         <property name="DUBBO_LOG_FILE_NAME">${LOG_HOME}/dubbo</property>
+        <property name="FIGHT_LOG_FILE_NAME">${LOG_HOME}/fight</property>
     </Properties>
 
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
+            <!-- 输出日志的格式 -->
+            <!-- 格式化输出：%date表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度 %msg：日志消息，%n是换行符-->
+            <!-- %logger{36} 表示 Logger 名字最长36个字符 -->
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
 
@@ -29,6 +33,7 @@
             bufferSize="512"> <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level
             %logger{36} - %msg%n" /> </File> -->
 
+        <!-- 打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
         <!-- 服务器启动、关闭信息，游戏中捕捉的异常信息等 -->
         <RollingFile name="ERROR" fileName="${LOG_HOME}/error.log" filePattern="${LOG_HOME}/error.log.%d{yyyy-MM-dd}">
             <PatternLayout pattern="%date{HH:mm:ss.SSS} %level [%thread] %msg%n"/>
@@ -182,12 +187,20 @@
         </RollingFile>
 
         <!-- 战斗日志 -->
-        <RollingFile name="BATTLE" fileName="${LOG_HOME}/battle.log"
-                     filePattern="${LOG_HOME}/battle.log.%d{yyyy-MM-dd}">
-            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss}|%msg%n"/>
+        <RollingFile name="FIGHT" fileName="${LOG_HOME}/fight.log"
+                     filePattern="${FIGHT_LOG_FILE_NAME}/%d{yyyyMMdd}/fight.log.%d{yyyy-MM-dd}_%i.gz">
+            <PatternLayout pattern="%date{HH:mm:ss.SSS} [%thread] %msg%n"/>
             <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="150MB"/>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
+            <DefaultRolloverStrategy max="10000">
+                <Delete basePath="${FIGHT_LOG_FILE_NAME}" maxDepth="2">
+                    <IfFileName glob="*/fight.log.*"/>
+                    <IfLastModified age="7d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
 
         <!-- 记录英雄属性计算打印日志 -->
@@ -296,8 +309,8 @@
             <appender-ref ref="CALCULATE" />
         </logger>
 
-        <logger name="BATTLE" level="trace" additivity="false">
-            <appender-ref ref="BATTLE"/>
+        <logger name="FIGHT" level="trace" additivity="false">
+            <appender-ref ref="FIGHT"/>
             <appender-ref ref="Console"/>
         </logger>
 

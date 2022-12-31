@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.RetreatArmyParamDto;
@@ -12,7 +13,6 @@ import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.util.Turple;
 
 /**
  * @author: ZhouJie
@@ -26,7 +26,8 @@ public class AttackCityArmy extends BaseArmy {
         super(army);
     }
 
-    @Override protected void marchEnd(MapMarch mapMarchArmy, int now) {
+    @Override
+    protected void marchEnd(MapMarch mapMarchArmy, int now) {
         Player armyPlayer = checkAndGetAmryHasPlayer(mapMarchArmy);
         if (armyPlayer == null) {
             return;
@@ -64,7 +65,8 @@ public class AttackCityArmy extends BaseArmy {
                 MapEvent.mapEntity(getTargetPos(), MapCurdEvent.UPDATE));
     }
 
-    @Override public void retreat(RetreatArmyParamDto param) {
+    @Override
+    public void retreat(RetreatArmyParamDto param) {
         super.retreat(param);
         Player invokePlayer = param.getInvokePlayer();
         CrossWorldMap crossWorldMap = param.getCrossWorldMap();

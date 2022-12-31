@@ -26,7 +26,6 @@ import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.MapCity;
 import com.gryphpoem.game.zw.pb.CommonPb.MapForce.Builder;
 import com.gryphpoem.game.zw.pb.CommonPb.MapLine;
-import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb5.*;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
@@ -509,7 +508,7 @@ public class CrossWorldMapService {
         commonMoveCity(player, cMap, pos, CancelBattleType.DEFMOVECITY);
         if (!cMap.isInSafeArea(player)) {
             // 保护取消
-            worldService.removeProTect(player,AwardFrom.WAR_FIRE_NOT_SAFE_AREA,pos);
+            worldService.removeProTect(player, AwardFrom.WAR_FIRE_NOT_SAFE_AREA, pos);
         }
     }
 
@@ -529,7 +528,7 @@ public class CrossWorldMapService {
         commonMoveCity(player, cMap, newPos, CancelBattleType.DEFMOVECITY);
         if (!cMap.isInSafeArea(player)) {
             // 保护取消
-            worldService.removeProTect(player,AwardFrom.WAR_FIRE_NOT_SAFE_AREA,newPos);
+            worldService.removeProTect(player, AwardFrom.WAR_FIRE_NOT_SAFE_AREA, newPos);
         }
     }
 
@@ -719,7 +718,7 @@ public class CrossWorldMapService {
                 worldService.retreatArmyByDistance(tPlayer, army, now);
                 worldService.synRetreatArmy(tPlayer, army, now);
                 worldDataManager.removePlayerGuard(army.getTarget(), army);
-                int heroId = army.getHero().get(0).getV1();
+                int heroId = army.getHero().get(0).getPrincipleHeroId();
                 mailDataManager.sendNormalMail(tPlayer, MailConstant.MOLD_GARRISON_RETREAT, now, player.lord.getNick(),
                         heroId, player.lord.getNick(), heroId);
             }
@@ -754,6 +753,7 @@ public class CrossWorldMapService {
 
     /**
      * 获取城池的详情
+     *
      * @param roleId 玩家id
      * @param cityId 城池id
      * @return 城池详情

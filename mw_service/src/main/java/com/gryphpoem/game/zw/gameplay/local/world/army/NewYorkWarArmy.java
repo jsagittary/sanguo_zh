@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.RetreatArmyParamDto;
@@ -12,7 +13,6 @@ import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.util.Turple;
 
 /**
  * Created by pengshuo on 2019/5/22 18:35
@@ -22,7 +22,7 @@ import com.gryphpoem.game.zw.resource.util.Turple;
  *
  * @author pengshuo
  */
-public class NewYorkWarArmy extends BaseArmy{
+public class NewYorkWarArmy extends BaseArmy {
 
     public NewYorkWarArmy(Army army) {
         super(army);
@@ -59,7 +59,7 @@ public class NewYorkWarArmy extends BaseArmy{
         // 加入战斗
         baseBattle.addBattleArmy(cMap, this);
         // 事件通知
-        cMap.publishMapEvent(createMapEvent(MapCurdEvent.UPDATE),MapEvent.mapEntity(getTargetPos(), MapCurdEvent.UPDATE));
+        cMap.publishMapEvent(createMapEvent(MapCurdEvent.UPDATE), MapEvent.mapEntity(getTargetPos(), MapCurdEvent.UPDATE));
     }
 
     @Override
@@ -72,7 +72,7 @@ public class NewYorkWarArmy extends BaseArmy{
             BaseMapBattle baseMapBattle = crossWorldMap.getMapWarData().getAllBattles().get(battleId);
             if (baseMapBattle != null) {
                 // 移除battle的兵力
-                removeNewYorkWarBattleArmy(baseMapBattle.getBattle(),invokePlayer);
+                removeNewYorkWarBattleArmy(baseMapBattle.getBattle(), invokePlayer);
             }
         }
     }

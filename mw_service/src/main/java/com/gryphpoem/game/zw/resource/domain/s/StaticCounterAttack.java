@@ -1,7 +1,10 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
+import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.service.FightService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +20,7 @@ public class StaticCounterAttack {
     private int autoId;             // 自增ID
     private int stype;              // 类型 1: BOSS防守  2: BOSS进攻
     private int number;             // 顺序编号
-    private List<Integer> form;     // 阵型配置[]
+    private List<List<Integer>> form;     // 阵型配置[]
     private int score;              // BOSS击杀积分
 
     /**
@@ -27,9 +30,10 @@ public class StaticCounterAttack {
         CityHero hero;
         StaticNpc npc;
         List<CityHero> formList = new ArrayList<>();
-        for (Integer npcId : getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
-            hero = new CityHero(npcId, npc.getTotalArm());
+        FightService fightService = DataResource.ac.getBean(FightService.class);
+        for (List<Integer> npcId : getForm()) {
+            hero = fightService.createCityHero(npcId);
+            if (CheckNull.isNull(hero)) continue;
             formList.add(hero);
         }
         return formList;
@@ -59,11 +63,11 @@ public class StaticCounterAttack {
         this.number = number;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

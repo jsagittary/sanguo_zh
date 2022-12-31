@@ -194,19 +194,6 @@ public class ArmyConstant {
     public static final int ARMY_STATE_RELIC_PROBING = 19;
 
     /**
-     * 战斗结果：平局或其他
-     */
-    public static final int FIGHT_RESULT_DRAW = 0;
-    /**
-     * 战斗结果：胜利
-     */
-    public static final int FIGHT_RESULT_SUCCESS = 1;
-    /**
-     * 战斗结果：失败
-     */
-    public static final int FIGHT_RESULT_FAIL = 2;
-
-    /**
      * 行军加速类型：高级行军加速
      */
     public static final int MOVE_TYPE_1 = 1;

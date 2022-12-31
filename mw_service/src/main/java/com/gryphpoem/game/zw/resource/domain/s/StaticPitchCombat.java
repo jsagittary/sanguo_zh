@@ -20,7 +20,7 @@ public class StaticPitchCombat {
     private List<List<Integer>> firstAward;// 首次 通关奖励
     private List<List<Integer>> winAwardRand; // 产生装备 [[gearOrder,count]],gearOrder装备的阶级
     private List<List<Integer>> winAward;// 通关奖励
-    private List<Integer> form;// 阵型
+    private List<List<Integer>> form;// 阵型
     private int firstAwardpoint; // 首次通关获得点数
     private int winAwardpoint;// 扫荡奖励点数
 
@@ -80,11 +80,11 @@ public class StaticPitchCombat {
         this.winAwardRand = winAwardRand;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

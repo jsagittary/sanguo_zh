@@ -1,44 +1,17 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticBuildingDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
-import com.gryphpoem.game.zw.manager.BuildingDataManager;
-import com.gryphpoem.game.zw.manager.MailDataManager;
-import com.gryphpoem.game.zw.manager.MedalDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
-import com.gryphpoem.game.zw.manager.TechDataManager;
-import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
-import com.gryphpoem.game.zw.pb.GamePb1.GetWallRq;
-import com.gryphpoem.game.zw.pb.GamePb1.GetWallRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallCallBackRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallGetOutRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallHelpInfoRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallHelpRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallNpcArmyRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallNpcAutoRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallNpcFullRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallNpcLvUpRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallNpcRs;
-import com.gryphpoem.game.zw.pb.GamePb1.WallSetRs;
+import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.GamePb1.*;
 import com.gryphpoem.game.zw.pb.GamePb4.FixWallRs;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.BuildingType;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.Constant.AttrId;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.HeroConstant;
-import com.gryphpoem.game.zw.resource.constant.MailConstant;
-import com.gryphpoem.game.zw.resource.constant.MedalConst;
-import com.gryphpoem.game.zw.resource.constant.SeasonConst;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Resource;
@@ -51,24 +24,14 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.CalculateUtil;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomUtil;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -147,8 +110,8 @@ public class WallService {
                     rmArmy.add(army);
                     continue;
                 }
-                int armyCnt = army.getHero().get(0).getV2();
-                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getV1());
+                int armyCnt = army.getHero().get(0).getCount();
+                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getPrincipleHeroId());
                 if (hero != null) {
                     armyCnt = hero.getCount();
                 }
@@ -210,12 +173,14 @@ public class WallService {
         int allSecond = 0;// 距离上次补兵的间隔时间
         int armyCount = 0; // 先计算距离现在最多可以补兵多少
         boolean flag = true;
-        for (int i = 1; i < player.heroWall.length; i++) {
-            Hero hero = player.heros.get(player.heroWall[i]);
+        for (int i = 1; i < player.getPlayerFormation().getHeroWall().length; i++) {
+            PartnerHero partnerHero = player.getPlayerFormation().getHeroWall()[i];
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            Hero hero = partnerHero.getPrincipalHero();
             if (hero == null) {
                 continue;
             }
-            int maxArmy = hero.getAttr()[AttrId.LEAD];
+            int maxArmy = hero.getAttr()[FightCommonConstant.AttrId.LEAD];
             if (hero.getCount() >= maxArmy) {
                 continue;
             }
@@ -271,28 +236,16 @@ public class WallService {
                                 AwardFrom.WALL_NPC_AUTO_ARMY);// , "城墙自动补兵"
                         hero.setCount(hero.getCount() + add);
                         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
-
-                        //记录玩家兵力变化信息
-                        // LogLordHelper.filterHeroArm(AwardFrom.WALL_NPC_AUTO_ARMY, player.account, player.lord, hero.getHeroId(), hero.getCount(), add,
-                        //         Constant.ACTION_ADD, armyType, hero.getQuality());
-
-                        // 上报玩家兵力变化信息
-//                        LogLordHelper.playerArm(
-//                                AwardFrom.WALL_NPC_AUTO_ARMY,
-//                                player,
-//                                armyType,
-//                                Constant.ACTION_ADD,
-//                                add,
-//                                playerDataManager.getArmCount(player.resource, armyType)
-//                        );
                     }
                 }
                 hero.setWallArmyTime(now);
                 armyCount -= add; // 计算剩余的可以补的兵力
                 // 如果本将领补满了修改下一个将领的补兵时间
                 if (hero.getCount() >= maxArmy) {// 每次补满兵都会影响都城墙上所有的时间
-                    for (int j = i + 1; j < player.heroWall.length; j++) {
-                        Hero heroNest = player.heros.get(player.heroWall[j]);
+                    for (int j = i + 1; j < player.getPlayerFormation().getHeroWall().length; j++) {
+                        PartnerHero partnerHeroJ = player.getPlayerFormation().getHeroWall()[j];
+                        if (HeroUtil.isEmptyPartner(partnerHeroJ)) continue;
+                        Hero heroNest = partnerHeroJ.getPrincipalHero();
                         if (heroNest != null) {
                             heroNest.setWallArmyTime(now);
                         }
@@ -326,7 +279,7 @@ public class WallService {
                 if (staticWallHeroLv == null) {
                     continue;
                 }
-                int maxArmy = staticWallHeroLv.getAttr().get(AttrId.LEAD);
+                int maxArmy = staticWallHeroLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
                 if (wallNpc.getCount() >= maxArmy) { // 已经布满了的过滤
                     wallNpc.setAutoArmy(0);
                     continue;
@@ -385,174 +338,31 @@ public class WallService {
     }
 
     /**
-     * 城墙布置
-     *
-     * @param roleId
-     * @param pos
-     * @param heroId
-     * @param type
-     * @return
-     * @throws MwException
-     */
-    public WallSetRs doWallSet(Long roleId, int pos, int heroId, int type, boolean swap, boolean swapTreasure, boolean swapMedal) throws MwException {
-        Player player = playerDataManager.checkPlayerIsExist(roleId);
-        // 检测是否满足开启天策府
-        if (player.building.getWarFactory() < Constant.CABINET_CONDITION.get(1)) {
-            // 内阁等级小于3级禁止开发
-            throw new MwException(GameError.WAR_FACTORY_LV_NOT_ENOUGH.getCode(), "内阁 等级不够");
-        }
-
-        // 检查pos位是否正常
-        if (pos < HeroConstant.HERO_BATTLE_1 || pos > HeroConstant.HERO_BATTLE_4) {
-            throw new MwException(GameError.HERO_BATTLE_POS_ERROR.getCode(), "将领上阵队列位置不正确, roleId:", roleId, ", pos:",
-                    pos);
-        }
-        // for (int id : player.heroBattle) {
-        // if (heroId == id) {
-        // throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), "将领已上阵, roleId:", roleId, ", heroId:",
-        // heroId);
-        // }
-        // }
-
-        // 检测配置是否正确
-        List<Integer> lvRequire = Constant.GUARDS_HERO_REQUIRE;
-        if (CheckNull.isEmpty(lvRequire) || lvRequire.size() != 4) {
-            throw new MwException(GameError.NO_CONFIG.getCode(), "内阁采集将领上阵队列位置不正确, roleId:", roleId, ", pos:", pos);
-        }
-        int lv = player.lord.getLevel();
-        // 检测等级是否满足
-        if (pos == HeroConstant.HERO_BATTLE_1) {
-            if (lv < lvRequire.get(0)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_2) {
-            if (lv < lvRequire.get(1)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_3) {
-            if (lv < lvRequire.get(2)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        } else if (pos == HeroConstant.HERO_BATTLE_4) {
-            if (lv < lvRequire.get(3)) {
-                throw new MwException(GameError.WAR_FACTORY_HERO_POS_NEED.getCode(), "未开启,内阁御林军将领布置等级不够 roleId:",
-                        roleId, ", pos:", pos);
-            }
-        }
-
-        Hero hero = heroService.checkHeroIsExist(player, heroId);
-        WallSetRs.Builder builder = WallSetRs.newBuilder();
-        boolean sysClientUpdateMedal = false;
-        if (type == 1) {
-            // 判断该将领是否在武将上阵
-            if (player.isOnBattleHero(heroId) || player.isOnWallHero(heroId) || player.isOnAcqHero(heroId)) {
-                throw new MwException(GameError.HERO_BATTLE_REPEAT.getCode(), "是武将将领已上阵, roleId:", roleId, ", heroId:",
-                        heroId);
-            }
-            Hero battleHero = player.getWallHeroByPos(pos);
-
-            if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
-                if (!battleHero.isIdle()) {
-                    throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
-                }
-                // 位置上已有其他将领存在，现将该将领下阵
-                if (swap) {// 如果需要交换装备，执行交换装备的逻辑
-                    // rewardDataManager.checkBagCnt(player);
-                    heroService.swapHeroEquip(player, hero, battleHero);
-                }
-                if (swapTreasure) {// 如果需要交换宝具，执行交换宝具的逻辑
-                    heroService.swapHeroTreasure(player, battleHero, hero);
-                }
-                if (swapMedal) {// 如果需要交换兵书，执行交换兵书的逻辑
-                    heroService.swapHeroMedal(player, battleHero, hero);
-                    sysClientUpdateMedal = true;
-                }
-                downWallHeroAndBackRes(player, battleHero);
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, battleHero);
-                // 下阵
-                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
-            }
-
-            List<TwoInt> seasonTalentAttr = null;
-            // 将领上阵
-            hero.onWall(pos);
-            player.heroWall[pos] = heroId;// 更新已上阵将领队列信息
-            // 重新调整位置
-            reAdjustHeroPos(player.heroWall, player.heros);
-            // 重新计算并更新将领属性
-            CalculateUtil.processAttr(player, hero);
-            // 返回将领上阵协议
-            if (hero.isOnWall()) {
-                //禁卫军赛季天赋加成
-                List<TwoInt> janitorAttr = DataResource.getBean(SeasonTalentService.class).getSeasonTalentEffectTwoInt(player, hero, SeasonConst.TALENT_EFFECT_619);
-                if (!ObjectUtils.isEmpty(janitorAttr)) {
-                    seasonTalentAttr = new ArrayList<>(janitorAttr);
-                }
-            }
-
-            builder.setUpHero(PbHelper.createHeroPb(hero, player, seasonTalentAttr));
-        } else {
-            // 下阵
-            int myPos = 0;
-            for (int i = 1; i < player.heroAcq.length; i++) {
-                if (player.heroWall[i] == heroId) {
-                    myPos = i;
-                    break;
-                }
-            }
-            Hero battleHero = player.getWallHeroByPos(myPos);
-            if (null != battleHero) {// 位置上已有其他将领存在，现将该将领下阵
-                if (!battleHero.isIdle()) {
-                    throw new MwException(GameError.HERO_NOT_IDLE.getCode(), "将领不是空闲状态不能操作");
-                }
-                downWallHeroAndBackRes(player, battleHero);
-                player.heroWall[myPos] = 0; // 下阵的位置清0
-                // 重新调整位置
-                reAdjustHeroPos(player.heroWall, player.heros);
-                // 重新计算并更新将领属性
-                CalculateUtil.processAttr(player, battleHero);
-                // 下阵
-                builder.setDownHero(PbHelper.createHeroPb(battleHero, player));
-            }
-        }
-        for (int i = 1; i < player.heroWall.length; i++) {
-            if (player.heroWall[i] != 0)
-                builder.addHeroIds(player.heroWall[i]);
-        }
-
-        builder.setUpdateMedal(sysClientUpdateMedal);
-        return builder.build();
-    }
-
-    /**
      * 重新调整位置
+     *
      * @param heroIds
      * @param heros
      */
-    public void reAdjustHeroPos(int[] heroIds, Map<Integer, Hero> heros) {
-        // 重新调整位置
-        List<Integer> heroList = new ArrayList<>();
-        for (int i = 1; i < heroIds.length; i++) {
-            int hid = heroIds[i];
-            if (heros.get(hid) != null) {
-                heroList.add(hid);
-            }
-        }
-        for (int i = 0; i < heroIds.length - 1; i++) {
-            int pos = i + 1;
-            if (i < heroList.size()) {
-                int hId = heroList.get(i);
-                heroIds[pos] = hId;
-                heros.get(hId).onWall(pos);
-            } else {
-                // 尾部 清空
-                heroIds[pos] = 0;
-            }
-        }
+    public void reAdjustHeroPos(PartnerHero[] heroIds, Map<Integer, Hero> heros) {
+//        // 重新调整位置
+//        List<Integer> heroList = new ArrayList<>();
+//        for (int i = 1; i < heroIds.length; i++) {
+//            int hid = heroIds[i];
+//            if (heros.get(hid) != null) {
+//                heroList.add(hid);
+//            }
+//        }
+//        for (int i = 0; i < heroIds.length - 1; i++) {
+//            int pos = i + 1;
+//            if (i < heroList.size()) {
+//                int hId = heroList.get(i);
+//                heroIds[pos] = hId;
+//                heros.get(hId).onWall(pos);
+//            } else {
+//                // 尾部 清空
+//                heroIds[pos] = 0;
+//            }
+//        }
     }
 
     /**
@@ -561,8 +371,9 @@ public class WallService {
      * @param player
      * @param downHero 需要下的将领
      */
-    private void downWallHeroAndBackRes(Player player, Hero downHero) {
+    public void downWallHeroAndBackRes(Player player, Hero downHero) {
         downHero.onWall(0);// 将领下阵，pos设置为0
+        downHero.setPartnerPosIndex(0);
         // 返还资源
         int sub = downHero.getCount();
         StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(downHero.getHeroId());
@@ -574,19 +385,6 @@ public class WallService {
         downHero.setCount(0);
         rewardDataManager
                 .addAward(player, AwardType.RESOURCE, AwardType.Resource.FOOD, sub * radio, AwardFrom.HERO_DOWN);
-        //记录玩家兵力变化信息
-        // LogLordHelper.filterHeroArm(AwardFrom.HERO_DOWN, player.account, player.lord, downHero.getHeroId(), downHero.getCount(), -sub,
-        //         Constant.ACTION_SUB, armyType, downHero.getQuality());
-
-        // 上报玩家兵力变化信息
-//        LogLordHelper.playerArm(
-//                AwardFrom.HERO_DOWN,
-//                player,
-//                armyType,
-//                Constant.ACTION_SUB,
-//                -sub,
-//                playerDataManager.getArmCount(player.resource, armyType)
-//        );
 
         ChangeInfo change = ChangeInfo.newIns();
         change.addChangeType(AwardType.RESOURCE, AwardType.Resource.FOOD);
@@ -619,7 +417,7 @@ public class WallService {
         wallNpc.setAddTime(TimeHelper.getCurrentSecond());
         StaticWallHeroLv staticWallHeroLv = StaticBuildingDataMgr
                 .getWallHeroLv(wallNpc.getHeroNpcId(), wallNpc.getLevel());
-        wallNpc.setCount(staticWallHeroLv.getAttr().get(Constant.AttrId.LEAD));
+        wallNpc.setCount(staticWallHeroLv.getAttr().get(FightCommonConstant.AttrId.LEAD));
         player.wallNpc.put(id, wallNpc);
         // 重置城防将领可招募推送消息的状态
         // player.removePushRecord(PushConstant.WALL_RECRUIT);
@@ -752,23 +550,24 @@ public class WallService {
         Hero hero;
         WallHelpRs.Builder builder = WallHelpRs.newBuilder();
         for (Integer heroId : heroIdList) {
-            List<TwoInt> form = new ArrayList<>();
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+            List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            form.add(partnerHero.convertTo());
 
             Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_GUARD, pos, ArmyConstant.ARMY_STATE_MARCH,
                     form, marchTime, now + marchTime, player.getDressUp());
             army.setLordId(roleId);
             army.setTarLordId(target.roleId);
             army.setOriginPos(player.lord.getPos());
-            Optional.ofNullable(medalDataManager.getHeroMedalByHeroIdAndIndex(player, hero.getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
+            Optional.ofNullable(medalDataManager.getHeroMedalByHeroIdAndIndex(player, partnerHero.getPrincipalHero().getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
                     .ifPresent(medal -> {
                         army.setHeroMedals(Collections.singletonList(PbHelper.createMedalPb(medal)));
                     });
             //天赋优化， 驻军属性加成,从被驻防人身上取天赋
             army.setSeasonTalentAttr(DataResource.getBean(SeasonTalentService.class).
-                    getSeasonTalentEffectTwoInt(worldDataManager.getPosData(pos), hero, SeasonConst.TALENT_EFFECT_612));
+                    getSeasonTalentEffectTwoInt(worldDataManager.getPosData(pos), partnerHero.getPrincipalHero(), SeasonConst.TALENT_EFFECT_612));
 
             player.armys.put(army.getKeyId(), army);
 
@@ -830,7 +629,7 @@ public class WallService {
         worldService.synRetreatArmy(tarPlayer, army, now);
         worldDataManager.removePlayerGuard(army.getTarget(), army);
         // 给派兵驻防的玩家发遣返邮件
-        int heroId = army.getHero().get(0).getV1();
+        int heroId = army.getHero().get(0).getPrincipleHeroId();
         mailDataManager
                 .sendNormalMail(tarPlayer, MailConstant.MOLD_GARRISON_REPATRIATE, now, player.lord.getNick(), heroId,
                         player.lord.getNick(), heroId);
@@ -868,16 +667,14 @@ public class WallService {
                 worldService.synWallCallBackRs(0, army);
                 worldService.synRetreatArmy(player, army, now);
                 // 驻防被杀发邮件
-                int heroId = army.getHero().get(0).getV1();
-                    /* mailDataManager.sendNormalMail(player, MailConstant.DECISIVE_BATTLE_GARRISON_CANCEL, now, targetNick,xyInArea.getA(),xyInArea.getB(),heroId,
-                             targetNick,xyInArea.getA(),xyInArea.getB(),heroId);*/
+                int heroId = army.getHero().get(0).getPrincipleHeroId();
                 mailDataManager
                         .sendNormalMail(player, MailConstant.WALL_HELP_KILLED, now, targetNick, heroId, targetNick,
                                 heroId);
                 armys.remove(army); // 此处因为使用的armys CopyOnWriteArrayList,读写分离 所以可以边遍历边删除
             } else {
-                for (TwoInt twoInt : army.getHero()) {
-                    hero = player.heros.get(twoInt.getV1());
+                for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+                    hero = player.heros.get(twoInt.getPrincipleHeroId());
                     if (hero != null && hero.getCount() <= 0) {
                         worldService.retreatArmyByDistance(player, army, now);
                         worldService.synWallCallBackRs(0, army);
@@ -887,7 +684,6 @@ public class WallService {
                         int heroId = hero.getHeroId();
                         mailDataManager.sendNormalMail(player, MailConstant.WALL_HELP_KILLED, now, targetNick, heroId,
                                 targetNick, heroId);
-                        // worldDataManager.removePlayerGuard(pos, army);
                         armys.remove(army);
                     }
                 }
@@ -923,13 +719,13 @@ public class WallService {
         // 扣钱
         rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.MONEY, AwardType.Money.GOLD,
                 Constant.WALL_CHANGE_ARMY_GOLD, AwardFrom.WALL_CHANGE_ARMY);
-        double coef = (wallNpc.getCount() * 1.0) / beforeNpc.getAttr().getOrDefault(Constant.AttrId.LEAD, 0);
+        double coef = (wallNpc.getCount() * 1.0) / beforeNpc.getAttr().getOrDefault(FightCommonConstant.AttrId.LEAD, 0);
 
         wallNpc.setHeroNpcId(RandomUtil.getKeyByMap(staticWallHero.getGainHero(), wallNpc.getHeroNpcId()));
         StaticWallHeroLv afterNpc = StaticBuildingDataMgr
                 .getWallHeroLv(wallNpc.getHeroNpcId(), wallNpc.getLevel());
 
-        int count = (int) Math.ceil(coef * afterNpc.getAttr().get(AttrId.LEAD));
+        int count = (int) Math.ceil(coef * afterNpc.getAttr().get(FightCommonConstant.AttrId.LEAD));
         LogUtil.debug("城墙npc变换兵种: 变换之前, heroId: ", beforeNpc.getHeroId(), ", count:", wallNpc.getCount(), ", 变换之后, heroId:", afterNpc.getHeroId(), ", count:", count);
         wallNpc.setCount(count);
 
@@ -984,7 +780,7 @@ public class WallService {
             WallNpc wallNpc = player.wallNpc.get(id);
             StaticWallHeroLv staticWallHeroLv = StaticBuildingDataMgr
                     .getWallHeroLv(wallNpc.getHeroNpcId(), wallNpc.getLevel());
-            double d = (wallNpc.getCount() * 1.0) / staticWallHeroLv.getAttr().get(AttrId.LEAD);
+            double d = (wallNpc.getCount() * 1.0) / staticWallHeroLv.getAttr().get(FightCommonConstant.AttrId.LEAD);
             int needGold = (int) Math.ceil((1 - d) * Constant.WALL_FULL_ARMY_NEED_GOLD);
             if (needGold <= 1) {
                 needGold = 1;
@@ -992,7 +788,7 @@ public class WallService {
             rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.MONEY, AwardType.Money.GOLD, needGold,
                     AwardFrom.WALL_FULL_ARMY);
 
-            wallNpc.setCount(staticWallHeroLv.getAttr().get(Constant.AttrId.LEAD));
+            wallNpc.setCount(staticWallHeroLv.getAttr().get(FightCommonConstant.AttrId.LEAD));
             wallNpc.setAutoArmy(0);
             builder.setWallNpc(PbHelper.createWallNpcPb(wallNpc));
         } else {
@@ -1000,26 +796,28 @@ public class WallService {
                 throw new MwException(GameError.HERO_NOT_BATTLE.getCode(), "将领未上阵, roleId:", roleId, ", heroId:", id);
             }
             Hero hero = player.heros.get(id);
-            if(Objects.isNull(hero)){
-                throw new MwException(GameError.PARAM_ERROR.getCode(),GameError.PARAM_ERROR.errMsg(roleId,"英雄不存在",id));
+            if (Objects.isNull(hero)) {
+                throw new MwException(GameError.PARAM_ERROR.getCode(), GameError.PARAM_ERROR.errMsg(roleId, "英雄不存在", id));
             }
-            if (hero.getCount() >= hero.getAttr()[AttrId.LEAD]) {
+            if (hero.getCount() >= hero.getAttr()[FightCommonConstant.AttrId.LEAD]) {
                 throw new MwException(GameError.HERO_LEAD_IS_MAX.getCode(), "城墙花钱满兵,将领兵力已达到满值");
             }
-            double d = (hero.getCount() * 1.0) / hero.getAttr()[AttrId.LEAD];
+            double d = (hero.getCount() * 1.0) / hero.getAttr()[FightCommonConstant.AttrId.LEAD];
             int needGold = (int) Math.ceil((1 - d) * Constant.WALL_FULL_ARMY_NEED_GOLD);
             if (needGold <= 1) {
                 needGold = 1;
             }
             rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.MONEY, AwardType.Money.GOLD, needGold,
                     AwardFrom.WALL_FULL_ARMY);
-            hero.setCount(hero.getAttr()[AttrId.LEAD]);
+            hero.setCount(hero.getAttr()[FightCommonConstant.AttrId.LEAD]);
             builder.setHero(PbHelper.createHeroPb(hero, player));
 
             // 设置所有城防将领时间
             int now = TimeHelper.getCurrentSecond();
-            for (int j = 1; j < player.heroWall.length; j++) {
-                Hero heroNest = player.heros.get(player.heroWall[j]);
+            for (int j = 1; j < player.getPlayerFormation().getHeroWall().length; j++) {
+                PartnerHero partnerHero = player.getPlayerFormation().getHeroWall()[j];
+                if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+                Hero heroNest = partnerHero.getPrincipalHero();
                 if (heroNest != null) {
                     heroNest.setWallArmyTime(now);
                 }
@@ -1049,8 +847,8 @@ public class WallService {
                     continue;
                 }
                 // 重新获取兵力信息
-                int armyCnt = army.getHero().get(0).getV2();
-                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getV1());
+                int armyCnt = army.getHero().get(0).getCount();
+                Hero hero = tarPlayer.heros.get(army.getHero().get(0).getPrincipleHeroId());
                 if (hero != null) {
                     armyCnt = hero.getCount();
                 }

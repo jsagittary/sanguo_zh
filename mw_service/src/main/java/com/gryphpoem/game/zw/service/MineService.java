@@ -10,6 +10,8 @@ import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.SolarTermsDataManager;
 import com.gryphpoem.game.zw.manager.TechDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
+import com.gryphpoem.game.zw.dataMgr.StaticActivityDataMgr;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
@@ -20,6 +22,8 @@ import com.gryphpoem.game.zw.resource.constant.MedalConst;
 import com.gryphpoem.game.zw.resource.constant.SeasonConst;
 import com.gryphpoem.game.zw.resource.constant.TechConstant;
 import com.gryphpoem.game.zw.resource.constant.TreasureWareConst;
+import com.gryphpoem.game.zw.resource.constant.*;
+import com.gryphpoem.game.zw.resource.domain.ActivityBase;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticActBandit;
@@ -32,12 +36,15 @@ import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.MapHelper;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.*;
 import com.gryphpoem.game.zw.resource.util.eventdata.EventDataUp;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -110,7 +117,7 @@ public class MineService {
 
     /**
      * 更新矿点信息
-     * 
+     *
      * @param pos
      * @param resource
      */
@@ -129,9 +136,9 @@ public class MineService {
 
     /**
      * 计算矿点可以采集多久 (秒)
-     * 
+     *
      * @param sMine
-     * @param cnt 资源数量
+     * @param cnt   资源数量
      * @return
      */
     public static int calcMineGuardTime(StaticMine sMine, int cnt) {
@@ -147,7 +154,7 @@ public class MineService {
 
     /**
      * 计算矿点剩余资源数
-     * 
+     *
      * @param pos
      * @param now
      * @return
@@ -161,7 +168,7 @@ public class MineService {
         int total = worldDataManager.getMineResource(pos);
         Guard guard = worldDataManager.getGuardByPos(pos);
         int time = now - guard.getBeginTime();
-        int heroId = guard.getArmy().getHero().get(0).getV1();
+        int heroId = guard.getArmy().getHero().get(0).getPrincipleHeroId();
         double speed = collectSpeed(staticMine.getSpeed(), pos, heroId, player);
         int resource = (int) (total - Math.floor(speed * time * 1.0 / Constant.HOUR));
         if (resource < 0) {
@@ -172,6 +179,7 @@ public class MineService {
 
     /**
      * 校验当前矿点是否是钻石矿
+     *
      * @param pos
      * @return
      */
@@ -185,6 +193,7 @@ public class MineService {
 
     /**
      * 采集时间增益
+     *
      * @param maxTime
      * @param heroId
      * @param player
@@ -218,7 +227,7 @@ public class MineService {
         double buffMaxTime = speed;
         List<List<Integer>> buffList = (List<List<Integer>>) buff;
         for (List<Integer> list : buffList) {
-            buffMaxTime *= (1 + (list.get(1) / Constant.TEN_THROUSAND)) ;
+            buffMaxTime *= (1 + (list.get(1) / Constant.TEN_THROUSAND));
         }
 
         return Math.floor(buffMaxTime);
@@ -226,7 +235,7 @@ public class MineService {
 
     /**
      * 计算玩家采集到的资源量
-     * 
+     *
      * @param player
      * @param army
      * @param now
@@ -265,36 +274,36 @@ public class MineService {
 
     /**
      * 计算采集加成后的数量
-     * 
+     *
      * @param player
-     * @param gainCnt 踩了多少矿
+     * @param gainCnt   踩了多少矿
      * @param mineType
      * @param startDate
      * @param army
      * @return
      */
     public int calcGainCollectEffectCnt(Player player, final int gainCnt, final int mineType, Date startDate,
-            Army army) {
+                                        Army army) {
         int resGainCnt = gainCnt;
         if (mineType == StaticMine.MINE_TYPE_GOLD) {// 金矿 不进行加成
         } else if (mineType == StaticMine.MINE_TYPE_URANIUM) { // 铀矿
             double skinEffect = CastleSkinService.getSkinCollectEffect(player, mineType);// 皮肤加成
             // 红色勋章, 强化后勤保障特技加成
-            double medalEffect = medalDataManager.getUraniumCollectEffect(player, army.getHero().get(0).getV1());
+            double medalEffect = medalDataManager.getUraniumCollectEffect(player, army.getHero().get(0).getPrincipleHeroId());
             resGainCnt = (int) (gainCnt * (1.0 + skinEffect + medalEffect));
         } else { // 其他矿石
             double techEffect = techDataManager.getTechEffect4Single(player, TechConstant.TYPE_24); // 科技基础
             double mixEffect = getCollectEffect(player, mineType, startDate, army); // 混合加成
             double skinEffect = CastleSkinService.getSkinCollectEffect(player, mineType);// 皮肤加成
             // (可采集的资源 * (1.0 + 科技加成) * (1.0 + 天气采集加成 + 活动加成 + 名城加成 + 天书加成 + 赛季天赋优化加成) * (1 + 皮肤加成)) 然后取整
-            resGainCnt = (int) (gainCnt * (1.0 + techEffect) * (1.0 + mixEffect) * (1  + skinEffect));
+            resGainCnt = (int) (gainCnt * (1.0 + techEffect) * (1.0 + mixEffect) * (1 + skinEffect));
         }
         return resGainCnt;
     }
 
     /**
      * 获取采集加成 ,一些其他的加成
-     * 
+     *
      * @param startDate
      * @param mineType
      * @return
@@ -304,14 +313,14 @@ public class MineService {
                 / Constant.TEN_THROUSAND;// 天气采集加成
         double actEffect = activityDataManager.getActCollectNum() / Constant.TEN_THROUSAND;// 活动加成
         double cityBuffer = worldDataManager.getCityBuffer(army.getOriginCity(), mineType, army.getLordId());// 名城加成
-        double medalNum = medalDataManager.logisticService(player, army.getHero().get(0).getV1());// 判断将领是否有 穿戴 后勤保障 特技的勋章
+        double medalNum = medalDataManager.logisticService(player, army.getHero().get(0).getPrincipleHeroId());// 判断将领是否有 穿戴 后勤保障 特技的勋章
         double seasonTalentEffect = seasonTalentService.getSeasonTalentEffectValue(player, SeasonConst.TALENT_EFFECT_405) / Constant.TEN_THROUSAND; //赛季天赋优化加成
         return actEffect + solarTermsEffect + cityBuffer + medalNum + seasonTalentEffect;
     }
 
     /**
      * 是否有采集加成
-     * 
+     *
      * @param startDate
      * @param mineType
      * @return
@@ -322,7 +331,7 @@ public class MineService {
         } else if (mineType == StaticMine.MINE_TYPE_URANIUM) { // 铀矿
             double skinEffect = CastleSkinService.getSkinCollectEffect(player, mineType);// 皮肤加成
             // 红色勋章, 强化后勤保障特技加成
-            double medalEffect = medalDataManager.getUraniumCollectEffect(player, army.getHero().get(0).getV1());
+            double medalEffect = medalDataManager.getUraniumCollectEffect(player, army.getHero().get(0).getPrincipleHeroId());
             return skinEffect + medalEffect > 0.0;
         } else { // 其他矿石
             double mixEffect = getCollectEffect(player, mineType, startDate, army); // 混合加成
@@ -333,13 +342,13 @@ public class MineService {
 
     /**
      * 自动采集
-     * 
+     *
      * @param player
      * @param now
      */
     public void autoCollectMine(Player player, int now) {
         // 获取是否有闲置的采集将领
-        Hero hero = getIdleCollectHero(player);
+        PartnerHero hero = getIdleCollectHero(player);
         if (null == hero) {
             return;
         }
@@ -351,7 +360,7 @@ public class MineService {
         if (minePos > 0) {
             int mineId = worldDataManager.getMineByPos(minePos).getMineId();
             int marchTime = worldService.marchTime(player, minePos);
-            int needFood = worldService.getNeedFood(marchTime, hero.getCount());
+            int needFood = worldService.getNeedFood(marchTime, hero.getPrincipalHero().getCount());
             try {
                 rewardDataManager.checkAndSubPlayerResHasSync(player, AwardType.RESOURCE, AwardType.Resource.FOOD,
                         needFood, AwardFrom.ATK_POS);
@@ -360,14 +369,14 @@ public class MineService {
                 return;
             }
 
-            List<TwoInt> form = new ArrayList<>();
-            form.add(PbHelper.createTwoIntPb(hero.getHeroId(), hero.getCount()));
+            List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
+            form.add(hero.convertTo());
             Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_COLLECT, minePos,
                     ArmyConstant.ARMY_STATE_MARCH, form, marchTime - 1, now + marchTime - 1, player.getDressUp());
             army.setTargetId(mineId);
             army.setLordId(player.roleId);
             army.setOriginPos(player.lord.getPos());
-            Optional.ofNullable(medalDataManager.getHeroMedalByHeroIdAndIndex(player, hero.getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
+            Optional.ofNullable(medalDataManager.getHeroMedalByHeroIdAndIndex(player, hero.getPrincipalHero().getHeroId(), MedalConst.HERO_MEDAL_INDEX_0))
                     .ifPresent(medal -> {
                         army.setHeroMedals(Collections.singletonList(PbHelper.createMedalPb(medal)));
                     });
@@ -379,7 +388,7 @@ public class MineService {
             worldDataManager.addMarch(march);
 
             // 改变行军状态
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            army.setHeroState(player, ArmyConstant.ARMY_STATE_MARCH);
 
             // 区域变化推送
             List<Integer> posList = new ArrayList<>();
@@ -392,7 +401,7 @@ public class MineService {
 
     /**
      * 获取玩家所在分区内最适合的可以采集的矿点坐标
-     * 
+     *
      * @param pos
      * @return
      */
@@ -418,7 +427,7 @@ public class MineService {
 
     /**
      * 矿点资源比较
-     * 
+     *
      * @param pos1
      * @param pos2
      * @return
@@ -429,12 +438,11 @@ public class MineService {
         return r1 - r2;
     }
 
-    private Hero getIdleCollectHero(Player player) {
-        Hero hero;
-        for (int heroId : player.heroAcq) {
-            hero = player.heros.get(heroId);
-            if (null != hero && hero.isIdle()) {
-                return hero;
+    private PartnerHero getIdleCollectHero(Player player) {
+        for (PartnerHero partnerHero : player.getPlayerFormation().getHeroAcq()) {
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            if (partnerHero.getPrincipalHero().isIdle()) {
+                return partnerHero;
             }
         }
         return null;

@@ -19,19 +19,16 @@ import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.MapEntityPb;
 import com.gryphpoem.game.zw.pb.CommonPb.MapForce.Builder;
 import com.gryphpoem.game.zw.pb.CommonPb.MapMinePb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
-import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
-import com.gryphpoem.game.zw.resource.constant.WorldConstant;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMine;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.Guard;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.HeroService;
@@ -41,6 +38,7 @@ import com.gryphpoem.game.zw.service.WorldService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -170,11 +168,13 @@ public class MineMapEntity extends BaseWorldEntity {
                 worldService.removeProTect(invokePlayer, AwardFrom.COLLECT_WAR, pos); // 移除保护罩
             }
         }
-        // 部队添加
-        List<TwoInt> form = param.getHeroIdList().stream().map(heroId -> {
-            Hero hero = invokePlayer.heros.get(heroId);
-            return PbHelper.createTwoIntPb(heroId, hero.getCount());
-        }).collect(Collectors.toList());
+
+        // 部队逻辑
+        List<CommonPb.PartnerHeroIdPb> form = param.getHeroIdList().stream().map(heroId -> {
+            PartnerHero partnerHero = invokePlayer.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) return null;
+            return partnerHero.convertTo();
+        }).filter(pb -> Objects.nonNull(pb)).collect(Collectors.toList());
 
         int now = TimeHelper.getCurrentSecond();
         int marchTime = cmap.marchTime(cmap, invokePlayer, invokePlayer.lord.getPos(), pos);
@@ -264,12 +264,14 @@ public class MineMapEntity extends BaseWorldEntity {
         Hero hero = player.heros.get(guard.getHeroId());
         int addExp = (int) Math.ceil(collectTime * 1.0 / Constant.MINUTE) * 20;
         addExp = heroService.adaptHeroAddExp(player, addExp);
-        addExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+        int chiefAddExp = heroService.addHeroExp(hero, addExp, player.lord.getLevel(), player);
+        // 给副将加经验
+        DataResource.ac.getBean(WorldService.class).addDeputyHeroExp(addExp, guard.getArmy().getHero().get(0), player);
         // 采集报告生成
-        LogUtil.debug("roleId:", player.roleId, ", ===采集时间:", guard.getArmy().getCollectTime(), ", 将领经验:", addExp,
+        LogUtil.debug("roleId:", player.roleId, ", ===采集时间:", guard.getArmy().getCollectTime(), ", 将领经验:", chiefAddExp,
                 ", 采集物质:" + guard.getGrab());
         boolean effect = mineService.hasCollectEffect(player, staticMine.getMineType(), startDate, guard.getArmy());// 采集加成;
-        CommonPb.MailCollect collect = PbHelper.createMailCollectPb(collectTime, hero, addExp, guard.getGrab(), effect);
+        CommonPb.MailCollect collect = PbHelper.createMailCollectPb(collectTime, hero, chiefAddExp, guard.getGrab(), effect);
         // 清空驻军
         this.guard = null;
         return collect;

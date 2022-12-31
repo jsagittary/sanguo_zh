@@ -1,13 +1,19 @@
 package com.gryphpoem.game.zw.service.relic;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticDataMgr;
 import com.gryphpoem.game.zw.manager.ChatDataManager;
 import com.gryphpoem.game.zw.manager.GlobalDataManager;
 import com.gryphpoem.game.zw.manager.MailDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Events;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -15,9 +21,6 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRelicFraction;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.pojo.relic.GlobalRelic;
 import com.gryphpoem.game.zw.resource.pojo.relic.RelicCons;
@@ -186,7 +189,7 @@ public class RelicsFightService {
             Fighter defender = fightService.createRelicFighter(defendPlayer, defArmy.getKeyId(), defArmy.getHero(), rlc.holdTime(defendPlayer.roleId, defArmy.getKeyId()));
             FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_HIS_REMAIN);
             fightLogic.packForm();
-            fightLogic.fight();
+            fightLogic.start();
             fightLogic.fightId = fightId;
             LogUtil.debug(String.format("his cityId :%d, fightId :%d, result :%s, attack roleId :%d, atk army keyId :%d, defend roleId :%d, army keyId :%d",
                     rlc.getCfgId(), fightId, fightLogic.getWinState(), attackPlayer.roleId, atkArmy.getKeyId(), defendPlayer.roleId, defArmy.getKeyId()));
@@ -213,7 +216,7 @@ public class RelicsFightService {
             CommonPb.Report.Builder report = createFightReport(fightLogic, attackPlayer, defendPlayer, recoverMap, nowSec, changeMap);
             // 通知客户端玩家兵力/战功等资源变化
             warService.sendRoleResChange(changeMap);
-            boolean attackSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+            boolean attackSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
             //发送战斗邮件
             if (attackSuccess) {
                 attackFightSuccess(fightLogic, rlc, report, attackPlayer, atkArmy, defendPlayer, nowSec);
@@ -270,8 +273,8 @@ public class RelicsFightService {
     private CommonPb.Report.Builder createFightReport(FightLogic fightLogic, Player attackPlayer, Player defendPlayer, Map<Long, Integer> recoverMap, int nowSec, Map<Long, ChangeInfo> changeMap) {
         // 战斗记录
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        CommonPb.Record record = fightLogic.generateRecord();
-        rpt.setResult(fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS);
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
+        rpt.setResult(fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS);
         Lord atkLord = attackPlayer.lord;
         Lord defLord = defendPlayer.lord;
         Fighter attacker = fightLogic.getAttacker();
@@ -398,16 +401,16 @@ public class RelicsFightService {
             recoverHpMap.put(force.id, recoveryHp);
         });
         //分离死亡部队和存活部队. 死亡将领回家, 存活将领继续战斗.
-        List<CommonPb.TwoInt> deadHero = null, survivorHero = null;
-        for (CommonPb.TwoInt twoInt : army.getHero()) {
-            Hero hero = player.heros.get(twoInt.getV1());
+        List<CommonPb.PartnerHeroIdPb> deadHero = null, survivorHero = null;
+        for (CommonPb.PartnerHeroIdPb twoInt : army.getHero()) {
+            Hero hero = player.heros.get(twoInt.getPrincipleHeroId());
             if (Objects.isNull(hero)) return;
             if (hero.getCount() <= 0) {
                 if (Objects.isNull(deadHero)) deadHero = new ArrayList<>();
-                deadHero.add(PbHelper.createTwoIntPb(twoInt.getV1(), 0));
+                deadHero.add(twoInt);
             } else {
                 if (Objects.isNull(survivorHero)) survivorHero = new ArrayList<>();
-                survivorHero.add(PbHelper.createTwoIntPb(twoInt.getV1(), hero.getCount()));
+                survivorHero.add(twoInt);
             }
         }
         if (CheckNull.nonEmpty(survivorHero)) {
@@ -419,9 +422,9 @@ public class RelicsFightService {
                 player.armys.put(deadArmy.getKeyId(), deadArmy);
                 deadArmy.setHero(deadHero);
                 Map<Integer, Integer> deadArmyRecoverMap = deadArmy.getAndCreateIfAbsentRecoverMap();
-                for (CommonPb.TwoInt twoInt : deadHero) {
-                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getV1(), 0);
-                    if (recoverHp > 0) deadArmyRecoverMap.put(twoInt.getV1(), recoverHp);
+                for (CommonPb.PartnerHeroIdPb twoInt : deadHero) {
+                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getPrincipleHeroId(), 0);
+                    if (recoverHp > 0) deadArmyRecoverMap.put(twoInt.getPrincipleHeroId(), recoverHp);
                     recoverMap.merge(player.roleId, recoverHp, Integer::sum);
                 }
                 //返回死亡将领
@@ -431,8 +434,8 @@ public class RelicsFightService {
             //整个部队全部死亡
             army.setHero(deadHero);
             if (CheckNull.nonEmpty(deadHero)) {
-                for (CommonPb.TwoInt twoInt : deadHero) {
-                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getV1(), 0);
+                for (CommonPb.PartnerHeroIdPb twoInt : deadHero) {
+                    int recoverHp = recoverHpMap.getOrDefault(twoInt.getPrincipleHeroId(), 0);
                     recoverMap.merge(player.roleId, recoverHp, Integer::sum);
                 }
             }
@@ -465,8 +468,8 @@ public class RelicsFightService {
     }
 
     private void doRecoverArmy(Player player, Army retreatArmy, Map<Integer, Integer> recoverMap, Map<Long, ChangeInfo> changeMap) {
-        for (CommonPb.TwoInt twoInt : retreatArmy.getHero()) {
-            Hero hero = player.heros.get(twoInt.getV1());
+        for (CommonPb.PartnerHeroIdPb twoInt : retreatArmy.getHero()) {
+            Hero hero = player.heros.get(twoInt.getPrincipleHeroId());
             Integer recoverHp = recoverMap.remove(hero.getHeroId());
             if (Objects.isNull(recoverHp) || recoverHp <= 0) continue;
             hero.addArm(recoverHp);
@@ -505,7 +508,7 @@ public class RelicsFightService {
     private String armyHeroString(Army army) {
         if (CheckNull.isEmpty(army.getHero())) return "";
         return army.getHero().stream()
-                .map(twoInt -> new StringBuilder().append(twoInt.getV1()).append("_").append(twoInt.getV2()))
+                .map(twoInt -> new StringBuilder().append(twoInt.getPrincipleHeroId()).append("_").append(twoInt.getCount()))
                 .collect(Collectors.joining(","));
     }
 }

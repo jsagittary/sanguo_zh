@@ -2,34 +2,40 @@ package com.gryphpoem.game.zw.resource.pojo.world;
 
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticSuperMine;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * @author QiuKun
  * @ClassName SuperMine.java
  * @Description 超级矿点
- * @author QiuKun
  * @date 2018年7月13日
  */
 public class SuperMine implements WorldEntity {
 
     public static int SEQ_ID = 0;
-    /** 生产中 */
+    /**
+     * 生产中
+     */
     public static final int STATE_PRODUCED = 0;
-    /** 停产中 */
+    /**
+     * 停产中
+     */
     public static final int STATE_STOP = 1;
-    /** 重置中地图不显示 */
+    /**
+     * 重置中地图不显示
+     */
     public static final int STATE_RESET = 2;
-    /** 最大采集人数 */
+    /**
+     * 最大采集人数
+     */
     public static final int MAX_COLLECT_SIZE = 4;
 
     private int seqId; // 矿点的编号
@@ -75,7 +81,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 加入采集
-     * 
+     *
      * @param player
      * @param army
      * @param now
@@ -83,10 +89,7 @@ public class SuperMine implements WorldEntity {
     public void joinCollect(Player player, Army army, int now) {
         // 部队状态修改
         army.setState(ArmyConstant.ARMY_STATE_COLLECT);
-        for (TwoInt twoInt : army.getHero()) {
-            Hero hero = player.heros.get(twoInt.getV1());
-            hero.setState(ArmyConstant.ARMY_STATE_COLLECT);
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_COLLECT);
         // 添加到采集队列中
         collectArmy.add(SuperGuard.createSuperGuard(army, this, now));
         reCalcAllCollectArmyTime(now);
@@ -97,7 +100,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 重新计算所有矿点采集时间
-     * 
+     *
      * @param now
      * @return true重新计算了返回时间
      */
@@ -139,7 +142,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 计算矿点剩余量
-     * 
+     *
      * @param now
      * @return
      */
@@ -178,9 +181,8 @@ public class SuperMine implements WorldEntity {
     }
 
     /**
-     * 
      * 恢复生产状态 停产 -> 生产 (只有重新争夺据点才会有)
-     * 
+     *
      * @param now
      */
     public void setStopToProducedState(int now) {
@@ -196,10 +198,9 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 恢复生产状态 重置 -> 生产
-     * 
+     *
      * @param now
      * @param pos
-     * @param configId
      * @param cityId
      */
     public void setResetToProducedState(int now, int pos, StaticSuperMine sSm, int cityId) {
@@ -219,7 +220,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 设置成重置状态
-     * 
+     *
      * @param now
      */
     public void setResetState(int now) {
@@ -234,7 +235,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 创建一个新的矿点
-     * 
+     *
      * @param camp
      * @param cityId
      * @param pos
@@ -253,7 +254,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 是否能在地图上显示
-     * 
+     *
      * @return
      */
     public boolean isMapShow() {
@@ -262,7 +263,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 是否是重置状态
-     * 
+     *
      * @return
      */
     public boolean isResetState() {
@@ -271,7 +272,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 是否在生产中
-     * 
+     *
      * @return
      */
     public boolean isProduceState() {
@@ -280,7 +281,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 是否在停产状态
-     * 
+     *
      * @return
      */
     public boolean isStopState() {
@@ -289,7 +290,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 当有采集部队离开是 需要结算一下资源数
-     * 
+     *
      * @param res
      */
     public void addConvertRes(int res) {
@@ -300,7 +301,7 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 移除采集部队
-     * 
+     *
      * @param roleId
      * @param keyId
      * @return
@@ -319,9 +320,9 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 移除驻防部队
-     * 
+     *
      * @param roleId
-     * @param keyId 部队keyId
+     * @param keyId  部队keyId
      * @return
      */
     public boolean removeHelpArmy(long roleId, int keyId) {
@@ -338,17 +339,17 @@ public class SuperMine implements WorldEntity {
 
     /**
      * 获取防守方兵力
-     * 
+     *
      * @return
      */
     public int defArmyCnt() {
         int cnt = 0;
         for (Army army : helpArmy) {
-            cnt += army.getHero().get(0).getV2();
+            cnt += army.getHero().get(0).getCount();
         }
 
         for (SuperGuard sg : collectArmy) {
-            cnt += sg.getArmy().getHero().get(0).getV2();
+            cnt += sg.getArmy().getHero().get(0).getCount();
         }
         return cnt;
     }

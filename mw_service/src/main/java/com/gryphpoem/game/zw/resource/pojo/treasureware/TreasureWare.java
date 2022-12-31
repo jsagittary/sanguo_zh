@@ -1,12 +1,12 @@
 package com.gryphpoem.game.zw.resource.pojo.treasureware;
 
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.resource.pojo.Equip;
 import com.gryphpoem.game.zw.resource.pojo.GamePb;
 import com.gryphpoem.game.zw.resource.pojo.attr.TreasureWareAttrItem;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.resource.util.pb.TreasureWarePbUtil;
 import org.springframework.util.ObjectUtils;
 
@@ -14,23 +14,41 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TreasureWare extends Equip implements GamePb<CommonPb.TreasureWare> {
-    /** 专属属性配置表id */
+    /**
+     * 专属属性配置表id
+     */
     private Integer specialId;
-    /** 品质 */
+    /**
+     * 品质
+     */
     private int quality;
-    /** 等级 */
+    /**
+     * 等级
+     */
     private int level;
-    /** 获取时间 */
+    /**
+     * 获取时间
+     */
     private int getTime;
-    /** 级别(最高，高，中。。。) */
+    /**
+     * 级别(最高，高，中。。。)
+     */
     private int rank;
-    /** 宝具获取状态 */
+    /**
+     * 宝具获取状态
+     */
     private int status;
-    /** 宝具分解时间 */
+    /**
+     * 宝具分解时间
+     */
     private int decomposeTime;
-    /** 宝具名id */
+    /**
+     * 宝具名id
+     */
     private int profileId;
-    /** KEY: 属性栏目位置 */
+    /**
+     * KEY: 属性栏目位置
+     */
     private final Map<Integer, TreasureWareAttrItem> attrs = new TreeMap<>();
     private List<Turple<Integer, Integer>> specialAttr;
 

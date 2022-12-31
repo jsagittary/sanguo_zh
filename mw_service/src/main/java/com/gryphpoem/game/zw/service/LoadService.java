@@ -113,8 +113,8 @@ public class LoadService {
         StaticWarPlaneDataMgr.init();
         LogUtil.common("------------------加载数据：教官相关-----------------");
         StaticMentorDataMgr.init();
-        LogUtil.common("------------------加载数据：战斗相关-----------------");
-        StaticFightDataMgr.init();
+//        LogUtil.common("------------------加载数据：战斗相关-----------------");
+//        StaticFightDataMgr.init();
         LogUtil.common("------------------加载数据：签到模块-----------------");
         StaticSignInDataMgr.init();
         LogUtil.common("------------------加载数据：战令相关-----------------");
@@ -144,7 +144,7 @@ public class LoadService {
     /**
      * 后台单独加载聊天、屏蔽词相关
      */
-    public void loadChat(){
+    public void loadChat() {
         LogUtil.common("------------------加载数据：聊天、屏蔽词相关-----------------");
         StaticChatDataMgr.init();
     }
@@ -152,14 +152,13 @@ public class LoadService {
     /**
      * 后台单独加载合服banner相关
      */
-    public void loadBanner(){
+    public void loadBanner() {
         LogUtil.common("------------------加载数据：合服banner相关-----------------");
         StaticBannerDataMgr.init();
     }
 
     public void checkValid() throws MwException {
         DataResource.ac.getBean(SeasonService.class).checkStaticValid();
-//        DataResource.ac.getBean(SkillService.class).checkSkillConfig();
         DataResource.ac.getBean(SeasonTalentService.class).checkSeasonTalentConfig();
     }
 

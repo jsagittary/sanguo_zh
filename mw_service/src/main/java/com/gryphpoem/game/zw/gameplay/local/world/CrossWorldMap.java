@@ -2,6 +2,9 @@ package com.gryphpoem.game.zw.gameplay.local.world;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.constant.CrossWorldMapConstant;
 import com.gryphpoem.game.zw.gameplay.local.util.CrossMapSerHelper;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
@@ -12,14 +15,14 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.*;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.WarFireBuff;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticHeroDataMgr;
 import com.gryphpoem.game.zw.manager.MsgDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.MapChgEventPb;
 import com.gryphpoem.game.zw.pb.GamePb5.SyncCrossMapChgRs;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
@@ -27,10 +30,11 @@ import com.gryphpoem.game.zw.resource.domain.p.DbCrossMap;
 import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWarFireBuff;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -136,6 +140,7 @@ public class CrossWorldMap extends WatcherWorldMap {
 
     /**
      * 获取安全区
+     *
      * @return 安全区
      */
     public List<WFSafeAreaMapEntity> getSafeArea() {
@@ -149,6 +154,7 @@ public class CrossWorldMap extends WatcherWorldMap {
 
     /**
      * 获取阵营的安全区
+     *
      * @param camp 阵营
      * @return 指定阵营的安全区, or Null
      */
@@ -506,6 +512,7 @@ public class CrossWorldMap extends WatcherWorldMap {
 
     /**
      * 获取玩家阵营已获取的城池buff
+     *
      * @param player 玩家对象
      * @return 城池buff, key: buff类型, value: buff效果值
      */
@@ -531,8 +538,9 @@ public class CrossWorldMap extends WatcherWorldMap {
 
     /**
      * 伤兵恢复
-     * @param attacker 进攻方
-     * @param defender 防守方
+     *
+     * @param attacker            进攻方
+     * @param defender            防守方
      * @param recoverArmyAwardMap 伤兵恢复
      */
     public void rebelBuffRecoverArmy(Fighter attacker, Fighter defender, Map<Long, List<CommonPb.Award>> recoverArmyAwardMap) {

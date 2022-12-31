@@ -2,6 +2,8 @@ package com.gryphpoem.game.zw.gameplay.local.prop.impl;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.StaticPropDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.prop.AbstractUseProp;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
@@ -14,8 +16,6 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticProp;
 import com.gryphpoem.game.zw.resource.domain.s.StaticRandomProp;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.Prop;
-import com.gryphpoem.game.zw.resource.util.RandomHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,7 +34,7 @@ public class RandomGoodsProp extends AbstractUseProp {
 
     @Override
     public void checkUseProp(int count, StaticProp staticProp, Player player, Prop prop, String params, long roleId, int propId, List<CommonPb.Award> listAward, ChangeInfo change, Object... paramArr) throws MwException {
-        
+
     }
 
     @Override

@@ -1,17 +1,25 @@
 package com.gryphpoem.game.zw.service;
 
+import com.gryphpoem.cross.constants.FightCommonConstant;
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.eventbus.EventBus;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.RandomHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
 import com.gryphpoem.game.zw.pb.GamePb4;
 import com.gryphpoem.game.zw.pb.GamePb4.*;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.quartz.ScheduleManager;
 import com.gryphpoem.game.zw.quartz.jobs.DefultJob;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -29,10 +37,8 @@ import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.party.Camp;
 import com.gryphpoem.game.zw.resource.pojo.party.Official;
 import com.gryphpoem.game.zw.resource.pojo.world.*;
@@ -217,16 +223,16 @@ public class BerlinWarService {
     private void getHeroBattleOrder(Long roleId, Player player, BerlinCityInfoRs.Builder builder,
                                     BerlinCityInfo cityInfo, BerlinRoleInfo roleInfo) {
         // 上阵将领的状态在柏林会战
-        player.getAllOnBattleHeros().stream().filter(hero -> hero.getState() == ArmyConstant.ARMY_BERLIN_WAR)
+        player.getAllOnBattleHeroList().stream().filter(hero -> hero.getPrincipalHero().getState() == ArmyConstant.ARMY_BERLIN_WAR)
                 .forEach(hero -> {
                     CommonPb.BerlinHeroInfo.Builder info = CommonPb.BerlinHeroInfo.newBuilder();
                     BerlinForce force = cityInfo.getRoleQueue().stream().filter(Force::alive)
-                            .filter(f -> f.ownerId == roleId && f.id == hero.getHeroId()).findFirst().orElse(null);
+                            .filter(f -> f.ownerId == roleId && f.id == hero.getPrincipalHero().getHeroId()).findFirst().orElse(null);
                     if (CheckNull.isNull(force)) {
                         return;
                     }
-                    info.setHeroId(hero.getHeroId());
-                    info.setCnt(roleInfo.getCntByType(hero.getHeroId()));
+                    info.setHeroId(hero.getPrincipalHero().getHeroId());
+                    info.setCnt(roleInfo.getCntByType(hero.getPrincipalHero().getHeroId()));
                     int atkOrDef = player.lord.getCamp() == cityInfo.getCamp() ?
                             WorldConstant.BERLIN_DEF :
                             WorldConstant.BERLIN_ATK;
@@ -721,11 +727,12 @@ public class BerlinWarService {
             }
         }
 
-        List<CommonPb.TwoInt> form = new ArrayList<>();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
         for (Integer heroId : heroIdList) {
-            hero = player.heros.get(heroId);
-            hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) continue;
+            partnerHero.setState(ArmyConstant.ARMY_STATE_MARCH);
+            form.add(partnerHero.convertTo());
         }
 
         Army army = new Army(player.maxKey(), armyType, cityInfo.getPos(), ArmyConstant.ARMY_STATE_MARCH, form,
@@ -1321,10 +1328,10 @@ public class BerlinWarService {
             }
 
             // 将领信息
-            CommonPb.TwoInt twoInt = army.getHero().get(0);
+            CommonPb.PartnerHeroIdPb twoInt = army.getHero().get(0);
 
             // 将领返回, 并重新计算攻防兵力
-            if (cityInfo.retreatArmy(player.roleId, twoInt.getV1())) {
+            if (cityInfo.retreatArmy(player.roleId, twoInt.getPrincipleHeroId())) {
                 // 主动召回
                 worldService.retreatArmy(player, army, TimeHelper.getCurrentSecond(), type);
                 // 重新计算攻防兵力
@@ -1443,6 +1450,7 @@ public class BerlinWarService {
                 cityHurt = force.count <= cityHurt ? force.count : cityHurt;
                 force.lost = cityHurt;
                 force.subHp(null);
+                force.switchPlatoon();
                 LogUtil.debug("柏林会战战斗日志, 城防将:", force.id, ", 剩余血量:", force.hp, ", 被AOE造成伤害:", cityHurt);
                 LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "aoe", battleFront.getCityId(), 0, 0, battleFront.getCityId(), battleFront.getPos(), cityHurt, 0, 0, 0, 0, force.lost, force.count, force.id);
                 cityInfo.subDefArm(cityHurt);
@@ -1463,6 +1471,7 @@ public class BerlinWarService {
                         // 扣除柏林CityInfo对象中的Force兵力
                         cityInfo.subDefArm(defHurt);
                         berlinForce.subHp(null);
+                        berlinForce.switchPlatoon();
                         LogUtil.debug("柏林会战战斗日志, roleId: ", berlinForce.ownerId, ", 玩家的防守将领:", berlinForce.id, ", 剩余血量:", berlinForce.hp, ", 被AOE造成伤害:", defHurt);
                         LogLordHelper.otherLog("BerlinBattle", DataResource.ac.getBean(ServerSetting.class).getServerID(), "aoe", battleFront.getCityId(), berlinForce.ownerId, 0, battleFront.getCityId(), battleFront.getPos(), defHurt, 0, 0, 0, 0, berlinForce.lost, berlinForce.count, berlinForce.id);
                         // 投石车伤害也计入参战玩家
@@ -1627,13 +1636,13 @@ public class BerlinWarService {
             LogUtil.debug("defender=" + defender + ",attacker=" + attacker);
             FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_BERLIN_WAR);
             warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-            fightLogic.fight();// 战斗
+            fightLogic.start();// 战斗
 
             //貂蝉任务-杀敌阵亡数量
             ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
             ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
-            boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+            boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
             HashSet<Long> ids = new HashSet<>();
             // 损兵处理
             if (attacker.lost > 0) {
@@ -1644,7 +1653,7 @@ public class BerlinWarService {
                 subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
                 updArmyRank(defender, ids);
             }
-            CommonPb.Record record = fightLogic.generateRecord();
+            BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
             // 战斗记录
             Player defPlayer = playerDataManager.checkPlayerIsExist(def.ownerId);
@@ -1729,7 +1738,7 @@ public class BerlinWarService {
      * @param atk        进攻军队
      * @param atkLord    进攻Lord
      * @param reportRs   战报
-     * @param hero  授勋
+     * @param hero       授勋
      * @throws MwException 自定义异常
      */
     private void syncBasicReport(BerlinCityInfo berlinInfo, int now, SyncBasicReportRs.Builder builder, BerlinForce atk,
@@ -1826,13 +1835,13 @@ public class BerlinWarService {
             LogUtil.debug("defender=" + defender + ",attacker=" + attacker);
             FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_BERLIN_WAR);
             warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-            fightLogic.fight();// 战斗
+            fightLogic.start();// 战斗
 
             //貂蝉任务-杀敌阵亡数量
             ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
             ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
-            boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+            boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
             HashSet<Long> ids = new HashSet<>();
             // 损兵处理
             if (attacker.lost > 0) {
@@ -1843,7 +1852,7 @@ public class BerlinWarService {
                 subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
                 updArmyRank(defender, ids);
             }
-            CommonPb.Record record = fightLogic.generateRecord();
+            BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
             // 战斗记录
             int pos = berlinCityInfo.getPos();
@@ -2152,13 +2161,13 @@ public class BerlinWarService {
         LogUtil.debug("defender=" + defender + ",attacker=" + attacker);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_BERLIN_WAR);
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();// 战斗
+        fightLogic.start();// 战斗
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         HashSet<Long> ids = new HashSet<>();
         // 损兵处理
@@ -2170,7 +2179,7 @@ public class BerlinWarService {
             subBattleHeroArm(defender.forces.get(0), defender.lost, AwardFrom.BERLIN_WAR_ATTACK);
             updArmyRank(defender, ids);
         }
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         // 战斗记录
         int pos = berlinCityInfo.getPos();
@@ -2271,7 +2280,7 @@ public class BerlinWarService {
         }
         for (Map.Entry<Integer, Army> kv : player.armys.entrySet()) {
             Army army = kv.getValue();
-            if (army == null || army.getHero().get(0).getV1() != heroId) {
+            if (army == null || army.getHero().get(0).getPrincipleHeroId() != heroId) {
                 continue;
             }
             if (army.getState() == ArmyConstant.ARMY_STATE_RETREAT) {
@@ -2319,7 +2328,7 @@ public class BerlinWarService {
                 hero = player.heros.get(force.id);
             }
             String owner = playerDataManager.getNickByLordId(force.ownerId);
-            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force.id, owner, 0, 0, force.lost, hero);
+            RptHero rptHero = PbHelper.createRptHero(force.roleType, fighter.hurt, award, force, owner, 0, 0, force.lost);
             if (isAttacker) {
                 rpt.addAtkHero(rptHero);
             } else {
@@ -2376,13 +2385,13 @@ public class BerlinWarService {
                                     int type = en.getKey();
                                     // 只有穿甲是仅在打圣城和炮台生效
                                     if (type == EffectConstant.PREWAR_ATK) {
-                                        return Constant.AttrId.ATTACK;
+                                        return FightCommonConstant.AttrId.ATTACK;
                                     } else if (type == EffectConstant.PREWAR_DEF) {
-                                        return Constant.AttrId.DEFEND;
+                                        return FightCommonConstant.AttrId.DEFEND;
                                     } else if (type == EffectConstant.PREWAR_LEAD) {
-                                        return Constant.AttrId.LEAD;
+                                        return FightCommonConstant.AttrId.LEAD;
                                     } else if (type == EffectConstant.PREWAR_ATTACK_EXT) {
-                                        return Constant.AttrId.ATTACK_EXT;
+                                        return FightCommonConstant.AttrId.ATTACK_EXT;
                                     }
                                     return 0;
                                 }, en -> en.getValue().getEffectVal(), Integer::sum));
@@ -2495,7 +2504,7 @@ public class BerlinWarService {
         Turple<Integer, Long> curWinner = BerlinWar.getCurWinner();
         if (curWinner != null) {
             Player p = playerDataManager.getPlayer(curWinner.getB());
-            if(Objects.nonNull(p)){
+            if (Objects.nonNull(p)) {
                 builder.addBerlinJob(PbHelper.createBerlinJobPb(p, StaticBerlinJob.BOSS_JOB_ID));
             }
         }

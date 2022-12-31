@@ -1,6 +1,7 @@
 package com.gryphpoem.game.zw.resource.domain.s;
 
 import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
+import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.List;
 
@@ -10,9 +11,9 @@ public class StaticCombat {
     private int exp;
     private List<List<Integer>> winAward;
     private List<List<Integer>> firstAward;
-    private List<Integer> firstform; // 首次攻打的阵型
+    private List<List<Integer>> firstForm; // 首次攻打的阵型
     private List<List<Integer>> randomAward;//扫荡随机掉落奖励
-    private List<Integer> form;
+    private List<List<Integer>> form;
     private List<Integer> hero;
     private List<List<Integer>> attr;
     private int preId;
@@ -30,14 +31,15 @@ public class StaticCombat {
 
     /**
      * 获取城池NPC总兵力
-     * 
+     *
      * @return
      */
     public int getTotalArm() {
         if (totalArm < 0) {
             totalArm = 0;
-            for (Integer npcId : form) {
-                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+            for (List<Integer> npcId : form) {
+                if (CheckNull.isEmpty(npcId)) continue;
+                StaticNpc npc = StaticNpcDataMgr.getNpcMap().get(npcId.get(0));
                 totalArm += npc.getTotalArm();
             }
         }
@@ -92,11 +94,11 @@ public class StaticCombat {
         this.firstAward = firstAward;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 
@@ -156,12 +158,12 @@ public class StaticCombat {
         this.index = index;
     }
 
-    public List<Integer> getFirstform() {
-        return firstform;
+    public List<List<Integer>> getFirstForm() {
+        return firstForm;
     }
 
-    public void setFirstform(List<Integer> firstform) {
-        this.firstform = firstform;
+    public void setFirstForm(List<List<Integer>> firstForm) {
+        this.firstForm = firstForm;
     }
 
     public int getPlaneExp() {

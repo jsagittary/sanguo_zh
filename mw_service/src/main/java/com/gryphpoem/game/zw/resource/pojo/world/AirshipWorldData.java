@@ -2,27 +2,33 @@ package com.gryphpoem.game.zw.resource.pojo.world;
 
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.CommonPb.BattleRole;
-import com.gryphpoem.game.zw.resource.pojo.fight.NpcForce;
+import com.gryphpoem.game.zw.pojo.p.NpcForce;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName AirshipWorldData.java
  * @Description 飞艇在世界的数据
- * @author QiuKun
  * @date 2019年1月16日
  */
 public class AirshipWorldData implements WorldEntity {
 
     public static int SEQ_ID = 0;
 
-    /** 存活 */
+    /**
+     * 存活
+     */
     public static final int STATUS_LIVE = 0;
-    /** 逃跑刷新 */
+    /**
+     * 逃跑刷新
+     */
     public static final int STATUS_REFRESH = 1;
-    /** 被干掉刷新 */
+    /**
+     * 被干掉刷新
+     */
     public static final int STATUS_DEAD_REFRESH = 2;
 
     private int id; // 配置id
@@ -42,7 +48,7 @@ public class AirshipWorldData implements WorldEntity {
         this.keyId = ser.getKeyId();
         this.pos = ser.getPos();
         for (CommonPb.Force f : ser.getNpcList()) {
-            npc.add(new NpcForce(f.getNpcId(), f.getHp(), f.getCurLine()));
+            npc.add(new NpcForce(f.getNpcId(), f.getHp(), f.getCurLine(), f.getDeputyNpcList()));
         }
         this.belongRoleId = ser.getBelongRoleId();
         this.status = ser.getStatus();
@@ -67,7 +73,7 @@ public class AirshipWorldData implements WorldEntity {
 
     /**
      * 配置id
-     * 
+     *
      * @param id
      */
     public AirshipWorldData(int id) {

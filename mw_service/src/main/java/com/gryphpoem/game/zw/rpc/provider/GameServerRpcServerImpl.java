@@ -2,8 +2,6 @@ package com.gryphpoem.game.zw.rpc.provider;
 
 import com.google.protobuf.TextFormat;
 import com.gryphpoem.cross.chat.dto.CrossChat;
-import com.gryphpoem.cross.chat.dto.CrossRoleChat;
-import com.gryphpoem.cross.chat.dto.CrossSystemChat;
 import com.gryphpoem.cross.constants.GameServerConst;
 import com.gryphpoem.cross.gameserver.GameServerRpcService;
 import com.gryphpoem.cross.gameserver.dto.GameServerInfo;
@@ -19,13 +17,12 @@ import com.gryphpoem.game.zw.manager.MsgDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.GamePb3;
 import com.gryphpoem.game.zw.pb.GamePb3.SyncChatRs;
 import com.gryphpoem.game.zw.resource.common.ServerConfig;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.NumberUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -108,8 +105,8 @@ public class GameServerRpcServerImpl implements GameServerRpcService {
             CommonPb.Friend.Builder builder = CommonPb.Friend.newBuilder();
             CommonPb.Man man = PbHelper.createManPbByLord(player);
             builder.setMan(man.toBuilder().setServerId(serverSetting.getServerID()).build());
-            for (Hero h : player.getAllOnBattleHeros()) {
-                builder.addHero(PbHelper.createFriendAndHeroPb(h, player));
+            for (PartnerHero h : player.getAllOnBattleHeroList()) {
+                builder.addHero(h.createPb(false));
             }
             showInfo.setBytes(builder.build().toByteArray());
         }

@@ -2,12 +2,12 @@ package com.gryphpoem.game.zw.manager;
 
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.dataMgr.StaticWorldDataMgr;
-import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pb.BattlePb;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.Constant;
 import com.gryphpoem.game.zw.resource.constant.WorldConstant;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticCity;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.world.Battle;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
@@ -365,12 +365,12 @@ public class WarDataManager {
     /**
      * 记录双方阵型(用于有城墙NPC)
      */
-    public void packForm(CommonPb.Record.Builder recordData, List<Force> atkForces, List<Force> defForces) {
+    public void packForm(BattlePb.BattleRoundPb.Builder recordData, List<Force> atkForces, List<Force> defForces) {
         Player player;
-        CommonPb.Form.Builder form;
+        BattlePb.Form.Builder form;
         for (Force force : atkForces) {
             if (force.hp <= 0) continue;
-            form = CommonPb.Form.newBuilder();
+            form = BattlePb.Form.newBuilder();
             form.setId(force.id);
             form.setCount(force.hp);// force.maxHp
             form.setLine(force.maxLine);
@@ -387,7 +387,7 @@ public class WarDataManager {
 
         for (Force force : defForces) {
             if (force.hp <= 0) continue;
-            form = CommonPb.Form.newBuilder();
+            form = BattlePb.Form.newBuilder();
             form.setId(force.id);
             player = playerDataManager.getPlayer(force.ownerId);
             if (player != null && force.roleType == Constant.Role.WALL) {

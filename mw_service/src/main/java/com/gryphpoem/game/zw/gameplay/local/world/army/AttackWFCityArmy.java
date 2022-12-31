@@ -1,6 +1,9 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
@@ -9,9 +12,12 @@ import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.map.WFCityMapEntity;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.GlobalWarFire;
 import com.gryphpoem.game.zw.gameplay.local.world.warfire.PlayerWarFire;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.pojo.p.Force;
 import com.gryphpoem.game.zw.resource.constant.ArmyConstant;
 import com.gryphpoem.game.zw.resource.constant.AwardFrom;
 import com.gryphpoem.game.zw.resource.constant.MailConstant;
@@ -21,13 +27,9 @@ import com.gryphpoem.game.zw.resource.domain.p.Lord;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.WarService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
@@ -145,14 +147,14 @@ public class AttackWFCityArmy extends AttackCityArmy {
         Fighter defender = fightService.createFighterByArmy(allArmy);
         FightLogic fightLogic = new FightLogic(attacker, defender, true, WorldConstant.BATTLE_TYPE_CAMP);
         warDataManager.packForm(fightLogic.getRecordBuild(), attacker.forces, defender.forces);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
         ActivityDiaoChanService.killedAndDeathTask0(attacker, true, true);
         ActivityDiaoChanService.killedAndDeathTask0(defender, true, true);
 
         // 结果处理
-        boolean atkSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean atkSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         // 记录玩家有改变的资源类型, key:roleId
         Map<Long, ChangeInfo> changeMap = new HashMap<>();
         // 损兵处理
@@ -191,7 +193,7 @@ public class AttackWFCityArmy extends AttackCityArmy {
         // 战报生成
         SolarTermsDataManager solarTermsDataManager = DataResource.ac.getBean(SolarTermsDataManager.class);
         CommonPb.RptAtkPlayer.Builder rpt = CommonPb.RptAtkPlayer.newBuilder();
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
         // 节气
         rpt.setNightEffect(solarTermsDataManager.getNightEffect() != null);
         rpt.setResult(atkSuccess);
@@ -233,7 +235,7 @@ public class AttackWFCityArmy extends AttackCityArmy {
                             int retreatMarch = cMap.marchTime(cMap, defP, defP.lord.getPos(), targetPos);
                             defWFArmy
                                     .stream()
-                                    .filter(wfArmy -> wfArmy.getLordId() == ownerId && wfArmy.getArmy().getHero().get(0).getV1() == heroId)
+                                    .filter(wfArmy -> wfArmy.getLordId() == ownerId && wfArmy.getArmy().getHero().get(0).getPrincipleHeroId() == heroId)
                                     .forEach(wfArmy -> {
                                         // 部队返回
                                         wfArmy.retreatArmy(mapMarchArmy, retreatMarch, retreatMarch);

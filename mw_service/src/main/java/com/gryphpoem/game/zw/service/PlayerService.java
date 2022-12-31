@@ -12,6 +12,8 @@ import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticIniDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticLordDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticVipDataMgr;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.manager.ActivityDataManager;
 import com.gryphpoem.game.zw.manager.BattlePassDataManager;
@@ -1896,6 +1898,9 @@ public class PlayerService implements GmCmdService {
 
         if (mPlayer.lord.getCamp() != tPlayer.lord.getCamp()) {
             throw new MwException(GameError.COMPARE_NOTES_CAMP_ERROR.getCode(), "只有相同阵营才能切磋");
+        }
+        if (roleId == targetId) {
+            throw new MwException(GameError.PARAM_ERROR, "切磋不可挑战自己");
         }
 
         return warService.compareNotesFightLogic(mPlayer, tPlayer, heroIds);

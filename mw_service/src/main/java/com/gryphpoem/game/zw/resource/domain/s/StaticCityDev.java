@@ -13,7 +13,7 @@ import com.gryphpoem.game.zw.resource.pojo.world.CityHero;
 public class StaticCityDev {
     private int lv;
     private int exp;
-    private List<Integer> form;
+    private List<List<Integer>> form;
     private List<CityHero> formList;
     private int supermineNum;
 
@@ -33,11 +33,11 @@ public class StaticCityDev {
         this.exp = exp;
     }
 
-    public List<Integer> getForm() {
+    public List<List<Integer>> getForm() {
         return form;
     }
 
-    public void setForm(List<Integer> form) {
+    public void setForm(List<List<Integer>> form) {
         this.form = form;
     }
 

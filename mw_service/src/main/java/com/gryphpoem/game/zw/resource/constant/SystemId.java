@@ -1327,6 +1327,46 @@ public class SystemId {
     public static final int GUAN_PING_RESCUE_REWARD = 373;
 
     /**
+     * 打叛军损兵恢复
+     */
+    public static final int FIGHT_BANDIT_LOST_RECOVER_ARMS = 387;
+
+    /**
+     * 打营地损兵恢复
+     */
+    public static final int FIGHT_CAMP_CITY_LOST_RECOVER_ARMS = 388;
+
+    /**
+     * 正常攻打副本及其他战斗经验系数
+     */
+    public static final int NORMAL_ATTACK_COPY_AND_OTHER_COMBAT_EXPERIENCE_COEFFICIENT = 389;
+
+    /**
+     * 阵营战（打NPC城池）：军工=杀敌数**系数      system表390
+     */
+    public static final int SYSTEM_ID_390 = 390;
+
+    /**
+     * 城池战（打玩家城池）：军工=损兵数**系数      system表391
+     */
+    public static final int SYSTEM_ID_391 = 391;
+
+    /**
+     * 矿点战（资源点战斗）：军工=损兵数**系数      system表392
+     */
+    public static final int SYSTEM_ID_392 = 392;
+
+    /**
+     * 燃油=20000+（杀敌数+损兵数）*系数      system表393
+     */
+    public static final int SYSTEM_ID_393 = 393;
+
+    /**
+     * 战斗所有buff触发成功最高次数
+     */
+    public static final int ALL_EFFECTIVE_TIMES_SINGLE_ROUND = 801;
+
+    /**
      * 玩家登录刷新流寇距上次离线时间间隔
      */
     public static final int REFRESH_BANDITS_OFFLINE_TIME = 1008;
@@ -1489,28 +1529,47 @@ public class SystemId {
      */
     public static final int CIA_FAVORABILITY_QUALITY = 1077;
 
-    /** 宝具洗练, 主体宝具属性系数 */
+    /**
+     * 宝具洗练, 主体宝具属性系数
+     */
     public static final int TREASURE_WARE_MASTER_ATTR_COEFFICIENT = 650;
-    /** 宝具洗练, 主体宝具属性评价系数*/
+    /**
+     * 宝具洗练, 主体宝具属性评价系数
+     */
     public static final int TREASURE_WARE_MASTER_STAGE_COEFFICIENT = 651;
-    /** 宝具洗练, 材料宝具属性系数 */
+    /**
+     * 宝具洗练, 材料宝具属性系数
+     */
     public static final int TREASURE_WARE_MATERIAL_ATTR_COEFFICIENT = 652;
-    /** 宝具洗练, 材料宝具属性评价系数*/
+    /**
+     * 宝具洗练, 材料宝具属性评价系数
+     */
     public static final int TREASURE_WARE_MATERIAL_STAGE_COEFFICIENT = 653;
-    /** 蓝/紫宝具总体评价区间 */
+    /**
+     * 蓝/紫宝具总体评价区间
+     */
     public static final int TREASURE_WARE_LOWER_STAGE = 654;
-    /** 橙/红/远古宝具总体评价区间 */
+    /**
+     * 橙/红/远古宝具总体评价区间
+     */
     public static final int TREASURE_WARE_HIGHER_STAGE = 655;
-    /** 宝具属性阶数对应的评估分值*/
+    /**
+     * 宝具属性阶数对应的评估分值
+     */
     public static final int TREASURE_WARE_ATTR_STAGE_SCORE = 656;
-    /** 橙色/红色宝具材料单个玩家每天掉落数量 */
+    /**
+     * 橙色/红色宝具材料单个玩家每天掉落数量
+     */
     public static final int TREASURE_MATERIALS_OUTPUT_NUM = 657;
 
-    /** 宝具副本 钻石购买击败玩家次数 */
+    /**
+     * 宝具副本 钻石购买击败玩家次数
+     */
     public static final int TREASURE_COMBAT_CHALLENGE_PLAYER_PURCHASE = 777;
-    /** 刷新挑战玩家消耗钻石数 */
+    /**
+     * 刷新挑战玩家消耗钻石数
+     */
     public static final int TREASURE_CHALLENGE_REFRESH_COST_DIAMOND = 778;
-
 
 
     /**
@@ -1727,7 +1786,7 @@ public class SystemId {
     /**
      * 宝具副本购买扫荡次数单次递增价格
      */
-    public static final int TREASURE_WIPE_INCREASE_PRICE =  639;
+    public static final int TREASURE_WIPE_INCREASE_PRICE = 639;
 
     /**
      * 宝具副本默认解锁上阵位

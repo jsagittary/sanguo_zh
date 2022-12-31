@@ -9,9 +9,9 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticSuperMine;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 
 /**
+ * @author QiuKun
  * @ClassName SuperGuard.java
  * @Description 超级矿点驻军
- * @author QiuKun
  * @date 2018年7月18日
  */
 public class SuperGuard {
@@ -40,7 +40,7 @@ public class SuperGuard {
 
     /**
      * 创建一个新的超级矿点驻军
-     * 
+     *
      * @param army
      * @param superMine
      * @param now
@@ -48,7 +48,7 @@ public class SuperGuard {
      */
     public static SuperGuard createSuperGuard(Army army, SuperMine superMine, int now) {
         // 获取可采集最大时间
-        StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(army.getHero().get(0).getV1());
+        StaticHero sHero = StaticHeroDataMgr.getHeroMap().get(army.getHero().get(0).getPrincipleHeroId());
         StaticSuperMine sSm = StaticWorldDataMgr.getSuperMineById(superMine.getConfigId());
         int maxCollectTime = sSm.getCollectTime().get(sHero.getQuality());
         SuperGuard sg = new SuperGuard(army, maxCollectTime);
@@ -60,7 +60,7 @@ public class SuperGuard {
 
     /**
      * 停产状态
-     * 
+     *
      * @param now
      */
     public void stopState(int now) {
@@ -71,7 +71,7 @@ public class SuperGuard {
 
     /**
      * 停产 恢复到 生产
-     * 
+     *
      * @param now
      */
     public void reProducedState(int now) {
@@ -80,7 +80,7 @@ public class SuperGuard {
 
     /**
      * 计算获取已经采集时间
-     * 
+     *
      * @return
      */
     public int calcCollectedTime(int now) {
@@ -91,7 +91,7 @@ public class SuperGuard {
 
     /**
      * 计算已采集到的资源
-     * 
+     *
      * @param now
      * @return
      */
@@ -102,7 +102,7 @@ public class SuperGuard {
 
     /**
      * 资源充足情况下还可以采集多长时间
-     * 
+     *
      * @param now
      * @return
      */
@@ -112,7 +112,7 @@ public class SuperGuard {
 
     /**
      * 设置部队时间
-     * 
+     *
      * @param now
      * @param durationTime
      */
@@ -125,7 +125,7 @@ public class SuperGuard {
 
     /**
      * 当矿点足够时并且是生产状态的采集时间计算
-     * 
+     *
      * @param now
      */
     public void setArmyTimeInEnoughRes(int now) {
@@ -145,7 +145,7 @@ public class SuperGuard {
 
     /**
      * 矿点资源不足情况设置最大可采集量
-     * 
+     *
      * @param now
      * @param durationTime
      */
@@ -155,7 +155,7 @@ public class SuperGuard {
 
     /**
      * 是否是相同的army
-     * 
+     *
      * @param am
      * @return
      */

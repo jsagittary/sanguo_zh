@@ -18,5 +18,6 @@ public class ProtoRegistry {
         CommonPb.registerAllExtensions(registry);
         SerializePb.registerAllExtensions(registry);
         CrossPb.registerAllExtensions(registry);
+        BattlePb.registerAllExtensions(registry);
     }
 }

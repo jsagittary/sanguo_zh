@@ -1,15 +1,5 @@
 package com.gryphpoem.game.zw.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.Java8Utils.SendMsgToPlayerCallback;
 import com.gryphpoem.game.zw.core.util.LogUtil;
@@ -17,40 +7,14 @@ import com.gryphpoem.game.zw.dataMgr.StaticCombatDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticFunctionDataMgr;
 import com.gryphpoem.game.zw.dataMgr.StaticShopDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
-import com.gryphpoem.game.zw.manager.ChatDataManager;
-import com.gryphpoem.game.zw.manager.GlobalDataManager;
-import com.gryphpoem.game.zw.manager.MsgDataManager;
-import com.gryphpoem.game.zw.manager.PlayerDataManager;
-import com.gryphpoem.game.zw.manager.RewardDataManager;
+import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb.Base;
 import com.gryphpoem.game.zw.pb.CommonPb.Award;
 import com.gryphpoem.game.zw.pb.CommonPb.RptHero;
-import com.gryphpoem.game.zw.pb.GamePb2.CreateCombatTeamRq;
-import com.gryphpoem.game.zw.pb.GamePb2.CreateCombatTeamRs;
-import com.gryphpoem.game.zw.pb.GamePb2.GetMultCombatRs;
-import com.gryphpoem.game.zw.pb.GamePb2.GetTeamMemberListRs;
-import com.gryphpoem.game.zw.pb.GamePb2.JoinCombatTeamRq;
-import com.gryphpoem.game.zw.pb.GamePb2.JoinCombatTeamRs;
-import com.gryphpoem.game.zw.pb.GamePb2.LeaveCombatTeamRs;
-import com.gryphpoem.game.zw.pb.GamePb2.ModifyCombatTeamRq;
-import com.gryphpoem.game.zw.pb.GamePb2.ModifyCombatTeamRs;
-import com.gryphpoem.game.zw.pb.GamePb2.MultCombatShopBuyRq;
-import com.gryphpoem.game.zw.pb.GamePb2.MultCombatShopBuyRs;
-import com.gryphpoem.game.zw.pb.GamePb2.SendInvitationRq;
-import com.gryphpoem.game.zw.pb.GamePb2.SendInvitationRs;
-import com.gryphpoem.game.zw.pb.GamePb2.StartMultCombatRs;
-import com.gryphpoem.game.zw.pb.GamePb2.SyncCombatTeamRs;
-import com.gryphpoem.game.zw.pb.GamePb2.SyncInvitationRs;
-import com.gryphpoem.game.zw.pb.GamePb2.SyncMultCombatReportRs;
-import com.gryphpoem.game.zw.pb.GamePb2.TickTeamMemberRq;
-import com.gryphpoem.game.zw.pb.GamePb2.TickTeamMemberRs;
-import com.gryphpoem.game.zw.pb.GamePb2.WipeMultCombatRs;
-import com.gryphpoem.game.zw.resource.constant.AwardFrom;
-import com.gryphpoem.game.zw.resource.constant.AwardType;
-import com.gryphpoem.game.zw.resource.constant.ChatConst;
-import com.gryphpoem.game.zw.resource.constant.Constant;
-import com.gryphpoem.game.zw.resource.constant.FunctionConstant;
-import com.gryphpoem.game.zw.resource.constant.GameError;
+import com.gryphpoem.game.zw.pb.GamePb2.*;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
+import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Msg;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.MultCombat;
@@ -58,18 +22,21 @@ import com.gryphpoem.game.zw.resource.domain.p.MultCombatTeam;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMultCombat;
 import com.gryphpoem.game.zw.resource.domain.s.StaticMultcombatShop;
 import com.gryphpoem.game.zw.resource.pojo.Trophy;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.LogLordHelper;
-import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.RandomUtil;
-import com.gryphpoem.game.zw.resource.util.TimeHelper;
+import com.gryphpoem.game.zw.resource.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
+ * @author QiuKun
  * @ClassName MultCombatService.java
  * @Description 多人副本
- * @author QiuKun
  * @date 2018年12月25日
  */
 @Component
@@ -92,7 +59,7 @@ public class MultCombatService {
 
     /**
      * 创建副本队伍
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -118,8 +85,8 @@ public class MultCombatService {
 
     /**
      * 创建队伍
-     * 
-     * @param roleId
+     *
+     * @param player
      * @param multCombat
      * @param combatId
      * @return
@@ -140,9 +107,9 @@ public class MultCombatService {
 
     /**
      * 修改副本队伍信息(解散队伍,修改状态)
-     * 
+     *
      * @param roleId
-     * @param req 的command字段 1.解散队伍 2.修改自动开始状态 3.修改否允许自动加入状态
+     * @param req    的command字段 1.解散队伍 2.修改自动开始状态 3.修改否允许自动加入状态
      * @return
      * @throws MwException
      */
@@ -176,7 +143,7 @@ public class MultCombatService {
 
     /**
      * 解散队伍
-     * 
+     *
      * @param mcTeam
      */
     private void breakupTeam(MultCombatTeam mcTeam) {
@@ -192,7 +159,7 @@ public class MultCombatService {
 
     /**
      * 获取玩家所在的队伍
-     * 
+     *
      * @param player
      * @return
      * @throws MwException
@@ -208,9 +175,9 @@ public class MultCombatService {
 
     /**
      * 队伍的推送
-     * 
+     *
      * @param command
-     * @param mcTeam 1.队伍解散, 2.自己被踢掉了
+     * @param mcTeam        1.队伍解散, 2.自己被踢掉了
      * @param processRoleId 当前操作者,没有为0
      */
     private void syncCombatTeam(int command, MultCombatTeam mcTeam, final long processRoleId) {
@@ -224,8 +191,8 @@ public class MultCombatService {
 
     /**
      * 队伍的推送
-     * 
-     * @param mcTeam 1.队伍解散, 2.自己被踢掉了
+     *
+     * @param mcTeam        1.队伍解散, 2.自己被踢掉了
      * @param processRoleId
      */
     private void syncCombatTeam(MultCombatTeam mcTeam, final long processRoleId) {
@@ -234,7 +201,7 @@ public class MultCombatService {
 
     /**
      * 队伍信息的推送
-     * 
+     *
      * @param player
      * @param command 1.队伍解散, 2.自己被踢掉了
      * @param mcTeam
@@ -254,9 +221,9 @@ public class MultCombatService {
 
     /**
      * 快速加入队伍(没有可加入就创建队伍);普通加入队伍
-     * 
+     *
      * @param roleId
-     * @param req teamId字段: 需要加入队伍的id; 填0表示快速加入
+     * @param req    teamId字段: 需要加入队伍的id; 填0表示快速加入
      * @return
      * @throws MwException
      */
@@ -325,8 +292,8 @@ public class MultCombatService {
 
     /**
      * 检测自动开启
-     * 
-     * @param mcTeam
+     *
+     * @param teamId
      */
     private void checkAutoStart(int teamId) {
         // 检测自动开启
@@ -338,7 +305,7 @@ public class MultCombatService {
 
     /**
      * 检测副本是否合法
-     * 
+     *
      * @param player
      * @param combatId 目标副本
      * @throws MwException
@@ -362,7 +329,7 @@ public class MultCombatService {
 
     /**
      * 离开队伍
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -396,7 +363,7 @@ public class MultCombatService {
 
     /**
      * 队长踢人
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -433,7 +400,7 @@ public class MultCombatService {
 
     /**
      * 获取多人副本信息
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -456,7 +423,7 @@ public class MultCombatService {
 
     /**
      * 获取可选队员列表
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -509,7 +476,7 @@ public class MultCombatService {
 
     /**
      * 检测是否解锁
-     * 
+     *
      * @param p
      * @return
      */
@@ -520,7 +487,7 @@ public class MultCombatService {
 
     /**
      * 发送邀请
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -553,7 +520,7 @@ public class MultCombatService {
 
     /**
      * 邀请信息推送
-     * 
+     *
      * @param p
      * @param mcTeam
      */
@@ -569,7 +536,7 @@ public class MultCombatService {
 
     /**
      * 开始多人副本
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -595,7 +562,7 @@ public class MultCombatService {
 
     /**
      * 处理副本战斗
-     * 
+     *
      * @param mcTeam
      */
     private void processMultCombatFight(MultCombatTeam mcTeam) {
@@ -617,7 +584,7 @@ public class MultCombatService {
         Fighter attacker = fightService.createCombatPlayerFighter(players);
         Fighter defender = fightService.createNpcFighter(sMultCombat.getForm());
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
         // 是否能有合作奖励
         // boolean hasTeamAward = hasTeamAward(players, sMultCombat.getCombatId());
         List<RptHero> rptHeroList = fightSettleLogic.combatCreateRptHeroNoAward(attacker.getForces());
@@ -652,7 +619,7 @@ public class MultCombatService {
 
     /**
      * 全服首通系统系统消息
-     * 
+     *
      * @param mcTeam
      */
     private void sendPassChat(MultCombatTeam mcTeam) {
@@ -678,14 +645,14 @@ public class MultCombatService {
 
     /**
      * 副本奖励
-     * 
+     *
      * @param p
      * @param sMultCombat
      * @param hasTeamAward
      * @param showAward
      */
     private void multCombatAward(Player p, StaticMultCombat sMultCombat, boolean hasTeamAward,
-            List<List<Integer>> showAward) {
+                                 List<List<Integer>> showAward) {
         MultCombat multCombat = p.getAndCreateMultCombat();
         int pointAward = 0; // 副本点数奖励
         // List<List<Integer>> awardRand = null; // 装备的奖励
@@ -752,7 +719,7 @@ public class MultCombatService {
 
     /**
      * 是否可以的到合作奖励
-     * 
+     *
      * @param players
      * @param combatId
      * @return
@@ -771,7 +738,7 @@ public class MultCombatService {
 
     /**
      * 多人副本扫荡
-     * 
+     *
      * @param roleId
      * @return
      * @throws MwException
@@ -804,7 +771,7 @@ public class MultCombatService {
 
     /**
      * 多人副本商店购买
-     * 
+     *
      * @param roleId
      * @param req
      * @return
@@ -852,7 +819,7 @@ public class MultCombatService {
 
     /**
      * 检测是否是队长
-     * 
+     *
      * @param player
      * @return true是队长
      */

@@ -289,7 +289,7 @@ public interface StaticIniMapper {
     @Results({
             @Result(column = "minuteAward", property = "minuteAward", typeHandler = ListListTypeHandler.class),
             @Result(column = "minuteRandomAward", property = "minuteRandomAward", typeHandler = ListListTypeHandler.class),
-            @Result(column = "form", property = "form", typeHandler = ListIntTypeHandler.class),
+            @Result(column = "form", property = "form", typeHandler = ListListTypeHandler.class),
             @Result(column = "firstAward", property = "firstAward", typeHandler = ListListTypeHandler.class),
             @Result(column = "sectionAward", property = "sectionAward", typeHandler = ListListTypeHandler.class)
     })

@@ -8,7 +8,7 @@ import com.gryphpoem.game.zw.manager.MedalDataManager;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.manager.WorldDataManager;
-import com.gryphpoem.game.zw.pb.CommonPb.TwoInt;
+import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb1.AutoAddArmyRs;
 import com.gryphpoem.game.zw.pb.GamePb2.GetArmyRs;
 import com.gryphpoem.game.zw.pb.GamePb2.ReplenishRq;
@@ -20,7 +20,9 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticHero;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
 import com.gryphpoem.game.zw.resource.pojo.army.March;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
+import com.gryphpoem.game.zw.resource.util.HeroUtil;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
 import com.gryphpoem.game.zw.service.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -264,11 +266,12 @@ public class ArmyService {
     public Army checkAndcreateArmy(Player player, int pos, List<Integer> heroIdList, int now, int armyType)
             throws MwException {
         int armCount = 0;
-        List<TwoInt> form = new ArrayList<>();
+        List<CommonPb.PartnerHeroIdPb> form = new ArrayList<>();
         for (Integer heroId : heroIdList) {
-            Hero hero = player.heros.get(heroId);
-            form.add(PbHelper.createTwoIntPb(heroId, hero.getCount()));
-            armCount += hero.getCount();
+            PartnerHero pa = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(pa)) continue;
+            form.add(pa.convertTo());
+            armCount += pa.getPrincipalHero().getCount();
         }
         int marchTime = worldService.marchTime(player, pos, armyType == ArmyConstant.ARMY_TYPE_ATTACK_AIRSHIP);
         marchTime = airshipService.getAirShipMarchTime(player, marchTime);
@@ -302,11 +305,7 @@ public class ArmyService {
         March march = new March(player, army);
         worldDataManager.addMarch(march);
         // 改变行军状态
-        for (TwoInt h : army.getHero()) {
-            int heroId = h.getV1();
-            Hero hero = player.heros.get(heroId);
-            if (hero != null) hero.setState(ArmyConstant.ARMY_STATE_MARCH);
-        }
+        army.setHeroState(player, ArmyConstant.ARMY_STATE_MARCH);
         // 区域变化推送
         List<Integer> posList = new ArrayList<>();
         posList.add(pos);
@@ -330,9 +329,9 @@ public class ArmyService {
             } else if (3 == type) {
                 rewardDataManager.sendRewardSignle(player0, AwardType.ARMY, AwardType.Army.FACTORY_3_ARM, count, AwardFrom.DO_SOME);
             }
-            for (int heroId : player0.heroBattle) {
-                if (heroId > 0) {
-                    Hero hero0 = player0.heros.get(heroId);
+            for (PartnerHero partnerHero : player0.getPlayerFormation().getHeroBattle()) {
+                if (!HeroUtil.isEmptyPartner(partnerHero)) {
+                    Hero hero0 = partnerHero.getPrincipalHero();
                     if (Objects.nonNull(hero0)) {
                         autoAddArmySingle(player0, hero0);
                     }

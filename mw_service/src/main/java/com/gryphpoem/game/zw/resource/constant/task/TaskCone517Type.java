@@ -1,7 +1,7 @@
 package com.gryphpoem.game.zw.resource.constant.task;
 
 import com.google.common.collect.HashBasedTable;
-import com.gryphpoem.game.zw.resource.util.Turple;
+import com.gryphpoem.game.zw.core.util.Turple;
 
 import java.util.Map;
 

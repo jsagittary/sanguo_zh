@@ -2,24 +2,23 @@ package com.gryphpoem.game.zw.gameplay.local.world.map;
 
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
+import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.dto.AttackParamDto;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.army.AttackWFCityArmy;
 import com.gryphpoem.game.zw.gameplay.local.world.army.BaseArmy;
-import com.gryphpoem.game.zw.dataMgr.StaticCrossWorldDataMgr;
 import com.gryphpoem.game.zw.manager.PlayerDataManager;
 import com.gryphpoem.game.zw.manager.RewardDataManager;
 import com.gryphpoem.game.zw.pb.CommonPb;
-import com.gryphpoem.game.zw.pb.GamePb4;
-import com.gryphpoem.game.zw.pb.GamePb5.*;
+import com.gryphpoem.game.zw.pb.GamePb5.AttackCrossPosRs;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.s.StaticWarFire;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
+import com.gryphpoem.game.zw.resource.pojo.hero.PartnerHero;
 import com.gryphpoem.game.zw.resource.pojo.world.City;
 import com.gryphpoem.game.zw.resource.util.*;
 
@@ -209,10 +208,13 @@ public class WFCityMapEntity extends CityMapEntity {
      */
     private BaseArmy createBaseArmy(AttackParamDto param, Player player) {
         int marchTime = param.getMarchTime();
-        List<CommonPb.TwoInt> form = param.getHeroIdList().stream().map(heroId -> {
-            Hero hero = player.heros.get(heroId);
-            return PbHelper.createTwoIntPb(heroId, hero.getCount());
-        }).collect(Collectors.toList());
+        // 部队逻辑
+        List<CommonPb.PartnerHeroIdPb> form = param.getHeroIdList().stream().map(heroId -> {
+            PartnerHero partnerHero = player.getPlayerFormation().getPartnerHero(heroId);
+            if (HeroUtil.isEmptyPartner(partnerHero)) return null;
+            return partnerHero.convertTo();
+        }).filter(pb -> Objects.nonNull(pb)).collect(Collectors.toList());
+
         int now = TimeHelper.getCurrentSecond();
         int battleTime = now + marchTime;
         Army army = new Army(player.maxKey(), ArmyConstant.ARMY_TYPE_WF_ATK_CITY, pos, ArmyConstant.ARMY_STATE_MARCH, form, marchTime,

@@ -1,8 +1,8 @@
 package com.gryphpoem.game.zw.manager.prop;
 
+import com.gryphpoem.game.zw.core.util.ClassUtil;
 import com.gryphpoem.game.zw.gameplay.local.prop.AbstractUseProp;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
-import com.gryphpoem.game.zw.resource.util.ClassUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;

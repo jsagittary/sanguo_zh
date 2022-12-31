@@ -5,11 +5,13 @@ import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.exception.MwException;
 import com.gryphpoem.game.zw.core.util.LogUtil;
 import com.gryphpoem.game.zw.core.util.QuartzHelper;
+import com.gryphpoem.game.zw.core.util.Turple;
 import com.gryphpoem.game.zw.dataMgr.*;
 import com.gryphpoem.game.zw.manager.*;
 import com.gryphpoem.game.zw.pb.BasePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
 import com.gryphpoem.game.zw.pb.GamePb4;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.quartz.jobs.ActEndJob;
 import com.gryphpoem.game.zw.quartz.jobs.ActOverJob;
 import com.gryphpoem.game.zw.resource.common.ServerSetting;
@@ -21,9 +23,11 @@ import com.gryphpoem.game.zw.resource.domain.p.ActivityTask;
 import com.gryphpoem.game.zw.resource.domain.s.*;
 import com.gryphpoem.game.zw.resource.pojo.*;
 import com.gryphpoem.game.zw.resource.pojo.activity.ETask;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
 import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
-import com.gryphpoem.game.zw.resource.util.*;
+import com.gryphpoem.game.zw.resource.util.ListUtils;
+import com.gryphpoem.game.zw.resource.util.LogLordHelper;
+import com.gryphpoem.game.zw.resource.util.PbHelper;
+import com.gryphpoem.game.zw.resource.util.TimeHelper;
 import com.gryphpoem.game.zw.service.PlayerService;
 import com.gryphpoem.game.zw.service.TaskService;
 import org.quartz.Scheduler;
@@ -56,15 +60,15 @@ public class ActivityDiaoChanService {
     @Autowired
     private MailDataManager mailDataManager;
 
-    private void checkReqParams(Player player,int activityType) throws MwException {
-        if(activityType != ActivityConst.ACT_DIAOCHAN && activityType != ActivityConst.ACT_SEASON_HERO){
-            throw new MwException(GameError.PARAM_ERROR.getCode(), "参数错误, roleId:,", player.lord.getLordId(),", activityType:",activityType);
+    private void checkReqParams(Player player, int activityType) throws MwException {
+        if (activityType != ActivityConst.ACT_DIAOCHAN && activityType != ActivityConst.ACT_SEASON_HERO) {
+            throw new MwException(GameError.PARAM_ERROR.getCode(), "参数错误, roleId:,", player.lord.getLordId(), ", activityType:", activityType);
         }
     }
 
-    public GamePb4.DiaoChanGetInfoRs getInfo(long roleId,int activityType) throws MwException {
+    public GamePb4.DiaoChanGetInfoRs getInfo(long roleId, int activityType) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        this.checkReqParams(player,activityType);
+        this.checkReqParams(player, activityType);
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         if (Objects.isNull(activityBase)) {
             throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动未开启(ActivityBase=null), roleId:,", player.lord.getLordId());
@@ -74,22 +78,22 @@ public class ActivityDiaoChanService {
             throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动未开启(Activity=null), roleId:,", player.lord.getLordId());
         }
         int step = activityBase.getStep0();
-        if(step == ActivityConst.OPEN_CLOSE){
-            throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动未开启, roleId:,", player.lord.getLordId(),", step=" + activityBase.getStep());
+        if (step == ActivityConst.OPEN_CLOSE) {
+            throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动未开启, roleId:,", player.lord.getLordId(), ", step=" + activityBase.getStep());
         }
 
-        int day ;
-        if(step == ActivityConst.DISPLAY_OPEN){
+        int day;
+        if (step == ActivityConst.DISPLAY_OPEN) {
             day = 1;
-        }else if(step == ActivityConst.OPEN_STEP){
+        } else if (step == ActivityConst.OPEN_STEP) {
             day = this.getDay(activityBase);
-        }else{
+        } else {
             day = StaticIniDataMgr.getDiaoChanMaxDay(activityBase.getActivityId());
         }
 
-        List<StaticDiaoChanDayTask> taskList = StaticIniDataMgr.getStaticDiaoChanDayTaskByDay(activityBase.getActivityId(),day);
+        List<StaticDiaoChanDayTask> taskList = StaticIniDataMgr.getStaticDiaoChanDayTaskByDay(activityBase.getActivityId(), day);
         if (ListUtils.isBlank(taskList)) {
-            throw new MwException(GameError.DIAOCHAN_NO_CONFIG.getCode(), String.format("貂蝉活动任务配置找不到, roleId:%s, 活动id=%s, day=%s",player.lord.getLordId(),activityBase.getActivityId(),day));
+            throw new MwException(GameError.DIAOCHAN_NO_CONFIG.getCode(), String.format("貂蝉活动任务配置找不到, roleId:%s, 活动id=%s, day=%s", player.lord.getLordId(), activityBase.getActivityId(), day));
         }
 
         GamePb4.DiaoChanGetInfoRs.Builder resp = GamePb4.DiaoChanGetInfoRs.newBuilder();
@@ -118,9 +122,9 @@ public class ActivityDiaoChanService {
         return resp.build();
     }
 
-    public GamePb4.DiaoChanGetAwardRs getAward(long roleId, int type, int awardId,int activityType) throws MwException {
+    public GamePb4.DiaoChanGetAwardRs getAward(long roleId, int type, int awardId, int activityType) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        this.checkReqParams(player,activityType);
+        this.checkReqParams(player, activityType);
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         if (Objects.isNull(activityBase)) {
             throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动领取奖励(ActivityBase=null), roleId:,", player.lord.getLordId(), " type:", type);
@@ -129,8 +133,8 @@ public class ActivityDiaoChanService {
         if (Objects.isNull(activity)) {
             throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动领取奖励(Activity=null), roleId:,", player.lord.getLordId(), " type:", type);
         }
-        if(activityBase.getStep() == ActivityConst.OPEN_CLOSE){
-            throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动已结束, roleId:,", player.lord.getLordId(),", step=" + activityBase.getStep());
+        if (activityBase.getStep() == ActivityConst.OPEN_CLOSE) {
+            throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动已结束, roleId:,", player.lord.getLordId(), ", step=" + activityBase.getStep());
         }
 
         GamePb4.DiaoChanGetAwardRs.Builder resp = GamePb4.DiaoChanGetAwardRs.newBuilder();
@@ -141,7 +145,7 @@ public class ActivityDiaoChanService {
                 throw new MwException(GameError.DIAOCHAN_NO_CONFIG.getCode(), "貂蝉活动领取奖励配置找不到, roleId:,", player.lord.getLordId(), " type:", type);
             }
             int day = this.getDay(activityBase);
-            if(day > 7){
+            if (day > 7) {
                 day = 7;
             }
             int todayScore = this.getDayScore(activity, day);
@@ -162,7 +166,7 @@ public class ActivityDiaoChanService {
             });
             resp.addAllAward(awardList);
         } else if (type == 2) {//闭月奖励
-            if(activityType == ActivityConst.ACT_SEASON_HERO){
+            if (activityType == ActivityConst.ACT_SEASON_HERO) {
                 throw new MwException(GameError.PARAM_ERROR.getCode(), "参数错误 赛季英雄活动没有闭月奖励, roleId:,", player.lord.getLordId(), " type:", type);
             }
             StaticDiaoChanAward staticDiaoChanAward = StaticIniDataMgr.getStaticDiaoChanAward(awardId);
@@ -201,17 +205,17 @@ public class ActivityDiaoChanService {
         return activity.getStatusMap().getOrDefault(awardId, 0);
     }
 
-    public int getDayRankKey(int type,int sub){
+    public int getDayRankKey(int type, int sub) {
         return 100000000 + type * 100 + sub;
     }
 
-    public int getActivityTypeByDayRankKey(int key){
+    public int getActivityTypeByDayRankKey(int key) {
         return (key - 100000000) / 100;
     }
 
-    public GamePb4.DiaoChanGetRankInfoRs getRankInfo(long roleId, int type, int day,int activityType) throws MwException {
+    public GamePb4.DiaoChanGetRankInfoRs getRankInfo(long roleId, int type, int day, int activityType) throws MwException {
         Player player = playerDataManager.checkPlayerIsExist(roleId);
-        this.checkReqParams(player,activityType);
+        this.checkReqParams(player, activityType);
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         if (Objects.isNull(activityBase)) {
             throw new MwException(GameError.DIAOCHAN_ACTIVITY_NOT_OPEN.getCode(), "貂蝉活动获取排行榜数据(ActivityBase=null), roleId:,", player.lord.getLordId());
@@ -232,16 +236,16 @@ public class ActivityDiaoChanService {
         LinkedList<ActRank> rankList;
         ActRank myRank;
         if (type == 1) {
-            if(day < 1){
+            if (day < 1) {
                 day = 1;
             }
-            if(day > 7){
+            if (day > 7) {
                 day = 7;
             }
-            int type_ = getDayRankKey(activityType,day);
+            int type_ = getDayRankKey(activityType, day);
             rankList = gActDate.getPlayerRanks(null, type_);
             myRank = gActDate.getPlayerRank(player, type_, player.roleId);
-            resp.setMyRank(PbHelper.createTwoIntPb(myRank == null ? 0 : myRank.getRank(), getDayScore(activity,day)));
+            resp.setMyRank(PbHelper.createTwoIntPb(myRank == null ? 0 : myRank.getRank(), getDayScore(activity, day)));
         } else if (type == 2) {
             rankList = gActDate.getPlayerRanks(null, activityType);
             myRank = gActDate.getPlayerRank(player, activityType, player.roleId);
@@ -249,7 +253,7 @@ public class ActivityDiaoChanService {
         } else {
             rankList = null;
         }
-        if(rankList != null){
+        if (rankList != null) {
             for (ActRank actRank : rankList) {
                 if (i >= showSize) {
                     break;
@@ -269,13 +273,13 @@ public class ActivityDiaoChanService {
         try {
             DataResource.ac.getBean(ActivityDiaoChanService.class).completeTask0(player, eTask, ActivityConst.ACT_DIAOCHAN, params);
             DataResource.ac.getBean(ActivityDiaoChanService.class).completeTask0(player, eTask, ActivityConst.ACT_SEASON_HERO, params);
-        }catch (Exception e) {
-            LogUtil.error("执行貂蝉任务发生错误, ",e);
+        } catch (Exception e) {
+            LogUtil.error("执行貂蝉任务发生错误, ", e);
         }
     }
 
     private void completeTask0(Player player, ETask eTask, int activityType, int... params) {
-        if(!functionIsOpen(player,activityType)){
+        if (!functionIsOpen(player, activityType)) {
             return;
         }
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
@@ -288,7 +292,7 @@ public class ActivityDiaoChanService {
         }
 
         int day = this.getDay(activityBase);
-        List<StaticDiaoChanDayTask> taskList = StaticIniDataMgr.getStaticDiaoChanDayTaskByDay(activityBase.getActivityId(),day);
+        List<StaticDiaoChanDayTask> taskList = StaticIniDataMgr.getStaticDiaoChanDayTaskByDay(activityBase.getActivityId(), day);
         if (ListUtils.isBlank(taskList)) {
             return;
         }
@@ -300,7 +304,7 @@ public class ActivityDiaoChanService {
                     return;
                 }
                 if (checkTaskCondition(player, activityTask, eTask, ctask, params)) {
-                    int addScore = checkTaskFinished(player,activityTask,eTask,ctask);
+                    int addScore = checkTaskFinished(player, activityTask, eTask, ctask);
                     if (addScore > 0) {
                         this.updateScore(player, activity, addScore, day);
                     }
@@ -309,7 +313,7 @@ public class ActivityDiaoChanService {
             }
         });
         if (!ListUtils.isBlank(changeList)) {
-            this.syncTaskInfo(player, activity, changeList, day,activityType);
+            this.syncTaskInfo(player, activity, changeList, day, activityType);
         }
     }
 
@@ -351,14 +355,14 @@ public class ActivityDiaoChanService {
                 break;
             case BUILD_UP:
                 int buildLv = BuildingDataManager.getBuildingLv(config.getParam().get(0), player);
-                if(buildLv > activityTask.getProgress()){
+                if (buildLv > activityTask.getProgress()) {
                     b = true;
                     activityTask.setProgress(buildLv);
                 }
                 break;
             case TECHNOLOGY_UP:
                 int technologyLv = player.tech.getTechLvById(config.getParam().get(0));
-                if(technologyLv > activityTask.getProgress()){
+                if (technologyLv > activityTask.getProgress()) {
                     b = true;
                     activityTask.setProgress(technologyLv);
                 }
@@ -391,7 +395,7 @@ public class ActivityDiaoChanService {
                 break;
             case ARTIFACT_UP:
                 SuperEquip superEquip = player.supEquips.get(config.getParam().get(0));
-                if(superEquip != null && superEquip.getLv() > activityTask.getProgress()){
+                if (superEquip != null && superEquip.getLv() > activityTask.getProgress()) {
                     b = true;
                     activityTask.setProgress(superEquip.getLv());
                 }
@@ -414,7 +418,7 @@ public class ActivityDiaoChanService {
                 Optional.ofNullable(player.getCia()).ifPresent(cia ->
                         Optional.ofNullable(cia.getFemaleAngets().get(config.getParam().get(0))).ifPresent(femaleAgent ->
                                 femaleAgentExp.set(femaleAgent.getExp())));
-                if(femaleAgentExp.get() > activityTask.getProgress()){
+                if (femaleAgentExp.get() > activityTask.getProgress()) {
                     b = true;
                     activityTask.setProgress(femaleAgentExp.get());
                 }
@@ -439,7 +443,7 @@ public class ActivityDiaoChanService {
                 }
                 break;
             case TITLE_LV:
-                if(player.lord.getRanks() > activityTask.getProgress()){
+                if (player.lord.getRanks() > activityTask.getProgress()) {
                     b = true;
                     activityTask.setProgress(player.lord.getRanks());
                 }
@@ -476,7 +480,7 @@ public class ActivityDiaoChanService {
                 }
                 break;
             case GET_HERO:
-                if(Objects.nonNull(player.heros.get(config.getParam().get(0)))){
+                if (Objects.nonNull(player.heros.get(config.getParam().get(0)))) {
                     b = true;
                     activityTask.setProgress(activityTask.getProgress() + 1);
                 }
@@ -492,7 +496,7 @@ public class ActivityDiaoChanService {
                 hero = player.heros.get(config.getParam().get(0));
                 if (Objects.nonNull(hero)) {
                     b = true;
-                    activityTask.setProgress(hero.getSkillLevels().getOrDefault(config.getParam().get(1), 0));
+//                    activityTask.setProgress(hero.getSkillLevels().getOrDefault(config.getParam().get(1), 0));
                 }
                 break;
             case HERO_LEVELUP:
@@ -507,7 +511,7 @@ public class ActivityDiaoChanService {
         return b;
     }
 
-    private int checkTaskFinished(Player player,ActivityTask activityTask, ETask eTask, StaticDiaoChanDayTask config) {
+    private int checkTaskFinished(Player player, ActivityTask activityTask, ETask eTask, StaticDiaoChanDayTask config) {
         int addScore = 0;
         int count;
         int remainder;
@@ -590,7 +594,7 @@ public class ActivityDiaoChanService {
             case HERO_UPSTAR:
                 hero = player.heros.get(config.getParam().get(0));
                 if (Objects.nonNull(hero)) {
-                    if(hero.getCgyStage() > config.getParam().get(1) || (hero.getCgyStage() == config.getParam().get(1) && hero.getCgyLv() >= config.getParam().get(2))){
+                    if (hero.getCgyStage() > config.getParam().get(1) || (hero.getCgyStage() == config.getParam().get(1) && hero.getCgyLv() >= config.getParam().get(2))) {
                         activityTask.setCount(activityTask.getCount() + 1);
                         activityTask.setProgress(0);
                         addScore = config.getIntegral();
@@ -598,14 +602,14 @@ public class ActivityDiaoChanService {
                 }
                 break;
             case HERO_LEVELUP:
-                if(activityTask.getProgress() >= config.getParam().get(1)){
+                if (activityTask.getProgress() >= config.getParam().get(1)) {
                     activityTask.setCount(activityTask.getCount() + 1);
                     activityTask.setProgress(0);
                     addScore = config.getIntegral();
                 }
                 break;
             case HERO_UPSKILL:
-                if(activityTask.getProgress() >= config.getParam().get(2)){
+                if (activityTask.getProgress() >= config.getParam().get(2)) {
                     activityTask.setCount(activityTask.getCount() + 1);
                     activityTask.setProgress(0);
                     addScore = config.getIntegral();
@@ -636,7 +640,7 @@ public class ActivityDiaoChanService {
         return activityTask;
     }
 
-    private void syncTaskInfo(Player player, Activity activity, List<ActivityTask> changes, int day,int activityType) {
+    private void syncTaskInfo(Player player, Activity activity, List<ActivityTask> changes, int day, int activityType) {
         GamePb4.SyncDiaoChanTaskInfoRs.Builder builder = GamePb4.SyncDiaoChanTaskInfoRs.newBuilder();
         Optional.ofNullable(changes).ifPresent(tmps -> tmps.forEach(o -> {
             CommonPb.DiaoChanTaskInfo.Builder diaoChanTaskInfo = CommonPb.DiaoChanTaskInfo.newBuilder();
@@ -669,7 +673,7 @@ public class ActivityDiaoChanService {
     public int getRankDayScore(Activity activity, int day) {
         Turple<Integer, Integer> turple = activity.getDayScore().get(day);
         if (turple == null) {
-            turple = new Turple<>(0,0);
+            turple = new Turple<>(0, 0);
             activity.getDayScore().put(day, turple);
         }
         return turple.getA() == null ? 0 : turple.getA();
@@ -685,13 +689,13 @@ public class ActivityDiaoChanService {
 
     private int getDay(ActivityBase activityBase) {
         int day = 0;
-        if(activityBase.getOpenRule() == 0x1){
+        if (activityBase.getOpenRule() == 0x1) {
             int openDay = serverSetting.getOpenServerDay(new Date());
             day = openDay - activityBase.getPlan().getOpenBegin() + 1;
-        }else {
+        } else {
             Date now = new Date();
 //            if(now.after(activityBase.getBeginTime()) && now.before(activityBase.getEndTime())){
-                day = (int) ((now.getTime() - activityBase.getBeginTime().getTime())/TimeHelper.DAY_MS + 1);
+            day = (int) ((now.getTime() - activityBase.getBeginTime().getTime()) / TimeHelper.DAY_MS + 1);
 //            }
         }
         return day;
@@ -706,7 +710,7 @@ public class ActivityDiaoChanService {
         return activity.getSaveMap().getOrDefault(BIYUE_SCORE, 0);
     }
 
-    public void updateBiyueScore(Player player, int count,AwardFrom awardFrom,Object... param) {
+    public void updateBiyueScore(Player player, int count, AwardFrom awardFrom, Object... param) {
         Activity activity = activityDataManager.getActivityInfo(player, ActivityConst.ACT_DIAOCHAN);
         if (activity != null) {
             int old = getBiyueScore(activity);
@@ -716,9 +720,9 @@ public class ActivityDiaoChanService {
         }
     }
 
-    public int getBiyueScore(Player player){
-        Activity activity = activityDataManager.getActivityInfo(player,ActivityConst.ACT_DIAOCHAN);
-        if(activity != null){
+    public int getBiyueScore(Player player) {
+        Activity activity = activityDataManager.getActivityInfo(player, ActivityConst.ACT_DIAOCHAN);
+        if (activity != null) {
             return getBiyueScore(activity);
         }
         return 0;
@@ -726,25 +730,26 @@ public class ActivityDiaoChanService {
 
     /**
      * 跨天执行0:0:1
-     *  1.处理昨天未领取的每日积分奖励
-     *  2.处理昨天排行榜奖励
-     *  3.处理今天的任务
+     * 1.处理昨天未领取的每日积分奖励
+     * 2.处理昨天排行榜奖励
+     * 3.处理今天的任务
+     *
      * @param player
      */
     public void handleAcrossDay(Player player) {
-        this.handleAcrossDay0(player,ActivityConst.ACT_DIAOCHAN);
-        this.handleAcrossDay0(player,ActivityConst.ACT_SEASON_HERO);
+        this.handleAcrossDay0(player, ActivityConst.ACT_DIAOCHAN);
+        this.handleAcrossDay0(player, ActivityConst.ACT_SEASON_HERO);
     }
 
-    private void handleAcrossDay0(Player player,int activityType) {
+    private void handleAcrossDay0(Player player, int activityType) {
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         if (Objects.isNull(activityBase)) {
             return;
         }
-        this.handleUnreward4AcrossDay(player,activityType);
-        this.handleDayRankAward4AcrossDay(player,activityType);
+        this.handleUnreward4AcrossDay(player, activityType);
+        this.handleDayRankAward4AcrossDay(player, activityType);
         if (activityBase.getStep() == ActivityConst.OPEN_STEP) {
-            this.handleTodayTask(player,activityType);
+            this.handleTodayTask(player, activityType);
         }
     }
 
@@ -752,32 +757,34 @@ public class ActivityDiaoChanService {
      * 活动 end time , 23:59:59
      * .处理总榜奖励
      * .处理闭月未领取的奖励
+     *
      * @param player
      */
-    protected void handleEnd(Player player,int activityType,int activityId,int keyId){
+    protected void handleEnd(Player player, int activityType, int activityId, int keyId) {
 //        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
 //        if(Objects.isNull(activityBase)){
 //            return;
 //        }
-        this.handleGeneralRankAward4Over(player,activityType,activityId);
-        this.handleUnreward4Over(player,activityType,activityId,keyId);
+        this.handleGeneralRankAward4Over(player, activityType, activityId);
+        this.handleUnreward4Over(player, activityType, activityId, keyId);
     }
 
     /**
      * 活动 display time , 23:59:59
-     *  1、自动兑换貂蝉活动的物品
+     * 1、自动兑换貂蝉活动的物品
+     *
      * @param player
      */
-    protected void handleOver(Player player,int activityType,int activityId,int keyId){
+    protected void handleOver(Player player, int activityType, int activityId, int keyId) {
 //        ActivityBase activityBase = StaticActivityDataMgr.getActivityByType0(ActivityConst.ACT_DIAOCHAN);
 //        if(Objects.isNull(activityBase)){
 //            return;
 //        }
 
-        this.handleConvert4Over(player,activityType,activityId,keyId);
+        this.handleConvert4Over(player, activityType, activityId, keyId);
     }
 
-    private void  handleConvert4Over(Player player,int activityType,int activityId,int keyId){
+    private void handleConvert4Over(Player player, int activityType, int activityId, int keyId) {
         try {
             if (Objects.isNull(player)) {
                 return;
@@ -799,12 +806,12 @@ public class ActivityDiaoChanService {
                 mailDataManager.sendAttachMail(player, awards, MailConstant.MOLD_ACT_BANDIT_CONVERT_AWARD, AwardFrom.ACTIVITY_DIAOCHAN_OVER_AUTO_EXCHANGE, now, activityType, activityId);
                 LogUtil.activity("貂蝉活动结束自动转换香囊道具, roleId=" + player.roleId + ", count=" + chipNum);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             LogUtil.error("貂蝉活动结束自动转换香囊道具，发生错误", e);
         }
     }
 
-    private void handleGeneralRankAward4Over(Player player,int activityType,int activityId){
+    private void handleGeneralRankAward4Over(Player player, int activityType, int activityId) {
         try {
             if (Objects.isNull(player)) {
                 return;
@@ -817,14 +824,14 @@ public class ActivityDiaoChanService {
             if (globalActivityData == null) {
                 return;
             }
-            ActRank myRank = globalActivityData.getPlayerRank(player,activityType,player.roleId);
-            if(myRank != null){
-                List<StaticDiaoChanRank> staticDiaoChanRankList = StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityId,2,0);
-                if(staticDiaoChanRankList != null){
+            ActRank myRank = globalActivityData.getPlayerRank(player, activityType, player.roleId);
+            if (myRank != null) {
+                List<StaticDiaoChanRank> staticDiaoChanRankList = StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityId, 2, 0);
+                if (staticDiaoChanRankList != null) {
                     StaticDiaoChanRank staticDiaoChanRank_ = staticDiaoChanRankList.stream().filter(o -> o.getRank().get(0) <= myRank.getRank() && o.getRank().get(1) >= myRank.getRank() && myRank.getRankValue() >= o.getLimit()).findFirst().orElse(null);
-                    if(staticDiaoChanRank_ != null){
-                        List<CommonPb.Award> awardList = rewardDataManager.sendReward(player,staticDiaoChanRank_.getAward(),AwardFrom.ACTIVITY_DIAOCHAN_TOTAL_RANK_AWARD);
-                        mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_DIAOCHAN_RANK_AWARD, awardList, TimeHelper.getCurrentSecond(),activityType,activityId,activityType,activityId, 0, myRank.getRank());
+                    if (staticDiaoChanRank_ != null) {
+                        List<CommonPb.Award> awardList = rewardDataManager.sendReward(player, staticDiaoChanRank_.getAward(), AwardFrom.ACTIVITY_DIAOCHAN_TOTAL_RANK_AWARD);
+                        mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_DIAOCHAN_RANK_AWARD, awardList, TimeHelper.getCurrentSecond(), activityType, activityId, activityType, activityId, 0, myRank.getRank());
                         LogUtil.activity("貂蝉活动结束处理总榜奖励, roleId=" + player.roleId + ", award=" + JSON.toJSONString(staticDiaoChanRank_.getAward()));
                     }
                 }
@@ -834,29 +841,29 @@ public class ActivityDiaoChanService {
         }
     }
 
-    private void handleUnreward4Over(Player player,int activityType,int activityId,int keyId){
+    private void handleUnreward4Over(Player player, int activityType, int activityId, int keyId) {
         try {
 //            ActivityBase activityBase = StaticActivityDataMgr.getActivityByType0(ActivityConst.ACT_DIAOCHAN);
 //            if (activityBase == null) {
 //                return;
 //            }
-            if(activityType != ActivityConst.ACT_DIAOCHAN){
+            if (activityType != ActivityConst.ACT_DIAOCHAN) {
                 return;
             }
             List<StaticDiaoChanAward> staticDiaoChanAwardList = StaticIniDataMgr.getStaticDiaoChanAwardList(activityId);
             Activity activity = player.activitys.get(activityType);
-            if(Objects.isNull(activity)){
+            if (Objects.isNull(activity)) {
                 return;
             }
             int count = getBiyueScore(activity);
             List<CommonPb.Award> unrewardList = new ArrayList<>();
-            staticDiaoChanAwardList.stream().filter(o -> count >= o.getCondition() && getKeepsakeAwardState(activity,o.getId()) == 0).forEach(o1 -> {
+            staticDiaoChanAwardList.stream().filter(o -> count >= o.getCondition() && getKeepsakeAwardState(activity, o.getId()) == 0).forEach(o1 -> {
                 unrewardList.addAll(PbHelper.createAwardsPb(o1.getAward()));
                 activity.getStatusMap().put(o1.getId() * -1, 1);
             });
-            if(ListUtils.isNotBlank(unrewardList)){
-                rewardDataManager.sendRewardByAwardList(player,unrewardList,AwardFrom.ACTIVITY_DIAOCHAN_BIYUE_AWARD);
-                mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_UNREWARDED_REWARD, unrewardList, TimeHelper.getCurrentSecond(),activity.getActivityType(), activity.getActivityId(),activity.getActivityType(), activity.getActivityId());
+            if (ListUtils.isNotBlank(unrewardList)) {
+                rewardDataManager.sendRewardByAwardList(player, unrewardList, AwardFrom.ACTIVITY_DIAOCHAN_BIYUE_AWARD);
+                mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_UNREWARDED_REWARD, unrewardList, TimeHelper.getCurrentSecond(), activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId());
                 LogUtil.activity("貂蝉活动结束处理未领取奖励, roleId=" + player.roleId + ", size=" + unrewardList.size());
             }
         } catch (Exception e) {
@@ -864,34 +871,34 @@ public class ActivityDiaoChanService {
         }
     }
 
-    private void handleUnreward4AcrossDay(Player player,int activityType){
+    private void handleUnreward4AcrossDay(Player player, int activityType) {
         try {
             ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
-            if(Objects.isNull(activityBase)){
+            if (Objects.isNull(activityBase)) {
                 return;
             }
             Activity activity = player.activitys.get(activityType);
-            if(Objects.isNull(activity)){
+            if (Objects.isNull(activity)) {
                 return;
             }
             int yesterday = this.getDay(activityBase) - 1;
-            if(yesterday > StaticIniDataMgr.getDiaoChanMaxDay(activityBase.getActivityId()) || yesterday < 1){
+            if (yesterday > StaticIniDataMgr.getDiaoChanMaxDay(activityBase.getActivityId()) || yesterday < 1) {
                 return;
             }
-            List<StaticDiaoChanDay> staticDiaoChanDayList = StaticIniDataMgr.getStaticDiaoChanDayList(activityBase.getActivityId(),yesterday);
-            if(!ListUtils.isBlank(staticDiaoChanDayList)){
+            List<StaticDiaoChanDay> staticDiaoChanDayList = StaticIniDataMgr.getStaticDiaoChanDayList(activityBase.getActivityId(), yesterday);
+            if (!ListUtils.isBlank(staticDiaoChanDayList)) {
                 List<CommonPb.Award> notAwards = new ArrayList<>();
                 List<List<Integer>> unrewards = new ArrayList<>();
                 staticDiaoChanDayList.forEach(o -> {
-                    if(checkDayScoreAwardGot(o,yesterday,activity,player)){
+                    if (checkDayScoreAwardGot(o, yesterday, activity, player)) {
                         notAwards.addAll(PbHelper.createAwardsPb(o.getAward()));
                         unrewards.addAll(o.getAward());
                         activity.getStatusMap().put(o.getId(), 1);
                     }
                 });
-                if(!ListUtils.isBlank(notAwards)){
-                    rewardDataManager.sendRewardByAwardList(player,notAwards,AwardFrom.ACTIVITY_DIAOCHAN_DAYSCORE_AWARD);
-                    mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_UNREWARDED_REWARD, notAwards, TimeHelper.getCurrentSecond(),activity.getActivityType(), activity.getActivityId(),activity.getActivityType(), activity.getActivityId());
+                if (!ListUtils.isBlank(notAwards)) {
+                    rewardDataManager.sendRewardByAwardList(player, notAwards, AwardFrom.ACTIVITY_DIAOCHAN_DAYSCORE_AWARD);
+                    mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_UNREWARDED_REWARD, notAwards, TimeHelper.getCurrentSecond(), activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId());
                     LogUtil.activity("貂蝉活动跨天处理未领取的积分奖励, roleId=" + player.roleId + ", notAwards=" + JSON.toJSONString(unrewards));
                 }
             }
@@ -900,67 +907,67 @@ public class ActivityDiaoChanService {
         }
     }
 
-    private void handleDayRankAward4AcrossDay(Player player,int activityType){
+    private void handleDayRankAward4AcrossDay(Player player, int activityType) {
         try {
             ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
-            if(Objects.isNull(activityBase)){
+            if (Objects.isNull(activityBase)) {
                 return;
             }
             Activity activity = player.activitys.get(activityType);
-            if(Objects.isNull(activity)){
+            if (Objects.isNull(activity)) {
                 return;
             }
             int yesterday = this.getDay(activityBase) - 1;
-            if(yesterday > StaticIniDataMgr.getDiaoChanMaxDay(activityBase.getActivityId()) || yesterday < 1){
+            if (yesterday > StaticIniDataMgr.getDiaoChanMaxDay(activityBase.getActivityId()) || yesterday < 1) {
                 return;
             }
             GlobalActivityData globalActivityData = activityDataManager.getActivityMap().get(activityType);
             if (globalActivityData == null) {
                 return;
             }
-            int type_ = getDayRankKey(activityType,yesterday);
+            int type_ = getDayRankKey(activityType, yesterday);
             ActRank myRank = globalActivityData.getPlayerRank(player, type_, player.roleId);
             Optional.ofNullable(myRank).ifPresent(myRank_ ->
-                    Optional.ofNullable(StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(),1, yesterday)).ifPresent(tmps ->
-                    Optional.ofNullable(tmps.stream().filter(o -> o.getRank().get(0) <= myRank.getRank() && o.getRank().get(1) >= myRank.getRank() && myRank.getRankValue() >= o.getLimit()).findFirst().orElse(null))
-                            .ifPresent(o1 -> {
-                                List<CommonPb.Award> awardList = rewardDataManager.sendReward(player,o1.getAward(),AwardFrom.ACTIVITY_DIAOCHAN_DAY_RANK_AWARD);
-                                mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_DIAOCHAN_RANK_AWARD, awardList, TimeHelper.getCurrentSecond(),activity.getActivityType(),activity.getActivityId(),activity.getActivityType(),activity.getActivityId(), yesterday, myRank.getRank());
-                                LogUtil.activity("貂蝉活动处理昨天排名奖励, roleId=" + player.roleId + ", award=" + JSON.toJSONString(o1.getAward()));
-                            })));
+                    Optional.ofNullable(StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(), 1, yesterday)).ifPresent(tmps ->
+                            Optional.ofNullable(tmps.stream().filter(o -> o.getRank().get(0) <= myRank.getRank() && o.getRank().get(1) >= myRank.getRank() && myRank.getRankValue() >= o.getLimit()).findFirst().orElse(null))
+                                    .ifPresent(o1 -> {
+                                        List<CommonPb.Award> awardList = rewardDataManager.sendReward(player, o1.getAward(), AwardFrom.ACTIVITY_DIAOCHAN_DAY_RANK_AWARD);
+                                        mailDataManager.sendReportMail(player, null, MailConstant.MOLD_ACT_DIAOCHAN_RANK_AWARD, awardList, TimeHelper.getCurrentSecond(), activity.getActivityType(), activity.getActivityId(), activity.getActivityType(), activity.getActivityId(), yesterday, myRank.getRank());
+                                        LogUtil.activity("貂蝉活动处理昨天排名奖励, roleId=" + player.roleId + ", award=" + JSON.toJSONString(o1.getAward()));
+                                    })));
         } catch (Exception e) {
             LogUtil.error("貂蝉活动跨天处理日排名奖励发生错误, ", e);
         }
     }
 
-    private boolean checkDayScoreAwardGot(StaticDiaoChanDay staticDiaoChanDay,int day,Activity activity,Player player){
-        int score = this.getDayScore(activity,day);
-        if(score >= staticDiaoChanDay.getIntegral() && getDayAwardState(activity, staticDiaoChanDay.getId()) == 0){
+    private boolean checkDayScoreAwardGot(StaticDiaoChanDay staticDiaoChanDay, int day, Activity activity, Player player) {
+        int score = this.getDayScore(activity, day);
+        if (score >= staticDiaoChanDay.getIntegral() && getDayAwardState(activity, staticDiaoChanDay.getId()) == 0) {
             return true;
         }
         return false;
     }
 
-    public void handleTodayTask(Player player){
-        this.handleTodayTask(player,ActivityConst.ACT_DIAOCHAN);
-        this.handleTodayTask(player,ActivityConst.ACT_SEASON_HERO);
+    public void handleTodayTask(Player player) {
+        this.handleTodayTask(player, ActivityConst.ACT_DIAOCHAN);
+        this.handleTodayTask(player, ActivityConst.ACT_SEASON_HERO);
     }
 
-    private void handleTodayTask(Player player,int activityType){
+    private void handleTodayTask(Player player, int activityType) {
         try {
-            if(!functionIsOpen(player,activityType)){
+            if (!functionIsOpen(player, activityType)) {
                 return;
             }
             ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
-            if(Objects.isNull(activityBase)){
+            if (Objects.isNull(activityBase)) {
                 return;
             }
             Activity activity = activityDataManager.getActivityInfo(player, activityType);
-            if(Objects.isNull(activity)){
+            if (Objects.isNull(activity)) {
                 return;
             }
             for (ETask value : ETask.values()) {
-                if(value.isHandle()){
+                if (value.isHandle()) {
                     ActivityDiaoChanService.completeTask(player, value);
                     TaskService.processTask(player, value);
                 }
@@ -970,26 +977,26 @@ public class ActivityDiaoChanService {
         }
     }
 
-    public boolean functionIsOpen(Player player,int activityType){
-        if(activityType == ActivityConst.ACT_DIAOCHAN){
+    public boolean functionIsOpen(Player player, int activityType) {
+        if (activityType == ActivityConst.ACT_DIAOCHAN) {
             return StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_ACTIVITY_DIAOCHAN);
-        }else if(activityType == ActivityConst.ACT_SEASON_HERO){
+        } else if (activityType == ActivityConst.ACT_SEASON_HERO) {
             return StaticFunctionDataMgr.funcitonIsOpen(player, FunctionConstant.FUNC_ACTIVITY_SEASON_HERO);
         }
         return false;
     }
 
-    private void killedAndDeathTask(Fighter fighter,boolean killed,boolean lost){
-        Map<Player,Integer> playerKilledMap = new HashMap<>();
-        Map<Player,Integer> playerLostMap = new HashMap<>();
-        if(fighter.roleType == Constant.Role.PLAYER){
+    private void killedAndDeathTask(Fighter fighter, boolean killed, boolean lost) {
+        Map<Player, Integer> playerKilledMap = new HashMap<>();
+        Map<Player, Integer> playerLostMap = new HashMap<>();
+        if (fighter.roleType == Constant.Role.PLAYER) {
             fighter.getForces().forEach(force -> {
                 Player p = playerDataManager.getPlayer(force.ownerId);
-                if(p != null){
-                    if(killed)
-                        playerKilledMap.merge(p,force.killed,Integer::sum);
-                    if(lost)
-                        playerLostMap.merge(p,force.totalLost,Integer::sum);
+                if (p != null) {
+                    if (killed)
+                        playerKilledMap.merge(p, force.killed, Integer::sum);
+                    if (lost)
+                        playerLostMap.merge(p, force.totalLost, Integer::sum);
                 }
             });
         }
@@ -998,100 +1005,99 @@ public class ActivityDiaoChanService {
             TaskService.processTask(entry.getKey(), ETask.KILLED_NUMBER, entry.getValue());
         });
         playerLostMap.entrySet().forEach(entry -> {
-            ActivityDiaoChanService.completeTask(entry.getKey(),ETask.DEATH_NUMBER,entry.getValue());
-            TaskService.processTask(entry.getKey(),ETask.DEATH_NUMBER,entry.getValue());
-            TaskService.handleTask(entry.getKey(),ETask.ARMY_MAK_LOST,entry.getValue());
-            ActivityDiaoChanService.completeTask(entry.getKey(),ETask.ARMY_MAK_LOST,entry.getValue());
-            TaskService.processTask(entry.getKey(),ETask.ARMY_MAK_LOST,entry.getValue());
+            ActivityDiaoChanService.completeTask(entry.getKey(), ETask.DEATH_NUMBER, entry.getValue());
+            TaskService.processTask(entry.getKey(), ETask.DEATH_NUMBER, entry.getValue());
+            TaskService.handleTask(entry.getKey(), ETask.ARMY_MAK_LOST, entry.getValue());
+            ActivityDiaoChanService.completeTask(entry.getKey(), ETask.ARMY_MAK_LOST, entry.getValue());
+            TaskService.processTask(entry.getKey(), ETask.ARMY_MAK_LOST, entry.getValue());
         });
     }
 
-    public static void killedAndDeathTask0(Fighter fighter,boolean killed,boolean lost) {
+    public static void killedAndDeathTask0(Fighter fighter, boolean killed, boolean lost) {
         try {
             DataResource.ac.getBean(ActivityDiaoChanService.class).killedAndDeathTask(fighter, killed, lost);
-        }catch (Exception e) {
-            LogUtil.error("执行貂蝉杀敌阵亡任务发生错误, ",e);
+        } catch (Exception e) {
+            LogUtil.error("执行貂蝉杀敌阵亡任务发生错误, ", e);
         }
     }
 
 
-
-    public int getDayRankLimit(int rankKey){
+    public int getDayRankLimit(int rankKey) {
         int activityType = this.getActivityTypeByDayRankKey(rankKey);
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
-        if(activityBase == null){
+        if (activityBase == null) {
             return 2000;
         }
         int day = this.getDay(activityBase);
-        if(day < 1){
+        if (day < 1) {
             day = 1;
         }
-        if(day > 7){
+        if (day > 7) {
             day = 7;
         }
-        List<StaticDiaoChanRank> list = StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(),1,day);
-        if(ListUtils.isBlank(list)){
-            return StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(),1,1).get(0).getLimit();
-        }else {
+        List<StaticDiaoChanRank> list = StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(), 1, day);
+        if (ListUtils.isBlank(list)) {
+            return StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(), 1, 1).get(0).getLimit();
+        } else {
             return list.get(0).getLimit();
         }
     }
 
-    public int getRankLimit(int activityType){
+    public int getRankLimit(int activityType) {
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
-        if(activityBase == null){
+        if (activityBase == null) {
             return 5000;
         }
-        List<StaticDiaoChanRank> list = StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(),2,0);
-        if(ListUtils.isBlank(list)){
-            return StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(),2,0).get(0).getLimit();
-        }else {
+        List<StaticDiaoChanRank> list = StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(), 2, 0);
+        if (ListUtils.isBlank(list)) {
+            return StaticIniDataMgr.getStaticDiaoChanRankListByDay(activityBase.getActivityId(), 2, 0).get(0).getLimit();
+        } else {
             return list.get(0).getLimit();
         }
     }
 
-    public static void addScheduleJob(ActivityBase activityBase, Date now, Scheduler sched){
+    public static void addScheduleJob(ActivityBase activityBase, Date now, Scheduler sched) {
         String jobName = activityBase.getActivityType() + "_" + activityBase.getActivityId() + "_" + activityBase.getPlan().getKeyId();
-        if(activityBase.getEndTime().getTime() > now.getTime()){
-            QuartzHelper.removeJob(sched,jobName,"ACT_END");
+        if (activityBase.getEndTime().getTime() > now.getTime()) {
+            QuartzHelper.removeJob(sched, jobName, "ACT_END");
             long millis = activityBase.getEndTime().getTime() + 4000;
-            QuartzHelper.addJob(sched,jobName,"ACT_END", ActEndJob.class,new Date(millis));
+            QuartzHelper.addJob(sched, jobName, "ACT_END", ActEndJob.class, new Date(millis));
         }
-        if(Objects.nonNull(activityBase.getDisplayTime()) && activityBase.getDisplayTime().getTime() > now.getTime()){
-            QuartzHelper.removeJob(sched,jobName,"ACT_OVER");
-            QuartzHelper.addJob(sched,jobName,"ACT_OVER", ActOverJob.class,activityBase.getDisplayTime());
+        if (Objects.nonNull(activityBase.getDisplayTime()) && activityBase.getDisplayTime().getTime() > now.getTime()) {
+            QuartzHelper.removeJob(sched, jobName, "ACT_OVER");
+            QuartzHelper.addJob(sched, jobName, "ACT_OVER", ActOverJob.class, activityBase.getDisplayTime());
         }
     }
 
-// <editor-fold desc="自己测试用的方法" defaultstate="collapsed">
-    public void test_protocol(Player player,String...params) throws Exception{
+    // <editor-fold desc="自己测试用的方法" defaultstate="collapsed">
+    public void test_protocol(Player player, String... params) throws Exception {
         int activityType = Integer.parseInt(params[1]);
         String cmd = params[2];
         Activity activity = activityDataManager.getActivityInfo(player, activityType);
         ActivityBase activityBase = StaticActivityDataMgr.getActivityByType(activityType);
         GlobalActivityData gActDate = activityDataManager.getGlobalActivity(activityType);
-        if(activity == null || activityBase == null){
+        if (activity == null || activityBase == null) {
             return;
         }
-        if(cmd.equalsIgnoreCase("getinfo")){
-            LogUtil.c2sMessage(this.getInfo(player.roleId,activityType),player.roleId);
+        if (cmd.equalsIgnoreCase("getinfo")) {
+            LogUtil.c2sMessage(this.getInfo(player.roleId, activityType), player.roleId);
         }
-        if(cmd.equalsIgnoreCase("getrank")){
-            LogUtil.c2sMessage(this.getRankInfo(player.roleId,Integer.parseInt(params[2]),Integer.parseInt(params[3]),activityType),player.roleId);
+        if (cmd.equalsIgnoreCase("getrank")) {
+            LogUtil.c2sMessage(this.getRankInfo(player.roleId, Integer.parseInt(params[2]), Integer.parseInt(params[3]), activityType), player.roleId);
         }
-        if(cmd.equalsIgnoreCase("addscore")){
-            this.updateScore(player,activity,Integer.parseInt(params[3]),this.getDay(activityBase));
-            syncTaskInfo(player,activity,null,this.getDay(activityBase),activityType);
+        if (cmd.equalsIgnoreCase("addscore")) {
+            this.updateScore(player, activity, Integer.parseInt(params[3]), this.getDay(activityBase));
+            syncTaskInfo(player, activity, null, this.getDay(activityBase), activityType);
         }
-        if(cmd.equalsIgnoreCase("sendmail")){
-            if(params[3].equalsIgnoreCase("day")){
+        if (cmd.equalsIgnoreCase("sendmail")) {
+            if (params[3].equalsIgnoreCase("day")) {
                 this.handleAcrossDay(player);
             }
-            if(params[3].equalsIgnoreCase("end")){
+            if (params[3].equalsIgnoreCase("end")) {
 //                this.handleOver(player);
             }
         }
-        if(cmd.equalsIgnoreCase("clear")){
+        if (cmd.equalsIgnoreCase("clear")) {
             activity.getDayTasks().clear();
             activity.getDayScore().clear();
             activity.getStatusMap().clear();

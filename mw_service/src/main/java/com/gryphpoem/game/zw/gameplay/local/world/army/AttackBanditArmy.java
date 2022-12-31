@@ -1,18 +1,23 @@
 package com.gryphpoem.game.zw.gameplay.local.world.army;
 
+import com.gryphpoem.game.zw.constant.FightConstant;
 import com.gryphpoem.game.zw.core.common.DataResource;
 import com.gryphpoem.game.zw.core.util.LogUtil;
+import com.gryphpoem.game.zw.core.util.Turple;
+import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
+import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.gameplay.local.service.worldwar.WorldWarSeasonDailyRestrictTaskService;
 import com.gryphpoem.game.zw.gameplay.local.util.MapCurdEvent;
 import com.gryphpoem.game.zw.gameplay.local.util.MapEvent;
 import com.gryphpoem.game.zw.gameplay.local.world.CrossWorldMap;
 import com.gryphpoem.game.zw.gameplay.local.world.WorldEntityType;
 import com.gryphpoem.game.zw.gameplay.local.world.map.BaseWorldEntity;
-import com.gryphpoem.game.zw.dataMgr.StaticBanditDataMgr;
-import com.gryphpoem.game.zw.dataMgr.StaticNpcDataMgr;
 import com.gryphpoem.game.zw.logic.FightSettleLogic;
 import com.gryphpoem.game.zw.manager.*;
+import com.gryphpoem.game.zw.pb.BattlePb;
 import com.gryphpoem.game.zw.pb.CommonPb;
+import com.gryphpoem.game.zw.pojo.p.FightLogic;
+import com.gryphpoem.game.zw.pojo.p.Fighter;
 import com.gryphpoem.game.zw.resource.constant.*;
 import com.gryphpoem.game.zw.resource.domain.Player;
 import com.gryphpoem.game.zw.resource.domain.p.Lord;
@@ -21,20 +26,18 @@ import com.gryphpoem.game.zw.resource.domain.s.StaticBandit;
 import com.gryphpoem.game.zw.resource.domain.s.StaticNpc;
 import com.gryphpoem.game.zw.resource.pojo.ChangeInfo;
 import com.gryphpoem.game.zw.resource.pojo.army.Army;
-import com.gryphpoem.game.zw.resource.pojo.fight.FightLogic;
-import com.gryphpoem.game.zw.resource.pojo.fight.Fighter;
-import com.gryphpoem.game.zw.resource.pojo.fight.Force;
-import com.gryphpoem.game.zw.resource.pojo.hero.Hero;
 import com.gryphpoem.game.zw.resource.util.CheckNull;
 import com.gryphpoem.game.zw.resource.util.PbHelper;
-import com.gryphpoem.game.zw.resource.util.Turple;
 import com.gryphpoem.game.zw.service.FightService;
 import com.gryphpoem.game.zw.service.HonorDailyService;
 import com.gryphpoem.game.zw.service.WorldService;
 import com.gryphpoem.game.zw.service.activity.ActivityDiaoChanService;
 import com.gryphpoem.game.zw.service.session.SeasonTalentService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author QiuKun
@@ -85,10 +88,11 @@ public class AttackBanditArmy extends BaseArmy {
         }
 
         StaticNpc npc;
-        for (Integer npcId : staticBandit.getForm()) {
-            npc = StaticNpcDataMgr.getNpcMap().get(npcId);
+        for (List<Integer> npcIdList : staticBandit.getForm()) {
+            if (CheckNull.isEmpty(npcIdList)) continue;
+            npc = StaticNpcDataMgr.getNpcMap().get(npcIdList.get(0));
             if (null == npc) {
-                LogUtil.error("NPCid未配置, npcId:", npcId);
+                LogUtil.error("NPCid未配置, npcId:", npcIdList.get(0));
                 // 部队返回
                 retreatArmy(mapMarchArmy, marchTime, marchTime);
                 return;
@@ -99,10 +103,10 @@ public class AttackBanditArmy extends BaseArmy {
         Fighter attacker = fightService.createFighter(armyPlayer, army.getHero());
         Fighter defender = fightService.createBanditFighter(banditId);
         FightLogic fightLogic = new FightLogic(attacker, defender, true);
-        fightLogic.fight();
+        fightLogic.start();
 
         //貂蝉任务-杀敌阵亡数量
-        ActivityDiaoChanService.killedAndDeathTask0(attacker,false,true);
+        ActivityDiaoChanService.killedAndDeathTask0(attacker, false, true);
 
         RewardDataManager rewardDataManager = DataResource.ac.getBean(RewardDataManager.class);
         ActivityDataManager activityDataManager = DataResource.ac.getBean(ActivityDataManager.class);
@@ -147,10 +151,10 @@ public class AttackBanditArmy extends BaseArmy {
         }
 
         // 战斗记录
-        CommonPb.Record record = fightLogic.generateRecord();
+        BattlePb.BattleRoundPb record = fightLogic.generateRecord();
 
         Lord lord = armyPlayer.lord;
-        boolean isSuccess = fightLogic.getWinState() == ArmyConstant.FIGHT_RESULT_SUCCESS;
+        boolean isSuccess = fightLogic.getWinState() == FightConstant.FIGHT_RESULT_SUCCESS;
         CommonPb.RptAtkBandit.Builder rpt = CommonPb.RptAtkBandit.newBuilder();
         rpt.setResult(isSuccess);
         rpt.setAttack(PbHelper.createRptMan(lord.getPos(), lord.getNick(), lord.getVip(), lord.getLevel()));
@@ -181,19 +185,19 @@ public class AttackBanditArmy extends BaseArmy {
     /**
      * 战斗结果处理
      *
-     * @param now 现在的时间戳
-     * @param armyPlayer 行军玩家对象
-     * @param cMap CrossWorldMap对象
-     * @param targetPos 流寇坐标
-     * @param staticBandit 流寇配置对象
-     * @param attacker 进攻方Fighter对象
+     * @param now              现在的时间戳
+     * @param armyPlayer       行军玩家对象
+     * @param cMap             CrossWorldMap对象
+     * @param targetPos        流寇坐标
+     * @param staticBandit     流寇配置对象
+     * @param attacker         进攻方Fighter对象
      * @param recoverArmyAward 兵力回复
-     * @param isSuccess 战斗是否胜利
-     * @param rpt 战报对象
+     * @param isSuccess        战斗是否胜利
+     * @param rpt              战报对象
      */
     private void fightResultLogic(int now, Player armyPlayer, CrossWorldMap cMap, int targetPos,
-            StaticBandit staticBandit, Fighter attacker, List<CommonPb.Award> recoverArmyAward, boolean isSuccess,
-            CommonPb.RptAtkBandit.Builder rpt) {
+                                  StaticBandit staticBandit, Fighter attacker, List<CommonPb.Award> recoverArmyAward, boolean isSuccess,
+                                  CommonPb.RptAtkBandit.Builder rpt) {
         MailDataManager mailDataManager = DataResource.ac.getBean(MailDataManager.class);
         RewardDataManager rewardDataManager = DataResource.ac.getBean(RewardDataManager.class);
         ActivityDataManager activityDataManager = DataResource.ac.getBean(ActivityDataManager.class);
@@ -306,8 +310,8 @@ public class AttackBanditArmy extends BaseArmy {
     /**
      * 检测攻打流寇
      *
-     * @param armyPlayer 玩家对象
-     * @param banditId 流寇id
+     * @param armyPlayer   玩家对象
+     * @param banditId     流寇id
      * @param staticBandit 流寇配置
      * @return true 正常 , false 失败
      */

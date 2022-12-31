@@ -468,15 +468,17 @@ public class TaskDataManager {
             case TaskType.COND_509:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    count = player.getAllOnBattleHeros().stream().filter(hero -> hero.getQuality() >= sCondId).count();
+                    count = player.getAllOnBattleHeroList().stream().filter(hero -> hero.getPrincipalHero().getQuality() >= sCondId).count();
                     task.setSchedule(count);
                 }
                 break;
             case TaskType.COND_510:
                 paramId = param.length > 0 ? param[0] : 0;
                 if (sCondId <= paramId) {
-                    count = Arrays.stream(player.heroAcq).filter(heroId -> {
-                        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                    count = Arrays.stream(player.getPlayerFormation().getHeroAcq()).filter(partnerHero -> {
+                        if (CheckNull.isNull(partnerHero) || CheckNull.isNull(partnerHero.getPrincipalHero()))
+                            return false;
+                        StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHero.getPrincipalHero().getHeroId());
                         if (Objects.nonNull(staticHero)) {
                             return staticHero.getQuality() >= sCondId;
                         }
@@ -536,8 +538,10 @@ public class TaskDataManager {
 //                }
                 break;
             case TaskType.COND_534:
-                count = player.getAllOnBattleHeros().stream().filter(e -> {
-                    Integer treasureWare = e.getTreasureWare();
+                count = player.getAllOnBattleHeroList().stream().filter(partnerHero -> {
+                    if (CheckNull.isNull(partnerHero) || CheckNull.isNull(partnerHero.getPrincipalHero()))
+                        return false;
+                    Integer treasureWare = partnerHero.getPrincipalHero().getTreasureWare();
                     return Objects.nonNull(treasureWare) && treasureWare > 0;
                 }).count();
                 task.setSchedule(count);
@@ -782,11 +786,13 @@ public class TaskDataManager {
                 schedule = factoryService.getAddNumByCondId(player, condId);
                 break;
             case TaskType.COND_509:
-                schedule = player.getAllOnBattleHeros().stream().filter(hero -> hero.getQuality() >= condId).count();
+                schedule = player.getAllOnBattleHeroList().stream().filter(hero -> hero.getPrincipalHero().getQuality() >= condId).count();
                 break;
             case TaskType.COND_510:
-                schedule = Arrays.stream(player.heroAcq).filter(heroId -> {
-                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(heroId);
+                schedule = Arrays.stream(player.getPlayerFormation().getHeroAcq()).filter(partnerHero -> {
+                    if (CheckNull.isNull(partnerHero) || CheckNull.isNull(partnerHero.getPrincipalHero()))
+                        return false;
+                    StaticHero staticHero = StaticHeroDataMgr.getHeroMap().get(partnerHero.getPrincipalHero().getHeroId());
                     if (Objects.nonNull(staticHero)) {
                         return staticHero.getQuality() >= condId;
                     }
@@ -821,8 +827,10 @@ public class TaskDataManager {
 //                }
                 break;
             case TaskType.COND_534:
-                schedule = player.getAllOnBattleHeros().stream().filter(e -> {
-                    Integer treasureWare = e.getTreasureWare();
+                schedule = player.getAllOnBattleHeroList().stream().filter(partnerHero -> {
+                    if (CheckNull.isNull(partnerHero) || CheckNull.isNull(partnerHero.getPrincipalHero()))
+                        return false;
+                    Integer treasureWare = partnerHero.getPrincipalHero().getTreasureWare();
                     return Objects.nonNull(treasureWare) && treasureWare > 0;
                 }).count();
                 break;
@@ -848,7 +856,7 @@ public class TaskDataManager {
                 schedule = player.equips.values().stream().filter(e -> Objects.nonNull(e) && e.getEquipId() == condId && e.getHeroId() > 0).count();
                 break;
             case TaskType.COND_28:
-                schedule = player.getAllOnBattleHeros().stream().filter(e -> e.getType() == condId).count();
+                schedule = player.getAllOnBattleHeroList().stream().filter(e -> e.getPrincipalHero().getType() == condId).count();
                 break;
             case TaskType.COND_UNLOCK_AGENT:
                 if (Objects.nonNull(player.getCia())) {
