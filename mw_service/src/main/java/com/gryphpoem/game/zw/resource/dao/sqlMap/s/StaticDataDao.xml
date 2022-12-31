@@ -16,6 +16,10 @@
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler"/>
         <result column="equips" property="equips"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler"/>
+        <result column="buildingInfo" property="buildingInfo"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.MapIntTypeHandler"/>
+        <result column="residentCnt" property="residentCnt"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
     </resultMap>
 
     <select id="selectLord" resultMap="lordMap">
@@ -254,7 +258,16 @@
         s_building_type
     </select>
 
-    <select id="selectBuildingInitMap" resultType="StaticBuildingInit">
+    <resultMap id="buildingIniMap" type="StaticBuildingInit">
+        <id column="buildingId" property="buildingId"/>
+        <result column="openRequire" property="openRequire"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+        <result column="canBuildType" property="canBuildType"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+        <result column="needBuildingLv" property="needBuildingLv"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+    </resultMap>
+    <select id="selectBuildingInitMap" resultMap="buildingIniMap">
         select * from
         s_building_init
     </select>
@@ -355,6 +368,8 @@
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
         <result column="activateFight" property="activateFight"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListIntTypeHandler"/>
+        <result column="interior" property="interior"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
 
         <result column="chargeEveryRound" property="chargeEveryRound"
                 typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
@@ -2827,5 +2842,14 @@
 
     <select id="selectStaticAttribute" resultType="StaticAttribute">
         SELECT * FROM s_attribute
+    </select>
+
+    <resultMap id="StaticHeroGradeInterior" type="StaticHeroGradeInterior">
+        <id column="keyId" property="keyId"/>
+        <result column="attr" property="attr"
+                typeHandler="com.gryphpoem.game.zw.resource.dao.handle.ListListTypeHandler"/>
+    </resultMap>
+    <select id="selectHeroGradeInteriorList" resultMap="StaticHeroGradeInterior">
+        SELECT * FROM s_hero_grade_interior
     </select>
 </mapper>
